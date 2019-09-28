@@ -3,8 +3,6 @@ from django.contrib.auth.models import PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models import Count
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -68,7 +66,7 @@ class Member(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = 'all members'
+        verbose_name_plural = _('all members')
         ordering = ['last_name', 'first_name']
 
     def __str__(self):
@@ -90,16 +88,21 @@ class Member(models.Model):
 
 
 class Family(models.Model):
+    custom_name = models.CharField(max_length=128, null=True, blank=True)
+
     class Meta:
-        verbose_name_plural = 'Families'
+        verbose_name_plural = _('Families')
 
     def __str__(self):
         return self.family_name()
 
     def family_name(self):
-        if Count(self.children):
+        # TODO: come up with a better way to name a family
+        if self.custom_name:
+            return self.custom_name
+        elif Count(self.children):
             return 'children'
-        if Count(self.parents):
+        elif Count(self.parents):
             return 'parents'
         else:
             return 'neither'
@@ -128,9 +131,5 @@ class Parent(Member):
     account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', null=True)
     family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='parents', null=True)
 
-
-@receiver(post_save, sender=Account)
-def create_or_update_account_profile(sender, instance, created, **kwargs):
-    if created:
-        Parent.objects.create(account=instance)
-    instance.profile.save()
+    def email(self):
+        return self.account.email
