@@ -1,0 +1,8 @@
+{% extends "_base.html" %}
+
+{% block title %}Client Error{% endblock title %}
+
+{% block content %}
+  <h1>Client Error</h1>
+  <p>Hmm…something went wrong on your end. Try starting over at <a href="{% url 'home_page' %}">the homepage</a>.</p>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "_base.html" %}
+
+{% block title %}Permission Denied{% endblock title %}
+
+{% block content %}
+  <h1>Permission Denied</h1>
+  <p><<a href="{% url 'login' %}">Try to login with an account that has access</a> or start over at <a
+      href="{% url 'home_page' %}">the homepage</a>.</p>
+{% endblock %}

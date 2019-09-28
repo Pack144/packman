@@ -1,0 +1,21 @@
+{% extends "_base.html" %}
+{% load bootstrap4 %}
+
+{% block title %}Nominate a scout{% endblock %}
+
+{% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Nominate a Scout</li>
+    </ol>
+  </nav>
+
+  <h1>Nominate a Scout</h1>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% bootstrap_messages %}
+    <button type="submit" class="btn btn-success">Add</button>
+  </form>
+{% endblock content %}

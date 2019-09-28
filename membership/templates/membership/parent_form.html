@@ -1,0 +1,21 @@
+{% extends "_base.html" %}
+{% load bootstrap4 %}
+
+{% block title %}Add a Parent/Guardian{% endblock %}
+
+{% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Add a Parent/Guardian</li>
+    </ol>
+  </nav>
+
+  <h1>Add a Parent/Guardian</h1>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% bootstrap_messages %}
+    <button type="submit" class="btn btn-success">Update</button>
+  </form>
+{% endblock content %}

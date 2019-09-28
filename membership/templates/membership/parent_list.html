@@ -1,0 +1,13 @@
+{% extends '_base.html' %}
+
+{% block title %}Parents{% endblock %}
+
+{% block content %}<h2>Parents</h2>
+  {% if parent_list %}
+    <ul>{% for parent in parent_list %}
+      <li><a href="{{ parent.get_absolute_url }}">{{ parent.full_name }}</a></li>{% endfor %}
+    </ul>
+  {% else %}
+    <p>The pack has no active parents</p>
+  {% endif %}
+{% endblock %}

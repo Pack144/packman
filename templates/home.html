@@ -1,0 +1,20 @@
+{% extends '_base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    Welcome, {{ user.email }}!
+    <p>
+      <a href="{% url 'logout' %}">Log Out</a> |
+      <a href="{% url 'password_change' %}">Change your password</a>
+    </p>
+  {% else %}
+    <p>You are not logged in</p>
+    <p>
+      <a href="{% url 'login' %}">Log In</a> |
+      <a href="{% url 'django_registration_register' %}">Join Us</a> |
+      <a href="{% url 'password_reset' %}">Forgot your password?</a>
+    </p>
+  {% endif %}
+{% endblock %}
