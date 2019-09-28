@@ -40,12 +40,14 @@ INSTALLED_APPS = [
     # Third party packages
     'bootstrap4',
     'django_registration',
+    'debug_toolbar',
 
     # Local apps
     'membership',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -134,6 +136,11 @@ ACCOUNT_ACTIVATION_DAYS = 7  # django-registration will allow up to this many da
 
 # Email settings for development environment
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Used by apps such as debug_toolbar to determine from what IP addresses requests to display
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
 
 # When should packman start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank. Should be listed as 'Month Date', e.g. January 1

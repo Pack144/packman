@@ -9,6 +9,7 @@ verify_ssl = true
 django = "*"
 django-registration = "*"
 django-bootstrap4 = "*"
+django-debug-toolbar = "*"
 
 [requires]
 python_version = "3.7"
