@@ -6,7 +6,8 @@ from .models import Member, Parent, Scout
 
 class ActiveMemberTestMixin(UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.profile.status == 'A'
+        if self.request.user.is_authenticated:
+            return self.request.user.profile.status == 'A'
 
 
 class MemberListView(ActiveMemberTestMixin, ListView):
