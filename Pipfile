@@ -10,7 +10,7 @@ django = "*"
 django-registration = "*"
 django-bootstrap4 = "*"
 django-debug-toolbar = "*"
-django-hashids = "*"
+django-hashid-field = "*"
 
 [requires]
 python_version = "3.7"
