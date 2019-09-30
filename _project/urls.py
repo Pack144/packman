@@ -25,10 +25,10 @@ from membership.forms import AccountCreationForm
 urlpatterns = [
     path('', TemplateView.as_view(template_name='home.html'), name='home_page'),
     path('admin/', admin.site.urls),
-    path('members/', include('membership.urls')),
-    path('members/', include('django_registration.backends.activation.urls')),
     path('members/join-us/', RegistrationView.as_view(form_class=AccountCreationForm), name='register'),
+    path('members/', include('django_registration.backends.activation.urls')),
     path('members/', include('django.contrib.auth.urls')),
+    path('members/', include('membership.urls')),
 ]
 
 if settings.DEBUG:

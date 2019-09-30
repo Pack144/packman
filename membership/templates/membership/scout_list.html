@@ -2,7 +2,7 @@
 
 {% block title %}Scouts{% endblock %}
 
-{% block content %}<h2>Cubs</h2>
+{% block content %}
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
@@ -10,6 +10,7 @@
       <li class="breadcrumb-item active" aria-current="page">Scouts</li>
     </ol>
   </nav>
+  <h1>Cubs</h1>
   {% if scout_list %}
     <ul>{% for scout in scout_list %}
       <li><a href="{{ scout.get_absolute_url }}">{{ scout.full_name }}</a></li>{% endfor %}

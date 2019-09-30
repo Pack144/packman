@@ -3,6 +3,12 @@
 {% block title %}E-mail Confirmed{% endblock title %}
 
 {% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Join Us</li>
+    </ol>
+  </nav>
   <h1>E-mail Confirmed</h1>
   <p>Thank you for confirming your e-mail address. Your account has been activated and you may
     <a href="{% url 'login' %}?next={% url 'home_page' %}">log in</a>.</p>
