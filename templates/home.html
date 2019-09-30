@@ -3,6 +3,11 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item active"><a href="{% url 'home_page' %}">Home</a></li>
+    </ol>
+  </nav>
   {% if user.is_authenticated %}
     Welcome, {{ user.email }}!
     <p>

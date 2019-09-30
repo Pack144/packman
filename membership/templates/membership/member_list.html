@@ -2,7 +2,13 @@
 
 {% block title %}All Members{% endblock %}
 
-{% block content %}<h2>All Members</h2>
+{% block content %}<h1>All Members</h1>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Members</li>
+    </ol>
+  </nav>
   {% if member_list %}
     <ul>{% for member in member_list %}
       <li><a href="{{ member.get_absolute_url }}">{{ member.full_name }}</a></li>{% endfor %}

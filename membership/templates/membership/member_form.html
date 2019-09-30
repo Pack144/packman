@@ -7,10 +7,10 @@
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'member_list' %}">Members</a></li>
       <li class="breadcrumb-item active" aria-current="page">{{ member.full_name }}</li>
     </ol>
   </nav>
-
   <h1>{{ member.full_name }}</h1>
   <form method="post" class="form">
     {% csrf_token %}
