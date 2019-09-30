@@ -144,8 +144,11 @@ INTERNAL_IPS = [
 
 # When should packman start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank. Should be listed as 'Month Date', e.g. January 1
-
 PACK_YEAR_BEGINS = 'September 1'
+
+# Note: You can generate a secure key with:
+#     from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())
+HASHID_FIELD_SALT = '=xx2@3&x7tlje*os8naccdt_jxk*7-3xt+3y(r7^gsxzudz927'
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository

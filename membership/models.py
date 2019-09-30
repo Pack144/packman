@@ -7,6 +7,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from hashid_field import HashidAutoField
+
 from .managers import AccountManager
 
 
@@ -14,6 +16,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     """
     An e-mail based user account, used to log into the website
     """
+    id = HashidAutoField(primary_key=True)
     email = models.EmailField(_('email address'), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -53,6 +56,7 @@ class Member(models.Model):
         ('G', 'Graduated'),
     )
 
+    id = HashidAutoField(primary_key=True)
     first_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, null=True, blank=True)
     last_name = models.CharField(max_length=32)
@@ -88,6 +92,7 @@ class Member(models.Model):
 
 
 class Family(models.Model):
+    id = HashidAutoField(primary_key=True)
     custom_name = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta:
