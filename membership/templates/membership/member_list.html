@@ -1,6 +1,6 @@
 {% extends '_base.html' %}
 
-{% block title %}All Members{% endblock %}
+{% block title %}Members{% endblock %}
 
 {% block content %}
   <nav aria-label="breadcrumb">
@@ -9,7 +9,18 @@
       <li class="breadcrumb-item active" aria-current="page">Members</li>
     </ol>
   </nav>
-  <h1>All Members</h1>
+  <h1>Members</h1>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" href="{% url 'member_list' %}">All Members</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'parent_list' %}">Parents</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'scout_list' %}">Cubs</a>
+    </li>
+  </ul>
   {% if member_list %}
     <ul>{% for member in member_list %}
       <li><a href="{{ member.get_absolute_url }}">{{ member.full_name }}</a></li>{% endfor %}

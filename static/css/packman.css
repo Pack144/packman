@@ -86,11 +86,14 @@ main {
 footer {
     padding: 1rem;
     color: #cfcfcf;
+    text-align: center;
+    font-style: italic;
+    font-size: x-small;
 }
 
 @media (prefers-color-scheme: dark) {
     main {
         background-color: #4f4f4f;
-        color: #c9c9c9;
+        color: #cfcfcf;
     }
 }
