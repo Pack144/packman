@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-{% load bootstrap4 %}
+{% load crispy_forms_tags %}
 
 {% block title %}Nominate a scout{% endblock %}
 
@@ -15,8 +15,7 @@
   <h1>Nominate a Scout</h1>
   <form method="post" class="form">
     {% csrf_token %}
-    {% bootstrap_form form %}
-    {% bootstrap_messages %}
+    {{ form|crispy }}
     <button type="submit" class="btn btn-success">Add</button>
   </form>
 {% endblock content %}

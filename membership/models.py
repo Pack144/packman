@@ -7,8 +7,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from hashid_field import HashidAutoField
-
 from .managers import AccountManager
 
 
@@ -16,7 +14,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
     """
     An e-mail based user account, used to log into the website
     """
-    #    id = HashidAutoField(primary_key=True)
     email = models.EmailField(_('email address'), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -56,13 +53,12 @@ class Member(models.Model):
         ('G', 'Graduated'),
     )
 
-    #    id = HashidAutoField(primary_key=True)
     first_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, null=True, blank=True)
     last_name = models.CharField(max_length=32)
     nickname = models.CharField(max_length=32, null=True, blank=True,
-                                help_text=_('If there is another name you go by, putting it here will override what '
-                                            'gets displayed on the website.'))
+                                help_text=_('If there is another name you prefer go by, tell us what it is we will use '
+                                            'that on the website.'))
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
 

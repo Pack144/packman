@@ -8,9 +8,8 @@ verify_ssl = true
 [packages]
 django = "*"
 django-registration = "*"
-django-bootstrap4 = "*"
 django-debug-toolbar = "*"
-django-hashid-field = "*"
+django-crispy-forms = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-{% load bootstrap4 %}
+{% load crispy_forms_tags %}
 
 {% block title %}Join Us{% endblock %}
 
@@ -14,8 +14,7 @@
   <p>So you want to sign your cub up to join the pack? Welcome! Let's start off by creating an account for you.</p>
   <form method="post" class="form">
     {% csrf_token %}
-    {% bootstrap_form form %}
-    {% bootstrap_messages %}
+    {{ form|crispy }}
     <button type="submit" class="btn btn-success">Join Us</button>
   </form>
 {% endblock content %}
