@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
-from django.db.models import Count
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -16,7 +16,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     """
     An e-mail based user account, used to log into the website
     """
-    id = HashidAutoField(primary_key=True)
+    #    id = HashidAutoField(primary_key=True)
     email = models.EmailField(_('email address'), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -28,8 +28,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
     objects = AccountManager()
 
     def __str__(self):
-        if self.profile.full_name:
-            return self.profile.full_name()
+        if self.profile.full_name != '':
+            return '{} ({})'.format(self.profile.full_name(), self.email)
         else:
             return self.email
 
@@ -56,7 +56,7 @@ class Member(models.Model):
         ('G', 'Graduated'),
     )
 
-    id = HashidAutoField(primary_key=True)
+    #    id = HashidAutoField(primary_key=True)
     first_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, null=True, blank=True)
     last_name = models.CharField(max_length=32)
@@ -77,7 +77,12 @@ class Member(models.Model):
         return self.full_name()
 
     def get_absolute_url(self):
-        return reverse('member_detail', args=[str(self.id)])
+        if hasattr(self, 'parent'):
+            return reverse('parent_detail', args=[str(self.id)])
+        elif hasattr(self, 'scout'):
+            return reverse('scout_detail', args=[str(self.id)])
+        else:
+            return None
 
     def full_name(self):
         """ Return the member's first and last name, replacing first name with a nickname if one has been given """
@@ -91,26 +96,22 @@ class Member(models.Model):
             return self.first_name
 
 
-class Family(models.Model):
-    id = HashidAutoField(primary_key=True)
-    custom_name = models.CharField(max_length=128, null=True, blank=True)
+class Parent(Member):
+    """
+    Any adult member such as a parent, guardian, or other use this model
+    """
+    ROLE_CHOICES = (
+        ('P', 'Parent/Guardian'),
+        ('C', 'Contributor'),
+    )
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', null=True)
+    role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
 
-    class Meta:
-        verbose_name_plural = _('Families')
+    def email(self):
+        return self.account.email
 
-    def __str__(self):
-        return self.family_name()
-
-    def family_name(self):
-        # TODO: come up with a better way to name a family
-        if self.custom_name:
-            return self.custom_name
-        elif Count(self.children):
-            return 'children'
-        elif Count(self.parents):
-            return 'parents'
-        else:
-            return 'neither'
+    def get_children(self):
+        return self.children.all()
 
 
 class Scout(Member):
@@ -118,7 +119,7 @@ class Scout(Member):
     Cub scouts use this model to store profile details
     """
     birthday = models.DateField(null=True, blank=True)
-    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='children', null=True)
+    parents = models.ManyToManyField(Parent, related_name='children', symmetrical=False, blank=True)
 
     def age(self):
         """ Calculates the cub scout's age when a birthday is specified """
@@ -128,13 +129,5 @@ class Scout(Member):
         return today.year - self.birthday.year - (
                 (today.month, today.day) < (self.birthday.month, self.birthday.day))
 
-
-class Parent(Member):
-    """
-    Any adult member such as a parent, guardian, or other use this model
-    """
-    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', null=True)
-    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='parents', null=True)
-
-    def email(self):
-        return self.account.email
+    def get_siblings(self):
+        return Member.objects.filter(~Q(id=self.id), Q(parents=self.parents)).order_by('birthday')

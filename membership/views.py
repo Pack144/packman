@@ -18,15 +18,6 @@ class MemberListView(ActiveMemberTestMixin, ListView):
         return Member.objects.filter(status__exact='A')
 
 
-class MemberDetailView(ActiveMemberTestMixin, DetailView):
-    model = Member
-
-
-class MemberUpdateView(ActiveMemberTestMixin, UpdateView):
-    model = Member
-    fields = '__all__'
-
-
 class ParentListView(ActiveMemberTestMixin, ListView):
     model = Parent
     paginate_by = 25
@@ -40,6 +31,15 @@ class ParentCreateView(ActiveMemberTestMixin, CreateView):
     fields = '__all__'
 
 
+class ParentDetailView(ActiveMemberTestMixin, DetailView):
+    model = Parent
+
+
+class ParentUpdateView(ActiveMemberTestMixin, UpdateView):
+    model = Parent
+    fields = '__all__'
+
+
 class ScoutListView(ActiveMemberTestMixin, ListView):
     model = Scout
     paginate_by = 25
@@ -49,5 +49,14 @@ class ScoutListView(ActiveMemberTestMixin, ListView):
 
 
 class ScoutCreateView(LoginRequiredMixin, CreateView):
+    model = Scout
+    fields = '__all__'
+
+
+class ScoutDetailView(ActiveMemberTestMixin, DetailView):
+    model = Scout
+
+
+class ScoutUpdateView(ActiveMemberTestMixin, UpdateView):
     model = Scout
     fields = '__all__'
