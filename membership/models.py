@@ -7,10 +7,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from guardian.mixins import GuardianUserMixin
+from guardian.shortcuts import assign_perm
+
 from .managers import AccountManager
 
 
-class Account(AbstractBaseUser, PermissionsMixin):
+class Account(AbstractBaseUser, PermissionsMixin, GuardianUserMixin):
     """
     An e-mail based user account, used to log into the website
     """

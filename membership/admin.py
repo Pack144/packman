@@ -3,11 +3,13 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
+from guardian.admin import GuardedModelAdmin
+
 from .forms import AccountCreationForm, AccountChangeForm
 from .models import Account, Parent, Scout
 
 
-class ParentAdmin(admin.ModelAdmin):
+class ParentAdmin(GuardedModelAdmin):
     model = Parent
     list_display = ('short_name', 'last_name', 'email', 'status', 'role')
     list_display_links = ['short_name', 'last_name', 'email']
@@ -21,7 +23,7 @@ class ParentInline(admin.StackedInline):
     can_delete = False
 
 
-class ScoutAdmin(admin.ModelAdmin):
+class ScoutAdmin(GuardedModelAdmin):
     model = Scout
     list_display = ('short_name', 'last_name', 'age', 'status')
     list_display_links = ['short_name', 'last_name']

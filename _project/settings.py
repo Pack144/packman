@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_registration',
     'debug_toolbar',
     'fontawesome',
+    'guardian',
 
     # Local apps
     'membership',
@@ -108,6 +109,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # default
+    'guardian.backends.ObjectPermissionBackend',
+)
+GUARDIAN_MONKEY_PATCH = False
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

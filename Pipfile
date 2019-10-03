@@ -12,6 +12,7 @@ django = "*"
 django-registration = "*"
 django-crispy-forms = "*"
 django-fontawesome = "*"
+django-guardian = "*"
 
 [requires]
 python_version = "3.7"
