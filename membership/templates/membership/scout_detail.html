@@ -1,14 +1,19 @@
 {% extends "_base.html" %}
+{% load fontawesome %}
 
-{% block title %}{{ scout.full_name }}{% endblock title %}
+{% block title %}{{ member.full_name }}{% endblock title %}
 
 {% block content %}
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
       <li class="breadcrumb-item"><a href="{% url 'member_list' %}">Members</a></li>
-      <li class="breadcrumb-item active" aria-current="page">{{ scout.full_name }}</li>
+      <li class="breadcrumb-item active" aria-current="page">{{ member.full_name }}</li>
     </ol>
   </nav>
-  <h1>{{ scout.full_name }}</h1>
+  <h1>{{ member.full_name }}</h1>
+  {% if member == user %}<p>{% fontawesome_icon 'pencil' large=True %}</p>{% endif %}
+  <p>USER OBJECT: {{ user.profile }}</p>
+  <p>MEMBER ACCOUNT OBJECT: {{ member }}</p>
+  <p>MEMBER EMAIL: {{ parent.email }}</p>
 {% endblock %}

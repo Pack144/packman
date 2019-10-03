@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_registration',
     'debug_toolbar',
+    'fontawesome',
 
     # Local apps
     'membership',
