@@ -4,13 +4,13 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pylint = "*"
+django-debug-toolbar = "*"
 
 [packages]
 django = "*"
 django-registration = "*"
-django-bootstrap4 = "*"
-django-debug-toolbar = "*"
-django-hashid-field = "*"
+django-crispy-forms = "*"
 django-fontawesome = "*"
 
 [requires]
