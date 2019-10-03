@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% load fontawesome %}
 
 {% block title %}{{ parent.full_name }}{% endblock title %}
 
@@ -11,5 +12,8 @@
     </ol>
   </nav>
   <h1>{{ parent.full_name }}{% if user == parent.account %}
-    <a href="{% url 'parent_update' parent.id %}">edit</a>{% endif %}</h1>
+    <a href="{% url 'parent_update' parent.id %}"> {% fontawesome_icon 'pencil' color='gray' %}</a>{% endif %}</h1>
 {% endblock %}
+
+
+{% if scout == user %}<p>{% fontawesome_icon 'pencil' large=True %}</p>{% endif %}
