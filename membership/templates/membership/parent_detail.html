@@ -14,6 +14,3 @@
   <h1>{{ parent.full_name }}{% if user == parent.account %}
     <a href="{% url 'parent_update' parent.id %}"> {% fontawesome_icon 'pencil' color='gray' %}</a>{% endif %}</h1>
 {% endblock %}
-
-
-{% if scout == user %}<p>{% fontawesome_icon 'pencil' large=True %}</p>{% endif %}
