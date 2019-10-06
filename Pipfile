@@ -5,14 +5,14 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
-django-debug-toolbar = "*"
 
 [packages]
 django = "*"
-django-registration = "*"
+django-debug-toolbar = "*"
 django-crispy-forms = "*"
 django-fontawesome = "*"
 django-guardian = "*"
+django-allauth = "*"
 
 [requires]
 python_version = "3.7"

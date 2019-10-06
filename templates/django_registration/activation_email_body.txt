@@ -1,8 +1,0 @@
-Hello {{ user }},
-
-We have recently received a request to create an account on {{ site }}. If this was you, please visit the following URL
-within {{ expiration_days }} of receiving this e-mail to confirm your account.
-
-{{ scheme }}://{{ site }}/members/activate/{{ activation_key }}
-
-Thank you for your interest in our Cub Scout Pack.

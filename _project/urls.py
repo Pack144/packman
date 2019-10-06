@@ -23,11 +23,15 @@ from django_registration.backends.activation.views import RegistrationView
 from membership.forms import AccountCreationForm
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='home.html'), name='home_page'),
+    # Django admin
     path('admin/', admin.site.urls),
+
+    # Account management
+    path('accounts/', include('allauth.urls')),
+
+    # Local Apps
+    path('', TemplateView.as_view(template_name='home.html'), name='home_page'),
     path('members/', include('membership.urls')),
-    path('', include('django_registration.backends.activation.urls')),
-    path('', include('django.contrib.auth.urls')),
 ]
 
 if settings.DEBUG:

@@ -1,7 +1,8 @@
 {% extends '_base.html' %}
+{% load i18n %}
 {% load crispy_forms_tags %}
 
-{% block title %}Sign In{% endblock title %}
+{% block title %}{% trans "Sign In" %}{% endblock title %}
 
 {% block content %}
   <nav aria-label="breadcrumb">
@@ -17,11 +18,14 @@
     <form method="post" class="form-signin">
       {% csrf_token %}
       {{ form|crispy }}
+      {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+      {% endif %}
       <button type="submit" class="btn btn-success btn-block">Log In</button>
     </form>
     <p class="text-muted text-centered small">
-      <a href="{% url 'password_reset' %}">Forgot your password</a> |
-      <a href="{% url 'django_registration_register' %}">Not yet a member</a>
+      <a href="{% url 'account_reset_password' %}">Forgot your password</a> |
+      <a href="{% url 'account_signup' %}">Not yet a member</a>
     </p>
   </div>
 {% endblock %}

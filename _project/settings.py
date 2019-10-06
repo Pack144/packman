@@ -36,16 +36,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     # Third party packages
+    'allauth',
+    'allauth.account',
     'crispy_forms',
-    'django_registration',
     'debug_toolbar',
     'fontawesome',
     'guardian',
 
     # Local apps
-    'membership',
+    'membership.apps.MembershipConfig',
 ]
 
 MIDDLEWARE = [
@@ -110,7 +112,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend', # default
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
     'guardian.backends.ObjectPermissionBackend',
 )
 GUARDIAN_MONKEY_PATCH = False
@@ -136,10 +139,18 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home_page'
-LOGOUT_REDIRECT_URL = 'home_page'
-ACCOUNT_ACTIVATION_DAYS = 7  # django-registration will allow up to this many days for a new user to confirm their email
+
+# django-allauth configuration
+SITE_ID = 1
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_LOGOUT_REDIRECT_URL = 'home_page'
+ACCOUNT_USER_DISPLAY = lambda account: account.email
 
 # Email settings for development environment
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
