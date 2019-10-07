@@ -133,9 +133,9 @@ class Parent(Member):
         ('P', 'Parent/Guardian'),
         ('C', 'Contributor'),
     )
-    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile')
     children = models.ManyToManyField(Scout, related_name='parents', blank=True)
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', verbose_name='email')
 
     def email(self):
         return self.account.email

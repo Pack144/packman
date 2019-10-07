@@ -59,7 +59,7 @@ class AccountAdmin(UserAdmin):
     )
     search_fields = ('email',)
     ordering = ('email',)
-    inlines = (ParentInline,)
+    inlines = (ParentInline, )
 
     def get_short_name(self, instance):
         return instance.profile.short_name()
@@ -78,6 +78,6 @@ class AccountAdmin(UserAdmin):
 
 
 admin.site.unregister(Group)
-admin.site.register(Parent, ParentAdmin)
+# admin.site.register(Parent, ParentAdmin)
 admin.site.register(Scout, ScoutAdmin)
 admin.site.register(Account, AccountAdmin)
