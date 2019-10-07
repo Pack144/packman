@@ -11,6 +11,23 @@
       <li class="breadcrumb-item active" aria-current="page">{{ scout.full_name }}</li>
     </ol>
   </nav>
-  <h1>{{ scout.full_name }}{% if user.profile.parent in scout.parents.all %} <a href="{% url 'scout_update' scout.id %}">{% fontawesome_icon 'pencil' color='gray' %}</a>{% endif %}</h1>
+  <h1>{{ scout.full_name }}{% if user.profile.parent in scout.parents.all %}
+    <a href="{% url 'scout_update' scout.id %}">{% fontawesome_icon 'pencil' color='gray' %}</a>{% endif %}</h1>
   <p>{{ scout.age }} year{{ scout.age|pluralize }} old.</p>
+  {% if scout.parents.count %}
+    <h2>Parents</h2>
+    <ul>
+      {% for parent in scout.parents.all %}
+        <li>{{ parent }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% if scout.get_siblings.count %}
+    <h2>Siblings</h2>
+    <ul>
+      {% for sibling in scout.get_siblings %}
+        <li>{{ sibling }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 {% endblock %}

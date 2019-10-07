@@ -9,14 +9,6 @@ from .forms import AccountCreationForm, AccountChangeForm
 from .models import Account, Parent, Scout
 
 
-class ParentAdmin(GuardedModelAdmin):
-    model = Parent
-    list_display = ('short_name', 'last_name', 'email', 'status', 'role')
-    list_display_links = ['short_name', 'last_name', 'email']
-    list_filter = ('status', 'role')
-    list_select_related = ('account',)
-
-
 class ParentInline(admin.StackedInline):
     model = Parent
     extra = 0
@@ -28,11 +20,23 @@ class ScoutAdmin(GuardedModelAdmin):
     list_display = ('short_name', 'last_name', 'age', 'status')
     list_display_links = ['short_name', 'last_name']
     list_filter = ('status', )
+    readonly_fields = ('get_parents',)
+
+    def get_parents(self, instance):
+        return instance.parents.all()
 
 
 class ScoutInline(admin.StackedInline):
     model = Scout
     extra = 0
+
+
+class ParentAdmin(GuardedModelAdmin):
+    model = Parent
+    list_display = ('short_name', 'last_name', 'email', 'status', 'role')
+    list_display_links = ['short_name', 'last_name', 'email']
+    list_filter = ('status', 'role')
+    list_select_related = ('account',)
 
 
 class AccountAdmin(UserAdmin):
