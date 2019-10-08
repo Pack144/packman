@@ -18,7 +18,7 @@
     <h2>Parents</h2>
     <ul>
       {% for parent in scout.parents.all %}
-        <li>{{ parent }}</li>
+        <li><a href="{% url 'parent_detail' parent.id %}">{{ parent }}</a></li>
       {% endfor %}
     </ul>
   {% endif %}
