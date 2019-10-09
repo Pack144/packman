@@ -18,8 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import TemplateView
 
-from django_registration.backends.activation.views import RegistrationView
-
 from membership.forms import AccountCreationForm
 
 urlpatterns = [
