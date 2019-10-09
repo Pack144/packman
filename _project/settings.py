@@ -164,6 +164,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # TODO: Not yet implemented
 # When should packman start a new year of scouting? Typically, this would be when
