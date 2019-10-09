@@ -162,6 +162,9 @@ INTERNAL_IPS = [
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
+# Security Headers
+SECURE_BROWSER_XSS_FILTER = True
+
 # TODO: Not yet implemented
 # When should packman start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank. Should be listed as 'Month Date', e.g. January 1
