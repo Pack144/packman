@@ -13,6 +13,7 @@ django-crispy-forms = "*"
 django-fontawesome = "*"
 django-guardian = "*"
 django-allauth = "*"
+django-referrer-policy = "*"
 
 [requires]
 python_version = "3.7"
