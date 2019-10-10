@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
@@ -77,7 +78,7 @@ class AccountAdmin(UserAdmin):
         return super(AccountAdmin, self).get_inline_instances(request, obj)
 
 
+admin.site.login = login_required(admin.site.login)
 admin.site.unregister(Group)
-# admin.site.register(Parent, ParentAdmin)
 admin.site.register(Scout, ScoutAdmin)
 admin.site.register(Account, AccountAdmin)
