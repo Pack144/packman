@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
     # Local apps
     'membership.apps.MembershipConfig',
+    'pages.apps.PagesConfig',
 ]
 
 MIDDLEWARE = [
