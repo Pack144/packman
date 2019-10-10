@@ -141,6 +141,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = 'home_page'
 
 # django-allauth configuration

@@ -3,7 +3,8 @@
 {% block title %}Permission Denied{% endblock title %}
 
 {% block content %}
-  <h1>Permission Denied</h1>
-  <p><<a href="{% url 'login' %}">Try to login with an account that has access</a> or start over at <a
-      href="{% url 'home_page' %}">the homepage</a>.</p>
+  <h1 class="text-danger">Permission Denied</h1>
+  <p>You have reached a page that you don't currently have access to. You can either try to
+    <a href="{% url 'account_login' %}">login</a> with an account that has access or start over at the
+    <a href="{% url 'home_page' %}">homepage</a>.</p>
 {% endblock %}
