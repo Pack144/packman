@@ -1,0 +1,13 @@
+{% extends '_base.html' %}
+
+{% block title %}Our History{% endblock %}
+
+{% block content %}
+  <h1>Our History</h1>
+  {% if page_content.body %}
+    <p>{{ page_content.body|safe }}</p>
+  {% else %}
+    <div class="alert alert-warning" role="alert">This page has no content yet. Here is some sample text instead.</div>
+    {% lorem 3 p %}
+  {% endif %}
+{% endblock %}

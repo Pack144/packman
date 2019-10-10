@@ -28,8 +28,8 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
 
     # Local Apps
-    path('', TemplateView.as_view(template_name='home.html'), name='home_page'),
     path('members/', include('membership.urls')),
+    path('', include('pages.urls')),
 ]
 
 if settings.DEBUG:
