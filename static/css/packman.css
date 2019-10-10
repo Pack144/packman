@@ -87,6 +87,7 @@ main {
 .jumbotron {
     background-image: url('/static/img/jumbotron.jpg');
     background-size: cover;
+    margin-bottom: 0;
 }
 
 footer {
