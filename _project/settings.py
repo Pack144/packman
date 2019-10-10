@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_referrer_policy.middleware.ReferrerPolicyMiddleware'
 ]
 
 ROOT_URLCONF = '_project.urls'
@@ -166,6 +167,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+REFERRER_POLICY = 'same-origin'
 
 # TODO: Not yet implemented
 # When should packman start a new year of scouting? Typically, this would be when
