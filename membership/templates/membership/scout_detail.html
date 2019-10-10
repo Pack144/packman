@@ -12,7 +12,7 @@
     </ol>
   </nav>
   <h1>{{ scout.full_name }}{% if user.profile.parent in scout.parents.all %}
-    <a href="{% url 'scout_update' scout.id %}">{% fontawesome_icon 'pencil' color='gray' %}</a>{% endif %}</h1>
+    <a href="{% url 'scout_update' scout.id %}">{% fontawesome_icon 'edit' %}</a>{% endif %}</h1>
   <p>{{ scout.age }} year{{ scout.age|pluralize }} old.</p>
   {% if scout.parents.count %}
     <h2>Parents</h2>

@@ -90,6 +90,10 @@ main {
     margin-bottom: 0;
 }
 
+h1 {
+    color: #f1bb41;
+}
+
 footer {
     padding: 1rem;
     color: #cfcfcf;
