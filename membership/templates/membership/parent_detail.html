@@ -12,7 +12,7 @@
     </ol>
   </nav>
   <h1>{{ parent.full_name }}{% if user == parent.account %}
-    <a href="{% url 'parent_update' parent.id %}"> {% fontawesome_icon 'pencil' color='gray' %}</a>{% endif %}</h1>
+    <a href="{% url 'parent_update' parent.id %}"> {% fontawesome_icon 'edit' %}</a>{% endif %}</h1>
    {% if parent.children.count %}
     <h2>Children</h2>
     <ul>
