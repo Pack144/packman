@@ -71,8 +71,8 @@ main {
 
 .navbar-brand {
     font-family: 'Cooper Black', serif;
-    line-height: .95em;
-    text-shadow: 2px 2px 6px #2b2b2b;
+    line-height: .9em;
+    text-shadow: 0px 2px 16px #000000;
 }
 
 .navbar-brand #pack-name {
