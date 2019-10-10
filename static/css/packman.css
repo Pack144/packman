@@ -1,7 +1,7 @@
 @font-face {
     font-family: 'Cooper Black';
-    src: url('/static/fonts/cooperblack.woff2') format('woff2'),
-    url('/static/fonts/cooperblack.woff') format('woff');
+    src: url('/static/webfonts/cooperblack.woff2') format('woff2'),
+    url('/static/webfonts/cooperblack.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
