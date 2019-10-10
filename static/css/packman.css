@@ -72,6 +72,7 @@ main {
 .navbar-brand {
     font-family: 'Cooper Black', serif;
     line-height: .95em;
+    text-shadow: 2px 2px 6px #000000;
 }
 
 .navbar-brand #pack-name {
@@ -80,7 +81,12 @@ main {
 }
 
 .navbar-brand #pack-location, #pack-tagline {
-    font-weight: lighter;
+    color: snow;
+}
+
+.jumbotron {
+    background-image: url('/static/img/jumbotron.jpg');
+    background-size: cover;
 }
 
 footer {
