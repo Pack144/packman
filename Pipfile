@@ -14,7 +14,9 @@ django-fontawesome = "*"
 django-guardian = "*"
 django-allauth = "*"
 django-referrer-policy = "*"
-django-csp = "*"
+django-phonenumber-field = "*"
+django-localflavor = "*"
+phonenumbers = "*"
 
 [requires]
 python_version = "3.7"

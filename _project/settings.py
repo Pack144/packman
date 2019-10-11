@@ -45,8 +45,11 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'fontawesome',
     'guardian',
+    'localflavor',
+    'phonenumber_field',
 
     # Local apps
+    'address_book.apps.AddressBookConfig',
     'membership.apps.MembershipConfig',
     'pages.apps.PagesConfig',
 ]
@@ -164,6 +167,7 @@ INTERNAL_IPS = [
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+PHONENUMBER_DEFAULT_REGION = 'US'
 
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True

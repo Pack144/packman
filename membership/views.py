@@ -38,6 +38,7 @@ class ParentDetailView(ActiveMemberTestMixin, DetailView):
 class ParentUpdateView(ActiveMemberTestMixin, UpdateView):
     model = Parent
     fields = '__all__'
+    template_name_suffix = '_update_form'
 
 
 class ScoutListView(ActiveMemberTestMixin, ListView):
@@ -60,3 +61,4 @@ class ScoutDetailView(ActiveMemberTestMixin, DetailView):
 class ScoutUpdateView(ActiveMemberTestMixin, UpdateView):
     model = Scout
     fields = '__all__'
+    template_name_suffix = '_update_form'
