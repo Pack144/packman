@@ -11,23 +11,21 @@
       <li class="breadcrumb-item active" aria-current="page">{{ scout.full_name }}</li>
     </ol>
   </nav>
-  <h1>{{ scout.full_name }}{% if user.profile.parent in scout.parents.all %}
-    <a href="{% url 'scout_update' scout.id %}">{% fontawesome_icon 'edit' %}</a>{% endif %}</h1>
-  <p>{{ scout.age }} year{{ scout.age|pluralize }} old.</p>
+  <h1>{{ scout.full_name }}
+    {% if user.profile.parent in scout.parents.all %}
+    <a href="{% url 'scout_update' scout.id %}">{% fontawesome_icon 'edit' %}</a>
+    {% endif %}
+  </h1>
+  {% include 'membership/member_detail_card.html' with member=scout %}
   {% if scout.parents.count %}
-    <h2>Parents</h2>
-    <ul>
+    <hr>
+    <h2>Parent{{ scout.parents.count|pluralize }}</h2>
+    <div class="card-deck">
       {% for parent in scout.parents.all %}
-        <li><a href="{% url 'parent_detail' parent.id %}">{{ parent }}</a></li>
+        <a href="{{ parent.get_absolute_url }}">
+          {% include 'membership/member_detail_card.html' with member=parent %}
+        </a>
       {% endfor %}
-    </ul>
-  {% endif %}
-  {% if scout.get_siblings.count %}
-    <h2>Siblings</h2>
-    <ul>
-      {% for sibling in scout.get_siblings %}
-        <li>{{ sibling }}</li>
-      {% endfor %}
-    </ul>
+    </div>
   {% endif %}
 {% endblock %}

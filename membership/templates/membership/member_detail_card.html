@@ -1,0 +1,34 @@
+{% load static %}
+
+<div class="card">
+{% if member.profile_picture %}
+    <img src="/uploads/{{ member.profile_picture }}" class="card-img-top" alt="{{ member }}'s profile picture">
+{% elif member.scout %}
+    <img src="/static/img/avatar_cub.png" class="card-img-top" alt="No profile picture">
+{% elif member.gender == 'M' %}
+    <img src="/static/img/avatar_man.png" class="card-img-top" alt="No profile picture">
+{% elif member.gender == 'F' %}
+    <img src="/static/img/avatar_woman.png" class="card-img-top" alt="No profile picture">
+{% else %}
+    <img src="/static/img/avatar_generic.png" class="card-img-top" alt="No profile picture">
+{% endif %}
+    <div class="card-body">
+        <h5 class="card-title">
+            {{ member }}
+            {% if member.birthday %}<br><small class="text-muted">{{ member.age }} years old</small>{% endif %}
+        </h5>
+    {% if member.email %}<p class="card-text">{{ member.login }}</p>{% endif %}
+    {% if member.phone_number.count %}
+        <p class="card-text">
+      {% for number in member.phone_number.all %}
+          {% if number.published %}<strong>{{ number.get_type_display }}:</strong> {{ number }}<br>{% endif %}
+      {% endfor %}
+        </p>
+    {% endif %}
+    {% if member.address and member.address.published %}
+        <p class="card-text">{{ member.address.street }}<br>
+        {{ member.address.city }}, {{ member.address.state }} {{ member.address.zip_code }}</p>
+    {% endif %}
+    {% if member.den_assigned %}<img src="/static/img/den_{{ member.den_assigned.number }}_patch.jpg" class="card-img" alt="Den {{ member.den_assigned.number }} patch">{% endif %}
+    </div>
+</div>
