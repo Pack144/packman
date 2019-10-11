@@ -84,6 +84,10 @@ main {
     color: snow;
 }
 
+.card {
+    width: 16rem;
+}
+
 .jumbotron {
     background-image: url('/static/img/jumbotron.jpg');
     background-size: cover;

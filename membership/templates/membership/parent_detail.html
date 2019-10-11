@@ -11,15 +11,21 @@
       <li class="breadcrumb-item active" aria-current="page">{{ parent.full_name }}</li>
     </ol>
   </nav>
-  <h1>{{ parent.full_name }}{% if user == parent.account %}
-    <a href="{% url 'parent_update' parent.id %}"> {% fontawesome_icon 'edit' %}</a>{% endif %}</h1>
-   {% if parent.children.count %}
-    <h2>Children</h2>
-    <ul>
+  <h1>{{ parent.full_name }}
+    {% if user == parent.account %}
+      <a href="{% url 'parent_update' parent.id %}"> {% fontawesome_icon 'edit' %}</a>
+    {% endif %}
+  </h1>
+  {% include 'membership/member_detail_card.html' with member=parent %}
+  {% if parent.children.count %}
+    <hr>
+    <h2>Child{{ parent.children.count|pluralize:'ren' }}</h2>
+    <div class="card-deck">
       {% for child in parent.children.all %}
-        <li><a href="{% url 'scout_detail' child.id %}">{{ child }}</a></li>
+        <a href="{{ child.get_absolute_url }}">
+          {% include 'membership/member_detail_card.html' with member=child %}
+        </a>
       {% endfor %}
-    </ul>
+    </div>
   {% endif %}
-
 {% endblock %}
