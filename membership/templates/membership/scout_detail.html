@@ -20,7 +20,7 @@
   {% if scout.parents.count %}
     <hr>
     <h2>Parent{{ scout.parents.count|pluralize }}</h2>
-    <div class="card-deck">
+    <div class="card-group">
       {% for parent in scout.parents.all %}
         <a href="{{ parent.get_absolute_url }}">
           {% include 'membership/member_detail_card.html' with member=parent %}

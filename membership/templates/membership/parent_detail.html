@@ -20,7 +20,7 @@
   {% if parent.children.count %}
     <hr>
     <h2>Child{{ parent.children.count|pluralize:'ren' }}</h2>
-    <div class="card-deck">
+    <div class="card-group">
       {% for child in parent.children.all %}
         <a href="{{ child.get_absolute_url }}">
           {% include 'membership/member_detail_card.html' with member=child %}

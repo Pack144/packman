@@ -85,7 +85,7 @@ main {
 }
 
 .card {
-    width: 16rem;
+    max-width: 18rem;
 }
 
 .jumbotron {
