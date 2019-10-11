@@ -6,8 +6,20 @@ from django.utils.translation import gettext_lazy as _
 
 from guardian.admin import GuardedModelAdmin
 
+from address_book.models import Address, PhoneNumber
+
 from .forms import AccountCreationForm, AccountChangeForm
 from .models import Account, Parent, Scout
+
+
+class AddressInline(admin.TabularInline):
+    model = Address
+    extra = 0
+
+
+class PhoneNumberInline(admin.TabularInline):
+    model = PhoneNumber
+    extra = 0
 
 
 class ParentInline(admin.StackedInline):
@@ -38,6 +50,7 @@ class ParentAdmin(GuardedModelAdmin):
     list_display_links = ['short_name', 'last_name', 'email']
     list_filter = ('status', 'role')
     list_select_related = ('account',)
+    inlines = (PhoneNumberInline, AddressInline, )
 
 
 class AccountAdmin(UserAdmin):
@@ -82,3 +95,4 @@ admin.site.login = login_required(admin.site.login)
 admin.site.unregister(Group)
 admin.site.register(Scout, ScoutAdmin)
 admin.site.register(Account, AccountAdmin)
+admin.site.register(Parent, ParentAdmin)

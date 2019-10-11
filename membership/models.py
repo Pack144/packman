@@ -139,3 +139,6 @@ class Parent(Member):
 
     def email(self):
         return self.account.email
+
+    def phone_numbers(self):
+        return self.phone_number.filter('is_published')

@@ -1,34 +1,63 @@
 {% load static %}
 
 <div class="card">
-{% if member.profile_picture %}
+  {% if member.profile_picture %}
     <img src="/uploads/{{ member.profile_picture }}" class="card-img-top" alt="{{ member }}'s profile picture">
-{% elif member.scout %}
+  {% elif member.scout %}
     <img src="/static/img/avatar_cub.png" class="card-img-top" alt="No profile picture">
-{% elif member.gender == 'M' %}
+  {% elif member.gender == 'M' %}
     <img src="/static/img/avatar_man.png" class="card-img-top" alt="No profile picture">
-{% elif member.gender == 'F' %}
+  {% elif member.gender == 'F' %}
     <img src="/static/img/avatar_woman.png" class="card-img-top" alt="No profile picture">
-{% else %}
+  {% else %}
     <img src="/static/img/avatar_generic.png" class="card-img-top" alt="No profile picture">
-{% endif %}
-    <div class="card-body">
-        <h5 class="card-title">
-            {{ member }}
-            {% if member.birthday %}<br><small class="text-muted">{{ member.age }} years old</small>{% endif %}
-        </h5>
+  {% endif %}
+  <div class="card-body">
+    <h5 class="card-title">
+      {{ member }}
+      {% if member.birthday %}<br><small class="text-muted">{{ member.age }} years old</small>{% endif %}
+    </h5>
     {% if member.email %}<p class="card-text">{{ member.login }}</p>{% endif %}
     {% if member.phone_number.count %}
-        <p class="card-text">
-      {% for number in member.phone_number.all %}
-          {% if number.published %}<strong>{{ number.get_type_display }}:</strong> {{ number }}<br>{% endif %}
+      <div class="card-text">
+        {% for number in member.phone_number.all %}
+          {% if number.published %}
+            <div class="row card-text">
+              <div class="col col-1">
+                {% if number.type == 'H' %}<span clas="fa fa-home"></span>
+                {% elif number.type == 'M' %}<span class="fa fa-mobile"></span>
+                {% elif number.type == 'W' %}<span class="fa fa-briefcase"></span>
+                {% else %}<span class="fa fa-phone"></span>
+                {% endif %}
+              </div>
+              <div class="col">
+                {{ number }}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if member.address.count %}
+      {% for address in member.address.all %}
+        {% if address.published %}
+          <div class="row card-text">
+            <div class="col col-1">
+              {% if address.type == 'H' %}<span clas="fa fa-home"></span>
+              {% elif address.type == 'W' %}<span class="fa fa-building"></span>
+              {% else %}<span class="fa fa-mail-bulk"></span>
+              {% endif %}
+            </div>
+            <div class="col">
+              {{ address.street }}<br>
+              {% if address.street2 %}{{ address.street2 }}<br>{% endif %}
+              {{ address.city }}, {{ address.state }} {{ address.zip_code }}
+            </div>
+          </div>
+        {% endif %}
       {% endfor %}
-        </p>
     {% endif %}
-    {% if member.address and member.address.published %}
-        <p class="card-text">{{ member.address.street }}<br>
-        {{ member.address.city }}, {{ member.address.state }} {{ member.address.zip_code }}</p>
-    {% endif %}
-    {% if member.den_assigned %}<img src="/static/img/den_{{ member.den_assigned.number }}_patch.jpg" class="card-img" alt="Den {{ member.den_assigned.number }} patch">{% endif %}
-    </div>
+    {% if member.den_assigned %}<img src="/static/img/den_{{ member.den_assigned.number }}_patch.jpg" class="card-img"
+                                     alt="Den {{ member.den_assigned.number }} patch">{% endif %}
+  </div>
 </div>

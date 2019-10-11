@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Add a Parent/Guardian{% endblock %}
+{% block title %}{{ Parent.full_name }} - Update{% endblock %}
 
 {% block content %}
   <nav aria-label="breadcrumb">
@@ -12,10 +12,11 @@
       <li class="breadcrumb-item active" aria-current="page">Add a Parent/Guardian</li>
     </ol>
   </nav>
-  <h1>Add a Parent/Guardian</h1>
+  <h1>Update {{ parent.full_name }}</h1>
   <form method="post" class="form">
     {% csrf_token %}
     {{ form|crispy }}
-    <button type="submit" class="btn btn-success">Add Member</button>
+    <button type="submit" class="btn btn-success">Update</button>
+    <a class="btn btn-primary" href="{% url 'parent_detail' parent.get_absolute_url %}">Cancel</a>
   </form>
 {% endblock content %}

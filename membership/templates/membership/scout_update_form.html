@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Nominate a scout{% endblock %}
+{% block title %}{{ scout.full_name }} - Update{% endblock %}
 
 {% block content %}
   <nav aria-label="breadcrumb">
@@ -12,10 +12,11 @@
       <li class="breadcrumb-item active" aria-current="page">Nominate a Scout</li>
     </ol>
   </nav>
-  <h1>Nominate a Scout</h1>
+  <h1>Update {{ scout.full_name }}</h1>
   <form method="post" class="form">
     {% csrf_token %}
     {{ form|crispy }}
-    <button type="submit" class="btn btn-success">Nominate Scout</button>
+    <button type="submit" class="btn btn-success">Update</button>
+    <a class="btn btn-primary" href="{% url 'scout_detail' scout.get_absolute_url %}">Cancel</a>
   </form>
 {% endblock content %}
