@@ -17,6 +17,6 @@
     {% csrf_token %}
     {{ form|crispy }}
     <button type="submit" class="btn btn-success">Update</button>
-    <a class="btn btn-primary" href="{% url 'scout_detail' scout.get_absolute_url %}">Cancel</a>
+    <a class="btn btn-primary" href="{% url 'scout_detail' scout.id %}">Cancel</a>
   </form>
 {% endblock content %}

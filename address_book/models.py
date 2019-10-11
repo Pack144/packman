@@ -19,7 +19,7 @@ class Address(models.Model):
     zip_code = USZipCodeField()
 
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='O')
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='address', blank=True, null=True)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='addresses', blank=True, null=True)
 
     published = models.BooleanField(default=True, help_text='Display your address to other members of the pack.')
 
@@ -45,7 +45,7 @@ class PhoneNumber(models.Model):
     )
     number = PhoneNumberField()
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='O')
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='phone_number', blank=True, null=True)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='phone_numbers', blank=True, null=True)
 
     published = models.BooleanField(default=True, help_text='Display this phone number to other members of the pack.')
 

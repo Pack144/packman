@@ -10,7 +10,7 @@ urlpatterns = [
     path('parents/<uuid:pk>/', ParentDetailView.as_view(), name='parent_detail'),
     path('parents/<uuid:pk>/update/', ParentUpdateView.as_view(), name='parent_update'),
     path('scouts/', ScoutListView.as_view(), name='scout_list'),
-    path('scouts/add/', ScoutCreateView.as_view(), name='scout_add'),
+    path('scouts/add/', ScoutCreateView.as_view(), name='scout_create'),
     path('scouts/<uuid:pk>/', ScoutDetailView.as_view(), name='scout_detail'),
     path('scouts/<uuid:pk>/update/', ScoutUpdateView.as_view(), name='scout_update'),
 ]
