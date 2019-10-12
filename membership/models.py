@@ -14,6 +14,10 @@ from guardian.shortcuts import assign_perm
 from .managers import AccountManager
 
 
+def avatar_upload_location(instance, filename):
+    return 'avatars/{0}/{1}'.format(instance.id, filename)
+
+
 class Account(AbstractBaseUser, PermissionsMixin, GuardianUserMixin):
     """
     An e-mail based user account, used to log into the website
@@ -65,6 +69,7 @@ class Member(models.Model):
     nickname = models.CharField(max_length=32, null=True, blank=True,
                                 help_text=_('If there is another name you prefer go by, tell us what it is we will use '
                                             'that on the website.'))
+    avatar = models.ImageField(upload_to=avatar_upload_location, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
 

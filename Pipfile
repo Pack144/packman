@@ -17,6 +17,7 @@ django-referrer-policy = "*"
 django-phonenumber-field = "*"
 django-localflavor = "*"
 phonenumbers = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.7"

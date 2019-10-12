@@ -1,16 +1,16 @@
 {% load static %}
 
 <div class="card shadow-sm">
-  {% if member.profile_picture %}
-    <img src="/uploads/{{ member.profile_picture }}" class="card-img-top" alt="{{ member }}'s profile picture">
+  {% if member.avatar %}
+    <img src="/media/{{ member.avatar }}" class="card-img-top" alt="{{ member }}'s profile picture">
   {% elif member.scout %}
-    <img src="/static/img/avatar_cub.png" class="card-img-top" alt="No profile picture">
+    <img src="{% static 'img/avatar_cub.png' %}" class="card-img-top" alt="No profile picture">
   {% elif member.gender == 'M' %}
-    <img src="/static/img/avatar_man.png" class="card-img-top" alt="No profile picture">
+    <img src="{% static 'img/avatar_man.png' %}" class="card-img-top" alt="No profile picture">
   {% elif member.gender == 'F' %}
-    <img src="/static/img/avatar_woman.png" class="card-img-top" alt="No profile picture">
+    <img src="{% static 'img/avatar_woman.png' %}" class="card-img-top" alt="No profile picture">
   {% else %}
-    <img src="/static/img/avatar_generic.png" class="card-img-top" alt="No profile picture">
+    <img src="{% static 'img/avatar_generic.png' %}" class="card-img-top" alt="No profile picture">
   {% endif %}
   <div class="card-body">
     <h5 class="card-title">
