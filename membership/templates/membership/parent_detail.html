@@ -22,9 +22,7 @@
     <h2>Child{{ parent.children.count|pluralize:'ren' }}</h2>
     <div class="card-group">
       {% for child in parent.children.all %}
-        <a href="{{ child.get_absolute_url }}">
-          {% include 'membership/member_detail_card.html' with member=child %}
-        </a>
+        {% include 'membership/member_detail_card.html' with member=child %}
       {% endfor %}
     </div>
   {% endif %}
