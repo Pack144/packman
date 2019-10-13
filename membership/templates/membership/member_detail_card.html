@@ -1,32 +1,32 @@
 {% load static %}
 
 <div class="card shadow-sm">
-  {% if member.avatar %}
-    <img src="/media/{{ member.avatar }}" class="card-img-top" alt="{{ member }}'s profile picture">
-  {% elif member.scout %}
-    <img src="{% static 'img/avatar_cub.png' %}" class="card-img-top" alt="No profile picture">
-  {% elif member.gender == 'M' %}
-    <img src="{% static 'img/avatar_man.png' %}" class="card-img-top" alt="No profile picture">
-  {% elif member.gender == 'F' %}
-    <img src="{% static 'img/avatar_woman.png' %}" class="card-img-top" alt="No profile picture">
-  {% else %}
-    <img src="{% static 'img/avatar_generic.png' %}" class="card-img-top" alt="No profile picture">
-  {% endif %}
+  <a href="{{ member.get_absolute_url }}">
+    {% if member.avatar %}
+      <img src="/media/{{ member.avatar }}" class="card-img-top" alt="{{ member }}'s profile picture">
+    {% elif member.scout %}
+      <img src="{% static 'img/avatar_cub.png' %}" class="card-img-top" alt="No profile picture">
+    {% elif member.gender == 'M' %}
+      <img src="{% static 'img/avatar_man.png' %}" class="card-img-top" alt="No profile picture">
+    {% elif member.gender == 'F' %}
+      <img src="{% static 'img/avatar_woman.png' %}" class="card-img-top" alt="No profile picture">
+    {% else %}
+      <img src="{% static 'img/avatar_generic.png' %}" class="card-img-top" alt="No profile picture">
+    {% endif %}
+  </a>
   <div class="card-body">
-    <h5 class="card-title">
-      {{ member }}
-      {% if member.birthday %}<br><small class="text-muted">{{ member.age }} years old</small>{% endif %}
-    </h5>
+    <h5 class="card-title"><a href="{{ member.get_absolute_url }}">{{ member }}</a></h5>
+    {% if member.birthday %}<h6 class=card-subtitle text-muted">{{ member.age }} years old</h6>{% endif %}
     {% if member.email %}
       <div class="container mt-2">
-            <div class="row card-text d-inline-flex">
-              <div class="col col-1">
-                <span class="fa fa-envelope"></span>
-              </div>
-              <div class="col">
-                {{ member.email }}
-              </div>
-            </div>
+        <div class="row card-text d-inline-flex">
+          <div class="col col-1">
+            <span class="fa fa-envelope"></span>
+          </div>
+          <div class="col">
+            {{ member.email }}
+          </div>
+        </div>
       </div>
     {% endif %}
     {% if member.phone_numbers.count %}
@@ -72,5 +72,8 @@
     {% endif %}
     {% if member.den_assigned %}<img src="/static/img/den_{{ member.den_assigned.number }}_patch.jpg" class="card-img"
                                      alt="Den {{ member.den_assigned.number }} patch">{% endif %}
+  </div>
+  <div class="card-footer text-center">
+    <small class="text-muted">Member since {{ member.date_added|date:'Y' }}</small>
   </div>
 </div>

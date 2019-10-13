@@ -13,7 +13,7 @@
   </nav>
   <h1>{{ scout.full_name }}
     {% if user.profile.parent in scout.parents.all %}
-    <a href="{% url 'scout_update' scout.id %}">{% fontawesome_icon 'edit' %}</a>
+      <a href="{% url 'scout_update' scout.id %}">{% fontawesome_icon 'edit' %}</a>
     {% endif %}
   </h1>
   {% include 'membership/member_detail_card.html' with member=scout %}
@@ -22,9 +22,7 @@
     <h2>Parent{{ scout.parents.count|pluralize }}</h2>
     <div class="card-group">
       {% for parent in scout.parents.all %}
-        <a href="{{ parent.get_absolute_url }}">
-          {% include 'membership/member_detail_card.html' with member=parent %}
-        </a>
+        {% include 'membership/member_detail_card.html' with member=parent %}
       {% endfor %}
     </div>
   {% endif %}
