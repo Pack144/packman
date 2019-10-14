@@ -15,8 +15,8 @@
     {% endif %}
   </a>
   <div class="card-body">
-    <h5 class="card-title"><a href="{{ member.get_absolute_url }}">{{ member }}</a></h5>
-    {% if member.birthday %}<h6 class=card-subtitle text-muted">{{ member.age }} years old</h6>{% endif %}
+    <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}</h5></a>
+    {% if member.birthday %}<h6 class="card-subtitle text-muted">{{ member.age }} years old</h6>{% endif %}
     {% if member.email %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
@@ -24,7 +24,7 @@
             <span class="fa fa-envelope"></span>
           </div>
           <div class="col">
-            <a href="mailto:{{ member.email }}">{{ member.email }}</a>
+            <a href="mailto:{{ member.email }}" class="text-reset">{{ member.email }}</a>
           </div>
         </div>
       </div>
