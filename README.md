@@ -31,12 +31,12 @@ requirements.
 
 To begin using virtual environments, we'll use pipenv. Install using your favorite
 package manager or use pip that ships with Python.
-```shell script
+```
 pip install --user pipenv
 ```
 
 Once Pipenv is installed, clone this repository and create your virtual environment
-```shell script
+```
 git clone git@bitbucket.org:pack144/packman.git
 cd packman
 pipenv install
@@ -52,7 +52,7 @@ email, etc.
 
 After you've updated the settings for your own environment, it's time to populate
 the database and run Django.
-```shell script
+```
 pipenv shell
 
 python manage.py migrate
