@@ -65,5 +65,6 @@ python manage.py runserver
 ## Requirements
 Review the included requirements.txt for detailed package requirements.  Our 
 application is using:
+
 * [Python 3](https://python.org)
 * [Django 2.2](https://djangoproject.com)
