@@ -13,7 +13,7 @@
     </ol>
   </nav>
   <h1>Add a Parent/Guardian</h1>
-  <form method="post" class="form">
+  <form method="post" enctype="multipart/form-data" class="form">
     {% csrf_token %}
     {{ form|crispy }}
     <button type="submit" class="btn btn-success">Add Member</button>

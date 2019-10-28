@@ -102,6 +102,10 @@ class Member(models.Model):
         else:
             return self.first_name
 
+    def thumbnail(self):
+        """ Reduce the size of the member's avatar to fit in the detail card """
+        pass
+
 
 class Scout(Member):
     """
