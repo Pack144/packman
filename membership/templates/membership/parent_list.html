@@ -23,7 +23,7 @@
   </ul>
   <div class="container" id="member-list">
     {% if parent_list %}
-      <ul>{% for parent in parent_list %}
+      <ul class="list-unstyled">{% for parent in parent_list %}
         <li><a href="{{ parent.get_absolute_url }}">{{ parent.full_name }}</a></li>{% endfor %}
       </ul>
     {% else %}
