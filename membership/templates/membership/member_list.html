@@ -21,11 +21,13 @@
       <a class="nav-link" href="{% url 'scout_list' %}">Cubs</a>
     </li>
   </ul>
-  {% if member_list %}
-    <ul>{% for member in member_list %}
-      <li><a href="{{ member.get_absolute_url }}">{{ member.full_name }}</a></li>{% endfor %}
-    </ul>
-  {% else %}
-    <p>The pack has no active members</p>
-  {% endif %}
+  <div class="container" id="member-list">
+    {% if member_list %}
+      <ul>{% for member in member_list %}
+        <li><a href="{{ member.get_absolute_url }}">{{ member.full_name }}</a></li>{% endfor %}
+      </ul>
+    {% else %}
+      <p>The pack has no active members</p>
+    {% endif %}
+  </div>
 {% endblock %}
