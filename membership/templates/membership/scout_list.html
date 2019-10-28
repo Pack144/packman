@@ -23,7 +23,7 @@
   </ul>
   <div class="container" id="member-list">
     {% if scout_list %}
-      <ul>{% for scout in scout_list %}
+      <ul class="list-unstyled">{% for scout in scout_list %}
         <li><a href="{{ scout.get_absolute_url }}">{{ scout.full_name }}</a></li>{% endfor %}
       </ul>
     {% else %}
