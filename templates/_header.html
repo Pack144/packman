@@ -27,9 +27,9 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarContent">
       <div class="navbar-nav mr-auto">
-        <a class="nav-item nav-link" href="{% url 'member_list' %}">Members</a>
-        <a class="nav-item nav-link" href="{% url 'about_page' %}">About Us</a>
-        <a class="nav-item nav-link" href="{% url 'history_page' %}">Our History</a>
+        <a class="nav-item nav-link mr-lg-3" href="{% url 'member_list' %}">Members</a>
+        <a class="nav-item nav-link mr-lg-3" href="{% url 'about_page' %}">About Us</a>
+        <a class="nav-item nav-link mr-lg-3" href="{% url 'history_page' %}">Our History</a>
       </div>
       <ul class="navbar-nav ml-auto">{% if user.is_authenticated %}
         <li class="nav-item dropdown">
