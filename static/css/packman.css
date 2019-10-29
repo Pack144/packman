@@ -57,6 +57,11 @@ main {
     margin-bottom: 0;
 }
 
+.form-signin .alert ul {
+    list-style: none;
+    padding-inline-start: 0px;
+}
+
 .form-signin input[type="email"] {
     margin-bottom: -1px;
     border-bottom-right-radius: 0;
