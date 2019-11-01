@@ -1,10 +1,10 @@
-{% load static %}{% load fontawesome %}<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/all.min.css' %}">
+  <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/packman.css' %}">
   {% block head_option %}{% endblock %}
   <title>Pack 144: {% block title %}Hello World!{% endblock %}</title>
@@ -52,5 +52,9 @@
 <footer>
   {% include '_footer.html' %}
 </footer>
+<script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+<script src="{% static 'popper.js/dist/popper.min.js' %}"></script>
+<script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
+{% block js %}{% endblock %}
 </body>
 </html>
