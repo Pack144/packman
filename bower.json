@@ -1,0 +1,22 @@
+{
+  "name": "packman",
+  "homepage": "https://bitbucket.org/pack144/packman/",
+  "authors": [
+    "Pack 144 <dev@pack144.org>"
+  ],
+  "description": "A web based Cub Scouts pack management app",
+  "main": "",
+  "license": "GPL",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "jquery": "^3.4.1",
+    "fontawesome": "^5.11.2"
+  }
+}
