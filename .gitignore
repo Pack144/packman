@@ -107,5 +107,5 @@ venv.bak/
 # PyCharm settings
 .idea/
 
-# Bower Components
-/bower_components
+# Yarn Components
+/node_modules/
