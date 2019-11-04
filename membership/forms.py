@@ -1,6 +1,10 @@
+from django import forms
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
-from .models import Account
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit
+
+from .models import Account, Scout
 
 
 class AccountChangeForm(UserChangeForm):
@@ -16,3 +20,9 @@ class AccountCreationForm(UserCreationForm):
         model = Account
         fields = ('email', )
 
+
+class ScoutForm(forms.ModelForm):
+
+    class Meta:
+        model = Scout
+        fields = ('__all__')

@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
+from builtins import ImportError
 
 import os
 
@@ -41,6 +42,8 @@ INSTALLED_APPS = [
     # Third party packages
     'allauth',
     'allauth.account',
+    'ckeditor',
+    'ckeditor_uploader',
     'crispy_forms',
     'debug_toolbar',
     'fontawesome',
@@ -176,6 +179,8 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 REFERRER_POLICY = 'same-origin'
+
+CKEDITOR_UPLOAD_PATH = 'uploads/'
 
 # TODO: Not yet implemented
 # When should packman start a new year of scouting? Typically, this would be when
