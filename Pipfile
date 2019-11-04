@@ -18,6 +18,7 @@ django-phonenumber-field = "*"
 django-localflavor = "*"
 phonenumbers = "*"
 pillow = "*"
+django-ckeditor = "*"
 
 [requires]
 python_version = "3.7"
