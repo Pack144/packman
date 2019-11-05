@@ -12,7 +12,7 @@ from .forms import AccountCreationForm, AccountChangeForm
 from .models import Account, Parent, Scout
 
 
-class AddressInline(admin.TabularInline):
+class AddressInline(admin.StackedInline):
     model = Address
     extra = 0
 
