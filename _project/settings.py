@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 
     # Local apps
     'address_book.apps.AddressBookConfig',
+    'events.apps.EventsConfig',
     'membership.apps.MembershipConfig',
     'pages.apps.PagesConfig',
 ]
