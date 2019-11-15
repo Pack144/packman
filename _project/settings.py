@@ -53,8 +53,8 @@ INSTALLED_APPS = [
 
     # Local apps
     'address_book.apps.AddressBookConfig',
-    'events.apps.EventsConfig',
     'membership.apps.MembershipConfig',
+    'pack_calendar.apps.PackCalendarConfig',
     'pages.apps.PagesConfig',
 ]
 
@@ -185,9 +185,9 @@ REFERRER_POLICY = 'same-origin'
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
 # TODO: Not yet implemented
-# When should packman start a new year of scouting? Typically, this would be when
-# cubs advance to the next rank. Should be listed as 'Month Date', e.g. January 1
-PACK_YEAR_BEGINS = 'September 1'
+# When does the site start a new year of scouting? Typically, this would be when
+# cubs advance to the next rank. Should be formatted as 'Month Date', e.g. January 1
+PACK_YEAR_BEGIN_DATE = 'September 1'
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository
