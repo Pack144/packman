@@ -29,7 +29,7 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),
 
     # Local Apps
-    # path('events/', include('events.urls')),
+    # path('pack_calendar/', include('pack_calendar.urls')),
     path('members/', include('membership.urls')),
     path('', include('pages.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
