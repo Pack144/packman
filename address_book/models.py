@@ -3,6 +3,7 @@ from django.db import models
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
+from events.models import Event
 from membership.models import Member
 
 
@@ -20,6 +21,7 @@ class Address(models.Model):
 
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='O')
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='addresses', blank=True, null=True)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='addresses', blank=True, null=True)
 
     published = models.BooleanField(default=True, help_text='Display your address to other members of the pack.')
 
