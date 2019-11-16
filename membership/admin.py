@@ -4,8 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
-from guardian.admin import GuardedModelAdmin
-
 from address_book.models import Address, PhoneNumber
 
 from .forms import AccountCreationForm, AccountChangeForm
@@ -28,15 +26,12 @@ class ParentInline(admin.StackedInline):
     can_delete = False
 
 
-class ScoutAdmin(GuardedModelAdmin):
+class ScoutAdmin(admin.ModelAdmin):
     model = Scout
     list_display = ('short_name', 'last_name', 'age', 'status')
     list_display_links = ['short_name', 'last_name']
     list_filter = ('status', )
-    readonly_fields = ('get_parents',)
-
-    def get_parents(self, instance):
-        return instance.parents.all()
+    readonly_fields = ('get_parents', 'get_siblings')
 
 
 class ScoutInline(admin.StackedInline):
@@ -44,11 +39,11 @@ class ScoutInline(admin.StackedInline):
     extra = 0
 
 
-class ParentAdmin(GuardedModelAdmin):
+class ParentAdmin(admin.ModelAdmin):
     model = Parent
-    list_display = ('short_name', 'last_name', 'email', 'status', 'role')
+    list_display = ('short_name', 'last_name', 'email', 'role')
     list_display_links = ['short_name', 'last_name', 'email']
-    list_filter = ('status', 'role')
+    list_filter = ('role', )
     list_select_related = ('account',)
     inlines = (PhoneNumberInline, AddressInline, )
 
