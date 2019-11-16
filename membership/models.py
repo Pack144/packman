@@ -8,9 +8,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from guardian.mixins import GuardianUserMixin
-from guardian.shortcuts import assign_perm
-
 from .managers import AccountManager
 
 
@@ -18,7 +15,7 @@ def avatar_upload_location(instance, filename):
     return 'avatars/{0}/{1}'.format(instance.id, filename)
 
 
-class Account(AbstractBaseUser, PermissionsMixin, GuardianUserMixin):
+class Account(AbstractBaseUser, PermissionsMixin):
     """
     An e-mail based user account, used to log into the website
     """
@@ -55,13 +52,6 @@ class Member(models.Model):
         ('F', 'Female'),
         ('O', 'Prefer not to say'),
     )
-    STATUS_CHOICES = (
-        ('W', 'Wait Listed'),
-        ('A', 'Active'),
-        ('I', 'Inactive'),
-        ('G', 'Graduated'),
-    )
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     first_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, null=True, blank=True)
@@ -71,7 +61,6 @@ class Member(models.Model):
                                             'that on the website.'))
     avatar = models.ImageField(upload_to=avatar_upload_location, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
 
     date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -111,7 +100,15 @@ class Scout(Member):
     """
     Cub scouts use this model to store profile details
     """
+    STATUS_CHOICES = (
+        ('W', 'Wait Listed'),
+        ('A', 'Active'),
+        ('I', 'Inactive'),
+        ('G', 'Graduated'),
+    )
+
     birthday = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
 
     def age(self):
         """ Calculates the cub scout's age when a birthday is specified """
@@ -125,13 +122,7 @@ class Scout(Member):
         return self.parents.all()
 
     def get_siblings(self):
-        siblings = []
-        for parent in self.parents.all():
-            siblings += Scout.objects.filter(
-                ~Q(id=self.id),
-                Q(parents=parent)
-            )
-        return siblings
+        return Scout.objects.filter(~Q(id=self.id), Q(parents__in=self.parents.all())).distinct()
 
 
 class Parent(Member):
@@ -149,5 +140,5 @@ class Parent(Member):
     def email(self):
         return self.account.email
 
-    def get_published_phone_numbers(self):
-        return self.phone_numbers.filter('is_published')
+    def active_scouts(self):
+        return self.children.filter(status__exact='A')

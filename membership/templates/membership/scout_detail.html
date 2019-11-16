@@ -26,4 +26,13 @@
       {% endfor %}
     </div>
   {% endif %}
+  {% if scout.get_siblings.count %}
+    <hr>
+    <h2>Sibling{{ scout.get_siblings.count|pluralize }}</h2>
+    <div class="card-group">
+      {% for sibling in scout.get_siblings.all %}
+        {% include 'membership/member_detail_card.html' with member=sibling %}
+      {% endfor %}
+    </div>
+  {% endif %}
 {% endblock %}
