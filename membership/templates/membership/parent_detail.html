@@ -1,5 +1,4 @@
 {% extends "_base.html" %}
-{% load fontawesome %}
 
 {% block title %}{{ parent.full_name }}{% endblock title %}
 
@@ -13,7 +12,7 @@
   </nav>
   <h1>{{ parent.full_name }}
     {% if user == parent.account %}
-      <a href="{% url 'parent_update' parent.id %}"> {% fontawesome_icon 'edit' %}</a>
+      <a href="{% url 'parent_update' parent.id %}"> <span class="fa fa-user-edit"></span></a>
     {% endif %}
   </h1>
   {% include 'membership/member_detail_card.html' with member=parent %}
