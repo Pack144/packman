@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'crispy_forms',
     'debug_toolbar',
-    'fontawesome',
     'localflavor',
     'phonenumber_field',
 
@@ -66,7 +65,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_referrer_policy.middleware.ReferrerPolicyMiddleware',
 ]
 
 ROOT_URLCONF = '_project.urls'
