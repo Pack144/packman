@@ -36,7 +36,7 @@ class Page(models.Model):
 
 
 class DynamicPage(Page):
-    categories = models.ManyToManyField(Category, related_name='dynamic_page')
+    categories = models.ManyToManyField(Category, related_name='dynamic_page', blank=True)
     slug = models.SlugField(unique=True)
 
     class Meta:

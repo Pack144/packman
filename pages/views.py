@@ -1,5 +1,5 @@
 from django.utils import timezone
-from django.views.generic import DetailView, TemplateView
+from django.views.generic import DetailView, TemplateView, UpdateView
 
 from .models import StaticPage, DynamicPage
 
@@ -46,3 +46,9 @@ class HistoryPageView(TemplateView):
 class DynamicPageView(DetailView):
     model = DynamicPage
     context_object_name = 'page_content'
+
+
+class DynamicPageUpdateView(UpdateView):
+    model = DynamicPage
+    context_object_name = 'page_content'
+    fields = '__all__'

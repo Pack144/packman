@@ -1,8 +1,9 @@
 {% extends '_base.html' %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block title %}{{ page_content.title }}{% endblock %}
 
 {% block content %}
+  <div class="text-right" id="edit-button"><a href="{% url 'dynamic_page_update' page_content.slug %}"> <span class="fa fa-edit"></span></a></div>
   {% if page_content %}
     <h1>{{ page_content.title }}</h1>
     <p>{{ page_content.body|safe }}</p>
