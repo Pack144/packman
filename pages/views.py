@@ -1,8 +1,7 @@
-from django.db.models import Model
 from django.utils import timezone
-from django.views.generic import TemplateView
+from django.views.generic import DetailView, TemplateView
 
-from .models import StaticPage
+from .models import StaticPage, DynamicPage
 
 
 class AboutPageView(TemplateView):
@@ -42,3 +41,8 @@ class HistoryPageView(TemplateView):
         except StaticPage.DoesNotExist:
             context['page_content'] = None
         return context
+
+
+class DynamicPageView(DetailView):
+    model = DynamicPage
+    context_object_name = 'page_content'
