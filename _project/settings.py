@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'localflavor',
     'phonenumber_field',
+    'versatileimagefield',
 
     # Local apps
     'address_book.apps.AddressBookConfig',
