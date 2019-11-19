@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from versatileimagefield.fields import PPOIField, VersatileImageField
+
 from .managers import AccountManager
 
 
@@ -59,7 +61,8 @@ class Member(models.Model):
     nickname = models.CharField(max_length=32, null=True, blank=True,
                                 help_text=_('If there is another name you prefer go by, tell us what it is we will use '
                                             'that on the website.'))
-    avatar = models.ImageField(upload_to=avatar_upload_location, blank=True)
+    avatar = VersatileImageField(upload_to=avatar_upload_location, ppoi_field='ppoi', blank=True)
+    ppoi = PPOIField('Image PPOI')
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
 
     date_added = models.DateField(auto_now_add=True)
