@@ -6,9 +6,6 @@
 {% block content %}
   {% if page_content %}
     <p>{{ page_content.body|safe }}</p>
-  {% else %}
-    <div class="alert alert-warning" role="alert">This page has no content yet. Here is some sample text instead.</div>
-    {% lorem 3 p %}
   {% endif %}
   {% if upcoming_events %}
     <h2>Upcoming Events</h2>
