@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.humanize',
 
     # Third party packages
     'allauth',
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'crispy_forms',
     'debug_toolbar',
+    'django_extensions',
     'localflavor',
     'phonenumber_field',
     'versatileimagefield',
@@ -153,6 +155,7 @@ LOGIN_REDIRECT_URL = 'home_page'
 SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home_page'
 ACCOUNT_SESSION_REMEMBER = True

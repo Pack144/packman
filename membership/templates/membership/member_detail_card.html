@@ -3,7 +3,7 @@
 <div class="card shadow-sm">
   <a href="{{ member.get_absolute_url }}">
     {% if member.avatar %}
-      <img src="/media/{{ member.avatar }}" class="card-img-top" alt="{{ member }}'s profile picture">
+      <img src="/media/{{ member.avatar.thumbnail.320x320 }}" class="card-img-top" alt="{{ member }}'s profile picture">
     {% elif member.scout %}
       <img src="{% static 'img/avatar_cub.png' %}" class="card-img-top" alt="No profile picture">
     {% elif member.gender == 'M' %}

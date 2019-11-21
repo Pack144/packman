@@ -13,7 +13,7 @@ from versatileimagefield.fields import PPOIField, VersatileImageField
 from .managers import AccountManager
 
 
-def avatar_upload_location(instance, filename):
+def headshot_upload_location(instance, filename):
     return 'avatars/{0}/{1}'.format(instance.id, filename)
 
 
@@ -39,10 +39,21 @@ class Account(AbstractBaseUser, PermissionsMixin):
             return self.email
 
     def email_user(self, subject, message, from_email=None, **kwargs):
-        """
-        Sends an email to this User.
-        """
+        """ Sends an email to this User """
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+class Headshot(models.Model):
+    image = VersatileImageField(upload_to=headshot_upload_location, ppoi_field='ppoi', width_field='width', height_field='height', )
+
+    ppoi = PPOIField('Image PPOI')
+
+    class Meta:
+        verbose_name = _('Headshot')
+        verbose_name_plural = _('Headshots')
+
+    def __str__(self):
+        return self.image
 
 
 class Member(models.Model):
@@ -56,20 +67,19 @@ class Member(models.Model):
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     first_name = models.CharField(max_length=32)
-    middle_name = models.CharField(max_length=32, null=True, blank=True)
+    middle_name = models.CharField(max_length=32, blank=True, null=True)
     last_name = models.CharField(max_length=32)
-    nickname = models.CharField(max_length=32, null=True, blank=True,
+    nickname = models.CharField(max_length=32, blank=True, null=True,
                                 help_text=_('If there is another name you prefer go by, tell us what it is we will use '
                                             'that on the website.'))
-    avatar = VersatileImageField(upload_to=avatar_upload_location, ppoi_field='ppoi', blank=True)
-    ppoi = PPOIField('Image PPOI')
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
+    avatar = models.OneToOneField(Headshot, on_delete=models.CASCADE, blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
 
     date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = _('all members')
+        verbose_name_plural = _('All Members')
         ordering = ['last_name', 'first_name']
 
     def __str__(self):
@@ -110,7 +120,7 @@ class Scout(Member):
         ('G', 'Graduated'),
     )
 
-    birthday = models.DateField(null=True, blank=True)
+    birthday = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
 
     def age(self):
@@ -122,9 +132,11 @@ class Scout(Member):
                 (today.month, today.day) < (self.birthday.month, self.birthday.day))
 
     def get_parents(self):
+        """ Return a list of all parents associated with this scout """
         return self.parents.all()
 
     def get_siblings(self):
+        """ Return a list of other Scouts who share the same parent(s) """
         return Scout.objects.filter(~Q(id=self.id), Q(parents__in=self.parents.all())).distinct()
 
 
@@ -136,12 +148,43 @@ class Parent(Member):
         ('P', 'Parent/Guardian'),
         ('C', 'Contributor'),
     )
-    children = models.ManyToManyField(Scout, related_name='parents', blank=True)
+    children = models.ManyToManyField(Scout, related_name='parents', through='Relationship', blank=True)
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
     account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', verbose_name='email')
+
 
     def email(self):
         return self.account.email
 
-    def active_scouts(self):
+    def get_active_scouts(self):
+        """ Return a list of all currently active scouts associated with this member. """
         return self.children.filter(status__exact='A')
+
+    @property
+    def is_active(self):
+        """ If member has active scouts, then they should also be considered active in the pack. """
+        if self.get_active_scouts():
+            return True
+        else:
+            return False
+
+
+class Relationship(models.Model):
+    """ Track the relationship a member has with a scout """
+    RELATIONSHIP_CHOICES = (
+        ('M', 'Mom'),
+        ('F', 'Dad'),
+        ('GM', 'Grandmother'),
+        ('GF', 'Grandfather'),
+        ('A', 'Aunt'),
+        ('U', 'Uncle'),
+        ('G', 'Guardian'),
+        ('FF', 'Friend of the Family'),
+        ('O', 'Other/Undefined')
+    )
+    parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
+    child = models.ForeignKey(Scout, on_delete=models.CASCADE)
+    relationship_to_child = models.CharField(max_length=2, choices=RELATIONSHIP_CHOICES, default='O')
+
+    def __str__(self):
+        return self.child.full_name()
