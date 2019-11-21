@@ -27,9 +27,13 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarContent">
       <div class="navbar-nav mr-auto">
-        <a class="nav-item nav-link mr-lg-3" href="{% url 'member_list' %}">Members</a>
-        <a class="nav-item nav-link mr-lg-3" href="{% url 'about_page' %}">About Us</a>
         <a class="nav-item nav-link mr-lg-3" href="{% url 'history_page' %}">Our History</a>
+        <a class="nav-item nav-link mr-lg-3" href="{% url 'about_page' %}">About Us</a>
+        {% if user.is_authenticated %}
+          <a class="nav-item nav-link mr-lg-3" href="{% url 'member_list' %}">Members</a>
+        {% else %}
+          <a class="nav-item nav-link mr-lg-3" href="{% url 'account_signup' %}">Join Us</a>
+        {% endif %}
       </div>
       <ul class="navbar-nav ml-auto">{% if user.is_authenticated %}
         <li class="nav-item dropdown">
@@ -40,8 +44,8 @@
               {{ user.email }}{% endif %}
           </a>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarMemberDropdown">
-            <a class="dropdown-item" href="{{ user.profile.get_absolute_url }}">My Family</a>
-            <a class="dropdown-item" href="{% url 'account_change_password' %}">Update Password</a>
+            <a class="dropdown-item" href="{% url 'family_update' %}">My Family</a>
+            <a class="dropdown-item" href="{% url 'account_change_password' %}">Change Password</a>
             <a class="dropdown-item" href="{% url 'account_email' %}">Update E-mail</a>
             {% if user.is_staff %}<a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a>{% endif %}
             <div class="dropdown-divider"></div>
