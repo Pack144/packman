@@ -34,9 +34,11 @@ class ScoutAdmin(admin.ModelAdmin):
     readonly_fields = ('get_parents', 'get_siblings')
 
 
-class ScoutInline(admin.StackedInline):
-    model = Scout
+class ScoutInline(admin.TabularInline):
+    model = Parent.children.through
     extra = 0
+    verbose_name = _('Child')
+    verbose_name_plural = _('Children')
 
 
 class ParentAdmin(admin.ModelAdmin):
@@ -45,7 +47,8 @@ class ParentAdmin(admin.ModelAdmin):
     list_display_links = ['short_name', 'last_name', 'email']
     list_filter = ('role', )
     list_select_related = ('account',)
-    inlines = (PhoneNumberInline, AddressInline, )
+    inlines = (ScoutInline, PhoneNumberInline, AddressInline, )
+    exclude = ('children', )
 
 
 class AccountAdmin(UserAdmin):
