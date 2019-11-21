@@ -1,6 +1,8 @@
 from django.utils import timezone
 from django.views.generic import DetailView, TemplateView, UpdateView
 
+from pack_calendar.models import Event
+
 from .models import StaticPage, DynamicPage
 
 
@@ -9,11 +11,13 @@ class AboutPageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         try:
             context['page_content'] = StaticPage.objects.filter(page='ABOUT').filter(
                 published_on__lte=timezone.now()).latest()
         except StaticPage.DoesNotExist:
             context['page_content'] = None
+
         return context
 
 
@@ -22,6 +26,7 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(HomePageView, self).get_context_data(**kwargs)
+        context['upcoming_events'] = Event.objects.filter(end__gte=timezone.now())
         try:
             context['page_content'] = StaticPage.objects.filter(page='HOME').filter(
                 published_on__lte=timezone.now()).latest()
