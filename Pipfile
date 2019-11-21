@@ -7,15 +7,18 @@ verify_ssl = true
 pylint = "*"
 
 [packages]
+argon2-cffi = "*"
 django = "*"
-django-debug-toolbar = "*"
-django-crispy-forms = "*"
 django-allauth = "*"
-django-phonenumber-field = "*"
+django-ckeditor = "*"
+django-crispy-forms = "*"
+django-debug-toolbar = "*"
+django-extensions = "*"
 django-localflavor = "*"
+django-phonenumber-field = "*"
 phonenumbers = "*"
 pillow = "*"
-django-ckeditor = "*"
+django-versatileimagefield = "*"
 
 [requires]
 python_version = "3.7"
