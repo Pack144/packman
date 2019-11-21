@@ -3,7 +3,10 @@
 {% block title %}Not Found{% endblock title %}
 
 {% block content %}
-  <h1>Not Found</h1>
-  <p>Hmm…we couldn't find what you were looking for. Try starting over at <a href="{% url 'home_page' %}">the
-    homepage</a>.</p>
+  <div class="alert alert-danger" role="alert">
+    <h1 class="alert-heading">Not Found</h1>
+    <p>Hmm…we couldn't find what you were looking for. Try starting over at <a href="{% url 'home_page' %}"
+                                                                               class="alert-link">the
+      homepage</a>.</p>
+  </div>
 {% endblock %}
