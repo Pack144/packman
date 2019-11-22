@@ -15,18 +15,16 @@
     {% if event_list %}
     <dl class="row">
       {% for event in event_list %}
-        <dt class="col-sm-4{% if forloop.first %} text-success{% endif %}">
+        <dt class="col-sm-4{% if forloop.first %} text-success bg-dark{% endif %}">
           {{ event.start.date|naturalday:'l, F j, Y'|capfirst }}
         </dt>
-        <dd class="col-sm-8{% if forloop.first %} text-success{% endif %}">
-          <dl>
+        <dd class="col-sm-8">
+          <dl{% if forloop.first %} class="text-success bg-dark"{% endif %}>
             <dt>{{ event.name }}</dt>
             <dd>
-              <div><strong>Location:</strong> {{ event.location }}</div>
-              {% if user.is_authenticated %}
-                <div><strong>Start:</strong> {{ event.start.time|time:'g:i a' }}</div>
-                <div><strong>End:</strong> {{ event.end.time|time:'g:i a' }}</div>
-              {% endif %}
+              <p><strong>Location:</strong> {{ event.location }}</p>
+              <p><strong>Start:</strong> {{ event.start.time|time:'g:i a' }}</p>
+              <p><strong>End:</strong> {{ event.end.time|time:'g:i a' }}</p>
             </dd>
           </dl>
         </dd>

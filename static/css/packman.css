@@ -110,7 +110,7 @@ main {
     margin-bottom: 0;
 }
 
-h1 {
+h1, h2, h3 {
     color: #fa9428;
     font-family: 'Cooper Black', serif;
     text-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
