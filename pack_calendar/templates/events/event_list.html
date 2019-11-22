@@ -13,11 +13,12 @@
   <h1>Upcoming Events</h1>
   <div class="container" id="event-list">
     {% if event_list %}
-    <h2>Upcoming Events</h2>
     <dl class="row">
       {% for event in event_list %}
-        <dt class="col-sm-4">{{ event.start.date|naturalday:'l, F j, Y'|capfirst }}</dt>
-        <dd class="col-sm-8">
+        <dt class="col-sm-4{% if forloop.first %} text-success{% endif %}">
+          {{ event.start.date|naturalday:'l, F j, Y'|capfirst }}
+        </dt>
+        <dd class="col-sm-8{% if forloop.first %} text-success{% endif %}">
           <dl>
             <dt>{{ event.name }}</dt>
             <dd>

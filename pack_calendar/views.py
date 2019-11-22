@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.utils import timezone
 from django.views.generic import ListView
 
@@ -14,4 +15,5 @@ class EventListView(ActiveMemberOrContributorTestMixin, ListView):
     context_object_name = 'event_list'
 
     def get_queryset(self):
-        return Event.objects.filter(end__gte=timezone.now())
+        """ Return a queryset containing all events for the next 6 months"""
+        return Event.objects.filter(end__lte=timezone.now() + timezone.timedelta(weeks=26)).filter(end__gte=timezone.now())
