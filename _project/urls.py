@@ -32,6 +32,7 @@ urlpatterns = [
 
     # Local Apps
     # path('pack_calendar/', include('pack_calendar.urls')),
+    path('documents/', include('documents.urls')),
     path('members/', include('membership.urls')),
     path('', include('pages.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

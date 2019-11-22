@@ -31,6 +31,7 @@
         <a class="nav-item nav-link mr-lg-3" href="{% url 'about_page' %}">About Us</a>
         {% if user.is_authenticated %}
           <a class="nav-item nav-link mr-lg-3" href="{% url 'member_list' %}">Members</a>
+          <a class="nav-item nav-link mr-lg-3" href="{% url 'document_list' %}">Documents</a>
         {% else %}
           <a class="nav-item nav-link mr-lg-3" href="{% url 'account_signup' %}">Join Us</a>
         {% endif %}
