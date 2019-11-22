@@ -18,7 +18,8 @@ django-localflavor = "*"
 django-phonenumber-field = "*"
 phonenumbers = "*"
 pillow = "*"
-django-versatileimagefield = "*"
+easy-thumbnails = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.7"
