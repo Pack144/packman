@@ -18,7 +18,7 @@
       <dl class="row">
         {% for document in category.document_set.all %}
         <dt class="col-sm-4"><a href="{{ document.file.url }}">{{ document.name }}</a></dt>
-        <dd class="col-sm-8">{{ document.description }}<br>
+        <dd class="col-sm-8">{% if document.description %}{{ document.description }}<br>{% endif %}
           <small class="text-muted ">Last updated: {{ document.last_updated }}</small></dd>
         {% endfor %}
       </dl>
