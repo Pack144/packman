@@ -1,8 +1,9 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import CreateView, DetailView, UpdateView, ListView
+
+from membership.mixins import ActiveMemberOrContributorTestMixin
 
 from .models import Document
 
 
-class DocumentListView(ListView):
+class DocumentListView(ActiveMemberOrContributorTestMixin, ListView):
     model = Document
