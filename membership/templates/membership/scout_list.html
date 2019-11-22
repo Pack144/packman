@@ -31,20 +31,24 @@
               <div class="row align-items-center">
                 <div class="col-sm-2">
                   {% if scout.headshot %}
-                    <img src="{{ scout.headshot.image.thumbnail.75x75 }}" class="img-thumbnail"
+                    <img src="{{ scout.headshot.image.crop.128x128 }}" class="img-fluid rounded-circle"
                          alt="{{ scout }}'s profile picture">
                   {% else %}
-                    <img src="{% static 'img/avatar_cub.png' %}" class="img-thumbnail" alt="No profile picture">
+                    <img src="{% static 'img/avatar_cub.png' %}" class="img-fluid rounded-circle" alt="No profile picture">
                   {% endif %}
                 </div>
                 <div class="col-sm-10"><h4>{{ scout.full_name }}</h4></div>
+              </div>
             </a>
           </li>
         {% endfor %}
       </ul>
+      <div class="alert alert-light text-center">
+        <small class="text-muted">{{ scout_list.count }} cub{{ scout_list.count|pluralize }}</small>
+      </div>
     {% else %}
       <div class="alert alert-light" role="alert">
-        <p>The pack has no active members. It's time to invite some to <a href="{% url 'account_signup' %}"
+        <p class="text-center">The pack has no active members. It's time to invite some to <a href="{% url 'account_signup' %}"
                                                                           class="alert-link">join us</a></p>
       </div>
     {% endif %}
