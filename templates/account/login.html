@@ -5,12 +5,6 @@
 {% block title %}{% trans "Sign In" %}{% endblock title %}
 
 {% block content %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Login</li>
-    </ol>
-  </nav>
   <div class="text-center">
     <h1>Please sign in</h1>{% if user.is_authenticated %}
     <p>Your account doesn't have access to this page. To proceed, please login with an account that has
