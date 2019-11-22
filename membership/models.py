@@ -13,10 +13,6 @@ from versatileimagefield.fields import PPOIField, VersatileImageField
 from .managers import AccountManager
 
 
-def headshot_upload_location(instance, filename):
-    return 'avatars/{0}/{1}'.format(instance.id, filename)
-
-
 class Account(AbstractBaseUser, PermissionsMixin):
     """
     An e-mail based user account, used to log into the website
@@ -44,17 +40,28 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 
 class Headshot(models.Model):
-    image = VersatileImageField(upload_to=headshot_upload_location, ppoi_field='ppoi', width_field='width',
+    image = VersatileImageField(upload_to='headshots/', ppoi_field='ppoi', width_field='width',
                                 height_field='height', )
 
-    ppoi = PPOIField('Image PPOI')
+    ppoi = PPOIField('Image Focal Point')
+    height = models.PositiveIntegerField(
+        'Image Height',
+        blank=True,
+        null=True
+    )
+    width = models.PositiveIntegerField(
+        'Image Width',
+        blank=True,
+        null=True
+    )
+
 
     class Meta:
         verbose_name = _('Headshot')
         verbose_name_plural = _('Headshots')
 
     def __str__(self):
-        return self.image
+        return self.image.name
 
 
 class Member(models.Model):
@@ -73,7 +80,7 @@ class Member(models.Model):
     nickname = models.CharField(max_length=32, blank=True, null=True,
                                 help_text=_('If there is another name you prefer go by, tell us what it is we will use '
                                             'that on the website.'))
-    avatar = models.OneToOneField(Headshot, on_delete=models.CASCADE, blank=True, null=True)
+    headshot = models.OneToOneField(Headshot, on_delete=models.CASCADE, blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
 
     date_added = models.DateTimeField(auto_now_add=True)

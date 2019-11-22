@@ -30,8 +30,8 @@
             <a href="{{ member.get_absolute_url }}">
               <div class="row align-items-center">
                 <div class="col-sm-2">
-                  {% if member.avatar %}
-                    <img src="/media/{{ member.avatar.thumbnail.75x75 }}" class="img-thumbnail"
+                  {% if member.headshot %}
+                    <img src="{{ member.headshot.image.thumbnail.75x75 }}" class="img-thumbnail"
                          alt="{{ member }}'s profile picture">
                   {% elif member.scout %}
                     <img src="{% static 'img/avatar_cub.png' %}" class="img-thumbnail" alt="No profile picture">

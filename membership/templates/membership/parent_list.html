@@ -30,8 +30,8 @@
             <a href="{{ parent.get_absolute_url }}">
               <div class="row align-items-center">
                 <div class="col-sm-2">
-                  {% if parent.avatar %}
-                    <img src="/media/{{ parent.avatar.thumbnail.75x75 }}" class="img-thumbnail"
+                  {% if parent.headshot %}
+                    <img src="{{ parent.headshot.image.thumbnail.75x75 }}" class="img-thumbnail"
                          alt="{{ parent }}'s profile picture">
                   {% elif parent.gender == 'M' %}
                     <img src="{% static 'img/avatar_man.png' %}" class="img-thumbnail" alt="No profile picture">
