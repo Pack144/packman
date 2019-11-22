@@ -17,7 +17,7 @@
       <h3>{{ category }}</h3>
       <dl class="row">
         {% for document in category.document_set.all %}
-        <dt class="col-sm-4"><a href="{{ document.file }}">{{ document.name }}</a></dt>
+        <dt class="col-sm-4"><a href="{{ document.file.url }}">{{ document.name }}</a></dt>
         <dd class="col-sm-8">{{ document.description }}<br>
           <small class="text-muted ">Last updated: {{ document.last_updated }}</small></dd>
         {% endfor %}
