@@ -1,4 +1,5 @@
 {% extends '_base.html' %}
+{% load humanize %}
 
 {% block title %}Upcoming Events{% endblock %}
 
@@ -6,15 +7,30 @@
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Events</li>
+      <li class="breadcrumb-item active" aria-current="page">Calendar</li>
     </ol>
   </nav>
   <h1>Upcoming Events</h1>
   <div class="container" id="event-list">
-    {% if member_list %}
-      <ul class="list-unstyled">{% for event in event_list %}
-        <li><a href="{{ event.get_absolute_url }}">{{ event.name }}</a></li>{% endfor %}
-      </ul>
+    {% if event_list %}
+    <h2>Upcoming Events</h2>
+    <dl class="row">
+      {% for event in event_list %}
+        <dt class="col-sm-4">{{ event.start.date|naturalday:'l, F j, Y'|capfirst }}</dt>
+        <dd class="col-sm-8">
+          <dl>
+            <dt>{{ event.name }}</dt>
+            <dd>
+              <div><strong>Location:</strong> {{ event.location }}</div>
+              {% if user.is_authenticated %}
+                <div><strong>Start:</strong> {{ event.start.time|time:'g:i a' }}</div>
+                <div><strong>End:</strong> {{ event.end.time|time:'g:i a' }}</div>
+              {% endif %}
+            </dd>
+          </dl>
+        </dd>
+      {% endfor %}
+    </dl>
     {% else %}
       <p>The pack has no upcoming events</p>
     {% endif %}
