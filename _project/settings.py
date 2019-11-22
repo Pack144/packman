@@ -48,9 +48,9 @@ INSTALLED_APPS = [
     'crispy_forms',
     'debug_toolbar',
     'django_extensions',
+    'easy_thumbnails',
     'localflavor',
     'phonenumber_field',
-    'versatileimagefield',
 
     # Local apps
     'address_book.apps.AddressBookConfig',
@@ -173,6 +173,16 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
+
+# https://easy-thumbnails.readthedocs.io/en/latest/usage/#thumbnail-aliases
+THUMBNAIL_ALIASES = {
+    'membership': {
+        'thumbnail': {
+            'size': (100, 100),
+            'crop': 'smart',
+        },
+    },
+}
 
 # http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
 CRISPY_TEMPLATE_PACK = 'bootstrap4'

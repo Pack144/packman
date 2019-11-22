@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from address_book.models import Address, PhoneNumber
 
 from .forms import AccountCreationForm, AccountChangeForm
-from .models import Account, Headshot, Parent, Scout
+from .models import Account, Parent, Scout
 
 
 class AddressInline(admin.StackedInline):
@@ -95,4 +95,3 @@ admin.site.unregister(Group)
 admin.site.register(Scout, ScoutAdmin)
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Parent, ParentAdmin)
-admin.site.register(Headshot)

@@ -12,7 +12,7 @@
   </nav>
   <h1>{{ scout.full_name }}
     {% if user.profile.parent in scout.parents.all %}
-      <a href="{% url 'scout_update' scout.id %}"> <span class="fa fa-user-edit"></span></a>
+      <a href="{% url 'scout_update' scout.id %}"> <span class="badge badge-secondary"><span class="fa fa-user-edit"></span></span></a>
     {% endif %}
   </h1>
   {% include 'membership/member_detail_card.html' with member=scout %}
