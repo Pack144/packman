@@ -152,7 +152,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_REDIRECT_URL = 'home_page'
 
-# django-allauth configuration
+# django-allauth
+# ------------------------------------------------------------------------------
 SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
@@ -173,18 +174,67 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
+# http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 PHONENUMBER_DEFAULT_REGION = 'US'
 
-# Security Headers
+# SECURITY
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/2.2/ref/settings/#session-cookie-httponly
+SESSION_COOKIE_HTTPONLY = True
+# https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
+CSRF_COOKIE_HTTPONLY = True
+# https://docs.djangoproject.com/en/2.2/ref/settings/#secure-browser-xss-filter
 SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
+# https://docs.djangoproject.com/en/2.2/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = 'DENY'
-REFERRER_POLICY = 'same-origin'
+# https://docs.djangoproject.com/en/2.2/ref/middleware/#x-content-type-options-nosniff
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
-# TODO: Not yet implemented
+# LOGGING
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/2.2/ref/settings/#logging
+# See https://docs.djangoproject.com/en/2.2/topics/logging for
+# more details on how to customize your logging configuration.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
+    "formatters": {
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(module)s "
+            "%(process)d %(thread)d %(message)s"
+        }
+    },
+    "handlers": {
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
+        },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {"level": "INFO", "handlers": ["console"]},
+    "loggers": {
+        "django.request": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+        "django.security.DisallowedHost": {
+            "level": "ERROR",
+            "handlers": ["console", "mail_admins"],
+            "propagate": True,
+        },
+    },
+}
+
 # When does the site start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank. Should be formatted as 'Month Date', e.g. January 1
 PACK_YEAR_BEGIN_DATE = 'September 1'
