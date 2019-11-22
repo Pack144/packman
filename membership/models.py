@@ -9,8 +9,6 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from versatileimagefield.fields import PPOIField, VersatileImageField
-
 from .managers import AccountManager
 
 
