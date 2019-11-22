@@ -10,6 +10,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = _('Category')
+        verbose_name_plural = _('Categories')
 
 
 class Document(models.Model):
@@ -26,3 +28,5 @@ class Document(models.Model):
 
     class Meta:
         ordering = ['category', 'name', ]
+        verbose_name = _('Document')
+        verbose_name_plural = _('Documents')
