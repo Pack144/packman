@@ -12,11 +12,16 @@
   <h1>Documents</h1>
   <div class="container" id="document-list">
     {% if document_list %}
-      <ul class="list-unstyled">{% for document in document_list %}
-        <li><a href="{{ document.file }}">{{ document.name }}</a></li>{% endfor %}
-      </ul>
+      <dl class="row">{% for document in document_list %}
+        <dt class="col-sm-4"><a href="{{ document.file }}">{{ document.name }}</a></dt>
+        <dd class="col-sm-8">{{ document.description }}<br>
+        <small class="text-muted ">Last updated: {{ document.last_updated }}</small></dd>
+      {% endfor %}
+      </dl>
     {% else %}
-      <p>The pack has no documents uploaded</p>
+      <div class="alert alert-secondary" role="alert">
+        <p>The pack has no documents uploaded</p>
+      </div>
     {% endif %}
   </div>
 {% endblock %}
