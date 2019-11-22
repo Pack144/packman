@@ -30,8 +30,8 @@
             <a href="{{ scout.get_absolute_url }}">
               <div class="row align-items-center">
                 <div class="col-sm-2">
-                  {% if scout.avatar %}
-                    <img src="/media/{{ scout.avatar.thumbnail.75x75 }}" class="img-thumbnail"
+                  {% if scout.headshot %}
+                    <img src="{{ scout.headshot.image.thumbnail.75x75 }}" class="img-thumbnail"
                          alt="{{ scout }}'s profile picture">
                   {% else %}
                     <img src="{% static 'img/avatar_cub.png' %}" class="img-thumbnail" alt="No profile picture">
