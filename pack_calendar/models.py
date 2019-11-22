@@ -6,6 +6,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from ckeditor.fields import RichTextField
+
 from address_book.models import Venue
 from documents.models import Document
 
@@ -43,10 +45,10 @@ class Event(models.Model):
     location = models.CharField(max_length=64, blank=True, null=True)
     start = models.DateTimeField()
     end = models.DateTimeField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    description = RichTextField(blank=True, null=True)
     url = models.URLField(blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    attachments = models.ManyToManyField(Document, related_name='event', blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events')
+    attachments = models.ManyToManyField(Document, related_name='events', blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

@@ -31,7 +31,7 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),
 
     # Local Apps
-    # path('pack_calendar/', include('pack_calendar.urls')),
+    path('events/', include('pack_calendar.urls')),
     path('documents/', include('documents.urls')),
     path('members/', include('membership.urls')),
     path('', include('pages.urls')),
