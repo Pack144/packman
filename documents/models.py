@@ -1,5 +1,11 @@
 from django.db import models
+from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
+
+
+def document_upload_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/documents/category_slug/<filename>
+    return 'documents/{0}/{1}'.format(slugify(instance.category), filename)
 
 
 class Category(models.Model):
@@ -17,7 +23,7 @@ class Category(models.Model):
 class Document(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField(help_text=_('Brief description of what the document is.'), blank=True, null=True)
-    file = models.FileField(upload_to='documents')
+    file = models.FileField(upload_to=document_upload_path)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='documents')
     display_in_repository = models.BooleanField(help_text=_('Make this document visible in the Document Repository'), default=True)
 
