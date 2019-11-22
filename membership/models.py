@@ -6,11 +6,17 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from versatileimagefield.fields import PPOIField, VersatileImageField
 
 from .managers import AccountManager
+
+
+def member_headshot_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/headshots/user_slug/<filename>
+    return 'headshots/{0}/{1}'.format(slugify(instance.full_name()), filename)
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
@@ -39,31 +45,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
-class Headshot(models.Model):
-    image = VersatileImageField(upload_to='headshots/', ppoi_field='ppoi', width_field='width',
-                                height_field='height')
-
-    ppoi = PPOIField('Image Focal Point')
-    height = models.PositiveIntegerField(
-        'Image Height',
-        blank=True,
-        null=True
-    )
-    width = models.PositiveIntegerField(
-        'Image Width',
-        blank=True,
-        null=True
-    )
-
-
-    class Meta:
-        verbose_name = _('Headshot')
-        verbose_name_plural = _('Headshots')
-
-    def __str__(self):
-        return self.image.name
-
-
 class Member(models.Model):
     """
     The member profile used to store additional information about the member
@@ -80,7 +61,7 @@ class Member(models.Model):
     nickname = models.CharField(max_length=32, blank=True, null=True,
                                 help_text=_('If there is another name you prefer go by, tell us what it is we will use '
                                             'that on the website.'))
-    headshot = models.OneToOneField(Headshot, on_delete=models.CASCADE, related_name='member', blank=True, null=True)
+    headshot = models.ImageField(upload_to=member_headshot_path, blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
 
     date_added = models.DateTimeField(auto_now_add=True)
