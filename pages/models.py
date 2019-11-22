@@ -3,8 +3,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-
 from ckeditor.fields import RichTextField
+
+from documents.models import Document
 
 
 class Category(models.Model):
@@ -21,6 +22,7 @@ class Category(models.Model):
 class Page(models.Model):
     title = models.CharField(max_length=128)
     body = RichTextField(blank=True)
+    attachments = models.ManyToManyField(Document, related_name='page', blank=True)
 
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -64,15 +66,3 @@ class StaticPage(Page):
 
     def __str__(self):
         return self.get_page_display()
-
-
-class Attachment(models.Model):
-    file = models.FileField(upload_to='pages')
-    page = models.ForeignKey(Page, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = _('Attachment')
-        verbose_name_plural = _('Attachments')
-
-    def __str__(self):
-        return self.file.name
