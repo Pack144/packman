@@ -1,4 +1,5 @@
 {% extends '_base.html' %}
+{% load static %}
 
 {% block title %}Members - Parents{% endblock %}
 
@@ -23,11 +24,33 @@
   </ul>
   <div class="container" id="member-list">
     {% if parent_list %}
-      <ul class="list-unstyled">{% for parent in parent_list %}
-        <li><a href="{{ parent.get_absolute_url }}">{{ parent.full_name }}</a></li>{% endfor %}
+      <ul class="list-unstyled">
+        {% for parent in parent_list %}
+          <li>
+            <a href="{{ parent.get_absolute_url }}">
+              <div class="row align-items-center">
+                <div class="col-sm-2">
+                  {% if parent.avatar %}
+                    <img src="/media/{{ parent.avatar.thumbnail.75x75 }}" class="img-thumbnail"
+                         alt="{{ parent }}'s profile picture">
+                  {% elif parent.gender == 'M' %}
+                    <img src="{% static 'img/avatar_man.png' %}" class="img-thumbnail" alt="No profile picture">
+                  {% elif parent.gender == 'F' %}
+                    <img src="{% static 'img/avatar_woman.png' %}" class="img-thumbnail" alt="No profile picture">
+                  {% else %}
+                    <img src="{% static 'img/avatar_generic.png' %}" class="img-thumbnail" alt="No profile picture">
+                  {% endif %}
+                </div>
+                <div class="col-sm-10"><h4>{{ parent.full_name }}</h4></div>
+            </a>
+          </li>
+        {% endfor %}
       </ul>
     {% else %}
-      <p>The pack has no active parents</p>
+      <div class="alert alert-light" role="alert">
+        <p>The pack has no active members. It's time to invite some to <a href="{% url 'account_signup' %}"
+                                                                          class="alert-link">join us</a></p>
+      </div>
     {% endif %}
   </div>
 {% endblock %}
