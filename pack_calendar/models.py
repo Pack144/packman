@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from address_book.models import Venue
+from documents.models import Document
 
 
 def get_pack_year(date=timezone.now()):
@@ -38,13 +39,14 @@ class Category(models.Model):
 class Event(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=32)
-    location = models.CharField(max_length=64, blank=True, null=True)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='event', blank=True, null=True)
+    location = models.CharField(max_length=64, blank=True, null=True)
     start = models.DateTimeField()
     end = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     url = models.URLField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    attachments = models.ManyToManyField(Document, related_name='event', blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
