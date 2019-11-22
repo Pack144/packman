@@ -1,6 +1,6 @@
 {% extends '_base.html' %}
 
-{% block title %}Members{% endblock %}
+{% block title %}Documents{% endblock %}
 
 {% block content %}
   <nav aria-label="breadcrumb">
@@ -10,18 +10,22 @@
     </ol>
   </nav>
   <h1>Documents</h1>
-  <div class="container" id="document-list">
-    {% if document_list %}
-      <dl class="row">{% for document in document_list %}
+  {% if document_list %}
+    <div class="container" id="document-list">
+    {% for category in categories %}
+      <h3>{{ category }}</h3>
+      <dl class="row">
+        {% for document in category.document_set.all %}
         <dt class="col-sm-4"><a href="{{ document.file }}">{{ document.name }}</a></dt>
         <dd class="col-sm-8">{{ document.description }}<br>
-        <small class="text-muted ">Last updated: {{ document.last_updated }}</small></dd>
-      {% endfor %}
+          <small class="text-muted ">Last updated: {{ document.last_updated }}</small></dd>
+        {% endfor %}
       </dl>
-    {% else %}
-      <div class="alert alert-light" role="alert">
-        <p>The pack has no uploaded documents to display</p>
-      </div>
-    {% endif %}
-  </div>
+    {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-light" role="alert">
+      <p>The pack has no uploaded documents to display</p>
+    </div>
+  {% endif %}
 {% endblock %}
