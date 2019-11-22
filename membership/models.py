@@ -114,7 +114,9 @@ class Scout(Member):
     Cub scouts use this model to store profile details
     """
     STATUS_CHOICES = (
-        ('W', 'Wait Listed'),
+        ('W', 'Applied'),
+        ('P', 'Approved'),
+        ('D', 'Denied'),
         ('A', 'Active'),
         ('I', 'Inactive'),
         ('G', 'Graduated'),
