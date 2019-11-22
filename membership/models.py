@@ -44,7 +44,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 
 class Headshot(models.Model):
-    image = VersatileImageField(upload_to=headshot_upload_location, ppoi_field='ppoi', width_field='width', height_field='height', )
+    image = VersatileImageField(upload_to=headshot_upload_location, ppoi_field='ppoi', width_field='width',
+                                height_field='height', )
 
     ppoi = PPOIField('Image PPOI')
 
@@ -75,7 +76,7 @@ class Member(models.Model):
     avatar = models.OneToOneField(Headshot, on_delete=models.CASCADE, blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
 
-    date_added = models.DateField(auto_now_add=True)
+    date_added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -116,14 +117,17 @@ class Scout(Member):
     STATUS_CHOICES = (
         ('W', 'Applied'),
         ('P', 'Approved'),
-        ('D', 'Denied'),
         ('A', 'Active'),
         ('I', 'Inactive'),
+        ('D', 'Denied'),
         ('G', 'Graduated'),
     )
 
     birthday = models.DateField(blank=True, null=True)
+    school = models.ForeignKey('address_book.Venue', on_delete=models.CASCADE, blank=True, null=True,
+                               limit_choices_to={'type__type__icontains': 'School'})
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
+    start_date = models.DateField(blank=True, null=True)
 
     def age(self):
         """ Calculates the cub scout's age when a birthday is specified """
@@ -153,7 +157,6 @@ class Parent(Member):
     children = models.ManyToManyField(Scout, related_name='parents', through='Relationship', blank=True)
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
     account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', verbose_name='email')
-
 
     def email(self):
         return self.account.email

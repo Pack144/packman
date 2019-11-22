@@ -74,6 +74,8 @@
                                      alt="Den {{ member.den_assigned.number }} patch">{% endif %}
   </div>
   <div class="card-footer text-center">
-    <small class="text-muted">Member since {{ member.date_added|date:'Y' }}</small>
+    {% if member.scout.start_date %}
+      <small class="text-muted">Member since {{ member.scout.start_date|date:'Y' }}</small>
+    {% endif %}
   </div>
 </div>

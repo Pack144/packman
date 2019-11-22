@@ -12,12 +12,12 @@ from .models import Account, Parent, Scout
 
 class AddressInline(admin.StackedInline):
     model = Address
-    extra = 0
+    extra = 1
 
 
 class PhoneNumberInline(admin.TabularInline):
     model = PhoneNumber
-    extra = 0
+    extra = 1
 
 
 class ParentInline(admin.StackedInline):
@@ -31,7 +31,7 @@ class ScoutAdmin(admin.ModelAdmin):
     list_display = ('short_name', 'last_name', 'age', 'status')
     list_display_links = ['short_name', 'last_name']
     list_filter = ('status', )
-    readonly_fields = ('get_parents', 'get_siblings')
+    readonly_fields = ('get_parents', 'get_siblings', 'date_added', 'last_updated', )
 
 
 class ScoutInline(admin.TabularInline):
@@ -49,6 +49,7 @@ class ParentAdmin(admin.ModelAdmin):
     list_select_related = ('account',)
     inlines = (ScoutInline, PhoneNumberInline, AddressInline, )
     exclude = ('children', )
+    readonly_fields = ('date_added', 'last_updated', )
 
 
 class AccountAdmin(UserAdmin):
