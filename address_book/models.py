@@ -92,6 +92,7 @@ class Venue(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ['name']
         verbose_name = _('Venue')
         verbose_name_plural = _('Venues')
 
