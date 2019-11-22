@@ -8,7 +8,7 @@
     <p>{{ page_content.body|safe }}</p>
   {% endif %}
   {% if upcoming_events %}
-    <h2>Upcoming Events</h2>
+    <h2>Coming Up</h2>
     <dl class="row">
       {% for event in upcoming_events %}
         <dt class="col-sm-4">{{ event.start.date|naturalday:'l, F j, Y'|capfirst }}</dt>
