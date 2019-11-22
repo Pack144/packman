@@ -18,7 +18,8 @@ class Document(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField(help_text=_('Brief description of what the document is.'), blank=True, null=True)
     file = models.FileField(upload_to='documents')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='documents')
+    display_in_repository = models.BooleanField(help_text=_('Make this document visible in the Document Repository'), default=True)
 
     date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)

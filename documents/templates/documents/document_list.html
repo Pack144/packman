@@ -10,13 +10,13 @@
     </ol>
   </nav>
   <h1>Documents</h1>
-  {% if document_list %}
+  {% if category_list %}
     <div class="container" id="document-list">
-    {% for category in categories %}
-      {% if category.document_set.count %}
+    {% for category in category_list %}
+      {% if category.documents.count %}
       <h3>{{ category }}</h3>
       <dl class="row">
-        {% for document in category.document_set.all %}
+        {% for document in category.documents.all %}
         <dt class="col-sm-4"><a href="{{ document.file.url }}">{{ document.name }}</a></dt>
         <dd class="col-sm-8">{% if document.description %}{{ document.description }}<br>{% endif %}
           <small class="text-muted ">Last updated: {{ document.last_updated }}</small></dd>
