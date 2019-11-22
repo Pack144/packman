@@ -12,7 +12,7 @@ class MemberListView(ActiveMemberOrContributorTestMixin, ListView):
     template_name = 'membership/member_list.html'
 
     def get_queryset(self):
-        return Member.objects.filter(Q(parent__children__status__contains='A') | Q(scout__status__exact='A'))
+        return Member.objects.filter(Q(parent__children__status__contains='A') | Q(scout__status__exact='A')).distinct()
 
 
 class ParentListView(ActiveMemberOrContributorTestMixin, ListView):
@@ -21,7 +21,7 @@ class ParentListView(ActiveMemberOrContributorTestMixin, ListView):
     template_name = 'membership/parent_list.html'
 
     def get_queryset(self):
-        return Parent.objects.filter(children__status__contains='A')
+        return Parent.objects.filter(children__status__contains='A').distinct()
 
 
 class ScoutListView(ActiveMemberOrContributorTestMixin, ListView):
@@ -30,7 +30,7 @@ class ScoutListView(ActiveMemberOrContributorTestMixin, ListView):
     template_name = 'membership/scout_list.html'
 
     def get_queryset(self):
-        return Scout.objects.filter(status__exact='A')
+        return Scout.objects.filter(status__exact='A').distinct()
 
 
 class ParentCreateView(ActiveMemberTestMixin, CreateView):
