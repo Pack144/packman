@@ -17,7 +17,7 @@
       <h3>{{ category }}</h3>
       <dl class="row">
         {% for document in category.documents.all %}
-        <dt class="col-sm-4"><a href="{{ document.file.url }}">{{ document.name }}</a></dt>
+        <dt class="col-sm-4"><a href="{{ document.file.url }}" target="_blank">{{ document.name }}</a></dt>
         <dd class="col-sm-8">{% if document.description %}{{ document.description }}<br>{% endif %}
           <small class="text-muted ">Last updated: {{ document.last_updated }}</small></dd>
         {% endfor %}
