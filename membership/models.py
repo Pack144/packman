@@ -41,7 +41,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 class Headshot(models.Model):
     image = VersatileImageField(upload_to='headshots/', ppoi_field='ppoi', width_field='width',
-                                height_field='height', )
+                                height_field='height')
 
     ppoi = PPOIField('Image Focal Point')
     height = models.PositiveIntegerField(
@@ -80,7 +80,7 @@ class Member(models.Model):
     nickname = models.CharField(max_length=32, blank=True, null=True,
                                 help_text=_('If there is another name you prefer go by, tell us what it is we will use '
                                             'that on the website.'))
-    headshot = models.OneToOneField(Headshot, on_delete=models.CASCADE, blank=True, null=True)
+    headshot = models.OneToOneField(Headshot, on_delete=models.CASCADE, related_name='member', blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
 
     date_added = models.DateTimeField(auto_now_add=True)
