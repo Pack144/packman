@@ -61,6 +61,7 @@ class PhoneNumber(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ['number']
         verbose_name = _('Phone Number')
         verbose_name_plural = _('Phone Numbers')
 
@@ -75,6 +76,7 @@ class VenueType(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ['type']
         verbose_name = _('Venue Type')
         verbose_name_plural = _('Venue Types')
 
