@@ -87,8 +87,10 @@ class VenueType(models.Model):
 class Venue(models.Model):
     name = models.CharField(max_length=128, unique=True)
     type = models.ForeignKey(VenueType, on_delete=models.CASCADE, related_name='venue')
-    address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='venue', null=True, blank=True)
-    phone_number = models.OneToOneField(PhoneNumber, on_delete=models.CASCADE, related_name='venue', null=True, blank=True)
+    address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='venue', null=True, blank=True,
+                                   limit_choices_to={'member': None})
+    phone_number = models.OneToOneField(PhoneNumber, on_delete=models.CASCADE, related_name='venue', null=True,
+                                        blank=True, limit_choices_to={'member': None})
 
     date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
