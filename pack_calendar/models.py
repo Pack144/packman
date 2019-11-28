@@ -54,7 +54,7 @@ class Event(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['start']
+        ordering = ['-start']
         verbose_name = _('Event')
         verbose_name_plural = _('Events')
 
