@@ -33,10 +33,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     objects = AccountManager()
 
     def __str__(self):
-        if self.profile.full_name != '':
-            return '{} ({})'.format(self.email, self.profile.full_name())
-        else:
-            return self.email
+        return self.email
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         """ Sends an email to this User """
@@ -45,7 +42,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 class Member(models.Model):
     """
-    The member profile used to store additional information about the member
+    The member profile used to store additional information about this person
     """
     GENDER_CHOICES = (
         ('M', 'Male'),
@@ -53,24 +50,25 @@ class Member(models.Model):
         ('O', 'Prefer not to say'),
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     first_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, blank=True, null=True)
     last_name = models.CharField(max_length=32)
-    nickname = models.CharField(max_length=32, blank=True, null=True,
-                                help_text=_('If there is another name you prefer go by, tell us what it is we will use '
-                                            'that on the website.'))
-    headshot = models.ImageField(upload_to=member_headshot_path, blank=True, null=True)
+    nickname = models.CharField(max_length=32, blank=True, null=True, help_text=_(
+        "If there is another name you prefer to be called, tell us what it is we will use that on the website."))
+    photo = models.ImageField(upload_to=member_headshot_path, blank=True, null=True, help_text=_(
+        "We use member photos on the website to help match names with faces."))
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
 
     date_added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = _('All Members')
         ordering = ['last_name', 'first_name']
+        verbose_name_plural = _('All Members')
 
     def __str__(self):
-        return self.full_name()
+        return self.full_name
 
     def get_absolute_url(self):
         if hasattr(self, 'parent'):
@@ -80,11 +78,13 @@ class Member(models.Model):
         else:
             return None
 
+    @property
     def full_name(self):
         """ Return the member's first and last name, replacing first name with a nickname if one has been given """
-        return "{} {}".format(self.short_name(), self.last_name)
+        return "{} {}".format(self.name, self.last_name)
 
-    def short_name(self):
+    @property
+    def name(self):
         """ Return the member's nickname, if given, or first name if nickname isn't specified """
         if self.nickname:
             return self.nickname
@@ -111,10 +111,19 @@ class Scout(Member):
 
     birthday = models.DateField(blank=True, null=True)
     school = models.ForeignKey('address_book.Venue', on_delete=models.CASCADE, blank=True, null=True,
-                               limit_choices_to={'type__type__icontains': 'School'})
+                               limit_choices_to={'type__type__icontains': 'School'}, help_text=_(
+            "Tell us what school your child attends. If your school isn't listed, tell us in the comments section."))
+    year_started_kindergarten = models.PositiveSmallIntegerField(help_text=_(
+        "What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
+    referral = models.CharField(max_length=128, blank=True, null=True, help_text=_(
+        "If you know someone who is already in the pack, you can tell us their name."))
+    comments = models.TextField(blank=True, null=True, help_text=_(
+        "What other information should we consider when reviewing your application?"))
+
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
     start_date = models.DateField(blank=True, null=True)
 
+    @property
     def age(self):
         """ Calculates the cub scout's age when a birthday is specified """
         if not self.birthday:
@@ -130,6 +139,26 @@ class Scout(Member):
     def get_siblings(self):
         """ Return a list of other Scouts who share the same parent(s) """
         return Scout.objects.filter(~Q(id=self.id), Q(parents__in=self.parents.all())).distinct()
+
+    @property
+    def grade(self):
+        """ Based on when this cub started school, what grade should they be in now? """
+        this_year = timezone.now().year
+        if timezone.now().month < 9:  # assuming that a school year begins in September
+            this_year -= 1
+        calculated_grade = this_year - self.year_started_kindergarten
+
+        if calculated_grade == 0:
+            # this Scout is a kindergartner
+            return 'K'
+        elif calculated_grade < 0:
+            # this Scout hasn't started Kindergarten yet
+            return None
+        elif calculated_grade <= 12:
+            return calculated_grade
+        else:
+            # this Scout isn't in grade school anymore
+            return None
 
 
 class Parent(Member):
@@ -178,4 +207,4 @@ class Relationship(models.Model):
     relationship_to_child = models.CharField(max_length=2, choices=RELATIONSHIP_CHOICES, default='O')
 
     def __str__(self):
-        return self.child.full_name()
+        return "{}'s {}".format(self.child.full_name, self.get_relationship_to_child_display())

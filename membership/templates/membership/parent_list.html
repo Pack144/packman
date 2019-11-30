@@ -31,8 +31,8 @@
             <a href="{{ parent.get_absolute_url }}">
               <div class="row align-items-center">
                 <div class="col-sm-2">
-                  {% if parent.headshot %}
-                    <img src="{{ parent.headshot|thumbnail_url:'thumbnail' }}" class="img-fluid rounded"
+                  {% if parent.photo %}
+                    <img src="{{ parent.photo|thumbnail_url:'thumbnail' }}" class="img-fluid rounded"
                          alt="{{ parent }}'s profile picture">
                   {% elif parent.gender == 'M' %}
                     <img src="{% static 'img/avatar_man.png' %}" class="img-fluid rounded" alt="No profile picture">
