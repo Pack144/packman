@@ -1,7 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from django.forms import inlineformset_factory
 from django.views.generic import CreateView, DetailView, UpdateView, ListView
 
+from .forms import ParentForm, ScoutForm
 from .mixins import ActiveMemberTestMixin, ActiveMemberOrContributorTestMixin
 from .models import Member, Parent, Scout
 
@@ -44,7 +46,7 @@ class ParentDetailView(ActiveMemberTestMixin, DetailView):
 
 class ParentUpdateView(ActiveMemberTestMixin, UpdateView):
     model = Parent
-    fields = '__all__'
+    form_class = ParentForm
     template_name_suffix = '_update_form'
 
 
@@ -59,7 +61,7 @@ class ScoutDetailView(ActiveMemberTestMixin, DetailView):
 
 class ScoutUpdateView(ActiveMemberTestMixin, UpdateView):
     model = Scout
-    fields = '__all__'
+    form_class = ScoutForm
     template_name_suffix = '_update_form'
 
 
