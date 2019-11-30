@@ -28,8 +28,8 @@ class ParentInline(admin.StackedInline):
 
 class ScoutAdmin(admin.ModelAdmin):
     model = Scout
-    list_display = ('short_name', 'last_name', 'age', 'status')
-    list_display_links = ['short_name', 'last_name']
+    list_display = ('name', 'last_name', 'age', 'grade', 'status')
+    list_display_links = ['name', 'last_name']
     list_filter = ('status', )
     readonly_fields = ('get_parents', 'get_siblings', 'date_added', 'last_updated', )
 
@@ -43,8 +43,8 @@ class ScoutInline(admin.TabularInline):
 
 class ParentAdmin(admin.ModelAdmin):
     model = Parent
-    list_display = ('short_name', 'last_name', 'email', 'role')
-    list_display_links = ['short_name', 'last_name', 'email']
+    list_display = ('name', 'last_name', 'email', 'role')
+    list_display_links = ['name', 'last_name', 'email']
     list_filter = ('role', )
     list_select_related = ('account',)
     inlines = (ScoutInline, PhoneNumberInline, AddressInline, )
@@ -75,7 +75,7 @@ class AccountAdmin(UserAdmin):
     inlines = (ParentInline, )
 
     def get_short_name(self, instance):
-        return instance.profile.short_name()
+        return instance.profile.name
 
     get_short_name.short_description = _('Name')
 

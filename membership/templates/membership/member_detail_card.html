@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 
 <div class="card shadow-sm">
   <a href="{{ member.get_absolute_url }}">
@@ -16,7 +17,6 @@
   </a>
   <div class="card-body">
     <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}</h5></a>
-    {% if member.birthday %}<h6 class="card-subtitle text-muted">{{ member.age }} years old</h6>{% endif %}
     {% if member.email %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
@@ -70,21 +70,26 @@
         {% endfor %}
       </div>
     {% endif %}
-    {% if member.school %}
-            <div class="container mt-2">
+    {% if member.birthday %}
+      <div class="container mt-2">
         <div class="row card-text d-inline-flex">
-          <div class="col col-1">
-            <span class="fa fa-school"></span>
-          </div>
-          <div class="col">
-            <p>{{ member.school }}</p>
-          </div>
+          <div class="col col-1"><span class="fa fa-birthday-cake"></span></div>
+          <div class="col">{{ member.age }} years old</div>
         </div>
       </div>
-
     {% endif %}
-    {% if member.den_assigned %}<img src="/static/img/den_{{ member.den_assigned.number }}_patch.jpg" class="card-img"
-                                     alt="Den {{ member.den_assigned.number }} patch">{% endif %}
+    {% if member.school %}
+      <div class="container mt-2">
+        <div class="row card-text d-inline-flex">
+          <div class="col col-1"><span class="fa fa-school"></span></div>
+          <div class="col">{{ member.school }}<br>
+          {% if member.grade > 0 %}{{ member.grade|ordinal }} grade{% elif member.grade == 'K' %}Kindergarten{% endif %}</div>
+        </div>
+      </div>
+    {% endif %}
+    {% if member.den_assigned %}
+      <img src="/static/img/den_{{ member.den_assigned.number }}_patch.jpg" class="card-img" alt="Den {{ member.den_assigned.number }} patch">
+    {% endif %}
   </div>
   {% if member.scout.start_date %}
     <div class="card-footer text-center">
