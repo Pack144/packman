@@ -28,7 +28,7 @@ class ParentInline(admin.StackedInline):
 
 class ScoutAdmin(admin.ModelAdmin):
     model = Scout
-    list_display = ('name', 'last_name', 'age', 'grade', 'status')
+    list_display = ('name', 'last_name', 'age', 'school', 'grade', 'status')
     list_display_links = ['name', 'last_name']
     list_filter = ('status', )
     readonly_fields = ('get_parents', 'get_siblings', 'date_added', 'last_updated', )
