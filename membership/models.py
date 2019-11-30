@@ -17,6 +17,11 @@ def member_headshot_path(instance, filename):
     return 'headshots/{0}/{1}'.format(slugify(instance.full_name()), filename)
 
 
+def couple_of_years_ago():
+    # give a year 2-3 years in the past as a starting point for the Scout year_started_kindergarten field
+    return timezone.now().year - 2
+
+
 class Account(AbstractBaseUser, PermissionsMixin):
     """
     An e-mail based user account, used to log into the website
@@ -113,7 +118,7 @@ class Scout(Member):
     school = models.ForeignKey('address_book.Venue', on_delete=models.CASCADE, blank=True, null=True,
                                limit_choices_to={'type__type__icontains': 'School'}, help_text=_(
             "Tell us what school your child attends. If your school isn't listed, tell us in the comments section."))
-    year_started_kindergarten = models.PositiveSmallIntegerField(help_text=_(
+    year_started_kindergarten = models.PositiveSmallIntegerField(default=couple_of_years_ago, help_text=_(
         "What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
     referral = models.CharField(max_length=128, blank=True, null=True, help_text=_(
         "If you know someone who is already in the pack, you can tell us their name."))
