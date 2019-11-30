@@ -67,7 +67,8 @@ class ScoutUpdateView(ActiveMemberTestMixin, UpdateView):
 
 class FamilyUpdateView(LoginRequiredMixin, UpdateView):
     model = Parent
-    fields = '__all__'
+    form_class = ParentForm
+    template_name = 'membership/family_form.html'
 
     def get_object(self):
         return Parent.objects.get(id=self.request.user.profile.id)

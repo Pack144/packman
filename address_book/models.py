@@ -33,7 +33,7 @@ class Address(models.Model):
 
     def __str__(self):
         if self.member:
-            return '{}: {}'.format(self.member.full_name(), self.single_line_display())
+            return '{}: {}'.format(self.member.full_name, self.single_line_display())
         else:
             return self.single_line_display()
 

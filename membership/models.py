@@ -101,6 +101,34 @@ class Member(models.Model):
         pass
 
 
+class Parent(Member):
+    """
+    Any adult member such as a parent, guardian, or other use this model
+    """
+    ROLE_CHOICES = (
+        ('P', 'Parent/Guardian'),
+        ('C', 'Contributor'),
+    )
+    role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', verbose_name='email')
+
+    @property
+    def email(self):
+        return self.account.email
+
+    def get_active_scouts(self):
+        """ Return a list of all currently active scouts associated with this member. """
+        return self.children.filter(status__exact='A')
+
+    @property
+    def is_active(self):
+        """ If member has active scouts, then they should also be considered active in the pack. """
+        if self.get_active_scouts():
+            return True
+        else:
+            return False
+
+
 class Scout(Member):
     """
     Cub scouts use this model to store profile details
@@ -125,6 +153,8 @@ class Scout(Member):
     comments = models.TextField(blank=True, null=True, help_text=_(
         "What other information should we consider when reviewing your application?"))
 
+    parents = models.ManyToManyField(Parent, related_name='children', through='Relationship', blank=True)
+
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
     start_date = models.DateField(blank=True, null=True)
 
@@ -136,10 +166,6 @@ class Scout(Member):
         today = timezone.now()
         return today.year - self.birthday.year - (
                 (today.month, today.day) < (self.birthday.month, self.birthday.day))
-
-    def get_parents(self):
-        """ Return a list of all parents associated with this scout """
-        return self.parents.all()
 
     def get_siblings(self):
         """ Return a list of other Scouts who share the same parent(s) """
@@ -166,34 +192,6 @@ class Scout(Member):
             return None
 
 
-class Parent(Member):
-    """
-    Any adult member such as a parent, guardian, or other use this model
-    """
-    ROLE_CHOICES = (
-        ('P', 'Parent/Guardian'),
-        ('C', 'Contributor'),
-    )
-    children = models.ManyToManyField(Scout, related_name='parents', through='Relationship', blank=True)
-    role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
-    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', verbose_name='email')
-
-    def email(self):
-        return self.account.email
-
-    def get_active_scouts(self):
-        """ Return a list of all currently active scouts associated with this member. """
-        return self.children.filter(status__exact='A')
-
-    @property
-    def is_active(self):
-        """ If member has active scouts, then they should also be considered active in the pack. """
-        if self.get_active_scouts():
-            return True
-        else:
-            return False
-
-
 class Relationship(models.Model):
     """ Track the relationship a member has with a scout """
     RELATIONSHIP_CHOICES = (
@@ -212,4 +210,4 @@ class Relationship(models.Model):
     relationship_to_child = models.CharField(max_length=2, choices=RELATIONSHIP_CHOICES, default='O')
 
     def __str__(self):
-        return "{}'s {}".format(self.child.full_name, self.get_relationship_to_child_display())
+        return "{}'s {}, {}".format(self.child.full_name, self.get_relationship_to_child_display(), self.parent.full_name)

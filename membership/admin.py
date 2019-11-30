@@ -26,12 +26,20 @@ class ParentInline(admin.StackedInline):
     can_delete = False
 
 
+class ParentRelationshipInline(admin.TabularInline):
+    model = Scout.parents.through
+    extra = 0
+    verbose_name = _('Parent')
+    verbose_name_plural = _('Parents')
+
+
 class ScoutAdmin(admin.ModelAdmin):
     model = Scout
     list_display = ('name', 'last_name', 'age', 'school', 'grade', 'status')
     list_display_links = ['name', 'last_name']
     list_filter = ('status', )
-    readonly_fields = ('get_parents', 'get_siblings', 'date_added', 'last_updated', )
+    readonly_fields = ('date_added', 'last_updated', )
+    inlines = (ParentRelationshipInline, )
 
 
 class ScoutInline(admin.TabularInline):
