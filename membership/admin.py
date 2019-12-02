@@ -39,6 +39,7 @@ class ScoutAdmin(admin.ModelAdmin):
     list_display_links = ['name', 'last_name']
     list_filter = ('status', )
     readonly_fields = ('date_added', 'last_updated', )
+    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
     inlines = (ParentRelationshipInline, )
 
 
@@ -54,6 +55,7 @@ class ParentAdmin(admin.ModelAdmin):
     list_display = ('name', 'last_name', 'email', 'role')
     list_display_links = ['name', 'last_name', 'email']
     list_filter = ('role', )
+    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
     list_select_related = ('account',)
     inlines = (ScoutInline, PhoneNumberInline, AddressInline, )
     exclude = ('children', )
