@@ -35,7 +35,7 @@ class Den(models.Model):
         return 'Den {}'.format(self.number)
 
     def get_absolute_url(self):
-        return reverse('den-detail', args=[int(self.number)])
+        return reverse('den_detail', args=[int(self.number)])
 
     @property
     def category(self):
