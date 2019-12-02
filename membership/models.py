@@ -120,6 +120,10 @@ class Parent(Member):
         """ Return a list of all currently active scouts associated with this member. """
         return self.children.filter(status__exact='A')
 
+    def get_partners(self):
+        """ Return a list of other parents who share the same scout(s) """
+        return Parent.objects.filter(~Q(id=self.id), Q(children__in=self.children.all())).distinct()
+
     @property
     def is_active(self):
         """ If member has active scouts, then they should also be considered active in the pack. """

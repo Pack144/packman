@@ -16,6 +16,15 @@
     {% endif %}
   </h1>
   {% include 'membership/member_detail_card.html' with member=parent %}
+  {% if parent.get_partners.count %}
+    <hr>
+    <h2>Partner{{ parent.get_partners.count|pluralize }}</h2>
+    <div class="card-group">
+      {% for partner in parent.get_partners.all %}
+        {% include 'membership/member_detail_card.html' with member=partner %}
+      {% endfor %}
+    </div>
+  {% endif %}
   {% if parent.children.count %}
     <hr>
     <h2>Child{{ parent.children.count|pluralize:'ren' }}</h2>
