@@ -9,6 +9,8 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+from dens.models import Den
+
 from .managers import AccountManager
 
 
@@ -56,9 +58,11 @@ class Member(models.Model):
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
+    prefix = models.CharField(max_length=8, blank=True, null=True)
     first_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, blank=True, null=True)
     last_name = models.CharField(max_length=32)
+    suffix = models.CharField(max_length=8, blank=True, null=True)
     nickname = models.CharField(max_length=32, blank=True, null=True, help_text=_(
         "If there is another name you prefer to be called, tell us what it is we will use that on the website."))
     photo = models.ImageField(upload_to=member_headshot_path, blank=True, null=True, help_text=_(
@@ -160,6 +164,7 @@ class Scout(Member):
     parents = models.ManyToManyField(Parent, related_name='children', through='Relationship', blank=True)
 
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
+    den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name='scouts', blank=True, null=True)
     start_date = models.DateField(blank=True, null=True)
 
     @property
