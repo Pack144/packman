@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.forms import inlineformset_factory
@@ -6,6 +7,9 @@ from django.views.generic import CreateView, DetailView, UpdateView, ListView
 from .forms import ParentForm, ScoutForm
 from .mixins import ActiveMemberTestMixin, ActiveMemberOrContributorTestMixin
 from .models import Member, Parent, Scout
+
+
+user = get_user_model()
 
 
 class MemberListView(ActiveMemberOrContributorTestMixin, ListView):
@@ -52,7 +56,14 @@ class ParentUpdateView(ActiveMemberTestMixin, UpdateView):
 
 class ScoutCreateView(LoginRequiredMixin, CreateView):
     model = Scout
-    fields = '__all__'
+    form_class = ScoutForm
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(ScoutCreateView, self).get_initial(**kwargs)
+        initial['last_name'] = self.request.user.profile.last_name
+        initial['parents'] = [self.request.user.profile.id]
+        initial['status'] = 'W'
+        return initial
 
 
 class ScoutDetailView(ActiveMemberTestMixin, DetailView):

@@ -61,7 +61,8 @@ class ScoutForm(forms.ModelForm):
 
     class Meta:
         model = Scout
-        exclude = ('status', 'start_date', )
+        exclude = ('start_date', )
+        widgets = {'status': forms.HiddenInput(), }
 
     def __init__(self, *args, **kwargs):
         super(ScoutForm, self).__init__(*args, **kwargs)
