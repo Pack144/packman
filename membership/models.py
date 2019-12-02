@@ -14,7 +14,7 @@ from .managers import AccountManager
 
 def member_headshot_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/headshots/user_slug/<filename>
-    return 'headshots/{0}/{1}'.format(slugify(instance.full_name()), filename)
+    return 'headshots/{0}/{1}'.format(slugify(instance.full_name), filename)
 
 
 def couple_of_years_ago():
