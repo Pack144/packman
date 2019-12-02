@@ -37,7 +37,7 @@ class ScoutAdmin(admin.ModelAdmin):
     model = Scout
     list_display = ('name', 'last_name', 'age', 'school', 'grade', 'status')
     list_display_links = ['name', 'last_name']
-    list_filter = ('status', 'grade', )
+    list_filter = ('status', )
     readonly_fields = ('date_added', 'last_updated', )
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
     inlines = (ParentRelationshipInline, )
