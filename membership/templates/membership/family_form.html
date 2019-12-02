@@ -5,19 +5,26 @@
 
 {% block content %}
   <h1>My Family</h1>
+  <h2>Me</h2>
     <form method="post" enctype="multipart/form-data" class="form">
     {% csrf_token %}
     {% crispy form %}
     <button type="submit" class="btn btn-lg btn-success">Update my details</button>
     <a class="btn btn-primary" href="{% url 'parent_detail' parent.id %}">Cancel</a>
   </form>
-
-  <h3>Child{{ parent.children.count|pluralize:'ren' }}</h3>
+  <h2>Partner{{ parten.get_partners.count|pluralize }}</h2>
+  <ul class="list-unstyled">
+  {% for parent in parent.get_partners.all %}
+    <li><a href="{% url 'parent_update' parent.id %}">{{ parent.name }}</a></li>
+  {% endfor %}
+  </ul>
+  <a class="btn btn-sm btn-secondary" href="{% url 'parent_create' %}">Add a partner</a>
+  <h2>Child{{ parent.children.count|pluralize:'ren' }}</h2>
   <ul class="list-unstyled">
   {% for child in parent.children.all %}
     <li><a href="{% url 'scout_update' child.id %}">{{ child.name }}</a></li>
   {% endfor %}
   </ul>
-  <a class="btn btn-lg btn-secondary" href="{% url 'scout_create' %}">Add a child</a>
+  <a class="btn btn-sm btn-secondary" href="{% url 'scout_create' %}">Add a child</a>
 
 {% endblock %}
