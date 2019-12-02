@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends '_base.html' %}
 {% load static %}
 
 {% block title %}{{ den }}{% endblock %}
 
-{% block main %}
+{% block content %}
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
@@ -31,4 +31,4 @@
     {% else %}
     <div class="alert alert-light" role="alert">This den has no members</div>
     {% endif %}
-{% endblock main %}
+{% endblock %}
