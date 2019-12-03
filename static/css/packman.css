@@ -34,6 +34,10 @@ main {
     border-color: #fff #dee2e6 #dee2e6;
 }
 
+#den-patches {
+    height: 100px;
+}
+
 .form-signin {
     width: 100%;
     max-width: 352px;

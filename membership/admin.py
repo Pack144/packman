@@ -35,9 +35,9 @@ class ParentRelationshipInline(admin.TabularInline):
 
 class ScoutAdmin(admin.ModelAdmin):
     model = Scout
-    list_display = ('name', 'last_name', 'age', 'school', 'grade', 'status')
+    list_display = ('name', 'last_name', 'den', 'school', 'grade', 'age', 'status', )
     list_display_links = ['name', 'last_name']
-    list_filter = ('status', )
+    list_filter = ('status', 'den', )
     readonly_fields = ('date_added', 'last_updated', )
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
     inlines = (ParentRelationshipInline, )
