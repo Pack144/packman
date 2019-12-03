@@ -16,7 +16,7 @@
     {% for den in den_list %}
         <li class="list-group-item">
             <a href="{{ den.get_absolute_url }}">{{ den }}</a>
-            <p><small class="text-muted">{{ den.membership.count }} member{{ den.membership.count|pluralize }}</small></p>
+            <p><small class="text-muted">{{ den.scouts.count }} member{{ den.scouts.count|pluralize }}</small></p>
         </li>
     {% endfor %}
     </ul>
