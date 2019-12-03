@@ -22,10 +22,10 @@
     {% else %}
     <div class="alert alert-warning" role="alert">There are no leaders assigned to this den</div>
     {% endif %}
-    <h2>Member{{ den.membership.count|pluralize }}</h2>
-    {% if den.membership.count %}
+    <h2>Member{{ den.scouts.count|pluralize }}</h2>
+    {% if den.scouts.count %}
     <ul class="list-group">
-    {% for member in den.membership.all %}
+    {% for member in den.scouts.all %}
         <li class="list-group-item"><a href="{{ member.get_absolute_url }}">{{ member }}</a></li>{% endfor %}
     </ul>
     {% else %}
