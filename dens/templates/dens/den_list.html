@@ -14,13 +14,13 @@
   {% if den_list %}
     <dl class="row list-group">
       {% for den in den_list %}
-        <a href="{{ den.get_absolute_url }}">
-          <li class="list-group-item">
+        <li class="list-group-item">
+          <a href="{{ den.get_absolute_url }}">
             <div class="font-weight-bold d-flex justify-content-between align-items-center">{{ den }}
               <span class="badge badge-primary badge-pill">{{ den.scouts.count }}</span></div>
             <div>{{ den.get_rank_display }}</div>
-          </li>
-        </a>
+          </a>
+        </li>
       {% endfor %}
     </dl>
   {% else %}
