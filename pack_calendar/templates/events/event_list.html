@@ -4,12 +4,6 @@
 {% block title %}Upcoming Events{% endblock %}
 
 {% block content %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Calendar</li>
-    </ol>
-  </nav>
   <h1>Upcoming Events</h1>
   <div class="container" id="event-list">
     {% if event_list %}

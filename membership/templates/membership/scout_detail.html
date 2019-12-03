@@ -3,13 +3,6 @@
 {% block title %}{{ scout.full_name }}{% endblock title %}
 
 {% block content %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'member_list' %}">Members</a></li>
-      <li class="breadcrumb-item active" aria-current="page">{{ scout.full_name }}</li>
-    </ol>
-  </nav>
   <h1>{{ scout.full_name }}
     {% if user.profile.parent in scout.parents.all %}
       <a href="{% url 'scout_update' scout.id %}"> <span class="badge badge-secondary"><span class="fa fa-user-edit"></span></span></a>

@@ -4,14 +4,6 @@
 {% block title %}{{ scout.full_name }} - Update{% endblock %}
 
 {% block content %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'member_list' %}">Members</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'scout_list' %}">Scouts</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Nominate a Scout</li>
-    </ol>
-  </nav>
   <h1>Update {{ scout.full_name }}</h1>
   <form method="post" enctype="multipart/form-data" class="form">
     {% csrf_token %}

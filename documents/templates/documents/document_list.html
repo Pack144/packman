@@ -3,13 +3,7 @@
 {% block title %}Documents{% endblock %}
 
 {% block content %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Documents</li>
-    </ol>
-  </nav>
-  <h1>Documents</h1>
+   <h1>Documents</h1>
   {% if category_list %}
     <div class="container" id="document-list">
     {% for category in category_list %}
