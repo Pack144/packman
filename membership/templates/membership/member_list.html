@@ -25,9 +25,9 @@
   </ul>
   <div class="container" id="member-list">
     {% if member_list %}
-      <ul class="list-unstyled">
+      <ul class="list-group">
         {% for member in member_list %}
-          <li class="mb-3">
+          <li class="list-group-item">
             <a href="{{ member.get_absolute_url }}">
               <div class="row align-items-center">
                 <div class="col-sm-2">
