@@ -3,8 +3,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 
-class Den(models.Model):
-    """ Each cub should be a member of 1 den """
+class Rank(models.Model):
     BOBCAT = 1
     TIGER = 2
     WOLF = 3
@@ -21,21 +20,17 @@ class Den(models.Model):
         (SR_WEBE, "Sr. Webelos"),
         (ARROW, "Arrow of Light"),
     )
-
-    number = models.PositiveSmallIntegerField(primary_key=True)
-    rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES, blank=True, null=True)
-
-    date_added = models.DateField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['number']
+    rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES)
+    description = models.CharField(max_length=128, blank=True, null=True)
+    patch = models.ImageField(upload_to='dens/rank', blank=True, null=True,)
 
     def __str__(self):
-        return 'Den {}'.format(self.number)
+        return self.get_rank_display()
 
-    def get_absolute_url(self):
-        return reverse('den_detail', args=[int(self.number)])
+    class Meta:
+        ordering = ['rank']
+        verbose_name = _('Rank')
+        verbose_name_plural = _('Ranks')
 
     @property
     def category(self):
@@ -50,3 +45,25 @@ class Den(models.Model):
             return _('Webelos')
         else:
             return None
+
+
+class Den(models.Model):
+    """ Each cub should be a member of 1 den """
+
+    number = models.PositiveSmallIntegerField(primary_key=True)
+    rank = models.ForeignKey(Rank, on_delete=models.CASCADE, related_name='dens', blank=True, null=True)
+    patch = models.ImageField(upload_to='dens', blank=True, null=True)
+
+    date_added = models.DateField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['number']
+        verbose_name = _('Den')
+        verbose_name_plural = _('Dens')
+
+    def __str__(self):
+        return 'Den {}'.format(self.number)
+
+    def get_absolute_url(self):
+        return reverse('den_detail', args=[int(self.number)])

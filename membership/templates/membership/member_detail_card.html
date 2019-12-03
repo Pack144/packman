@@ -87,8 +87,8 @@
         </div>
       </div>
     {% endif %}
-    {% if member.den %}
-      <img src="/static/img/den_{{ member.den.number }}_patch.jpg" class="card-img" alt="Den {{ member.den.number }} patch">
+    {% if member.den and member.den.patch %}
+        <img src="{{ member.den.patch.url }}" alt="Den {{ member.den.number }} patch" class="card-img rounded">
     {% endif %}
   </div>
   {% if member.scout.start_date %}
