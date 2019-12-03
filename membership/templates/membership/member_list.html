@@ -38,15 +38,15 @@
                     <img src="{% static 'img/avatar_generic.png' %}" class="img-fluid rounded" alt="No profile picture">
                   {% endif %}
                 </div>
-                <div class="col-sm-10"><h4>{{ member.full_name }}</h4></div>
+                <div class="col-sm-10">
+                  <h4>{{ member.full_name }}</h4>
+                  {% if member.scout.den %}<p>{{ member.scout.den }}</p>{% endif %}
+                </div>
               </div>
             </a>
           </li>
         {% endfor %}
       </ul>
-      <div class="alert alert-light text-center">
-        <small class="text-muted">{{ member_list.count }} member{{ member_list.count|pluralize }}</small>
-      </div>
     {% else %}
       <div class="alert alert-light" role="alert">
         <p class="text-center">

@@ -19,9 +19,9 @@
   </ul>
   <div class="container" id="member-list">
     {% if parent_list %}
-      <ul class="list-unstyled">
+      <ul class="list-group">
         {% for parent in parent_list %}
-          <li class="mb-3">
+          <li class="list-group-item">
             <a href="{{ parent.get_absolute_url }}">
               <div class="row align-items-center">
                 <div class="col-sm-2">
@@ -42,9 +42,6 @@
           </li>
         {% endfor %}
       </ul>
-      <div class="alert alert-light text-center">
-        <small class="text-muted">{{ parent_list.count }} parent{{ parent_list.count|pluralize }}</small>
-      </div>
     {% else %}
       <div class="alert alert-light" role="alert">
         <p class="text-center">The pack has no active members. It's time to invite some to <a href="{% url 'account_signup' %}"
