@@ -1,34 +1,56 @@
 {% extends '_base.html' %}
 {% load static %}
+{% load thumbnail %}
 
 {% block title %}{{ den }}{% endblock %}
 
 {% block content %}
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'dens_list' %}">Dens</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ den }}</li>
-        </ol>
-    </nav>
-    <div class="bg-white" style="height: 100px;">
-        <img src="/static/img/den_{{ den.number }}_patch.jpg" class="img-fluid float-left h-75 m-2 align-middle" alt="Den {{ den.number }} patch">
-        {% if den.rank %}<img src="/static/img/{{ den.get_rank_display|slugify }}.jpg" class="img-fluid h-75 m-2 align-middle" alt="{{ den.get_rank_display }} patch">{% endif %}
-    </div>
-    <h2>Leader{{ den.leadership.count|pluralize }}</h2>
-    {% if den.leadership.count %}<ul class="list-group">
-        {% for leader in den.leadership.all %}<li class="list-group-item"><a href="{{ leader.get_absolute_url }}">{{ leader }}</a></li>{% endfor %}
-    </ul>
-    {% else %}
-    <div class="alert alert-warning" role="alert">There are no leaders assigned to this den</div>
-    {% endif %}
-    <h2>Member{{ den.scouts.count|pluralize }}</h2>
-    {% if den.scouts.count %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home_page' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dens_list' %}">Dens</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ den }}</li>
+    </ol>
+  </nav>
+  <div class="bg-white" style="height: 100px;">
+    <img src="/static/img/den_{{ den.number }}_patch.jpg" class="img-fluid float-left h-75 m-2 align-middle"
+         alt="Den {{ den.number }} patch">
+    {% if den.rank %}
+      <img src="/static/img/{{ den.get_rank_display|slugify }}.jpg" class="img-fluid h-75 m-2 align-middle"
+           alt="{{ den.get_rank_display }} patch">{% endif %}
+  </div>
+  <h2>Leader{{ den.leadership.count|pluralize }}</h2>
+  {% if den.leadership.count %}
     <ul class="list-group">
-    {% for member in den.scouts.all %}
-        <li class="list-group-item"><a href="{{ member.get_absolute_url }}">{{ member }}</a></li>{% endfor %}
+      {% for leader in den.leadership.all %}
+        <li class="list-group-item"><a href="{{ leader.get_absolute_url }}">{{ leader }}</a></li>{% endfor %}
     </ul>
-    {% else %}
+  {% else %}
+    <div class="alert alert-warning" role="alert">There are no leaders assigned to this den</div>
+  {% endif %}
+  <h2>Member{{ den.scouts.count|pluralize }}</h2>
+  {% if den.scouts.count %}
+    <ul class="list-group">
+      {% for scout in den.scouts.all %}
+        <li class="list-group-item">
+          <a href="{{ scout.get_absolute_url }}">
+            <div class="row align-items-center">
+              <div class="col-sm-2">
+                {% if scout.photo %}
+                  <img src="{{ scout.photo|thumbnail_url:'thumbnail' }}" class="img-fluid rounded"
+                       alt="{{ scout }}'s profile picture">
+                {% else %}
+                  <img src="{% static 'img/avatar_cub.png' %}" class="img-fluid rounded" alt="No profile picture">
+                {% endif %}
+              </div>
+              <div class="col-sm-10"><h4>{{ scout.full_name }}</h4></div>
+            </div>
+          </a>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
     <div class="alert alert-light" role="alert">This den has no members</div>
-    {% endif %}
+  {% endif %}
 {% endblock %}
