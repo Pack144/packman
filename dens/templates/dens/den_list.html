@@ -11,6 +11,7 @@
   </nav>
 
   <h1>Dens</h1>
+  <div class="container" id="den-list">
   {% if den_list %}
     <dl class="row list-group">
       {% for den in den_list %}
@@ -26,4 +27,5 @@
   {% else %}
     <div class="alert alert-light" role="alert">No dens have been defined yet</div>
   {% endif %}
+  </div>
 {% endblock %}
