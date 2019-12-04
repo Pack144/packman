@@ -114,7 +114,7 @@ class Parent(Member):
         ('C', 'Contributor'),
     )
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
-    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', verbose_name='email')
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', blank=True, null=True)
 
     @property
     def email(self):
