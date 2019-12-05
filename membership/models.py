@@ -220,3 +220,10 @@ class Relationship(models.Model):
 
     def __str__(self):
         return "{}'s {}, {}".format(self.child.full_name, self.get_relationship_to_child_display(), self.parent.full_name)
+
+
+class Family(models.Model):
+    """ Track the relationships between parents and scouts in a Family """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+
