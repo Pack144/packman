@@ -10,7 +10,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class EventAdmin(admin.ModelAdmin):
     model = Event
-    list_display = ('name', 'get_location', 'start', 'category', )
+    list_display = ('name', 'get_location', 'start', 'end', 'category', )
     list_filter = ('category', )
 
 

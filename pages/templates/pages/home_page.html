@@ -5,12 +5,14 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+  {% get_current_timezone as TIME_ZONE %}
   {% if page_content %}
     <p>{{ page_content.body|safe }}</p>
   {% endif %}
   {% if upcoming_events %}
     <h2>Coming Up</h2>
     <dl>
+    {% localtime on %}
       {% for event in upcoming_events %}
         <div class="row rounded mb-2 p-3{% if forloop.first %} bg-dark{% endif %} {{ event.category.color }}">
           <dt class="col-sm-4">
@@ -31,6 +33,7 @@
           </dd>
         </div>
       {% endfor %}
+    {% endlocaltime %}
     </dl>
   {% endif %}
 {% endblock %}
