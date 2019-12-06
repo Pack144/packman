@@ -8,7 +8,7 @@ pylint = "*"
 
 [packages]
 argon2-cffi = "*"
-django = "*"
+django = "==2.2.8"
 django-allauth = "*"
 django-ckeditor = "*"
 django-crispy-forms = "*"
@@ -20,6 +20,7 @@ phonenumbers = "*"
 pillow = "*"
 easy-thumbnails = "*"
 psycopg2-binary = "*"
+pip = "*"
 
 [requires]
 python_version = "3.7"
