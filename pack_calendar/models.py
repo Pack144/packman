@@ -46,6 +46,7 @@ class Category(models.Model):
 
     # Define icons for the category
     ALARM_CLOCK = '<i class="far fa-alarm-clock"></i>'
+    AWARD = '<i class="fas fa-award"></i>'
     BELL = '<i class="far fa-bell"></i>'
     CAMPGROUND = '<i class="fas fa-campground"></i>'
     CALENDAR = '<i class="far fa-calendar-alt"></i>'
@@ -53,13 +54,16 @@ class Category(models.Model):
     GIFT = '<i class="fas fa-gift"></i>'
     SMALL_GROUP = '<i class="fas fa-user-friends"></i>'
     LARGE_GROUP = '<i class="fas fa-users"></i>'
+    MEDAL = '<i class="fas fa-medal"></i>'
     HANDSHAKE = '<i class="fas fa-handshake"></i>'
     HELPING_HANDS = '<i class="fas fa-hands-helping"></i>'
     HEART = '<i class="fas fa-heart"></i>'
     RIBBON = '<i class="fas fa-ribbon"></i>'
     SEEDLING = '<i class="fas fa-seedling"></i>'
+    STAR = '<i class="fas fa-star"></i>'
     ICON_CHOICES = (
         (ALARM_CLOCK, _('Alarm Clock')),
+        (AWARD, _('Award')),
         (BELL, _('Bell')),
         (CALENDAR, _('Calendar')),
         (CAMPGROUND, _('Campground')),
@@ -70,8 +74,10 @@ class Category(models.Model):
         (HELPING_HANDS, _('Hands helping')),
         (HANDSHAKE, _('Hands shaking')),
         (HEART, _('Heart')),
+        (MEDAL, _('Medal')),
         (RIBBON, _('Ribbon')),
         (SEEDLING, _('Seedling')),
+        (STAR, _('Star')),
     )
 
     name = models.CharField(max_length=32, help_text=_('e.g. Pack Meeting, Den Meeting, Campout, etc.'))
