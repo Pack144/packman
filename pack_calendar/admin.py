@@ -12,6 +12,7 @@ class EventAdmin(admin.ModelAdmin):
     model = Event
     list_display = ('name', 'get_location', 'start', 'end', 'category', )
     list_filter = ('category', )
+    readonly_fields = ('duration', )
 
 
 admin.site.register(Event, EventAdmin)

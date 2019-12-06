@@ -115,7 +115,7 @@ class Event(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['start']
+        ordering = ['-start']
         verbose_name = _('Event')
         verbose_name_plural = _('Events')
 
@@ -148,5 +148,5 @@ class Event(models.Model):
 
     @property
     def duration(self):
-        start_datetime = datetime.strptime()
-        return timezone.timedelta()
+        """ Tells us how long the event is scheduled for """
+        return self.end - self.start
