@@ -254,8 +254,9 @@ LOGGING = {
 }
 
 # When does the site start a new year of scouting? Typically, this would be when
-# cubs advance to the next rank. Should be formatted as 'Month Date', e.g. January 1
-PACK_YEAR_BEGIN_DATE = 'September 1'
+# cubs advance to the next rank.
+PACK_YEAR_BEGIN_MONTH = 9  # September
+PACK_YEAR_BEGIN_DAY = 1    # 1st
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository

@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime
+
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -12,18 +14,15 @@ from address_book.models import Venue
 from documents.models import Document
 
 
-def get_pack_year(date=timezone.now()):
+def get_pack_year(date_to_test=timezone.now()):
     """ Given a date, calculate the date range (start, end) for the pack year which encapsulates that date. """
-    start_str = '{} {}'.format(settings.PACK_YEAR_BEGIN_DATE, date.year)
-    start = datetime.date(datetime.strptime(start_str, "%B %d %Y"))
+    pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
 
-    if start <= date.date() < start.replace(year=start.year + 1):
-        date = date.replace(year=date.year - 1)
-        start_str = '{} {}'.format(settings.PACK_YEAR_BEGIN_DATE, date.year)
-        start = datetime.date(datetime.strptime(start_str, "%B %d %Y"))
+    if pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
+        pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
 
-    end = start.replace(year=start.year + 1) - timezone.timedelta(days=1)
-    return start, end
+    pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(days=1)
+    return pack_year_begins, pack_year_ends
 
 
 class Category(models.Model):
@@ -97,8 +96,10 @@ class Event(models.Model):
     name = models.CharField(max_length=32)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events', blank=True, null=True)
     location = models.CharField(max_length=64, blank=True, null=True)
+
     start = models.DateTimeField()
-    end = models.DateTimeField(blank=True, null=True)
+    end = models.DateTimeField()
+
     description = RichTextField(blank=True, null=True)
     url = models.URLField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events')
@@ -130,6 +131,16 @@ class Event(models.Model):
 
     get_location.short_description = _('Location')
 
+    def clean(self):
+        if self.end < self.start:
+            raise ValidationError(_('Event cannot end before it starts.'))
+
+    @property
     def pack_year(self):
-        year = get_pack_year(self.start).end.year
+        year = get_pack_year(self.start.date)
         return year
+
+    @property
+    def duration(self):
+        start_datetime = datetime.strptime()
+        return timezone.timedelta()
