@@ -32,13 +32,6 @@ class ScoutInline(admin.StackedInline):
     can_delete = False
 
 
-class ParentRelationshipInline(admin.TabularInline):
-    model = Scout.parents.through
-    extra = 0
-    verbose_name = _('Parent')
-    verbose_name_plural = _('Parents')
-
-
 class ScoutAdmin(admin.ModelAdmin):
     model = Scout
     list_display = ('name', 'last_name', 'den', 'school', 'grade', 'age', 'status', )
@@ -46,14 +39,6 @@ class ScoutAdmin(admin.ModelAdmin):
     list_filter = ('status', 'den', )
     readonly_fields = ('date_added', 'last_updated', )
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
-    inlines = (ParentRelationshipInline, )
-
-
-class ScoutParentInline(admin.TabularInline):
-    model = Parent.children.through
-    extra = 0
-    verbose_name = _('Child')
-    verbose_name_plural = _('Children')
 
 
 class ParentAdmin(admin.ModelAdmin):
@@ -63,7 +48,7 @@ class ParentAdmin(admin.ModelAdmin):
     list_filter = ('role', )
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
     list_select_related = ('account',)
-    inlines = (ScoutParentInline, PhoneNumberInline, AddressInline,)
+    inlines = (PhoneNumberInline, AddressInline, )
     exclude = ('children', )
     readonly_fields = ('date_added', 'last_updated', )
 
@@ -108,7 +93,7 @@ class AccountAdmin(UserAdmin):
 
 @admin.register(Family)
 class FamilyAdmin(admin.ModelAdmin):
-    fields = ('parents', 'children', )
+    pass
 
 
 admin.site.login = login_required(admin.site.login)

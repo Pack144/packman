@@ -4,16 +4,13 @@
 
 {% block content %}
   <h1>{{ scout.full_name }}
-    {% if user.profile.parent in scout.parents.all %}
-      <a href="{% url 'scout_update' scout.id %}"> <span class="badge badge-secondary"><span class="fa fa-user-edit"></span></span></a>
-    {% endif %}
   </h1>
   {% include 'membership/member_detail_card.html' with member=scout %}
-  {% if scout.parents.count or scout.get_siblings.count %}
+  {% if scout.family %}
     <hr>
     <h2>Family</h2>
     <div class="card-group">
-      {% for parent in scout.parents.all %}
+      {% for parent in scout.family.parents.all %}
         {% include 'membership/member_detail_card.html' with member=parent %}
       {% endfor %}
       {% for sibling in scout.get_siblings.all %}

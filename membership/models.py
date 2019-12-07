@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
-from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -139,19 +138,18 @@ class Parent(Member):
 
     def get_active_scouts(self):
         """ Return a list of all currently active scouts associated with this member. """
-        return self.children.filter(status__exact='A')
+        # return self.children.filter(status__exact='A')
+        return self.family.children.filter(status__exact='A')
 
     def get_partners(self):
         """ Return a list of other parents who share the same scout(s) """
-        return Parent.objects.filter(~Q(id=self.id), Q(children__in=self.children.all())).distinct()
+        # return Parent.objects.filter(~Q(id=self.id), Q(children__in=self.children.all())).distinct()
+        return self.family.parents.exclude(id=self.id)
 
     @property
     def is_active(self):
         """ If member has active scouts, then they should also be considered active in the pack. """
-        if self.get_active_scouts():
-            return True
-        else:
-            return False
+        return self.get_active_scouts()
 
 
 class Scout(Member):
@@ -178,7 +176,6 @@ class Scout(Member):
     comments = models.TextField(blank=True, null=True, help_text=_(
         "What other information should we consider when reviewing your application?"))
 
-    parents = models.ManyToManyField(Parent, related_name='children', through='Relationship', blank=True)
     family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='children', blank=True, null=True)
 
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
@@ -196,7 +193,11 @@ class Scout(Member):
 
     def get_siblings(self):
         """ Return a list of other Scouts who share the same parent(s) """
-        return Scout.objects.filter(~Q(id=self.id), Q(parents__in=self.parents.all())).distinct()
+        return self.family.children.exclude(id=self.id)
+
+    def get_parents(self):
+        """ Return a list of other parents who share the same scout(s) """
+        return self.family.parents.all
 
     @property
     def grade(self):
