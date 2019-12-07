@@ -9,14 +9,14 @@
     {% endif %}
   </h1>
   {% include 'membership/member_detail_card.html' with member=parent %}
-  {% if parent.get_partners.count or parent.children.count %}
+  {% if parent.family %}
     <hr>
     <h2>Family</h2>
     <div class="card-group">
-      {% for partner in parent.get_partners.all %}
-        {% include 'membership/member_detail_card.html' with member=partner %}
+      {% for parent in parent.family.parents.filter %}
+        {% include 'membership/member_detail_card.html' with member=parent %}
       {% endfor %}
-      {% for child in parent.children.all %}
+      {% for child in parent.family.children.all %}
         {% include 'membership/member_detail_card.html' with member=child %}
       {% endfor %}
     </div>

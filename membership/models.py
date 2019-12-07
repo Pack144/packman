@@ -105,6 +105,22 @@ class Member(models.Model):
         pass
 
 
+class Family(models.Model):
+    """ Track the relationships between parents and scouts in a Family """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    class Meta:
+        verbose_name = _('Family')
+        verbose_name_plural = _('Families')
+
+    def __str__(self):
+        last_names = []
+        for parent in self.parents.all():
+            if parent.last_name not in last_names:
+                last_names.append(parent.last_name)
+        return "-".join(last_names) + " Family"
+
+
 class Parent(Member):
     """
     Any adult member such as a parent, guardian, or other use this model
@@ -115,6 +131,7 @@ class Parent(Member):
     )
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
     account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='profile', blank=True, null=True)
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='parents', blank=True, null=True)
 
     @property
     def email(self):
@@ -162,6 +179,7 @@ class Scout(Member):
         "What other information should we consider when reviewing your application?"))
 
     parents = models.ManyToManyField(Parent, related_name='children', through='Relationship', blank=True)
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='children', blank=True, null=True)
 
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='I')
     den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name='scouts', blank=True, null=True)
@@ -220,10 +238,3 @@ class Relationship(models.Model):
 
     def __str__(self):
         return "{}'s {}, {}".format(self.child.full_name, self.get_relationship_to_child_display(), self.parent.full_name)
-
-
-class Family(models.Model):
-    """ Track the relationships between parents and scouts in a Family """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-
