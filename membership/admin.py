@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from address_book.models import Address, PhoneNumber
 
 from .forms import AccountCreationForm, AccountChangeForm
-from .models import Account, Parent, Scout
+from .models import Account, Family, Parent, Scout
 
 
 class AddressInline(admin.StackedInline):
@@ -22,6 +22,12 @@ class PhoneNumberInline(admin.TabularInline):
 
 class ParentInline(admin.StackedInline):
     model = Parent
+    extra = 0
+    can_delete = False
+
+
+class ScoutInline(admin.StackedInline):
+    model = Scout
     extra = 0
     can_delete = False
 
@@ -43,7 +49,7 @@ class ScoutAdmin(admin.ModelAdmin):
     inlines = (ParentRelationshipInline, )
 
 
-class ScoutInline(admin.TabularInline):
+class ScoutParentInline(admin.TabularInline):
     model = Parent.children.through
     extra = 0
     verbose_name = _('Child')
@@ -57,7 +63,7 @@ class ParentAdmin(admin.ModelAdmin):
     list_filter = ('role', )
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
     list_select_related = ('account',)
-    inlines = (ScoutInline, PhoneNumberInline, AddressInline, )
+    inlines = (ScoutParentInline, PhoneNumberInline, AddressInline,)
     exclude = ('children', )
     readonly_fields = ('date_added', 'last_updated', )
 
@@ -98,6 +104,11 @@ class AccountAdmin(UserAdmin):
         if not obj:
             return list()
         return super(AccountAdmin, self).get_inline_instances(request, obj)
+
+
+@admin.register(Family)
+class FamilyAdmin(admin.ModelAdmin):
+    fields = ('parents', 'children', )
 
 
 admin.site.login = login_required(admin.site.login)
