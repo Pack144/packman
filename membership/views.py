@@ -39,7 +39,7 @@ class ScoutListView(ActiveMemberOrContributorTestMixin, ListView):
         return Scout.objects.filter(status__exact='A').distinct()
 
 
-class ParentCreateView(ActiveMemberTestMixin, CreateView):
+class ParentCreateView(LoginRequiredMixin, CreateView):
     model = Parent
     form_class = ParentForm
 
@@ -68,8 +68,11 @@ class ScoutCreateView(LoginRequiredMixin, CreateView):
         initial = super(ScoutCreateView, self).get_initial(**kwargs)
         initial['last_name'] = self.request.user.profile.last_name
         initial['family'] = [self.request.user.profile.family.id]
-        initial['status'] = 'W'
         return initial
+
+    def form_valid(self, form):
+        form.instance.status = 'W'
+        return super().form_valid(form)
 
 
 class ScoutDetailView(ActiveMemberTestMixin, DetailView):

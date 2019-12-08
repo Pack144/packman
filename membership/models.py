@@ -29,9 +29,20 @@ class Account(AbstractBaseUser, PermissionsMixin):
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(_('email address'), unique=True)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    date_created = models.DateTimeField(default=timezone.now)
+    is_staff = models.BooleanField(
+        _('staff status'),
+        default=False,
+        help_text=_('Designates whether the user can log into this admin site.'),
+    )
+    is_active = models.BooleanField(
+        _('active'),
+        default=True,
+        help_text=_(
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -40,6 +51,10 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def clean(self):
+        super().clean()
+        self.email = self.__class__.objects.normalize_email(self.email)
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         """ Sends an email to this User """
@@ -150,6 +165,13 @@ class Parent(Member):
     def is_active(self):
         """ If member has active scouts, then they should also be considered active in the pack. """
         return self.get_active_scouts()
+
+    def save(self, **kwargs):
+        super(Parent, self).save(**kwargs)
+        if self.family is None:
+            family = Family.objects.create()
+            family.parents.add(self)
+            family.save()
 
 
 class Scout(Member):

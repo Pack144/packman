@@ -78,8 +78,8 @@ class ScoutAdmin(admin.ModelAdmin):
 
 @admin.register(Parent)
 class ParentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'last_name', 'email', 'role', 'family', )
-    list_display_links = ['name', 'last_name', 'email']
+    list_display = ('name', 'last_name', 'role', 'family', )
+    list_display_links = ['name', 'last_name']
     list_filter = ('role', )
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
     list_select_related = ('account',)

@@ -4,7 +4,12 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Row, Column
 
+from address_book.forms import AddressForm, PhoneNumberForm
+
 from .models import Account, Family, Member, Parent, Scout
+
+AddressFormSet = forms.formset_factory(AddressForm, extra=0, can_delete=True)
+PhoneNumberFormSet = forms.formset_factory(PhoneNumberForm, extra=0, can_delete=True)
 
 
 class AccountChangeForm(UserChangeForm):
@@ -63,33 +68,14 @@ class ParentForm(forms.ModelForm):
 
     class Meta:
         model = Parent
-        exclude = ('children', 'role', )
-
-    def __init__(self, *args, **kwargs):
-        super(ParentForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.layout = Layout(
-            Row(
-                Column('first_name'),
-                Column('middle_name'),
-                Column('last_name'),
-                css_class='form-row'
-            ),
-            Row(
-                Column('nickname'),
-            ),
-            ButtonHolder(
-                Submit('submit', 'Update')
-            )
-        )
+        exclude = ('role', )
 
 
 class ScoutForm(forms.ModelForm):
 
     class Meta:
         model = Scout
-        exclude = ('start_date', )
-        widgets = {'status': forms.HiddenInput(), }
+        exclude = ('start_date', 'status', 'den', )
 
     def __init__(self, *args, **kwargs):
         super(ScoutForm, self).__init__(*args, **kwargs)
