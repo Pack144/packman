@@ -4,6 +4,9 @@
 
 {% block content %}
   <h1>{{ scout.full_name }}
+    {% if user.profile.family == scout.family %}
+      <a href="{% url 'scout_update' scout.id %}"><span class="badge badge-secondary"><i class="fa fa-user-edit"></i></span></a>
+    {% endif %}
   </h1>
   {% include 'membership/member_detail_card.html' with member=scout %}
   {% if scout.family %}

@@ -4,8 +4,8 @@
 
 {% block content %}
   <h1>{{ parent.full_name }}
-    {% if user == parent.account %}
-      <a href="{% url 'parent_update' parent.id %}"> <span class="badge badge-secondary"><span class="fa fa-user-edit"></span></span></a>
+    {% if user.profile == parent %}
+      <a href="{% url 'parent_update' parent.id %}"><span class="badge badge-secondary"><i class="fa fa-user-edit"></i></span></a>
     {% endif %}
   </h1>
   {% include 'membership/member_detail_card.html' with member=parent %}
