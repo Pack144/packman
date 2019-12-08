@@ -20,7 +20,7 @@ class Rank(models.Model):
         (SR_WEBE, "Sr. Webelos"),
         (ARROW, "Arrow of Light"),
     )
-    rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES)
+    rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES, unique=True)
     description = models.CharField(max_length=128, blank=True, null=True)
     patch = models.ImageField(upload_to='dens/rank', blank=True, null=True,)
 
