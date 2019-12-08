@@ -10,15 +10,17 @@ class Rank(models.Model):
     BEAR = 4
     JR_WEBE = 5
     SR_WEBE = 6
-    ARROW = 7
+    WEEB = 7
+    ARROW = 8
     RANK_CHOICES = (
-        (BOBCAT, "Bobcat"),
-        (TIGER, "Tiger"),
-        (WOLF, "Wolf"),
-        (BEAR, "Bear"),
-        (JR_WEBE, "Jr. Webelos"),
-        (SR_WEBE, "Sr. Webelos"),
-        (ARROW, "Arrow of Light"),
+        (BOBCAT, _('Bobcat')),
+        (TIGER, _('Tiger')),
+        (WOLF, _('Wolf')),
+        (BEAR, _('Bear')),
+        (JR_WEBE, _('Jr. Webelos')),
+        (SR_WEBE, _('Sr. Webelos')),
+        (WEEB, _('Webelos')),
+        (ARROW, _('Arrow of Light')),
     )
     rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES, unique=True)
     description = models.CharField(max_length=128, blank=True, null=True)
@@ -40,7 +42,7 @@ class Rank(models.Model):
         elif self.rank <= 4:
             # Bobcat - Bear
             return _('Animal')
-        elif self.rank <= 6:
+        elif self.rank <= 7:
             # Jr. & Sr. Webelos
             return _('Webelos')
         else:
