@@ -220,3 +220,8 @@ class Scout(Member):
         else:
             # this Scout isn't in grade school anymore
             return None
+
+    @property
+    def rank(self):
+        """ A cub's rank is derived from the den they are a member of."""
+        return self.den.rank
