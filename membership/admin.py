@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from address_book.models import Address, PhoneNumber
 
-from .forms import AccountCreationForm, AccountChangeForm
+from .forms import AccountCreationForm, AccountChangeForm, FamilyForm
 from .models import Account, Family, Parent, Scout
 
 
@@ -128,7 +128,18 @@ class AccountAdmin(UserAdmin):
 
 @admin.register(Family)
 class FamilyAdmin(admin.ModelAdmin):
-    pass
+    form = FamilyForm
+    list_display = ('__str__', 'get_parents_count', 'get_children_count', )
+
+    def get_parents_count(self, instance):
+        return instance.parents.count()
+
+    get_parents_count.short_description = _('Number of parents')
+
+    def get_children_count(self, instance):
+        return instance.children.count()
+
+    get_children_count.short_description = _('Number of children')
 
 
 admin.site.login = login_required(admin.site.login)
