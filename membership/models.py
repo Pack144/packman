@@ -205,39 +205,18 @@ class Scout(Member):
     def grade(self):
         """ Based on when this cub started school, what grade should they be in now? """
         this_year = timezone.now().year
-        if timezone.now().month < 9:  # assuming that a school year begins in September
+        if timezone.now().month < 9:  # assumes that a school year begins in September
             this_year -= 1
         calculated_grade = this_year - self.year_started_kindergarten
 
-        if calculated_grade == 0:
-            # this Scout is a kindergartner
-            return 'K'
-        elif calculated_grade < 0:
+        if calculated_grade < 0:
             # this Scout hasn't started Kindergarten yet
             return None
+        elif calculated_grade == 0:
+            # this Scout is a kindergartner
+            return 'K'
         elif calculated_grade <= 12:
             return calculated_grade
         else:
             # this Scout isn't in grade school anymore
             return None
-
-
-class Relationship(models.Model):
-    """ Track the relationship a member has with a scout """
-    RELATIONSHIP_CHOICES = (
-        ('M', 'Mom'),
-        ('F', 'Dad'),
-        ('GM', 'Grandmother'),
-        ('GF', 'Grandfather'),
-        ('A', 'Aunt'),
-        ('U', 'Uncle'),
-        ('G', 'Guardian'),
-        ('FF', 'Friend of the Family'),
-        ('O', 'Other/Undefined')
-    )
-    parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
-    child = models.ForeignKey(Scout, on_delete=models.CASCADE)
-    relationship_to_child = models.CharField(max_length=2, choices=RELATIONSHIP_CHOICES, default='O')
-
-    def __str__(self):
-        return "{}'s {}, {}".format(self.child.full_name, self.get_relationship_to_child_display(), self.parent.full_name)
