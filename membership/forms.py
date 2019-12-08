@@ -27,8 +27,8 @@ class FamilyForm(forms.ModelForm):
         model = Family
         fields = '__all__'
 
-    parents = forms.ModelMultipleChoiceField(queryset=Parent.objects.all())
-    children = forms.ModelMultipleChoiceField(queryset=Scout.objects.all())
+    parents = forms.ModelMultipleChoiceField(queryset=Parent.objects.all(), required=False)
+    children = forms.ModelMultipleChoiceField(queryset=Scout.objects.all(), required=False)
 
     def __init__(self, *args, **kwargs):
         super(FamilyForm, self).__init__(*args, **kwargs)
