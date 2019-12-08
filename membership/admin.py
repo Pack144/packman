@@ -12,12 +12,12 @@ from .models import Account, Family, Parent, Scout
 
 class AddressInline(admin.StackedInline):
     model = Address
-    extra = 1
+    extra = 0
 
 
 class PhoneNumberInline(admin.TabularInline):
     model = PhoneNumber
-    extra = 1
+    extra = 0
 
 
 class ParentInline(admin.StackedInline):
@@ -26,14 +26,8 @@ class ParentInline(admin.StackedInline):
     can_delete = False
 
 
-class ScoutInline(admin.StackedInline):
-    model = Scout
-    extra = 0
-    can_delete = False
-
-
+@admin.register(Scout)
 class ScoutAdmin(admin.ModelAdmin):
-    model = Scout
     list_display = ('name', 'last_name', 'den', 'school', 'grade', 'age', 'status', )
     list_display_links = ['name', 'last_name']
     list_filter = ('status', 'den', )
@@ -41,9 +35,9 @@ class ScoutAdmin(admin.ModelAdmin):
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
 
 
+@admin.register(Parent)
 class ParentAdmin(admin.ModelAdmin):
-    model = Parent
-    list_display = ('name', 'last_name', 'email', 'role')
+    list_display = ('name', 'last_name', 'email', 'role', 'family', )
     list_display_links = ['name', 'last_name', 'email']
     list_filter = ('role', )
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
@@ -53,10 +47,10 @@ class ParentAdmin(admin.ModelAdmin):
     readonly_fields = ('date_added', 'last_updated', )
 
 
+@admin.register(Account)
 class AccountAdmin(UserAdmin):
     add_form = AccountCreationForm
     form = AccountChangeForm
-    model = Account
     list_display = ('get_short_name', 'get_last_name', 'email', 'is_staff', 'is_active',)
     list_display_links = ['get_short_name', 'get_last_name', 'email']
     list_filter = ('email', 'is_staff', 'is_active',)
@@ -98,6 +92,3 @@ class FamilyAdmin(admin.ModelAdmin):
 
 admin.site.login = login_required(admin.site.login)
 admin.site.unregister(Group)
-admin.site.register(Scout, ScoutAdmin)
-admin.site.register(Account, AccountAdmin)
-admin.site.register(Parent, ParentAdmin)
