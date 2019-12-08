@@ -138,12 +138,12 @@ class Parent(Member):
 
     def get_active_scouts(self):
         """ Return a list of all currently active scouts associated with this member. """
-        if self.family.children.filter(status__exact='A'):
+        if self.family:
             return self.family.children.filter(status__exact='A')
 
     def get_partners(self):
         """ Return a list of other parents who share the same scout(s) """
-        if self.family.parents.exclude(id=self.id):
+        if self.family:
             return self.family.parents.exclude(id=self.id)
 
     @property
@@ -193,12 +193,12 @@ class Scout(Member):
 
     def get_siblings(self):
         """ Return a list of other Scouts who share the same parent(s) """
-        if self.family.children.exclude(id=self.id):
+        if self.family:
             return self.family.children.exclude(id=self.id)
 
     def get_parents(self):
         """ Return a list of other parents who share the same scout(s) """
-        if self.family.parents.all:
+        if self.family:
             return self.family.parents.all
 
     @property
