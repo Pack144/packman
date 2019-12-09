@@ -7,5 +7,6 @@ from .models import Account, Parent
 @receiver(post_save, sender=Account)
 def create_or_update_account_profile(sender, instance, created, **kwargs):
     if created:
-        Parent.objects.create(account=instance)
+        if instance.profile is None:
+            Parent.objects.create(account=instance)
     instance.profile.save()
