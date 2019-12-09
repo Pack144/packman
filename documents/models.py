@@ -37,3 +37,18 @@ class Document(models.Model):
         ordering = ['category', 'name', ]
         verbose_name = _('Document')
         verbose_name_plural = _('Documents')
+
+    def get_file_type(self):
+        extension = self.file.file.split('.')[-1]
+        if extension == 'txt':
+            return _('text document')
+        if extension == 'pdf':
+            return _('PDF')
+        if extension == 'doc' or 'docx':
+            return _('Microsoft Word Document')
+        if extension == 'xls' or 'xlsx':
+            return _('Microsoft Excel Spreadsheet')
+        if extension == 'ppt' or 'pptx':
+            return _('Microsoft Powerpoint Presentation')
+        if extension == 'jpg' or 'jpeg' or 'gif' or 'png':
+            return _('Image')
