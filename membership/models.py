@@ -72,7 +72,6 @@ class Member(models.Model):
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    prefix = models.CharField(max_length=8, blank=True, null=True)
     first_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, blank=True, null=True)
     last_name = models.CharField(max_length=32)
