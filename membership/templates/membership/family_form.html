@@ -6,13 +6,9 @@
 {% block content %}
   <h1>My Family</h1>
   <h2>Me</h2>
-    <form method="post" enctype="multipart/form-data" class="form">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-lg btn-success">Update my details</button>
-    <a class="btn btn-primary" href="{% url 'parent_detail' parent.id %}">Cancel</a>
-  </form>
-  <h2>Partner{{ parten.get_partners.count|pluralize }}</h2>
+  <div><img src="{{ parent.photo.url }}" class="img-fluid rounded mx-auto d-block" alt="{{ parent }}"></div>
+    {% crispy form %}
+  <h2>Partner{{ parent.get_partners.count|pluralize }}</h2>
   <ul class="list-unstyled">
   {% for parent in parent.get_partners.all %}
     <li><a href="{% url 'parent_update' parent.id %}">{{ parent.name }}</a></li>

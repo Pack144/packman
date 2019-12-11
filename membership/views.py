@@ -67,11 +67,11 @@ class ScoutCreateView(LoginRequiredMixin, CreateView):
     def get_initial(self, *args, **kwargs):
         initial = super(ScoutCreateView, self).get_initial(**kwargs)
         initial['last_name'] = self.request.user.profile.last_name
-        initial['family'] = [self.request.user.profile.family.id]
         return initial
 
     def form_valid(self, form):
         form.instance.status = 'W'
+        form.instance.family = self.request.user.profile.family
         return super().form_valid(form)
 
 
