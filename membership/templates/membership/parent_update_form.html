@@ -1,14 +1,16 @@
 {% extends "_base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ Parent.full_name }} - Update{% endblock %}
+{% block title %}{{ Parent }} - Update{% endblock %}
 
 {% block content %}
-  <h1>Update {{ parent.full_name }}</h1>
-  <form method="post" enctype="multipart/form-data" class="form">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-success">Update</button>
-    <a class="btn btn-primary" href="{% url 'parent_detail' parent.id %}">Cancel</a>
-  </form>
+  <div class="row">
+  <div class="col-md-3">
+    <img class="img-fluid rounded" src="{{ parent.photo.url }}">
+  </div>
+    <div class="col-md-9">
+  <h1>Update {{ parent }}</h1>
+  {% crispy form %}
+    </div>
+  </div>
 {% endblock content %}
