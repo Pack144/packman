@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'easy_thumbnails',
     'localflavor',
     'phonenumber_field',
+    'tempus_dominus',
 
     # Local apps
     'address_book.apps.AddressBookConfig',
@@ -155,6 +156,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'node_modules'),
     os.path.join(BASE_DIR, 'static'),
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_files')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -252,6 +254,8 @@ LOGGING = {
         },
     },
 }
+
+TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
 
 # When does the site start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank.
