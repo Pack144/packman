@@ -15,5 +15,5 @@ class EventListView(ActiveMemberOrContributorTestMixin, ListView):
 
     def get_queryset(self):
         """ Return a queryset containing all events for the next 6 months"""
-        return Event.objects.filter(end__lte=timezone.now() + timezone.timedelta(weeks=26)).filter(
-            end__gte=timezone.now()).order_by('start')
+        return Event.objects.filter(start__lte=timezone.now() + timezone.timedelta(weeks=26)).filter(
+            start__gte=timezone.now()).order_by('start')
