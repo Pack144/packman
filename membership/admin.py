@@ -69,19 +69,19 @@ class ParentInline(admin.StackedInline):
 
 @admin.register(Scout)
 class ScoutAdmin(admin.ModelAdmin):
-    list_display = ('name', 'last_name', 'den', 'school', 'grade', 'age', 'status', 'family', )
-    list_display_links = ['name', 'last_name']
-    list_filter = ('status', 'den', AnimalRankListFilter)
-    readonly_fields = ('date_added', 'last_updated', )
-    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
+    list_display = ('first_name', 'nickname', 'last_name', 'den', 'school', 'grade', 'age', 'status', 'family')
+    list_display_links = ['first_name', 'nickname', 'last_name']
+    list_filter = ('status', AnimalRankListFilter, 'den')
+    readonly_fields = ('date_added', 'last_updated')
+    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email')
 
 
 @admin.register(Parent)
 class ParentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'last_name', 'role', 'family', )
-    list_display_links = ['name', 'last_name']
+    list_display = ('first_name', 'nickname', 'last_name', 'role', 'family')
+    list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('role', )
-    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email', )
+    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email')
     list_select_related = ('account',)
     inlines = (PhoneNumberInline, AddressInline, )
     exclude = ('children', )
@@ -92,18 +92,18 @@ class ParentAdmin(admin.ModelAdmin):
 class AccountAdmin(UserAdmin):
     add_form = AccountCreationForm
     form = AccountChangeForm
-    list_display = ('get_short_name', 'get_last_name', 'email', 'is_staff', 'is_active',)
+    list_display = ('get_short_name', 'get_last_name', 'email', 'is_active', 'is_staff', 'is_superuser')
     list_display_links = ['get_short_name', 'get_last_name', 'email']
-    list_filter = ('email', 'is_staff', 'is_active',)
+    list_filter = ('is_staff', 'is_active', 'is_superuser')
     list_select_related = ('profile',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active')}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active')}
+            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active', 'is_superuser')}
          ),
     )
     search_fields = ('email',)
@@ -114,11 +114,13 @@ class AccountAdmin(UserAdmin):
         return instance.profile.name
 
     get_short_name.short_description = _('Name')
+    get_short_name.admin_order_field = 'profile'
 
     def get_last_name(self, instance):
         return instance.profile.last_name
 
     get_last_name.short_description = _('Last Name')
+    get_last_name.admin_order_field = 'profile__last_name'
 
     def get_inline_instances(self, request, obj=None):
         if not obj:
