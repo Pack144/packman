@@ -1,5 +1,6 @@
 from django import forms
 from django.forms import widgets
+from django.forms.models import inlineformset_factory
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -10,11 +11,13 @@ from crispy_forms.bootstrap import FormActions, InlineRadios
 from tempus_dominus.widgets import DatePicker
 
 from address_book.forms import AddressForm, PhoneNumberForm
+from address_book.models import Address, PhoneNumber
 
 from .models import Account, Family, Member, Parent, Scout
 
-AddressFormSet = forms.formset_factory(AddressForm, extra=0, can_delete=True)
-PhoneNumberFormSet = forms.formset_factory(PhoneNumberForm, extra=0, can_delete=True)
+
+AddressFormSet = inlineformset_factory(Parent, Address, form=AddressForm, extra=0, can_delete=True)
+PhoneNumberFormSet = inlineformset_factory(Parent, PhoneNumber, form=PhoneNumberForm, extra=0, can_delete=True)
 
 
 class AccountChangeForm(UserChangeForm):
@@ -107,7 +110,6 @@ class ParentForm(forms.ModelForm):
                 Column('middle_name', css_class='col-md-2'),
                 Column('last_name', css_class='col-md-5'),
                 Column('suffix', css_class='col-md-1'),
-                css_class='form-row',
             ),
             'nickname',
             InlineRadios('gender'),
@@ -129,10 +131,10 @@ class ScoutForm(forms.ModelForm):
                 'minDate': str(timezone.now().replace(year=timezone.now().year - 13)),
             },
         ),
-        initial=timezone.now().replace(year=timezone.now().year - 6),
+        initial=str(timezone.now().replace(year=timezone.now().year - 6)),
     )
     gender = forms.ChoiceField(choices=Member.GENDER_CHOICES)
-    photo = forms.ImageField(widget=widgets.FileInput, initial=Scout.photo)
+    photo = forms.ImageField(widget=widgets.FileInput, required=False)
 
     class Meta:
         model = Scout

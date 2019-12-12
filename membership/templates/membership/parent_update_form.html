@@ -1,16 +1,25 @@
 {% extends "_base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block title %}{{ Parent }} - Update{% endblock %}
 
 {% block content %}
   <div class="row">
-  <div class="col-md-3">
-    <img class="img-fluid rounded" src="{{ parent.photo.url }}">
-  </div>
+    <div class="col-md-3">
+      {% if parent.photo %}
+        <img src="{{ parent.photo.url }}" class="img-fluid rounded" alt="{{ member }}'s profile picture">
+      {% elif parent.gender == 'M' %}
+        <img src="{% static 'img/avatar_man.png' %}" class="img-fluid rounded" alt="No profile picture">
+      {% elif parent.gender == 'F' %}
+        <img src="{% static 'img/avatar_woman.png' %}" class="img-fluid rounded" alt="No profile picture">
+      {% else %}
+        <img src="{% static 'img/avatar_generic.png' %}" class="img-fluid rounded" alt="No profile picture">
+      {% endif %}
+    </div>
     <div class="col-md-9">
-  <h1>Update {{ parent }}</h1>
-  {% crispy form %}
+      <h1>Update {{ parent }}</h1>
+      {% crispy form %}
     </div>
   </div>
 {% endblock content %}
