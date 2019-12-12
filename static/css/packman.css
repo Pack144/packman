@@ -114,6 +114,15 @@ main {
     margin-bottom: 0;
 }
 
+#member-search .form-control {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    border-top-left-radius: 19px;
+    border-top-right-radius: 19px;
+    border-bottom-left-radius: 19px;
+    border-bottom-right-radius: 19px;
+}
+
 h1, h2, h3 {
     color: #fa9428;
     font-family: 'Cooper Black', serif;

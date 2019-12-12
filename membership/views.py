@@ -37,6 +37,18 @@ class ScoutListView(ActiveMemberOrContributorTestMixin, ListView):
         return Scout.objects.filter(status__exact='A').distinct()
 
 
+class MemberSearchResultsView(ActiveMemberOrContributorTestMixin, ListView):
+    model = Member
+    context_object_name = 'member_list'
+    template_name = 'membership/member_search_results.html'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        return Member.objects.filter(
+            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(middle_name__icontains=query) | Q(nickname__icontains=query)
+        )
+
+
 class ParentCreateView(LoginRequiredMixin, CreateView):
     model = Parent
     form_class = ParentForm
