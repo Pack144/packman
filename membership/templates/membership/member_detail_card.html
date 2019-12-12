@@ -23,7 +23,7 @@
           <div class="col col-1">
             <span class="fa fa-envelope"></span>
           </div>
-          <div class="col">
+          <div class="col text-truncate">
             <a href="mailto:{{ member.email }}" class="text-reset">{{ member.email }}</a>
           </div>
         </div>
@@ -41,7 +41,7 @@
                 {% else %}<span class="fa fa-phone"></span>
                 {% endif %}
               </div>
-              <div class="col">
+              <div class="col text-truncate">
                 {{ number }}
               </div>
             </div>
@@ -60,7 +60,7 @@
                 {% else %}<span class="fa fa-mail-bulk"></span>
                 {% endif %}
               </div>
-              <div class="col">
+              <div class="col text-truncate">
                 {{ address.street }}<br>
                 {% if address.street2 %}{{ address.street2 }}<br>{% endif %}
                 {{ address.city }}, {{ address.state }} {{ address.zip_code }}
@@ -74,7 +74,7 @@
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
           <div class="col col-1"><span class="fa fa-birthday-cake"></span></div>
-          <div class="col">{{ member.age }} years old</div>
+          <div class="col text-truncate">{{ member.age }} years old</div>
         </div>
       </div>
     {% endif %}
@@ -82,7 +82,7 @@
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
           <div class="col col-1"><span class="fa fa-school"></span></div>
-          <div class="col">{{ member.school }}<br>
+          <div class="col text-truncate">{{ member.school }}<br>
           {% if member.grade > 0 %}{{ member.grade|ordinal }} grade{% elif member.grade == 'K' %}Kindergarten{% endif %}</div>
         </div>
       </div>
