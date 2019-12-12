@@ -11,26 +11,29 @@
     <h2>Coming Up</h2>
     <dl>
       {% for event in upcoming_events %}
-        <div class="row rounded mb-2 p-3{% if forloop.first %} bg-dark{% endif %} {{ event.category.color }}">
-          <dt class="col-sm-4">
-            <h3 class="text-reset">
-              {% if event.category.icon %}{{ event.category.icon|safe }} {% endif %}{{ event.name }}</h3>
-            <p>{{ event.start|naturalday:'l, F jS'|capfirst }}
-              {% if event.end.day != event.start.day %}- <br>
-                {{ event.end|naturalday:'l, F jS'|capfirst }}
+        <a href="{% url 'event_detail' event.id %}"
+           class="btn btn-block btn{% if not forloop.first %}-outline{% endif %}-{{ event.category.color }} p-3">
+          <div class="row">
+            <div class="col-md-4">
+              <h3 class="text-reset">
+                {% if event.category.icon %}{{ event.category.icon|safe }} {% endif %}{{ event.name }}</h3>
+            </div>
+            <div class="col-md-8">
+              <h5>{{ event.start.date|naturalday:'l, F jS'|capfirst }}
+                {% if event.end.date != event.start.date %} &ndash;
+                  {{ event.end.date|naturalday:'F jS'|capfirst }}{% endif %}</h5>
+              {% if user.is_authenticated %}
+                <p class="font-weight-bold">{{ event.start|time:'g:ia' }}{% if event.end != event.start %} &ndash;
+                  {{ event.end|time:'g:ia' }}{% endif %}</p>
+                <p><strong>Where:</strong> {{ event.get_location }}</p>
+                <p>{{ event.description|safe|truncatewords_html:15 }}</p>
               {% endif %}
-            </p>
-          </dt>
-          <dd class="col-sm-8">
-            {% if user.is_authenticated %}
-              <p><strong>Location:</strong> {{ event.get_location }}</p>
-              <p><strong>Start:</strong> {{ event.start|time:'g:ia' }}<br>
-                <strong>End:</strong> {{ event.end|time:'g:ia' }}</p>
-              <p>{{ event.description|safe|truncatewords_html:15 }}</p>
-            {% endif %}
-          </dd>
-        </div>
+              </p>
+            </div>
+          </div>
+        </a>
       {% endfor %}
+      </a>
     </dl>
   {% endif %}
 {% endblock %}
