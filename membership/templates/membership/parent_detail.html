@@ -3,7 +3,7 @@
 {% block title %}{{ parent.full_name }}{% endblock title %}
 
 {% block content %}
-  <div class="row">
+  <div class="container row">
     <h1>{{ parent.full_name }}</h1>
     {% if user.profile == parent %}
       <a href="{% url 'parent_update' parent.id %}" class="badge badge-warning ml-3 my-auto p-2">
