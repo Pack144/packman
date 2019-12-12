@@ -149,4 +149,5 @@ class Event(models.Model):
     @property
     def duration(self):
         """ Tells us how long the event is scheduled for """
-        return self.end - self.start
+        if self.start and self.end:
+            return self.end - self.start
