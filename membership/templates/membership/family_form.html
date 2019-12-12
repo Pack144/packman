@@ -35,16 +35,16 @@
     </div>
   </div>
   <h2>Partner{{ parent.get_partners.count|pluralize }}</h2>
-  <ul class="list-unstyled">
+  <ul class="list-group">
     {% for parent in parent.get_partners.all %}
-      <li><a href="{% url 'parent_update' parent.id %}">{{ parent.name }}</a></li>
+      <li class="list-group-item"><a href="{% url 'parent_update' parent.id %}">{{ parent.name }}</a></li>
     {% endfor %}
   </ul>
   <a class="btn btn-sm btn-secondary" href="{% url 'parent_create' %}">Add a partner</a>
-  <h2>Child{{ parent.children.count|pluralize:'ren' }}</h2>
-  <ul class="list-unstyled">
+  <h2>Child{{ parent.family.children.count|pluralize:'ren' }}</h2>
+  <ul class="list-group">
     {% for child in parent.family.children.all %}
-      <li><a href="{% url 'scout_update' child.id %}">{{ child.name }}</a></li>
+      <li class="list-group-item"><a href="{% url 'scout_update' child.id %}">{{ child.name }}</a></li>
     {% endfor %}
   </ul>
   <a class="btn btn-sm btn-secondary" href="{% url 'scout_create' %}">Add a child</a>
