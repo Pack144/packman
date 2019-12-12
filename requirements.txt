@@ -1,5 +1,6 @@
--i https://pypi.org/simple
+-i https://pypi.org/simple/
 argon2-cffi==19.2.0
+asgiref==3.2.3
 babel==2.7.0
 certifi==2019.11.28
 cffi==1.13.2
@@ -14,7 +15,7 @@ django-js-asset==1.2.2
 django-localflavor==2.2
 django-phonenumber-field==4.0.0
 django-tempus-dominus==5.1.2.9
-django==2.2.8
+django==3.0
 easy-thumbnails==2.6
 idna==2.8
 oauthlib==3.1.0
