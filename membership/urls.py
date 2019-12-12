@@ -1,7 +1,8 @@
 from django.urls import path
 
-from .views import MemberListView, ParentListView, ParentCreateView, ParentDetailView, ParentUpdateView
-from .views import ScoutListView, ScoutCreateView, ScoutDetailView, ScoutUpdateView, FamilyUpdateView
+from .views import (MemberListView, ParentListView, ParentCreateView, ParentDetailView, ParentUpdateView,
+                    ScoutListView, ScoutCreateView, ScoutDetailView, ScoutUpdateView, FamilyUpdateView,
+                    MemberSearchResultsView)
 
 urlpatterns = [
     path('', MemberListView.as_view(), name='member_list'),
@@ -14,4 +15,5 @@ urlpatterns = [
     path('scouts/add/', ScoutCreateView.as_view(), name='scout_create'),
     path('scouts/<uuid:pk>/', ScoutDetailView.as_view(), name='scout_detail'),
     path('scouts/<uuid:pk>/update/', ScoutUpdateView.as_view(), name='scout_update'),
+    path('search/', MemberSearchResultsView.as_view(), name='member_search_results'),
 ]
