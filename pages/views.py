@@ -26,8 +26,8 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(HomePageView, self).get_context_data(**kwargs)
-        context['upcoming_events'] = Event.objects.filter(end__lte=timezone.now() + timezone.timedelta(weeks=5)).filter(
-            end__gte=timezone.now()).order_by('start')
+        context['upcoming_events'] = Event.objects.filter(start__lte=timezone.now() + timezone.timedelta(weeks=5)).filter(
+            start__gte=timezone.now().replace(day=timezone.now().day - 1)).order_by('start')
         try:
             context['page_content'] = StaticPage.objects.filter(page='HOME').filter(
                 published_on__lte=timezone.now()).latest()

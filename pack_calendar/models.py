@@ -15,7 +15,9 @@ from documents.models import Document
 
 
 def get_pack_year(date_to_test=timezone.now()):
-    """ Given a date, calculate the date range (start, end) for the pack year which encapsulates that date. """
+    """
+    Given a date, calculate the date range (start, end) for the pack year which encapsulates that date.
+    """
     pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
 
     if pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
@@ -26,9 +28,11 @@ def get_pack_year(date_to_test=timezone.now()):
 
 
 class Category(models.Model):
-    """ Events should be tagged with a category for filtering and display on the website """
-
-    # Define available colors for the category, mapped to Bootstrap text-colors (https://getbootstrap.com/docs/4.4/utilities/colors/)
+    """
+    Events should be tagged with a category for filtering and display on the website
+    """
+    # Define available colors for the category, mapped to Bootstrap text-colors
+    # (https://getbootstrap.com/docs/4.4/utilities/colors/)
     BLUE = 'text-primary'
     GREEN = 'text-success'
     RED = 'text-danger'
@@ -44,7 +48,8 @@ class Category(models.Model):
         (GREY, _('Grey/Muted')),
     )
 
-    # Define icons for the category
+    # Define available FontAwesome icons for the category
+    # https://fontawesome.com/icons?d=gallery
     ALARM_CLOCK = '<i class="far fa-alarm-clock"></i>'
     AWARD = '<i class="fas fa-award"></i>'
     BELL = '<i class="far fa-bell"></i>'
@@ -98,13 +103,16 @@ class Category(models.Model):
 
 
 class Event(models.Model):
+    """
+    Store information about events
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=32)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events', blank=True, null=True)
     location = models.CharField(max_length=64, blank=True, null=True)
 
     start = models.DateTimeField()
-    end = models.DateTimeField()
+    end = models.DateTimeField(blank=True, null=True)
 
     description = RichTextField(blank=True, null=True)
     url = models.URLField(blank=True, null=True)

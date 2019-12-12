@@ -15,16 +15,17 @@
           <dt class="col-sm-4">
             <h3 class="text-reset">
               {% if event.category.icon %}{{ event.category.icon|safe }} {% endif %}{{ event.name }}</h3>
-            <p>{{ event.start.date|naturalday:'l, F jS'|capfirst }}
-              {% if event.end.date != event.start.date %}- <br>
-                {{ event.end.date|naturalday:'l, F jS'|capfirst }}{% endif %}
+            <p>{{ event.start|naturalday:'l, F jS'|capfirst }}
+              {% if event.end.day != event.start.day %}- <br>
+                {{ event.end|naturalday:'l, F jS'|capfirst }}
+              {% endif %}
             </p>
           </dt>
           <dd class="col-sm-8">
             {% if user.is_authenticated %}
               <p><strong>Location:</strong> {{ event.get_location }}</p>
-              <p><strong>Start:</strong> {{ event.start.time|time:'g:ia' }}<br>
-                <strong>End:</strong> {{ event.end.time|time:'g:ia' }}</p>
+              <p><strong>Start:</strong> {{ event.start|time:'g:ia' }}<br>
+                <strong>End:</strong> {{ event.end|time:'g:ia' }}</p>
               <p>{{ event.description|safe|truncatewords_html:15 }}</p>
             {% endif %}
           </dd>
