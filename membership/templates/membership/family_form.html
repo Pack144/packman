@@ -1,25 +1,51 @@
 {% extends '_base.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block title %}My Family{% endblock %}
 
 {% block content %}
   <h1>My Family</h1>
   <h2>Me</h2>
-  <div><img src="{{ parent.photo.url }}" class="img-fluid rounded mx-auto d-block" alt="{{ parent }}"></div>
-    {% crispy form %}
+  <div class="row">
+    <div class="col-md-3">
+      {% if parent.photo %}
+        <img src="{{ parent.photo.url }}" class="img-fluid rounded" alt="{{ member }}'s profile picture">
+      {% elif parent.gender == 'M' %}
+        <img src="{% static 'img/avatar_man.png' %}" class="img-fluid rounded" alt="No profile picture">
+      {% elif parent.gender == 'F' %}
+        <img src="{% static 'img/avatar_woman.png' %}" class="img-fluid rounded" alt="No profile picture">
+      {% else %}
+        <img src="{% static 'img/avatar_generic.png' %}" class="img-fluid rounded" alt="No profile picture">
+      {% endif %}
+    </div>
+    <div class="col-md-9">
+      <h3>Personal Details</h3>
+      {% crispy form %}
+      <h3>Address{{ parent.addresses.count|pluralize:'es' }}</h3>
+      {{ address_formset.management_form|crispy }}
+      {% for address_form in address_formset %}
+        {% crispy address_form %}
+      {% endfor %}
+      <h3>Phone Number{{ parent.phone_numbers.count|pluralize }}</h3>
+      {{ phonenumber_formset.management_form|crispy }}
+      {% for phonenumber_form in phonenumber_formset %}
+        {% crispy phonenumber_form %}
+      {% endfor %}
+    </div>
+  </div>
   <h2>Partner{{ parent.get_partners.count|pluralize }}</h2>
   <ul class="list-unstyled">
-  {% for parent in parent.get_partners.all %}
-    <li><a href="{% url 'parent_update' parent.id %}">{{ parent.name }}</a></li>
-  {% endfor %}
+    {% for parent in parent.get_partners.all %}
+      <li><a href="{% url 'parent_update' parent.id %}">{{ parent.name }}</a></li>
+    {% endfor %}
   </ul>
   <a class="btn btn-sm btn-secondary" href="{% url 'parent_create' %}">Add a partner</a>
   <h2>Child{{ parent.children.count|pluralize:'ren' }}</h2>
   <ul class="list-unstyled">
-  {% for child in parent.family.children.all %}
-    <li><a href="{% url 'scout_update' child.id %}">{{ child.name }}</a></li>
-  {% endfor %}
+    {% for child in parent.family.children.all %}
+      <li><a href="{% url 'scout_update' child.id %}">{{ child.name }}</a></li>
+    {% endfor %}
   </ul>
   <a class="btn btn-sm btn-secondary" href="{% url 'scout_create' %}">Add a child</a>
 
