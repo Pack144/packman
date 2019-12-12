@@ -1,13 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.forms import inlineformset_factory
 from django.views.generic import CreateView, DetailView, UpdateView, ListView
 
-from .forms import ParentForm, ScoutForm
+from .forms import ParentForm, ScoutForm, AddressFormSet, PhoneNumberFormSet
 from .mixins import ActiveMemberTestMixin, ActiveMemberOrContributorTestMixin
 from .models import Member, Parent, Scout
-
 
 user = get_user_model()
 
@@ -48,6 +46,10 @@ class ParentCreateView(LoginRequiredMixin, CreateView):
         initial['last_name'] = self.request.user.profile.last_name
         initial['family'] = [self.request.user.profile.family.id]
         return initial
+
+    def form_valid(self, form):
+        form.instance.family = self.request.user.profile.family
+        return super().form_valid(form)
 
 
 class ParentDetailView(ActiveMemberTestMixin, DetailView):
@@ -92,3 +94,26 @@ class FamilyUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self):
         return Parent.objects.get(id=self.request.user.profile.id)
+
+    def get_context_data(self, **kwargs):
+        context = super(FamilyUpdateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_formset'] = AddressFormSet(self.request.POST, instance=self.object)
+            context['address_formset'].full_clean()
+            context['phonenumber_formset'] = PhoneNumberFormSet(self.request.POST, instance=self.object)
+            context['phonenumber_formset'].full_clean()
+        else:
+            context['address_formset'] = AddressFormSet(instance=self.object)
+            context['phonenumber_formset'] = PhoneNumberFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data(form=form)
+        formset = context['address_formset']
+        if formset.is_valid():
+            response = super().form_valid(form)
+            formset.instance = self.object
+            formset.save()
+            return response
+        else:
+            return super().form_invalid(form)
