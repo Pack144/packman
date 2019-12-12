@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column, Button, HTML, Field
+from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column, Button, Field
 from crispy_forms.bootstrap import FormActions, InlineRadios
 from tempus_dominus.widgets import DatePicker
 
