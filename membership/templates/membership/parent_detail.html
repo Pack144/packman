@@ -3,11 +3,14 @@
 {% block title %}{{ parent.full_name }}{% endblock title %}
 
 {% block content %}
-  <h1>{{ parent.full_name }}
+  <div class="row">
+    <h1>{{ parent.full_name }}</h1>
     {% if user.profile == parent %}
-      <a href="{% url 'parent_update' parent.id %}"><span class="badge badge-secondary"><i class="fa fa-user-edit"></i></span></a>
+      <a href="{% url 'parent_update' parent.id %}" class="badge badge-warning ml-3 my-auto p-2">
+        <i class="fa fa-user-edit"></i>
+      </a>
     {% endif %}
-  </h1>
+  </div>
   {% include 'membership/member_detail_card.html' with member=parent %}
   {% if parent.family %}
     <hr>
