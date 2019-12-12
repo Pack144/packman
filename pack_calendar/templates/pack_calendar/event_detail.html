@@ -1,0 +1,39 @@
+{% extends "_base.html" %}
+
+{% block title %}{{ event }}{% endblock title %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-2"></div>
+    <div class="col">
+      <h1>{{ event }}</h1>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col-md-2">
+      <div class="card text-center d-none d-sm-block">
+        <div class="card-header text-white bg-danger py-2">
+          <p class="font-weight-bold d-none d-xl-block">{{ event.start|date:'F' }}</p>
+        </div>
+        <div class="card-body border-success py-4">
+          <h3 class="text-black-50">{{ event.start|date:'j' }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <p><strong>Start:</strong> {{ event.start }}</p>
+      <p><strong>End:</strong> {{ event.end }}</p>
+      <p><strong>Location:</strong> {{ event.get_location }}</p>
+      <p>{{ event.description|safe }}</p>
+      {% if event.attachments %}
+        <ul class="list-group">
+          {% for attachment in event.attachments.all %}
+            <a href="{{ attachment.file.url }}" target="_blank">
+              <li class="list-group-item">{{ attachment }}</li>
+            </a>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

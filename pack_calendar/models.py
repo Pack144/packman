@@ -33,12 +33,12 @@ class Category(models.Model):
     """
     # Define available colors for the category, mapped to Bootstrap text-colors
     # (https://getbootstrap.com/docs/4.4/utilities/colors/)
-    BLUE = 'text-primary'
-    GREEN = 'text-success'
-    RED = 'text-danger'
-    YELLOW = 'text-warning'
-    AQUA = 'text-info'
-    GREY = 'text-secondary'
+    BLUE = 'primary'
+    GREEN = 'success'
+    RED = 'danger'
+    YELLOW = 'warning'
+    AQUA = 'info'
+    GREY = 'secondary'
     COLOR_CHOICES = (
         (BLUE, _('Blue')),
         (GREEN, _('Green')),
