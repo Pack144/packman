@@ -148,7 +148,8 @@ class Parent(Member):
 
     @property
     def email(self):
-        return self.account.email
+        if self.account:
+            return self.account.email
 
     def get_active_scouts(self):
         """ Return a list of all currently active scouts associated with this member. """
