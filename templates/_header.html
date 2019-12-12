@@ -40,7 +40,7 @@
     </div>
     <ul class="navbar-nav ml-auto">{% if user.is_authenticated %}
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarMemberDropdown" role="button"
+        <a class="nav-link dropdown-toggle text-warning" href="#" id="navbarMemberDropdown" role="button"
            data-toggle="dropdown"
            aria-haspopup="true" aria-expanded="false">
           {% if user.profile.name %}{{ user.profile.name }}{% else %}
@@ -56,7 +56,7 @@
         </div>
       </li>{% else %}
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'account_login' %}?next={{ request.path }}">Sign in</a>
+        <a class="nav-link text-success" href="{% url 'account_login' %}?next={{ request.path }}">Sign in</a>
       </li>{% endif %}
     </ul>
   </div>
