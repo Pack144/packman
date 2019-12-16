@@ -43,8 +43,7 @@
         <a class="nav-link dropdown-toggle text-warning" href="#" id="navbarMemberDropdown" role="button"
            data-toggle="dropdown"
            aria-haspopup="true" aria-expanded="false">
-          {% if user.profile.name %}{{ user.profile.name }}{% else %}
-            {{ user.email }}{% endif %}
+          {{ user.get_short_name }}
         </a>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarMemberDropdown">
           <a class="dropdown-item" href="{% url 'family_update' %}">My Family</a>

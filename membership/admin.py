@@ -4,15 +4,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
+from easy_thumbnails.fields import ThumbnailerImageField
+from easy_thumbnails.widgets import ImageClearableFileInput
+
 from address_book.models import Address, PhoneNumber
 
-from .forms import AccountCreationForm, AccountChangeForm, FamilyForm
-from .models import Account, Family, Parent, Scout
+from .import forms, models
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
-    # Human-readable title which will be displayed in the
-    # right admin sidebar just above the filter options.
+    # Human-readable title which will be displayed in the right admin sidebar just above the filter options.
     title = _('ranks')
 
     # Parameter for the filter that will be used in the URL query.
@@ -61,82 +62,67 @@ class PhoneNumberInline(admin.TabularInline):
     extra = 0
 
 
-class ParentInline(admin.StackedInline):
-    model = Parent
-    extra = 0
-    can_delete = False
-
-
-@admin.register(Scout)
+@admin.register(models.ChildMember)
 class ScoutAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'nickname', 'last_name', 'den', 'school', 'grade', 'age', 'status', 'family')
     list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den')
-    readonly_fields = ('date_added', 'last_updated')
+    readonly_fields = ('date_joined', 'last_updated')
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email')
+    formfield_overrides = {
+        ThumbnailerImageField: {'widget': ImageClearableFileInput},
+    }
 
 
-@admin.register(Parent)
-class ParentAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'nickname', 'last_name', 'role', 'family')
-    list_display_links = ['first_name', 'nickname', 'last_name']
-    list_filter = ('role', )
-    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email')
-    list_select_related = ('account',)
-    inlines = (PhoneNumberInline, AddressInline, )
-    exclude = ('children', )
-    readonly_fields = ('date_added', 'last_updated', )
+@admin.register(models.AdultMember)
+class AdultAdmin(UserAdmin):
+    add_form = forms.AdultMemberCreation
+    form = forms.AdultMemberChange
+    list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', 'family', 'active', 'is_staff', 'is_superuser')
+    list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
+    list_filter = ('is_staff', 'is_superuser')
+    ordering = ('last_name', 'nickname', 'first_name')
+    search_fields = ('email', 'first_name', 'nickname', 'last_name')
+    formfield_overrides = {
+        ThumbnailerImageField: {'widget': ImageClearableFileInput},
+    }
 
-
-@admin.register(Account)
-class AccountAdmin(UserAdmin):
-    add_form = AccountCreationForm
-    form = AccountChangeForm
-    list_display = ('get_short_name', 'get_last_name', 'email', 'is_active', 'is_staff', 'is_superuser')
-    list_display_links = ['get_short_name', 'get_last_name', 'email']
-    list_filter = ('is_staff', 'is_active', 'is_superuser')
-    list_select_related = ('profile',)
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser')}),
+        (None, {'fields': (
+            ('first_name', 'middle_name', 'last_name', 'suffix'),
+            ('nickname', 'gender'),
+            'photo',
+            ('role', 'family'),
+            'slug'
+        )}),
+        (_('Account Details'), {'fields': ('email', 'is_subscribed', 'is_published', 'password')}),
+        (_('Permissions'), {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
+        (_('Important Dates'), ({'fields': ('last_login', 'date_joined')})),
     )
     add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active', 'is_superuser')}
-         ),
+        (None, {'fields': (
+            ('first_name', 'middle_name', 'last_name', 'suffix'),
+            ('nickname', 'gender'),
+            'photo',
+            'slug',
+        )}),
+        (_('Account Details'), {'fields': (
+            ('email', 'password1', 'password2'))}),
     )
-    search_fields = ('email',)
-    ordering = ('email',)
-    inlines = (ParentInline, )
-
-    def get_short_name(self, instance):
-        return instance.profile.name
-
-    get_short_name.short_description = _('Name')
-    get_short_name.admin_order_field = 'profile'
-
-    def get_last_name(self, instance):
-        return instance.profile.last_name
-
-    get_last_name.short_description = _('Last Name')
-    get_last_name.admin_order_field = 'profile__last_name'
-
-    def get_inline_instances(self, request, obj=None):
-        if not obj:
-            return list()
-        return super(AccountAdmin, self).get_inline_instances(request, obj)
+    inlines = [PhoneNumberInline, AddressInline]
 
 
-@admin.register(Family)
+@admin.register(models.Family)
 class FamilyAdmin(admin.ModelAdmin):
-    form = FamilyForm
-    list_display = ('__str__', 'get_parents_count', 'get_children_count', )
+    form = forms.Family
+    list_display = ('__str__', 'get_adults_count', 'get_children_count',)
 
-    def get_parents_count(self, instance):
-        return instance.parents.count()
+    def get_adults_count(self, instance):
+        return instance.adults.count()
 
-    get_parents_count.short_description = _('Number of parents')
+    get_adults_count.short_description = _('Number of adults')
 
     def get_children_count(self, instance):
         return instance.children.count()

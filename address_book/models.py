@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
-from membership.models import Member
+from membership.models import AdultMember
 
 
 class Address(models.Model):
@@ -20,7 +20,7 @@ class Address(models.Model):
     zip_code = USZipCodeField()
 
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='addresses', blank=True, null=True)
+    member = models.ForeignKey(AdultMember, on_delete=models.CASCADE, related_name='addresses', blank=True, null=True)
 
     published = models.BooleanField(default=True, help_text=_('Display your address to other members of the pack.'))
 
@@ -33,7 +33,7 @@ class Address(models.Model):
 
     def __str__(self):
         if self.member:
-            return '{}: {}'.format(self.member.full_name, self.single_line_display())
+            return f'{self.member}: {self.single_line_display()}'
         else:
             return self.single_line_display()
 
@@ -53,7 +53,7 @@ class PhoneNumber(models.Model):
     )
     number = PhoneNumberField()
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='phone_numbers', blank=True, null=True)
+    member = models.ForeignKey(AdultMember, on_delete=models.CASCADE, related_name='phone_numbers', blank=True, null=True)
 
     published = models.BooleanField(default=True, help_text='Display this phone number to other members of the pack.')
 

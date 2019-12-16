@@ -1,131 +1,158 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.views.generic import CreateView, DetailView, UpdateView, ListView
 
-from .forms import ParentForm, ScoutForm, AddressFormSet, PhoneNumberFormSet
-from .mixins import ActiveMemberTestMixin, ActiveMemberOrContributorTestMixin
-from .models import Member, Parent, Scout
-
-user = get_user_model()
+from . import forms, mixins, models
 
 
-class MemberListView(ActiveMemberOrContributorTestMixin, ListView):
-    model = Member
+class MemberList(LoginRequiredMixin, ListView):
+    model = models.Member
     paginate_by = 25
+    context_object_name = 'member_list'
     template_name = 'membership/member_list.html'
 
     def get_queryset(self):
-        return Member.objects.filter(Q(parent__family__children__status__exact='A') | Q(scout__status__exact='A'))
+        if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
+            return models.Member.objects.filter(
+                Q(adultmember__family__children__status__exact=models.ChildMember.ACTIVE) | \
+                Q(childmember__status__exact=models.ChildMember.ACTIVE))
+        else:
+            return models.Member.objects.filter(Q(adultmember__family__exact=self.request.user.family) | \
+                                                Q(childmember__family__exact=self.request.user.family))
 
 
-class ParentListView(ActiveMemberOrContributorTestMixin, ListView):
-    model = Parent
-    paginate_by = 25
-    template_name = 'membership/parent_list.html'
-
-    def get_queryset(self):
-        return Parent.objects.filter(family__children__status__exact='A')
-
-
-class ScoutListView(ActiveMemberOrContributorTestMixin, ListView):
-    model = Scout
-    paginate_by = 25
-    template_name = 'membership/scout_list.html'
-
-    def get_queryset(self):
-        return Scout.objects.filter(status__exact='A').distinct()
-
-
-class MemberSearchResultsView(ActiveMemberOrContributorTestMixin, ListView):
-    model = Member
+class MemberSearchResultsList(mixins.ActiveMemberOrContributorTest, ListView):
+    model = models.Member
     context_object_name = 'member_list'
     template_name = 'membership/member_search_results.html'
 
     def get_queryset(self):
         query = self.request.GET.get('q')
-        return Member.objects.filter(
-            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(middle_name__icontains=query) | Q(nickname__icontains=query)
-        )
+        results = models.Member.objects.filter(Q(first_name__icontains=query) | \
+                                               Q(last_name__icontains=query) | \
+                                               Q(middle_name__icontains=query) | \
+                                               Q(nickname__icontains=query))
+
+        if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
+            return results
+        else:
+            return results.filter(Q(adultmember__family__exact=self.request.user.family) | \
+                                  Q(childmember__family__exact=self.request.user.family))
 
 
-class ParentCreateView(LoginRequiredMixin, CreateView):
-    model = Parent
-    form_class = ParentForm
-
-    def get_initial(self, *args, **kwargs):
-        initial = super(ParentCreateView, self).get_initial(**kwargs)
-        initial['last_name'] = self.request.user.profile.last_name
-        initial['family'] = [self.request.user.profile.family.id]
-        return initial
-
-    def form_valid(self, form):
-        form.instance.family = self.request.user.profile.family
-        return super().form_valid(form)
-
-
-class ParentDetailView(ActiveMemberTestMixin, DetailView):
-    model = Parent
-
-
-class ParentUpdateView(ActiveMemberTestMixin, UpdateView):
-    model = Parent
-    form_class = ParentForm
-    template_name_suffix = '_update_form'
-
-
-class ScoutCreateView(LoginRequiredMixin, CreateView):
-    model = Scout
-    form_class = ScoutForm
-
-    def get_initial(self, *args, **kwargs):
-        initial = super(ScoutCreateView, self).get_initial(**kwargs)
-        initial['last_name'] = self.request.user.profile.last_name
-        return initial
-
-    def form_valid(self, form):
-        form.instance.status = 'W'
-        form.instance.family = self.request.user.profile.family
-        return super().form_valid(form)
-
-
-class ScoutDetailView(ActiveMemberTestMixin, DetailView):
-    model = Scout
-
-
-class ScoutUpdateView(ActiveMemberTestMixin, UpdateView):
-    model = Scout
-    form_class = ScoutForm
-    template_name_suffix = '_update_form'
-
-
-class FamilyUpdateView(LoginRequiredMixin, UpdateView):
-    model = Parent
-    form_class = ParentForm
+class FamilyUpdate(LoginRequiredMixin, UpdateView):
+    model = models.AdultMember
+    form_class = forms.AdultMemberForm
+    context_object_name = 'member'
     template_name = 'membership/family_form.html'
 
     def get_object(self):
-        return Parent.objects.get(id=self.request.user.profile.id)
+        return models.AdultMember.objects.get(id=self.request.user.id)
 
-    def get_context_data(self, **kwargs):
-        context = super(FamilyUpdateView, self).get_context_data(**kwargs)
-        if self.request.POST:
-            context['address_formset'] = AddressFormSet(self.request.POST, instance=self.object)
-            context['address_formset'].full_clean()
-            context['phonenumber_formset'] = PhoneNumberFormSet(self.request.POST, instance=self.object)
-            context['phonenumber_formset'].full_clean()
+    # def get_context_data(self, **kwargs):
+    #     context = super(FamilyUpdate, self).get_context_data(**kwargs)
+    #     if self.request.POST:
+    #         context['address_formset'] = forms.AddressFormSet(self.request.POST, instance=self.object)
+    #         context['address_formset'].full_clean()
+    #         context['phonenumber_formset'] = forms.PhoneNumberFormSet(self.request.POST, instance=self.object)
+    #         context['phonenumber_formset'].full_clean()
+    #     else:
+    #         context['address_formset'] = forms.AdultMemberChange(instance=self.object)
+    #         context['phonenumber_formset'] = forms.PhoneNumberFormSet(instance=self.object)
+    #     return context
+
+    # def form_valid(self, form):
+    #     context = self.get_context_data(form=form)
+    #     formset = context['address_formset']
+    #     if formset.is_valid():
+    #         response = super().form_valid(form)
+    #         formset.instance = self.object
+    #         formset.save()
+    #         return response
+    #     else:
+    #         return super().form_invalid(form)
+
+
+class AdultMemberList(mixins.ActiveMemberOrContributorTest, ListView):
+    model = models.AdultMember
+    paginate_by = 25
+    context_object_name = 'member_list'
+    template_name = 'membership/adultmember_list.html'
+
+    def get_queryset(self):
+        if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
+            return models.AdultMember.objects.filter(family__children__status=models.ChildMember.ACTIVE)
         else:
-            context['address_formset'] = AddressFormSet(instance=self.object)
-            context['phonenumber_formset'] = PhoneNumberFormSet(instance=self.object)
-        return context
+            models.AdultMember.objects.filter(family__exact=self.request.user.family)
+
+
+class AdultMemberCreate(LoginRequiredMixin, CreateView):
+    model = models.AdultMember
+    form_class = forms.AdultMemberCreation
+    context_object_name = 'member'
+    template_name = 'membership/adultmember_form.html'
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(AdultMemberCreate, self).get_initial(**kwargs)
+        initial['last_name'] = self.request.user.last_name
+        return initial
 
     def form_valid(self, form):
-        context = self.get_context_data(form=form)
-        formset = context['address_formset']
-        if formset.is_valid():
-            response = super().form_valid(form)
-            formset.instance = self.object
-            formset.save()
-            return response
+        form.instance.family = self.request.user.family
+        return super().form_valid(form)
+
+
+class AdultMemberDetail(LoginRequiredMixin, DetailView):
+    model = models.AdultMember
+    context_object_name = 'member'
+    template_name = 'membership/adultmember_detail.html'
+
+
+class AdultMemberUpdate(LoginRequiredMixin, UpdateView):
+    model = models.AdultMember
+    form_class = forms.AdultMemberForm
+    context_object_name = 'member'
+    template_name = 'membership/adultmember_update_form.html'
+
+
+class ChildMemberList(LoginRequiredMixin, ListView):
+    model = models.ChildMember
+    paginate_by = 25
+    context_object_name = 'member_list'
+    template_name = 'membership/childmember_list.html'
+
+    def get_queryset(self):
+        if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
+            return models.ChildMember.objects.filter(status__exact=models.ChildMember.ACTIVE)
         else:
-            return super().form_invalid(form)
+            return models.ChildMember.objects.filter(family__exact=self.request.user.family)
+
+
+class ChildMemberCreate(LoginRequiredMixin, CreateView):
+    model = models.ChildMember
+    form_class = forms.ChildMemberForm
+    context_object_name = 'member'
+    template_name = 'membership/childmember_form.html'
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(ChildMemberCreate, self).get_initial(**kwargs)
+        initial['last_name'] = self.request.user.last_name
+        return initial
+
+    def form_valid(self, form):
+        form.instance.status = models.ChildMember.APPLIED
+        form.instance.family = self.request.user.family
+        return super().form_valid(form)
+
+
+class ChildMemberDetail(LoginRequiredMixin, DetailView):
+    model = models.ChildMember
+    context_object_name = 'member'
+    template_name = 'membership/childmember_detail.html'
+
+
+class ChildMemberUpdate(LoginRequiredMixin, UpdateView):
+    model = models.ChildMember
+    form_class = forms.ChildMemberForm
+    context_object_name = 'member'
+    template_name = 'membership/childmember_update_form.html'
