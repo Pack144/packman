@@ -27,9 +27,6 @@ urlpatterns = [
     # Account management
     path('members/', include('allauth.urls')),
 
-    # CKEditor uploads
-    path('ckeditor/', include('ckeditor_uploader.urls')),
-
     # Local Apps
     path('dens/', include('dens.urls')),
     path('documents/', include('documents.urls')),
