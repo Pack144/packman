@@ -22,10 +22,10 @@ from django.views import defaults as default_views
 
 urlpatterns = [
     # Django admin
-    path('admin/', admin.site.urls),
+    path('pack-administration/', admin.site.urls),
 
     # Account management
-    path('accounts/', include('allauth.urls')),
+    path('members/', include('allauth.urls')),
 
     # CKEditor uploads
     path('ckeditor/', include('ckeditor_uploader.urls')),
