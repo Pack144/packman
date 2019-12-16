@@ -114,6 +114,10 @@ main {
     margin-bottom: 0;
 }
 
+#family-card-group .card .card-img-top {
+    max-height: 200px;
+}
+
 #member-search .form-control {
     font-family: "Font Awesome 5 Free";
     font-weight: 900;

@@ -1,14 +1,14 @@
 from django.views.generic import DetailView, ListView
 
-from membership.mixins import ActiveMemberOrContributorTestMixin
+from membership.mixins import ActiveMemberOrContributorTest
 
 from .models import Den
 
 
-class DenDetailView(ActiveMemberOrContributorTestMixin, DetailView):
+class DenDetailView(ActiveMemberOrContributorTest, DetailView):
     model = Den
 
 
-class DensListView(ActiveMemberOrContributorTestMixin, ListView):
+class DensListView(ActiveMemberOrContributorTest, ListView):
     model = Den
     paginate_by = 20
