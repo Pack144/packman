@@ -2,19 +2,19 @@
 {% load crispy_forms_tags %}
 {% load static %}
 
-{% block title %}{{ scout.full_name }} - Update{% endblock %}
+{% block title %}{{ member }} - Update{% endblock %}
 
 {% block content %}
   <div class="container row">
     <div class="col-md-3">
-      {% if scout.photo %}
-        <img src="{{ scout.photo.url }}" class="img-fluid rounded" alt="{{ member }}'s profile picture">
+      {% if member.photo %}
+        <img src="{{ member.photo.url }}" class="img-fluid rounded" alt="{{ member }}'s profile picture">
       {% else %}
         <img src="{% static 'img/avatar_cub.png' %}" class="img-fluid rounded" alt="No profile picture">
       {% endif %}
     </div>
     <div class="col-md-9">
-      <h1>{{ scout }}</h1>
+      <h1>{{ member }}</h1>
       {% crispy form %}
     </div>
   </div>

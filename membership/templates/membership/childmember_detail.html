@@ -1,0 +1,27 @@
+{% extends "_base.html" %}
+
+{% block title %}{{ member }}{% endblock title %}
+
+{% block content %}
+  <div class="container row">
+    <h1>{{ member }}</h1>
+    {% if user.family == member.family %}
+      <a href="{% url 'scout_update' member.id %}" class="badge badge-warning ml-3 my-auto p-2">
+        <i class="fa fa-user-edit"></i>
+      </a>
+    {% endif %}
+  </div>
+  {% include 'membership/member_detail_card.html' %}
+  {% if member.family %}
+    <hr>
+    <h2>Family</h2>
+    <div class="card-group" id="family-card-group">
+      {% for adult in member.family.adults.all %}
+        {% include 'membership/member_detail_card.html' with member=adult %}
+      {% endfor %}
+      {% for sibling in member.get_siblings.all %}
+        {% include 'membership/member_detail_card.html' with member=sibling %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

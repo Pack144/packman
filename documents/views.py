@@ -1,12 +1,12 @@
 from django.db.models import Prefetch
 from django.views.generic import ListView
 
-from membership.mixins import ActiveMemberOrContributorTestMixin
+from membership.mixins import ActiveMemberOrContributorTest
 
 from .models import Category, Document
 
 
-class DocumentListView(ActiveMemberOrContributorTestMixin, ListView):
+class DocumentListView(ActiveMemberOrContributorTest, ListView):
     """ Display a listing of all the documents published to the repository """
     model = Document
     template_name = 'documents/document_list.html'

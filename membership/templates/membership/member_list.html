@@ -31,21 +31,20 @@
               <div class="row align-items-center">
                 <div class="col-sm-2">
                   {% if member.photo %}
-                    <img src="{{ member.photo|thumbnail_url:'thumbnail' }}" class="img-fluid rounded"
-                         alt="{{ member }}'s profile picture">
-                  {% elif member.scout %}
-                    <img src="{% static 'img/avatar_cub.png' %}" class="img-fluid rounded" alt="No profile picture">
+                    <img src="{{ member.photo|thumbnail_url:'thumbnail' }}" class="img-fluid rounded" id="headshot" alt="{{ member }}'s profile picture">
+                  {% elif member.childmember %}
+                    <img src="{% static 'img/avatar_cub.png' %}" class="img-fluid rounded" id="headshot" alt="No profile picture">
                   {% elif member.gender == 'M' %}
-                    <img src="{% static 'img/avatar_man.png' %}" class="img-fluid rounded" alt="No profile picture">
+                    <img src="{% static 'img/avatar_man.png' %}" class="img-fluid rounded" id="headshot" alt="No profile picture">
                   {% elif member.gender == 'F' %}
-                    <img src="{% static 'img/avatar_woman.png' %}" class="img-fluid rounded" alt="No profile picture">
+                    <img src="{% static 'img/avatar_woman.png' %}" class="img-fluid rounded" id="headshot" alt="No profile picture">
                   {% else %}
-                    <img src="{% static 'img/avatar_generic.png' %}" class="img-fluid rounded" alt="No profile picture">
+                    <img src="{% static 'img/avatar_generic.png' %}" class="img-fluid rounded" id="headshot" alt="No profile picture">
                   {% endif %}
                 </div>
                 <div class="col-sm-10">
-                  <h4>{{ member.full_name }}</h4>
-                  {% if member.scout.den %}<p>{{ member.scout.den }}</p>{% endif %}
+                  <h4>{{ member }}</h4>
+                  {% if member.childmember.den %}<p>{{ member.childmember.den }}</p>{% endif %}
                 </div>
               </div>
             </a>

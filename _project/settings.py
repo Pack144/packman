@@ -115,7 +115,7 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
 ]
 
-AUTH_USER_MODEL = 'membership.Account'
+AUTH_USER_MODEL = 'membership.AdultMember'
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -160,6 +160,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_files')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = 'home_page'
 
 # django-allauth
@@ -168,13 +169,16 @@ SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'family_update'
+ACCOUNT_FORMS = {
+    'signup': 'membership.forms.SignupForm',
+}
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home_page'
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_USER_DISPLAY = lambda account: account.email
+ACCOUNT_USER_DISPLAY = 'membership.models.AdultMember'
 
 # Email settings for development environment
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -188,9 +192,15 @@ INTERNAL_IPS = [
 THUMBNAIL_ALIASES = {
     'membership': {
         'thumbnail': {
-            'size': (100, 100),
+            'size': (80, 80),
             'crop': 'smart',
+            'quality': 90,
         },
+        'card': {
+            'size': (200, 200),
+            'crop': 'smart',
+            'quality': 90,
+        }
     },
 }
 

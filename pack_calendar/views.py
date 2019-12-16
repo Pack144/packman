@@ -1,12 +1,12 @@
 from django.utils import timezone
 from django.views.generic import ListView, DetailView
 
-from membership.mixins import ActiveMemberOrContributorTestMixin
+from membership.mixins import ActiveMemberOrContributorTest
 
 from .models import Event
 
 
-class EventListView(ActiveMemberOrContributorTestMixin, ListView):
+class EventListView(ActiveMemberOrContributorTest, ListView):
     """
     Display a listing of all the events coming up
     """
@@ -22,7 +22,7 @@ class EventListView(ActiveMemberOrContributorTestMixin, ListView):
             start__gte=timezone.now()).order_by('start')
 
 
-class EventDetailView(ActiveMemberOrContributorTestMixin, DetailView):
+class EventDetailView(ActiveMemberOrContributorTest, DetailView):
     """
     Display the details of a specific event
     """

@@ -1,25 +1,25 @@
 from django.contrib.auth.mixins import UserPassesTestMixin
 
+from .models import AdultMember
 
-class ActiveMemberTestMixin(UserPassesTestMixin):
+
+class ActiveMemberTest(UserPassesTestMixin):
     """ Parents with active cubs should be allowed to view this page """
     def test_func(self):
         if self.request.user.is_authenticated:
-            return self.request.user.profile.is_active
+            return self.request.user.active
 
 
-class ContributorTestMixin(UserPassesTestMixin):
+class ContributorTest(UserPassesTestMixin):
     """ Contributors should be allowed to view this page """
     def test_func(self):
         if self.request.user.is_authenticated:
-            return self.request.user.profile.role == 'C'
+            return self.request.user.role == AdultMember.CONTRIBUTOR
 
 
-class ActiveMemberOrContributorTestMixin(UserPassesTestMixin):
+class ActiveMemberOrContributorTest(UserPassesTestMixin):
     """ Parents with active cubs should be allowed to view this page """
     def test_func(self):
         if self.request.user.is_authenticated:
-            if self.request.user.profile.is_active:
-                return True
-            elif self.request.user.profile.role == 'C':
+            if self.request.user.active or self.request.user.role == AdultMember.CONTRIBUTOR:
                 return True
