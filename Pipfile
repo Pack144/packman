@@ -8,7 +8,7 @@ pylint = "*"
 
 [packages]
 argon2-cffi = "*"
-django = "~=2.2"
+django = "*"
 django-allauth = "*"
 django-ckeditor = "*"
 django-crispy-forms = "*"
