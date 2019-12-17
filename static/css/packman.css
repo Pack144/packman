@@ -116,6 +116,7 @@ main {
 
 #family-card-group .card .card-img-top {
     max-height: 200px;
+    width: auto;
 }
 
 #member-search .form-control {

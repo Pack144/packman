@@ -1,4 +1,6 @@
+import uuid
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from localflavor.us.models import USStateField, USZipCodeField
@@ -24,10 +26,12 @@ class Address(models.Model):
 
     published = models.BooleanField(default=True, help_text=_('Display your address to other members of the pack.'))
 
-    date_added = models.DateField(auto_now_add=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ['street']
         verbose_name = _('Address')
         verbose_name_plural = _('Addresses')
 
@@ -57,7 +61,8 @@ class PhoneNumber(models.Model):
 
     published = models.BooleanField(default=True, help_text='Display this phone number to other members of the pack.')
 
-    date_added = models.DateField(auto_now_add=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -72,7 +77,8 @@ class PhoneNumber(models.Model):
 class VenueType(models.Model):
     type = models.CharField(max_length=16, help_text='e.g. School, Campground, Park, etc.')
 
-    date_added = models.DateField(auto_now_add=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -92,7 +98,8 @@ class Venue(models.Model):
     phone_number = models.OneToOneField(PhoneNumber, on_delete=models.CASCADE, related_name='venue', null=True,
                                         blank=True, limit_choices_to={'member': None})
 
-    date_added = models.DateField(auto_now_add=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:

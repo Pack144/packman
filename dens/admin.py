@@ -48,7 +48,7 @@ class AnimalRankListFilter(admin.SimpleListFilter):
 @admin.register(Den)
 class DenAdmin(admin.ModelAdmin):
     list_display = ('number', 'rank', )
-    list_filter = ('rank', AnimalRankListFilter, )
+    list_filter = (AnimalRankListFilter, )
 
 
 admin.site.register(Rank)

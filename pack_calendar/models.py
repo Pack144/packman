@@ -92,6 +92,7 @@ class Category(models.Model):
                             help_text=_('Optionally choose an icon to display with these events'))
     color = models.CharField(max_length=16, choices=COLOR_CHOICES, blank=True, null=True,
                              help_text=_('Optionally choose a color to display these event in.'))
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     class Meta:
         ordering = ('name',)
