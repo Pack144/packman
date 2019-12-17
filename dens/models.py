@@ -1,5 +1,7 @@
+import uuid
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -25,6 +27,10 @@ class Rank(models.Model):
     rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES, unique=True)
     description = models.CharField(max_length=128, blank=True, null=True)
     patch = models.ImageField(upload_to='dens/rank', blank=True, null=True,)
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.get_rank_display()
@@ -52,11 +58,12 @@ class Rank(models.Model):
 class Den(models.Model):
     """ Each cub should be a member of 1 den """
 
-    number = models.PositiveSmallIntegerField(primary_key=True)
+    number = models.PositiveSmallIntegerField()
     rank = models.ForeignKey(Rank, on_delete=models.CASCADE, related_name='dens', blank=True, null=True)
     patch = models.ImageField(upload_to='dens', blank=True, null=True)
 
-    date_added = models.DateField(auto_now_add=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:

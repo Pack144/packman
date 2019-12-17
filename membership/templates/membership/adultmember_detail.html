@@ -12,7 +12,7 @@
     {% endif %}
   </div>
   {% include 'membership/member_detail_card.html' %}
-  {% if member.family %}
+  {% if member.family.children.count or member.family.adults.count > 1 %}
     <hr>
     <h2>Family</h2>
     <div class="card-group" id="family-card-group">

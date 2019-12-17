@@ -67,7 +67,7 @@ class ScoutAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'nickname', 'last_name', 'den', 'school', 'grade', 'age', 'status', 'family')
     list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den')
-    readonly_fields = ('date_joined', 'last_updated')
+    readonly_fields = ('date_added', 'last_updated')
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email')
     formfield_overrides = {
         ThumbnailerImageField: {'widget': ImageClearableFileInput},

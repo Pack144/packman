@@ -56,10 +56,10 @@ class Member(models.Model):
     photo = ThumbnailerImageField(_('Headshot Photo'), upload_to=get_headshot_path, blank=True, null=True, help_text=_(
         "We use member photos on the website to help match names with faces."))
 
-    # Administrative =
+    # Administrative
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = models.SlugField(unique=True, blank=True, null=True)
-    date_joined = models.DateTimeField(_('Date Joined'), default=timezone.now(), blank=True)
+    date_added = models.DateTimeField(_('Date Joined'), default=timezone.now, blank=True)
     last_updated = models.DateTimeField(_('Last Updated'), auto_now=True)
 
     class Meta:
@@ -117,6 +117,8 @@ class Family(models.Model):
     Members who are related are tracked by this model
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Family')
