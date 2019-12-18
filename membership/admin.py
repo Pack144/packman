@@ -117,7 +117,8 @@ class AdultAdmin(UserAdmin):
 @admin.register(models.Family)
 class FamilyAdmin(admin.ModelAdmin):
     form = forms.Family
-    list_display = ('__str__', 'get_adults_count', 'get_children_count',)
+    list_display = ('name', 'get_adults_count', 'get_children_count',)
+    search_fields = ('name', )
 
     def get_adults_count(self, instance):
         return instance.adults.count()
