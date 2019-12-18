@@ -268,7 +268,7 @@ class ChildMember(Member):
 
     # Important dates
     date_of_birth = models.DateField(_('Birthday'), blank=True, null=True)
-    started_school = models.PositiveSmallIntegerField(_('year started school'), default=two_years_ago, help_text=_(
+    started_school = models.PositiveSmallIntegerField(_('year started school'), default=two_years_ago, null=True, help_text=_(
         "What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
     started_pack = models.DateField(_('Date Started'), blank=True, null=True, help_text=_(
         "When does this cub join their first activity with the pack?"
