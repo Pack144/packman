@@ -69,8 +69,8 @@ class Member(models.Model):
         return self.get_full_name()
 
     def save(self, *args, **kwargs):
-        if not self.family:
-            self.family = Family.objects.create()
+        # if not self.family:
+        #     self.family = Family.objects.create()
         if not self.slug:
             # TODO: Make this more robust. We have three passes to get a unique slug before giving up.
             if not Member.objects.filter(slug__exact=slugify(self.get_full_name())):
@@ -116,20 +116,29 @@ class Family(models.Model):
     """
     Members who are related are tracked by this model
     """
+    name = models.CharField(max_length=64, blank=True, null=True)
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    legacy_id = models.PositiveSmallIntegerField(unique=True, blank=True, null=True)
     date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ['date_added']
         verbose_name = _('Family')
         verbose_name_plural = _('Families')
 
     def __str__(self):
+        if self.name:
+            return self.name
+
+    def save(self, *args, **kwargs):
         last_names = []
         for parent in self.adults.filter(role__exact=AdultMember.PARENT):
             if parent.last_name not in last_names:
                 last_names.append(parent.last_name)
-        return '-'.join(last_names) + ' Family'
+        self.name = '-'.join(last_names) + ' Family'
+        return super().save(*args, **kwargs)
 
 
 class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
@@ -307,5 +316,6 @@ class ChildMember(Member):
     def rank(self):
         """ A cub's rank is derived from the den they are a member of. """
         return self.den.rank
+
 
 saved_file.connect(generate_aliases)
