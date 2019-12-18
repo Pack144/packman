@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
+from django.forms import models as django_forms
 from django.utils.translation import gettext_lazy as _
 
 from easy_thumbnails.fields import ThumbnailerImageField
@@ -50,6 +51,37 @@ class AnimalRankListFilter(admin.SimpleListFilter):
             return queryset.filter(den__rank__lte=4)
         if self.value() == 'webelos':
             return queryset.filter(den__rank__gte=5)
+
+
+class FamilyListFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the right admin sidebar just above the filter options.
+    title = _('Family Members')
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'members'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('complete', _('Parents and Cubs')),
+            ('childless', _('No children')),
+            ('orphan', _('No parents')),
+            ('empty', _('No family members')),
+        )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value() == 'complete':
+            return queryset.filter(adults__isnull=False, children__isnull=False).distinct()
+        if self.value() == 'empty':
+            return queryset.filter(adults__isnull=True, children__isnull=True).distinct()
+        if self.value() == 'orphan':
+            return queryset.filter(adults__isnull=True, children__isnull=False).distinct()
+        if self.value() == 'childless':
+            return queryset.filter(adults__isnull=False, children__isnull=True).distinct()
 
 
 class AddressInline(admin.StackedInline):
@@ -117,15 +149,11 @@ class AdultAdmin(UserAdmin):
     inlines = [PhoneNumberInline, AddressInline]
 
 
-class AdultInline(admin.TabularInline):
-    model = models.AdultMember
-    autocomplete_fields = ['adults']
-
-
 @admin.register(models.Family)
 class FamilyAdmin(admin.ModelAdmin):
-    # form = forms.Family
+    form = forms.Family
     list_display = ('name', 'get_adults_count', 'get_children_count',)
+    list_filter = (FamilyListFilter, )
     search_fields = ('name', )
 
     def get_adults_count(self, instance):
