@@ -67,7 +67,8 @@ class ScoutAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'nickname', 'last_name', 'den', 'school', 'grade', 'age', 'status', 'family')
     list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den')
-    readonly_fields = ('date_added', 'last_updated')
+    readonly_fields = ('date_added', 'last_updated', 'reference', 'member_comments')
+    autocomplete_fields = ['family', 'school']
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name')
     formfield_overrides = {
         ThumbnailerImageField: {'widget': ImageClearableFileInput},
@@ -82,6 +83,8 @@ class AdultAdmin(UserAdmin):
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
     list_filter = ('is_staff', 'is_superuser')
     ordering = ('last_name', 'nickname', 'first_name')
+    readonly_fields = ('date_added', 'last_updated', 'last_login')
+    autocomplete_fields = ['family']
     search_fields = ('email', 'first_name', 'nickname', 'last_name')
     formfield_overrides = {
         ThumbnailerImageField: {'widget': ImageClearableFileInput},
@@ -114,9 +117,14 @@ class AdultAdmin(UserAdmin):
     inlines = [PhoneNumberInline, AddressInline]
 
 
+class AdultInline(admin.TabularInline):
+    model = models.AdultMember
+    autocomplete_fields = ['adults']
+
+
 @admin.register(models.Family)
 class FamilyAdmin(admin.ModelAdmin):
-    form = forms.Family
+    # form = forms.Family
     list_display = ('name', 'get_adults_count', 'get_children_count',)
     search_fields = ('name', )
 
