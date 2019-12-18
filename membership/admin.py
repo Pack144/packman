@@ -68,7 +68,7 @@ class ScoutAdmin(admin.ModelAdmin):
     list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den')
     readonly_fields = ('date_added', 'last_updated')
-    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name', 'email')
+    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name')
     formfield_overrides = {
         ThumbnailerImageField: {'widget': ImageClearableFileInput},
     }
@@ -78,7 +78,7 @@ class ScoutAdmin(admin.ModelAdmin):
 class AdultAdmin(UserAdmin):
     add_form = forms.AdultMemberCreation
     form = forms.AdultMemberChange
-    list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', 'family', 'active', 'is_staff', 'is_superuser')
+    list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', 'family', 'is_staff', 'is_superuser')
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
     list_filter = ('is_staff', 'is_superuser')
     ordering = ('last_name', 'nickname', 'first_name')
@@ -99,7 +99,7 @@ class AdultAdmin(UserAdmin):
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
-        (_('Important Dates'), ({'fields': ('last_login', 'date_joined')})),
+        (_('Important Dates'), ({'fields': ('last_login', 'date_added')})),
     )
     add_fieldsets = (
         (None, {'fields': (
