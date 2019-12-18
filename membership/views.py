@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.views.generic import CreateView, DetailView, UpdateView, ListView
 
-from . import forms, mixins, models
+from . import forms, models
 
 
 class MemberList(LoginRequiredMixin, ListView):
@@ -13,15 +13,17 @@ class MemberList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
+            # If you have active cubs or are a contributor, you can get all active members
             return models.Member.objects.filter(
                 Q(adultmember__family__children__status__exact=models.ChildMember.ACTIVE) | \
                 Q(childmember__status__exact=models.ChildMember.ACTIVE))
         else:
-            return models.Member.objects.filter(Q(adultmember__family__exact=self.request.user.family) | \
-                                                Q(childmember__family__exact=self.request.user.family))
+            # If you are not active, you can only get members of your own family
+            return models.Member.objects.filter(Q(adultmember__isnull=False), Q(adultmember__family__exact=self.request.user.family) | \
+                                                Q(childmember__isnull=False), Q(childmember__family__exact=self.request.user.family))
 
 
-class MemberSearchResultsList(mixins.ActiveMemberOrContributorTest, ListView):
+class MemberSearchResultsList(LoginRequiredMixin, ListView):
     model = models.Member
     context_object_name = 'member_list'
     template_name = 'membership/member_search_results.html'
@@ -34,10 +36,12 @@ class MemberSearchResultsList(mixins.ActiveMemberOrContributorTest, ListView):
                                                Q(nickname__icontains=query))
 
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
+            # If you have active cubs or are a contributor, you can get all of the search results
             return results
         else:
-            return results.filter(Q(adultmember__family__exact=self.request.user.family) | \
-                                  Q(childmember__family__exact=self.request.user.family))
+            # If you are not active, you can only get members of your own family
+            return results.filter(Q(adultmember__isnull=False), Q(adultmember__family__exact=self.request.user.family) | \
+                                  Q(childmember__isnull=False), Q(childmember__family__exact=self.request.user.family))
 
 
 class FamilyUpdate(LoginRequiredMixin, UpdateView):
@@ -47,6 +51,7 @@ class FamilyUpdate(LoginRequiredMixin, UpdateView):
     template_name = 'membership/family_form.html'
 
     def get_object(self):
+        # Return the currently signed on member's page
         return models.AdultMember.objects.get(id=self.request.user.id)
 
     # def get_context_data(self, **kwargs):
@@ -73,7 +78,7 @@ class FamilyUpdate(LoginRequiredMixin, UpdateView):
     #         return super().form_invalid(form)
 
 
-class AdultMemberList(mixins.ActiveMemberOrContributorTest, ListView):
+class AdultMemberList(LoginRequiredMixin, ListView):
     model = models.AdultMember
     paginate_by = 25
     context_object_name = 'member_list'
@@ -81,9 +86,11 @@ class AdultMemberList(mixins.ActiveMemberOrContributorTest, ListView):
 
     def get_queryset(self):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
+            # If you have active cubs or are a contributor, you can get all active members
             return models.AdultMember.objects.filter(family__children__status=models.ChildMember.ACTIVE)
         else:
-            models.AdultMember.objects.filter(family__exact=self.request.user.family)
+            # If you are not active, you can only get members of your own family
+            return models.AdultMember.objects.filter(family__exact=self.request.user.family)
 
 
 class AdultMemberCreate(LoginRequiredMixin, CreateView):
@@ -123,8 +130,10 @@ class ChildMemberList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
+            # If you have active cubs or are a contributor, you can get all active cubs
             return models.ChildMember.objects.filter(status__exact=models.ChildMember.ACTIVE)
         else:
+            # If you are not active, you can only get members of your own family
             return models.ChildMember.objects.filter(family__exact=self.request.user.family)
 
 
