@@ -48,7 +48,6 @@
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarMemberDropdown">
           <a class="dropdown-item" href="{% url 'family_update' %}">My Family</a>
           <a class="dropdown-item" href="{% url 'account_change_password' %}">Change Password</a>
-          <a class="dropdown-item" href="{% url 'account_email' %}">Update E-mail</a>
           {% if user.is_staff %}<a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a>{% endif %}
           <div class="dropdown-divider"></div>
           <a class="dropdown-item text-danger" href="{% url 'account_logout' %}">Log out</a>
