@@ -36,6 +36,8 @@ class AdultMemberCreation(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(AdultMemberCreation, self).__init__(*args, **kwargs)
+        self.fields['password1'].required = False
+        self.fields['password2'].required = False
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
         self.helper.layout = Layout(
@@ -53,10 +55,6 @@ class AdultMemberCreation(UserCreationForm):
             ),
             InlineRadios('gender'),
             'photo',
-            Row(
-                Column('password1'),
-                Column('password2'),
-            ),
             FormActions(
                 Submit('save', 'Add Member', css_class='btn-success'),
             ),
@@ -157,7 +155,7 @@ class ChildMemberForm(forms.ModelForm):
             ),
             'nickname',
             InlineRadios('gender'),
-            'date_of_birth',
+            Field('date_of_birth', css_class='col-md-3'),
             'photo',
             Row(
                 Column('school', css_class='col-md-8'),

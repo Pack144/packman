@@ -15,12 +15,15 @@ class MemberList(LoginRequiredMixin, ListView):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all active members
             return models.Member.objects.filter(
-                Q(adultmember__family__children__status__exact=models.ChildMember.ACTIVE) | \
+                Q(adultmember__family__children__status__exact=models.ChildMember.ACTIVE) |
                 Q(childmember__status__exact=models.ChildMember.ACTIVE))
+        elif not self.request.user.family:
+            # The user doesn't belong to a family, so we'll just show them their own information
+            return models.Member.objects.filter(adultmember__id__exact=self.request.user.id)
         else:
             # If you are not active, you can only get members of your own family
-            return models.Member.objects.filter(Q(adultmember__isnull=False), Q(adultmember__family__exact=self.request.user.family) | \
-                                                Q(childmember__isnull=False), Q(childmember__family__exact=self.request.user.family))
+            return models.Member.objects.filter(Q(adultmember__family__exact=self.request.user.family) |
+                                                Q(childmember__family__exact=self.request.user.family))
 
 
 class MemberSearchResultsList(LoginRequiredMixin, ListView):
@@ -30,25 +33,27 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         query = self.request.GET.get('q')
-        results = models.Member.objects.filter(Q(first_name__icontains=query) | \
-                                               Q(last_name__icontains=query) | \
-                                               Q(middle_name__icontains=query) | \
+        results = models.Member.objects.filter(Q(first_name__icontains=query) |
+                                               Q(last_name__icontains=query) |
+                                               Q(middle_name__icontains=query) |
                                                Q(nickname__icontains=query))
 
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all of the search results
             return results
+        elif not self.request.user.family:
+            # The user doesn't belong to a family, so we'll just show them their own information
+            return models.Member.objects.filter(adultmember__id__exact=self.request.user.id)
         else:
             # If you are not active, you can only get members of your own family
-            return results.filter(Q(adultmember__isnull=False), Q(adultmember__family__exact=self.request.user.family) | \
-                                  Q(childmember__isnull=False), Q(childmember__family__exact=self.request.user.family))
+            return results.filter(Q(adultmember__family__exact=self.request.user.family) |
+                                  Q(childmember__family__exact=self.request.user.family))
 
 
-class FamilyUpdate(LoginRequiredMixin, UpdateView):
+class FamilyUpdate(LoginRequiredMixin, DetailView):
     model = models.AdultMember
-    form_class = forms.AdultMemberForm
     context_object_name = 'member'
-    template_name = 'membership/family_form.html'
+    template_name = 'membership/adultmember_detail.html'
 
     def get_object(self):
         # Return the currently signed on member's page
@@ -88,6 +93,9 @@ class AdultMemberList(LoginRequiredMixin, ListView):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all active members
             return models.AdultMember.objects.filter(family__children__status=models.ChildMember.ACTIVE)
+        elif not self.request.user.family:
+            # The user doesn't belong to a family, so we'll just show them their own information
+            return models.AdultMember.objects.filter(id__exact=self.request.user.id)
         else:
             # If you are not active, you can only get members of your own family
             return models.AdultMember.objects.filter(family__exact=self.request.user.family)
@@ -105,7 +113,12 @@ class AdultMemberCreate(LoginRequiredMixin, CreateView):
         return initial
 
     def form_valid(self, form):
-        form.instance.family = self.request.user.family
+        request_user = models.AdultMember.objects.get(id=self.request.user.id)
+        if not request_user.family:
+            request_user.family = models.Family.objects.create()
+            request_user.save()
+        form.instance.family = request_user.family
+        form.instance.password1 = models.AdultMember.objects.make_random_password()
         return super().form_valid(form)
 
 
@@ -132,6 +145,9 @@ class ChildMemberList(LoginRequiredMixin, ListView):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all active cubs
             return models.ChildMember.objects.filter(status__exact=models.ChildMember.ACTIVE)
+        elif not self.request.user.family:
+            # The user doesn't belong to a family, so we'll just show them nothing
+            return models.ChildMember.objects.none()
         else:
             # If you are not active, you can only get members of your own family
             return models.ChildMember.objects.filter(family__exact=self.request.user.family)
@@ -150,7 +166,11 @@ class ChildMemberCreate(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.status = models.ChildMember.APPLIED
-        form.instance.family = self.request.user.family
+        request_user = models.AdultMember.objects.get(id=self.request.user.id)
+        if not request_user.family:
+            request_user.family = models.Family.objects.create()
+            request_user.save()
+        form.instance.family = request_user.family
         return super().form_valid(form)
 
 
