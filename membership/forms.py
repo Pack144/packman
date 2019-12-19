@@ -3,6 +3,7 @@ from django.forms import widgets
 from django.forms.models import inlineformset_factory
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 from allauth.account.forms import SignupForm as AllauthSignupForm
 from crispy_forms.helper import FormHelper
@@ -29,7 +30,7 @@ class AdultMemberCreation(UserCreationForm):
     class Meta:
         model = AdultMember
         fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
-                  'is_subscribed', 'gender', 'photo')
+                  'is_subscribed', 'gender', 'role', 'photo')
         widgets = {
             'photo': widgets.FileInput,
         }
@@ -38,6 +39,10 @@ class AdultMemberCreation(UserCreationForm):
         super(AdultMemberCreation, self).__init__(*args, **kwargs)
         self.fields['password1'].required = False
         self.fields['password2'].required = False
+        self.fields['role'].choices = (
+            (AdultMember.PARENT, _('Parent')),
+            (AdultMember.GUARDIAN, _('Guardian')),
+        )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
         self.helper.layout = Layout(
@@ -53,7 +58,10 @@ class AdultMemberCreation(UserCreationForm):
                 Column('is_published'),
                 Column('is_subscribed'),
             ),
-            InlineRadios('gender'),
+            Row(
+                Column(InlineRadios('gender')),
+                Column(InlineRadios('role')),
+            ),
             'photo',
             FormActions(
                 Submit('save', 'Add Member', css_class='btn-success'),
@@ -91,14 +99,17 @@ class AdultMemberForm(forms.ModelForm):
     class Meta:
         model = AdultMember
         fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
-                  'is_subscribed', 'gender', 'photo')
+                  'is_subscribed', 'gender', 'role', 'photo')
         widgets = {
-            'gender': widgets.RadioSelect,
             'photo': widgets.FileInput,
         }
 
     def __init__(self, *args, **kwargs):
         super(AdultMemberForm, self).__init__(*args, **kwargs)
+        self.fields['role'].choices = (
+            (AdultMember.PARENT, _('Parent')),
+            (AdultMember.GUARDIAN, _('Guardian')),
+        )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
         self.helper.layout = Layout(
@@ -114,7 +125,10 @@ class AdultMemberForm(forms.ModelForm):
                 Column('is_published'),
                 Column('is_subscribed'),
             ),
-            InlineRadios('gender'),
+            Row(
+                Column(InlineRadios('gender')),
+                Column(InlineRadios('role')),
+            ),
             'photo',
             FormActions(
                 Submit('save', 'Save', css_class='btn-success'),
