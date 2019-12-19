@@ -7,18 +7,18 @@
 {% block content %}
   <div class="container row">
     <div class="col-md-3">
-      {% if parent.photo %}
-        <img src="{{ parent.photo.url }}" class="img-fluid rounded" alt="{{ member }}'s profile picture">
-      {% elif parent.gender == 'M' %}
+      {% if member.photo %}
+        <img src="{{ member.photo.url }}" class="img-fluid rounded" alt="{{ member }}'s profile picture">
+      {% elif member.gender == 'M' %}
         <img src="{% static 'img/avatar_man.png' %}" class="img-fluid rounded" alt="No profile picture">
-      {% elif parent.gender == 'F' %}
+      {% elif member.gender == 'F' %}
         <img src="{% static 'img/avatar_woman.png' %}" class="img-fluid rounded" alt="No profile picture">
       {% else %}
         <img src="{% static 'img/avatar_generic.png' %}" class="img-fluid rounded" alt="No profile picture">
       {% endif %}
     </div>
     <div class="col-md-9">
-      <h1>{{ parent }}</h1>
+      <h1>{{ member }}</h1>
       {% crispy form %}
     </div>
   </div>
