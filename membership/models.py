@@ -63,6 +63,7 @@ class Member(models.Model):
     last_updated = models.DateTimeField(_('Last Updated'), auto_now=True)
 
     class Meta:
+        indexes = [models.Index(fields=['first_name', 'middle_name', 'nickname', 'last_name', 'gender'])]
         ordering = ['last_name', 'nickname', 'first_name']
 
     def __str__(self):
@@ -124,6 +125,7 @@ class Family(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        indexes = [models.Index(fields=['name'])]
         ordering = ['date_added']
         verbose_name = _('Family')
         verbose_name_plural = _('Families')
@@ -188,6 +190,7 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
     class Meta:
+        indexes = [models.Index(fields=['role', 'email', 'family'])]
         verbose_name = _('Adult')
         verbose_name_plural = _('Adults')
 
@@ -275,6 +278,7 @@ class ChildMember(Member):
     ))
 
     class Meta:
+        indexes = [models.Index(fields=['school', 'family', 'status', 'den', 'date_of_birth', 'started_school'])]
         verbose_name = _('Cub')
         verbose_name_plural = _('Cubs')
 
@@ -295,22 +299,23 @@ class ChildMember(Member):
     @property
     def grade(self):
         """ Based on when this cub started school, what grade should they be in now? """
-        this_year = timezone.now().year
-        if timezone.now().month < 9:  # assumes that a school year begins in September
-            this_year -= 1
+        if self.started_school:
+            this_year = timezone.now().year
+            if timezone.now().month < 9:  # assumes that a school year begins in September
+                this_year -= 1
 
-        calculated_grade = this_year - self.started_school
-        if calculated_grade < 0:
-            # this Scout hasn't started Kindergarten yet
-            return None
-        elif calculated_grade == 0:
-            # this Scout is a kindergartner
-            return 'K'
-        elif calculated_grade <= 12:
-            return calculated_grade
-        else:
-            # this Scout isn't in grade school anymore
-            return None
+            calculated_grade = this_year - self.started_school
+            if calculated_grade < 0:
+                # this Scout hasn't started Kindergarten yet
+                return None
+            elif calculated_grade == 0:
+                # this Scout is a kindergartner
+                return 'K'
+            elif calculated_grade <= 12:
+                return calculated_grade
+            else:
+                # this Scout isn't in grade school anymore
+                return None
 
     @property
     def rank(self):
