@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from membership.models import ChildMember
+
 
 class Rank(models.Model):
     """
@@ -78,3 +80,6 @@ class Den(models.Model):
 
     def get_absolute_url(self):
         return reverse('den_detail', args=[int(self.number)])
+
+    def active_cubs(self):
+        return self.scouts.filter(status__exact=ChildMember.ACTIVE)

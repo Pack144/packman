@@ -53,10 +53,10 @@
     {% else %}
     <div class="alert alert-warning" role="alert">There are no leaders assigned to this den</div>
   {% endif %}
-  <h2 class="mt-3">Cub{{ den.scouts.count|pluralize }}</h2>
-  {% if den.scouts.count %}
+  <h2 class="mt-3">Cub{{ den.active_cubs.count|pluralize }}</h2>
+  {% if den.active_cubs.count %}
     <ul class="list-group">
-      {% for scout in den.scouts.all %}
+      {% for scout in den.active_cubs.all %}
         <li class="list-group-item">
           <a href="{{ scout.get_absolute_url }}">
             <div class="row align-items-center">
