@@ -154,7 +154,13 @@ class FamilyAdmin(admin.ModelAdmin):
     form = forms.Family
     list_display = ('name', 'get_adults_count', 'get_children_count',)
     list_filter = (FamilyListFilter, )
-    search_fields = ('name', )
+    search_fields = ('name',
+                     'adults__first_name',
+                     'adults__nickname',
+                     'adults__last_name',
+                     'children__first_name',
+                     'children__nickname',
+                     'children__last_name')
 
     def get_adults_count(self, instance):
         return instance.adults.count()
