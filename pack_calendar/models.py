@@ -149,7 +149,7 @@ class Event(models.Model):
     get_location.short_description = _('Location')
 
     def clean(self):
-        if self.end < self.start:
+        if self.end and self.end < self.start:
             raise ValidationError(_('Event cannot end before it starts.'))
 
     @property
