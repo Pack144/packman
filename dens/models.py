@@ -6,6 +6,9 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Rank(models.Model):
+    """
+    All of the Cub Scout ranks are defined. Packs can specify which ranks they support.
+    """
     BOBCAT = 1
     TIGER = 2
     WOLF = 3
@@ -58,11 +61,10 @@ class Rank(models.Model):
 class Den(models.Model):
     """ Each cub should be a member of 1 den """
 
-    number = models.PositiveSmallIntegerField()
+    number = models.PositiveSmallIntegerField(primary_key=True)
     rank = models.ForeignKey(Rank, on_delete=models.CASCADE, related_name='dens', blank=True, null=True)
     patch = models.ImageField(upload_to='dens', blank=True, null=True)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
