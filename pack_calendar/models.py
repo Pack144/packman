@@ -95,6 +95,7 @@ class Category(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     class Meta:
+        indexes = [models.Index(fields=['name'])]
         ordering = ('name',)
         verbose_name = _('Category')
         verbose_name_plural = _('Categories')
@@ -124,6 +125,7 @@ class Event(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
+        indexes = [models.Index(fields=['name', 'venue', 'location', 'start', 'end', 'category'])]
         ordering = ['-start']
         verbose_name = _('Event')
         verbose_name_plural = _('Events')
