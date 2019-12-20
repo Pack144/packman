@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "896b38319de1e28046f8e5d51fae72210d3691fa3759439a74fffa09c2a9e99b"
+            "sha256": "a023edf65c87310e00eec9c7b04ad7175bbc6e35cee2168d62a522752bad9b0b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -123,10 +123,10 @@
         },
         "django-allauth": {
             "hashes": [
-                "sha256:6a189fc4d3ee23596c3fd6e9f49c59b5b15618980118171a50675dd6a27cc589"
+                "sha256:7ab91485b80d231da191d5c7999ba93170ef1bf14ab6487d886598a1ad03e1d8"
             ],
             "index": "pypi",
-            "version": "==0.40.0"
+            "version": "==0.41.0"
         },
         "django-ckeditor": {
             "hashes": [
@@ -299,6 +299,14 @@
                 "sha256:a988718abfad80b6b157acce7bf130a30876d27603738ac39f140993246b25b3"
             ],
             "version": "==2.19"
+        },
+        "python-memcached": {
+            "hashes": [
+                "sha256:4dac64916871bd3550263323fc2ce18e1e439080a2d5670c594cf3118d99b594",
+                "sha256:a2e28637be13ee0bf1a8b6843e7490f9456fd3f2a4cb60471733c7b5d5557e4f"
+            ],
+            "index": "pypi",
+            "version": "==1.59"
         },
         "python-stdnum": {
             "hashes": [
