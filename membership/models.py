@@ -11,8 +11,6 @@ from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.signals import saved_file
 from easy_thumbnails.signal_handlers import generate_aliases
 
-from dens.models import Den
-
 from .managers import MemberManager
 
 
@@ -267,7 +265,7 @@ class ChildMember(Member):
         "Once a Cub is no longer active in the pack, either through graduation or attrition, note that status here."
         "Any adult member connected to this Cub will get access only once the Cub's status is 'Active' or 'Approved'."
     ))
-    den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name='scouts', blank=True, null=True)
+    den = models.ForeignKey('dens.Den', on_delete=models.CASCADE, related_name='scouts', blank=True, null=True)
 
     # Important dates
     date_of_birth = models.DateField(_('Birthday'), blank=True, null=True)
