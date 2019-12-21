@@ -5,13 +5,12 @@ from django.utils.translation import gettext_lazy as _
 
 from ckeditor.fields import RichTextField
 
-from documents.models import Document
-
 
 class Category(models.Model):
     name = models.CharField(max_length=32)
 
     class Meta:
+        ordering = ['name']
         verbose_name = _('Category')
         verbose_name_plural = _('Categories')
 
@@ -20,15 +19,21 @@ class Category(models.Model):
 
 
 class Page(models.Model):
-    title = models.CharField(max_length=128)
-    body = RichTextField(blank=True)
-    attachments = models.ManyToManyField(Document, related_name='page', blank=True)
+    title = models.CharField(_('Title'), max_length=128)
+    private_content = RichTextField(_('Private content'), blank=True, help_text=(
+        "Private content will only be viewable to active members."
+    ))
+    public_content = RichTextField(_('Publicly available content'), blank=True, help_text=_(
+        "Public content is viewable by anyone on the website."
+    ))
+    # attachments = models.ManyToManyField(_('Attachments'), 'documents.Document', related_name='page', blank=True)
 
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     published_on = models.DateTimeField(default=timezone.now, blank=True, null=True)
 
     class Meta:
+        indexes = [models.Index(fields=['title'])]
         get_latest_by = 'published_on'
         verbose_name = _('Page')
         verbose_name_plural = _('Pages')
@@ -53,10 +58,15 @@ class DynamicPage(Page):
 
 
 class StaticPage(Page):
+    HOME = 'HOME'
+    ABOUT = 'ABOUT'
+    HISTORY = 'HISTORY'
+    SIGNUP = 'SIGNUP'
     PAGE_CHOICES = (
-        ('HOME', 'Home Page'),
-        ('ABOUT', 'About Us Page'),
-        ('HISTORY', 'History Page'),
+        (HOME, _('Home Page')),
+        (ABOUT, _('About Us Page')),
+        (HISTORY, _('History Page')),
+        (SIGNUP, _('Join Us')),
     )
     page = models.CharField(max_length=8, choices=PAGE_CHOICES)
 

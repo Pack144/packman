@@ -1,18 +1,21 @@
 {% extends '_base.html' %}
 {% load humanize %}
 
-{% block title %}Home{% endblock %}
+{% block title %}{% if page_content %}{{ page_content.title }}{% else %}Home{% endif %}{% endblock %}
 
 {% block content %}
-  {% if page_content %}
-    <p>{{ page_content.body|safe }}</p>
+    <h1>{{ page_content.title }}</h1>
+  {% if page_content.private_content %}
+    <p>{{ page_content.private_content|safe }}</p>
+  {% endif %}
+  {% if page_content.public_content %}
+    <p>{{ page_content.public_content|safe }}</p>
   {% endif %}
   {% if upcoming_events %}
     <h2>Coming Up</h2>
     <dl>
       {% for event in upcoming_events %}
-        <a href="{% url 'event_detail' event.id %}"
-           class="btn btn-block btn{% if not forloop.first %}-outline{% endif %}{% if event.category.color %}-{{ event.category.color }}{% else %}-dark{% endif %} p-3">
+        <a href="{% url 'event_detail' event.id %}" class="btn btn-block btn{% if not forloop.first %}-outline{% endif %}{% if event.category.color %}-{{ event.category.color }}{% else %}-dark{% endif %} p-3">
           <div class="row">
             <div class="col-md-4">
               <h3 class="text-reset">
