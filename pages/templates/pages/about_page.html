@@ -1,11 +1,16 @@
 {% extends '_base.html' %}
 
-{% block title %}About Us{% endblock %}
+{% block title %}{% if page_content %}{{ page_content.title }}{% else %}About Us{% endif %}{% endblock %}
 
 {% block content %}
-  <h1>About Us</h1>
-  {% if page_content.body %}
-    <p>{{ page_content.body|safe }}</p>
+  <h1>{% if page_content %}{{ page_content.title }}{% else %}About Us{% endif %}</h1>
+  {% if page_content.private_content or page_content.public_content %}
+    {% if page_content.private_content and request.user.active %}
+      <p>{{ page_content.private_content|safe }}</p>
+    {% endif %}
+    {% if page_content.public_content %}
+      <p>{{ page_content.public_content|safe }}</p>
+    {% endif %}
   {% else %}
     <div class="alert alert-warning" role="alert">This page has no content yet. Here is some sample text instead.</div>
     {% lorem 3 p %}
