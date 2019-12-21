@@ -48,7 +48,7 @@ class AdultMemberCreation(UserCreationForm):
         self.helper.layout = Layout(
             Row(
                 Column('first_name', css_class='col-md-4'),
-                Column('middle_name', css_class='col-md-2'),
+                Column('middle_name', css_class='col-md-2 text-truncate'),
                 Column('last_name', css_class='col-md-5'),
                 Column('suffix', css_class='col-md-1'),
             ),
@@ -115,7 +115,7 @@ class AdultMemberForm(forms.ModelForm):
         self.helper.layout = Layout(
             Row(
                 Column('first_name', css_class='col-md-4'),
-                Column('middle_name', css_class='col-md-2'),
+                Column('middle_name', css_class='col-md-2 text-truncate'),
                 Column('last_name', css_class='col-md-5'),
                 Column('suffix', css_class='col-md-1'),
             ),
@@ -163,7 +163,7 @@ class ChildMemberForm(forms.ModelForm):
         self.helper.layout = Layout(
             Row(
                 Column('first_name', css_class='col-md-4'),
-                Column('middle_name', css_class='col-md-2'),
+                Column('middle_name', css_class='col-md-2 text-truncate'),
                 Column('last_name', css_class='col-md-5'),
                 Column('suffix', css_class='col-md-1'),
             ),
@@ -183,12 +183,43 @@ class ChildMemberForm(forms.ModelForm):
         )
 
 
-class SignupForm(AllauthSignupForm, AdultMemberCreation):
+class SignupForm(AllauthSignupForm, UserCreationForm):
     class Meta:
         model = AdultMember
         fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
-                  'is_subscribed', 'gender', 'photo')
-        widgets = {'gender': widgets.RadioSelect, 'photo': widgets.FileInput}
+                  'is_subscribed', 'gender', 'role', 'photo')
+        widgets = {'gender': widgets.RadioSelect, 'role': widgets.RadioSelect, 'photo': widgets.FileInput}
+
+    def __init__(self, *args, **kwargs):
+        super(SignupForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'parent_update'
+        self.helper.layout = Layout(
+            Row(
+                Column('first_name', css_class='col-md-4'),
+                Column('middle_name', css_class='col-md-2 text-truncate'),
+                Column('last_name', css_class='col-md-5'),
+                Column('suffix', css_class='col-md-1'),
+            ),
+            'nickname',
+            Row(
+                Column('email'),
+                Column('is_published'),
+                Column('is_subscribed'),
+            ),
+            Row(
+                Column('password1'),
+                Column('password2'),
+            ),
+            Row(
+                Column(InlineRadios('gender')),
+                Column(InlineRadios('role')),
+            ),
+            'photo',
+            FormActions(
+                Submit('save', 'Sign me up!', css_class='btn-success btn-lg'),
+            ),
+        )
 
     def signup(self, request, user):
         user.first_name = self.cleaned_data['first_name']
@@ -197,6 +228,7 @@ class SignupForm(AllauthSignupForm, AdultMemberCreation):
         user.suffix = self.cleaned_data['suffix']
         user.nickname = self.cleaned_data['nickname']
         user.gender = self.cleaned_data['gender']
+        user.role = self.cleaned_data['role']
         user.photo = self.cleaned_data['photo']
         user.email = self.cleaned_data['email']
         user.is_subscribed = self.cleaned_data['is_subscribed']
@@ -204,3 +236,4 @@ class SignupForm(AllauthSignupForm, AdultMemberCreation):
         user.family = Family.objects.create()
         user.save()
         return user
+
