@@ -8,9 +8,49 @@ from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
 
 from address_book.models import Address, PhoneNumber
-from dens.admin import AnimalRankListFilter
+from dens.models import Rank
 
 from .import forms, models
+
+
+class AnimalRankListFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the right admin sidebar just above the filter options.
+    title = _('ranks')
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'ranks'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('tigers', _('Tigers')),
+            ('wolves', _('Wolves')),
+            ('bears', _('Bears')),
+            ('jr_weebs', _('Jr. Webelos')),
+            ('sr_weebs', _('Sr. Webelos')),
+            ('animals', _('Animal Ranks')),
+            ('webelos', _('Webelos')),
+        )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value() == 'tigers':
+            return queryset.filter(den__rank__exact=Rank.TIGER)
+        if self.value() == 'wolves':
+            return queryset.filter(den__rank__exact=Rank.WOLF)
+        if self.value() == 'bears':
+            return queryset.filter(den__rank__exact=Rank.BEAR)
+        if self.value() == 'jr_weebs':
+            return queryset.filter(den__rank__exact=Rank.JR_WEBE)
+        if self.value() == 'sr_weebs':
+            return queryset.filter(den__rank__exact=Rank.SR_WEBE)
+        if self.value() == 'animals':
+            return queryset.filter(den__rank__lte=Rank.BEAR)
+        if self.value() == 'webelos':
+            return queryset.filter(den__rank__gte=Rank.JR_WEBE)
 
 
 class FamilyListFilter(admin.SimpleListFilter):
