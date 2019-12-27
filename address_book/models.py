@@ -97,6 +97,7 @@ class Venue(models.Model):
                                    limit_choices_to={'member': None})
     phone_number = models.OneToOneField(PhoneNumber, on_delete=models.CASCADE, related_name='venue', null=True,
                                         blank=True, limit_choices_to={'member': None})
+    url = models.URLField(_('Website'), blank=True, null=True)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
