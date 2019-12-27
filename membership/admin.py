@@ -2,13 +2,13 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
-from django.forms import models as django_forms
 from django.utils.translation import gettext_lazy as _
 
 from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
 
 from address_book.models import Address, PhoneNumber
+from dens.models import Rank
 
 from .import forms, models
 
@@ -38,19 +38,19 @@ class AnimalRankListFilter(admin.SimpleListFilter):
         `self.value()`.
         """
         if self.value() == 'tigers':
-            return queryset.filter(den__rank__exact=2)
+            return queryset.filter(den__rank__exact=Rank.TIGER)
         if self.value() == 'wolves':
-            return queryset.filter(den__rank__exact=3)
+            return queryset.filter(den__rank__exact=Rank.WOLF)
         if self.value() == 'bears':
-            return queryset.filter(den__rank__exact=4)
+            return queryset.filter(den__rank__exact=Rank.BEAR)
         if self.value() == 'jr_weebs':
-            return queryset.filter(den__rank__exact=5)
+            return queryset.filter(den__rank__exact=Rank.JR_WEBE)
         if self.value() == 'sr_weebs':
-            return queryset.filter(den__rank__exact=6)
+            return queryset.filter(den__rank__exact=Rank.SR_WEBE)
         if self.value() == 'animals':
-            return queryset.filter(den__rank__lte=4)
+            return queryset.filter(den__rank__lte=Rank.BEAR)
         if self.value() == 'webelos':
-            return queryset.filter(den__rank__gte=5)
+            return queryset.filter(den__rank__gte=Rank.JR_WEBE)
 
 
 class FamilyListFilter(admin.SimpleListFilter):
