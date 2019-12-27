@@ -235,8 +235,6 @@ X_FRAME_OPTIONS = 'DENY'
 # https://docs.djangoproject.com/en/3.0/ref/middleware/#x-content-type-options-nosniff
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-CKEDITOR_UPLOAD_PATH = 'uploads/'
-
 # LOGGING
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/3.0/ref/settings/#logging
@@ -249,7 +247,7 @@ LOGGING = {
     "formatters": {
         "verbose": {
             "format": "%(levelname)s %(asctime)s %(module)s "
-            "%(process)d %(thread)d %(message)s"
+                      "%(process)d %(thread)d %(message)s"
         }
     },
     "handlers": {
@@ -284,6 +282,26 @@ LOGGING = {
 # -----------------------------------------------------------------------------
 AUTH_USER_MODEL = 'membership.AdultMember'
 
+# django-ckeditor
+# https://django-ckeditor.readthedocs.io/en/latest/
+# -----------------------------------------------------------------------------
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'packman',
+        'toolbar_packman': [
+            ['Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo'],
+            ['Link', 'Unlink', 'Anchor'],
+            ['Table', 'HorizontalRule', 'SpecialChar'],
+            ['Maximize'],
+            ['Source'],
+            '/',
+            ['Format'],
+            ['Bold', 'Italic', 'Underline', 'Strike', 'Superscript', 'Subscript', '-', 'RemoveFormat'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
+        ],
+    },
+}
+
 # django-tempus-dominus
 # https://tempusdominus.github.io/bootstrap-4/
 # https://github.com/FlipperPA/django-tempus-dominus
@@ -294,7 +312,7 @@ TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
 # cubs advance to the next rank.
 # -----------------------------------------------------------------------------
 PACK_YEAR_BEGIN_MONTH = 9  # September
-PACK_YEAR_BEGIN_DAY = 1    # 1st
+PACK_YEAR_BEGIN_DAY = 1  # 1st
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository
