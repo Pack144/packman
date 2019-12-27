@@ -22,7 +22,7 @@
               <p class="font-weight-bold">{{ event.start|time:'g:ia' }}{% if event.end and event.end != event.start %} &ndash;
                 {{ event.end|time:'g:ia' }}{% endif %}</p>
               <p><strong>Where:</strong> {{ event.get_location }}</p>
-              <p>{{ event.description|safe|truncatewords_html:15 }}</p>
+              {% if event.description %}<p>{{ event.description|safe|truncatewords_html:12 }}</p>{% endif %}
             {% endif %}
           </div>
         </div>
