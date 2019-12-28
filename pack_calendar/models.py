@@ -55,6 +55,7 @@ class Category(models.Model):
     BELL = '<i class="far fa-bell"></i>'
     CAMPGROUND = '<i class="fas fa-campground"></i>'
     CALENDAR = '<i class="far fa-calendar-alt"></i>'
+    CIRCLED_X = '<i class="far fa-times-circle"></i>'
     DONATE = '<i class="fas fa-donate"></i>'
     GIFT = '<i class="fas fa-gift"></i>'
     SMALL_GROUP = '<i class="fas fa-user-friends"></i>'
@@ -72,12 +73,13 @@ class Category(models.Model):
         (BELL, _('Bell')),
         (CALENDAR, _('Calendar')),
         (CAMPGROUND, _('Campground')),
+        (CIRCLED_X, _("Circled 'X'")),
         (DONATE, _('Donate')),
         (GIFT, _('Gift box')),
         (LARGE_GROUP, _('Group (large)')),
         (SMALL_GROUP, _('Group (small)')),
-        (HELPING_HANDS, _('Hands helping')),
-        (HANDSHAKE, _('Hands shaking')),
+        (HELPING_HANDS, _('Hands Helping')),
+        (HANDSHAKE, _('Hands Shaking')),
         (HEART, _('Heart')),
         (MEDAL, _('Medal')),
         (RIBBON, _('Ribbon')),
