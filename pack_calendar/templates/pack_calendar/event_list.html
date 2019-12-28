@@ -14,16 +14,14 @@
             <h3 class="text-reset">
               {% if event.category.icon %}{{ event.category.icon|safe }} {% endif %}{{ event.name }}</h3>
           </div>
-          <div class="col-md-8">
+          <div class="col-md-8 text-left">
             <h5>{{ event.start.date|naturalday:'l, F jS'|capfirst }}
               {% if event.end and event.end.date != event.start.date %} &ndash;
                 {{ event.end.date|naturalday:'F jS'|capfirst }}{% endif %}</h5>
-            {% if user.is_authenticated %}
               <p class="font-weight-bold">{{ event.start|time:'g:ia' }}{% if event.end and event.end != event.start %} &ndash;
                 {{ event.end|time:'g:ia' }}{% endif %}</p>
-              <p><strong>Where:</strong> {{ event.get_location }}</p>
+              <p><strong>Where:</strong> {{ event.get_location }}{% if event.venue.address %}<br>{{ event.venue.address }}{% endif %}</p>
               {% if event.description %}<p>{{ event.description|safe|truncatewords_html:12 }}</p>{% endif %}
-            {% endif %}
           </div>
         </div>
       </a>

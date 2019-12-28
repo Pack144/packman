@@ -21,11 +21,25 @@
       </div>
     </div>
     <div class="col">
-      <p><strong>Start:</strong> {{ event.start }}</p>
-      <p><strong>End:</strong> {{ event.end }}</p>
-      <p><strong>Location:</strong> {{ event.get_location }}</p>
-      <p>{{ event.description|safe }}</p>
+    <dl>
+      <dt>Start</dt>
+      <dd>{{ event.start }}</dd>
+      {% if event.end %}
+        <dt>End</dt>
+        <dd>{{ event.end }}</dd>
+      {% endif %}
+      <dt>Location</dt>
+      <dd>
+        {{ event.get_location }}
+        {% if event.venue.address %}<br>{{ event.venue.address }}{% endif %}
+      </dd>
+      {% if event.description %}
+        <dt>Description</dt>
+        <dd>{{ event.description|safe }}</dd>
+      {% endif %}
       {% if event.attachments %}
+        <dt>Attachments</dt>
+        <dd>
         <ul class="list-group">
           {% for attachment in event.attachments.all %}
             <a href="{{ attachment.file.url }}" target="_blank">
@@ -33,7 +47,9 @@
             </a>
           {% endfor %}
         </ul>
+        </dd>
       {% endif %}
+    </dl>
     </div>
   </div>
 {% endblock %}
