@@ -35,6 +35,9 @@
       {% else %}
         <a class="nav-item nav-link mr-lg-3" href="{% url 'account_signup' %}">Join Us</a>
       {% endif %}
+      {% for item in navbar_items %}
+        <a class="nav-item nav-link mr-lg-3" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
+      {% endfor %}
       <a class="nav-item nav-link mr-lg-3" href="{% url 'history_page' %}">Our History</a>
       <a class="nav-item nav-link mr-lg-3" href="{% url 'about_page' %}">About Us</a>
     </div>
