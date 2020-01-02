@@ -23,9 +23,9 @@
                 {% if event.category.icon %}{{ event.category.icon|safe }}<br>{% endif %}{{ event.name }}</h3>
             </div>
             <div class="col-md-8 text-left">
-              <h5>{{ event.start.date|naturalday:'l, F jS'|capfirst }}
+              <h5>{{ event.start|naturalday:'l, F jS'|capfirst }}
                 {% if event.end.date and event.end.date != event.start.date %} &ndash;
-                  {{ event.end.date|naturalday:'F jS'|capfirst }}{% endif %}</h5>
+                  {{ event.end|naturalday:'F jS'|capfirst }}{% endif %}</h5>
               {% if user.active %}
                 <p class="font-weight-bold">{{ event.start|time:'g:ia' }}{% if event.end and event.end != event.start %} &ndash;
                   {{ event.end|time:'g:ia' }}{% endif %}</p>
