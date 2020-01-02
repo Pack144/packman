@@ -44,6 +44,9 @@ class Page(models.Model):
 
 class DynamicPage(Page):
     categories = models.ManyToManyField(Category, related_name='dynamic_page', blank=True)
+    include_in_nav = models.BooleanField(_('Include in navigation'), default=False, help_text=_(
+        "Checking this option will add this page to the site's menu bar."
+    ))
     slug = models.SlugField(unique=True)
 
     class Meta:
