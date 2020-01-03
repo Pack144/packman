@@ -47,6 +47,9 @@ class DynamicPage(Page):
     include_in_nav = models.BooleanField(_('Include in navigation'), default=False, help_text=_(
         "Checking this option will add this page to the site's menu bar."
     ))
+    parent_page = models.ForeignKey(Page, on_delete=models.SET_NULL, related_name='child_page', blank=True, null=True, help_text=_(
+        "Is this page part of another?"
+    ))
     slug = models.SlugField(unique=True)
 
     class Meta:
