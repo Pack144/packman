@@ -32,7 +32,7 @@ class Address(models.Model):
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
 
     published = models.BooleanField(default=True, help_text=_(
-        'Display this address to other members of the pack on the member details page.'))
+        "Display this address to other members of the pack on the member details page."))
 
     member = models.ForeignKey(AdultMember, on_delete=models.CASCADE, related_name='addresses', blank=True, null=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -41,8 +41,8 @@ class Address(models.Model):
 
     class Meta:
         ordering = ['street']
-        verbose_name = _('Address')
-        verbose_name_plural = _('Addresses')
+        verbose_name = _("Address")
+        verbose_name_plural = _("Addresses")
 
     def __str__(self):
         if self.member:
@@ -85,8 +85,8 @@ class PhoneNumber(models.Model):
 
     class Meta:
         ordering = ['number']
-        verbose_name = _('Phone Number')
-        verbose_name_plural = _('Phone Numbers')
+        verbose_name = _("Phone Number")
+        verbose_name_plural = _("Phone Numbers")
 
     def __str__(self):
         return self.number.as_national
@@ -106,8 +106,8 @@ class VenueType(models.Model):
 
     class Meta:
         ordering = ['type']
-        verbose_name = _('Venue Type')
-        verbose_name_plural = _('Venue Types')
+        verbose_name = _("Venue Type")
+        verbose_name_plural = _("Venue Types")
 
     def __str__(self):
         return self.type
@@ -124,7 +124,7 @@ class Venue(models.Model):
                                    limit_choices_to={'member': None})
     phone_number = models.OneToOneField(PhoneNumber, on_delete=models.CASCADE, related_name='venue', null=True,
                                         blank=True, limit_choices_to={'member': None})
-    url = models.URLField(_('Website'), blank=True, null=True)
+    url = models.URLField(_("Website"), blank=True, null=True)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
@@ -132,8 +132,8 @@ class Venue(models.Model):
 
     class Meta:
         ordering = ['name']
-        verbose_name = _('Venue')
-        verbose_name_plural = _('Venues')
+        verbose_name = _("Venue")
+        verbose_name_plural = _("Venues")
 
     def __str__(self):
         return self.name
