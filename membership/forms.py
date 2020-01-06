@@ -14,7 +14,7 @@ from tempus_dominus.widgets import DatePicker
 from address_book.forms import AddressForm, PhoneNumberForm
 from address_book.models import Address, PhoneNumber
 
-from .models import Member, AdultMember, ChildMember, Family
+from .models import AdultMember, ChildMember, Family
 
 AddressFormSet = inlineformset_factory(AdultMember, Address, form=AddressForm, can_delete=True, extra=1)
 PhoneNumberFormSet = inlineformset_factory(AdultMember, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=1)
