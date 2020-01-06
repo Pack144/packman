@@ -11,7 +11,7 @@ class AddressForm(forms.ModelForm):
 
     class Meta:
         model = Address
-        exclude = ('member', )
+        exclude = ('member', 'date_added')
 
     def __init__(self, *args, **kwargs):
         super(AddressForm, self).__init__(*args, **kwargs)
@@ -38,7 +38,7 @@ class PhoneNumberForm(forms.ModelForm):
 
     class Meta:
         model = PhoneNumber
-        exclude = ('member', )
+        exclude = ('member', 'date_added')
 
     def __init__(self, *args, **kwargs):
         super(PhoneNumberForm, self).__init__(*args, **kwargs)
