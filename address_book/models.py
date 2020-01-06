@@ -10,22 +10,26 @@ from membership.models import AdultMember
 
 
 class Address(models.Model):
+    HOME = 'H'
+    WORK = 'W'
+    OTHER = 'O'
     TYPE_CHOICES = (
-        ('H', 'Home'),
-        ('W', 'Work'),
-        ('O', 'Other')
+        (HOME, _("Home")),
+        (WORK, _("Work")),
+        (OTHER, _("Other")),
     )
-    street = models.CharField(max_length=128)
-    street2 = models.CharField(max_length=128, blank=True, null=True)
-    city = models.CharField(max_length=64)
-    state = USStateField()
-    zip_code = USZipCodeField()
+    street = models.CharField(_("Street"), max_length=128)
+    street2 = models.CharField(_("Street"), max_length=128, blank=True, null=True)
+    city = models.CharField(_("City"), max_length=64)
+    state = USStateField(_("State"))
+    zip_code = USZipCodeField(_("ZIP Code"))
 
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
+
+    published = models.BooleanField(default=True, help_text=_(
+        'Display this address to other members of the pack on the member details page.'))
+
     member = models.ForeignKey(AdultMember, on_delete=models.CASCADE, related_name='addresses', blank=True, null=True)
-
-    published = models.BooleanField(default=True, help_text=_('Display your address to other members of the pack.'))
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
@@ -43,24 +47,28 @@ class Address(models.Model):
 
     def single_line_display(self):
         if self.street2:
-            return '{} {}, {} {}, {}'.format(self.street, self.street2, self.city, self.state, self.zip_code)
+            return f'{self.street} {self.street2}, {self.city} {self.state}, {self.zip_code}'
         else:
-            return '{}, {} {}, {}'.format(self.street, self.city, self.state, self.zip_code)
+            return f'{self.street}, {self.city} {self.state}, {self.zip_code}'
 
 
 class PhoneNumber(models.Model):
+    HOME = 'H'
+    MOBILE = 'M'
+    WORK = 'W'
+    OTHER = 'O'
     TYPE_CHOICES = (
-        ('H', 'Home'),
-        ('M', 'Mobile'),
-        ('W', 'Work'),
-        ('O', 'Other')
+        (HOME, _("Home")),
+        (MOBILE, _("Mobile")),
+        (WORK, _("Work")),
+        (OTHER, _("Other")),
     )
-    number = PhoneNumberField()
+    number = PhoneNumberField(_("Phone Number"))
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
+    published = models.BooleanField(default=True, help_text=_(
+        "Display this phone number to other members of the pack in the member details page."))
+
     member = models.ForeignKey(AdultMember, on_delete=models.CASCADE, related_name='phone_numbers', blank=True, null=True)
-
-    published = models.BooleanField(default=True, help_text='Display this phone number to other members of the pack.')
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
@@ -75,7 +83,8 @@ class PhoneNumber(models.Model):
 
 
 class VenueType(models.Model):
-    type = models.CharField(max_length=16, help_text='e.g. School, Campground, Park, etc.')
+    type = models.CharField(max_length=16, help_text=_(
+        "e.g. School, Campground, Park, etc."))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
