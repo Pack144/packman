@@ -10,6 +10,11 @@ from membership.models import AdultMember
 
 
 class Address(models.Model):
+    """
+    Address object to store physical address information. Used by Adult members and Venues. When associated with a
+    member, the published option controls whether the address will be displayed on a member's detail page. This setting
+    is not honored for venues, as the address should always be visible.
+    """
     HOME = 'H'
     WORK = 'W'
     OTHER = 'O'
@@ -53,6 +58,11 @@ class Address(models.Model):
 
 
 class PhoneNumber(models.Model):
+    """
+    Phone number object to store phone contact details. Used by Adult members and Venues. When associated with a
+    member, the published option controls whether the number will be displayed on a member's detail page. This setting
+    is not honored for venues, as the phone number should always be visible.
+    """
     HOME = 'H'
     MOBILE = 'M'
     WORK = 'W'
@@ -83,6 +93,10 @@ class PhoneNumber(models.Model):
 
 
 class VenueType(models.Model):
+    """
+    Specifying a VenueType allows for sorting and filtering venues. Used by the cub sign-up view to provide a list of
+    schools the pack is aware of.
+    """
     type = models.CharField(max_length=16, help_text=_(
         "e.g. School, Campground, Park, etc."))
 
@@ -100,6 +114,10 @@ class VenueType(models.Model):
 
 
 class Venue(models.Model):
+    """
+    Venues are locations where the pack may meet in the pack_caledar app and by ChildMembers to record the school they
+    attend.
+    """
     name = models.CharField(max_length=128, unique=True)
     type = models.ForeignKey(VenueType, on_delete=models.CASCADE, related_name='venue')
     address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='venue', null=True, blank=True,
