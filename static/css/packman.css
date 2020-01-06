@@ -89,6 +89,11 @@ main {
     border: 0;
 }
 
+#headshot {
+    width: 80px;
+    height: 80px;
+}
+
 .navbar-brand {
     font-family: 'Cooper Black', serif;
     line-height: .9em;
