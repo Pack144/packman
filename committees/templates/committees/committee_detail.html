@@ -1,0 +1,38 @@
+{% extends '_base.html' %}
+{% load static %}
+{% load thumbnail %}
+
+{% block title %}{{ committee }}{% endblock %}
+
+{% block content %}
+  <div class="container p-3 bg-white rounded">
+    <div class=" d-flex justify-content-between align-items-center">
+      <h1>{{ committee }}</h1>
+      <h4 class="text-primary">{{ committee.year }}</h4>
+    </div>
+    {% if committee.description %}<p class="text-muted">{{ committee.description }}</p>{% endif %}
+  </div>
+
+  <h2 class="mt-3">Committee Member{{ committee.leadership.count|pluralize }}</h2>
+  {% if committee.leadership.count %}
+    <ul class="list-group">
+      {% for membership in committee.membership_set.all %}
+        <li class="list-group-item">
+          <a href="{{ membership.member.get_absolute_url }}">
+            <div class="row align-items-center">
+              <div class="col-sm-2">
+                {% include 'membership/headshot_thumbnail_snippet.html' with member=membership.member %}
+              </div>
+              <div class="col-sm-10">
+                <strong>{{ membership.member }}</strong><br>
+                <span class="text-muted">{{ membership.get_position_display }}</span>
+              </div>
+            </div>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="alert alert-warning" role="alert">There are no leaders assigned to this committee</div>
+  {% endif %}
+{% endblock %}
