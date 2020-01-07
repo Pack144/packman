@@ -16,6 +16,7 @@ django-localflavor==2.2
 django-phonenumber-field==4.0.0
 django-tempus-dominus==5.1.2.9
 django==3.0.2
+docutils==0.15.2
 easy-thumbnails==2.7
 idna==2.8
 oauthlib==3.1.0
