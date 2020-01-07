@@ -14,7 +14,7 @@
       {% crispy form %}
     </fieldset>
     <fieldset class="mt-4">
-      <legend>Address{{ address_formset.total_form_count|pluralize }}</legend>
+      <legend>Address{{ address_formset.total_form_count|pluralize:'es' }}</legend>
       {{ address_formset.management_form }}
       {{ address_formset.errors }}
       {% for form in address_formset %}
