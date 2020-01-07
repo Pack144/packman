@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from django.http import HttpResponseRedirect
 from django.views.generic import CreateView, DetailView, UpdateView, ListView
 
 from . import forms, models
@@ -103,9 +104,19 @@ class AdultMemberList(LoginRequiredMixin, ListView):
 
 class AdultMemberCreate(LoginRequiredMixin, CreateView):
     model = models.AdultMember
-    form_class = forms.AdultMemberCreation
     context_object_name = 'member'
+    form_class = forms.AdultMemberCreation
     template_name = 'membership/adultmember_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AdultMemberCreate, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_formset'] = forms.AddressFormSet(self.request.POST)
+            context['phonenumber_formset'] = forms.PhoneNumberFormSet(self.request.POST)
+        else:
+            context['address_formset'] = forms.AddressFormSet()
+            context['phonenumber_formset'] = forms.PhoneNumberFormSet()
+        return context
 
     def get_initial(self, *args, **kwargs):
         initial = super(AdultMemberCreate, self).get_initial(**kwargs)
@@ -113,7 +124,18 @@ class AdultMemberCreate(LoginRequiredMixin, CreateView):
         return initial
 
     def form_valid(self, form):
+        context = self.get_context_data(form=form)
+        address_formset = context['address_formset']
+        phonenumber_formset = context['phonenumber_formset']
         request_user = models.AdultMember.objects.get(id=self.request.user.id)
+        if address_formset.is_valid() and phonenumber_formset.is_valid():
+            self.object = form.save()
+            address_formset.instance = self.object
+            address_formset.save()
+            phonenumber_formset.instance = self.object
+            phonenumber_formset.save()
+        else:
+            return super().form_invalid(form)
         if not request_user.family:
             request_user.family = models.Family.objects.create()
             request_user.save()
@@ -133,6 +155,30 @@ class AdultMemberUpdate(LoginRequiredMixin, UpdateView):
     form_class = forms.AdultMemberForm
     context_object_name = 'member'
     template_name = 'membership/adultmember_update_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AdultMemberUpdate, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_formset'] = forms.AddressFormSet(self.request.POST, instance=self.object)
+            context['phonenumber_formset'] = forms.PhoneNumberFormSet(self.request.POST, instance=self.object)
+        else:
+            context['address_formset'] = forms.AddressFormSet(instance=self.object)
+            context['phonenumber_formset'] = forms.PhoneNumberFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data(form=form)
+        address_formset = context['address_formset']
+        phonenumber_formset = context['phonenumber_formset']
+        if address_formset.is_valid() and phonenumber_formset.is_valid():
+            response = super().form_valid(form)
+            address_formset.instance = self.object
+            address_formset.save()
+            phonenumber_formset.instance = self.object
+            phonenumber_formset.save()
+            return response
+        else:
+            return super().form_invalid(form)
 
 
 class ChildMemberList(LoginRequiredMixin, ListView):
