@@ -186,6 +186,7 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
 
     class Meta:
         indexes = [models.Index(fields=['role', 'email', 'family'])]
+        ordering = ['last_name', 'nickname', 'first_name']
         verbose_name = _('Adult')
         verbose_name_plural = _('Adults')
 
