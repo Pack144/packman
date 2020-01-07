@@ -200,7 +200,6 @@ class SignupForm(AllauthSignupForm, UserCreationForm):
             Row(
                 Column('email'),
                 Column('is_published'),
-                Column('is_subscribed'),
             ),
             Row(
                 Column('password1'),
