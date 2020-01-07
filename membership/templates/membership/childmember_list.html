@@ -33,13 +33,7 @@
             <a href="{{ member.get_absolute_url }}">
               <div class="row align-items-center">
                 <div class="col-sm-2">
-                  {% if member.photo %}
-                    <img src="{{ member.photo|thumbnail_url:'thumbnail' }}" class="img-fluid rounded" id="headshot"
-                         alt="{{ member }}'s profile picture">
-                  {% else %}
-                    <img src="{% static 'img/avatar_cub.png' %}" class="img-fluid rounded" id="headshot"
-                         alt="No profile picture">
-                  {% endif %}
+                {% include 'membership/headshot_thumbnail_snippet.html' %}
                 </div>
                 <div class="col-sm-10">
                   <h4>{{ member }}</h4>
