@@ -23,6 +23,7 @@ psycopg2-binary = "*"
 pip = "*"
 django-tempus-dominus = "*"
 python-memcached = "*"
+docutils = "*"
 
 [requires]
 python_version = "3.7"
