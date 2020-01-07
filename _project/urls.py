@@ -22,7 +22,8 @@ from django.views import defaults as default_views
 
 urlpatterns = [
     # Django admin
-    path('pack-administration/', admin.site.urls),
+    path('administration/doc/', include('django.contrib.admindocs.urls')),
+    path('administration/', admin.site.urls),
 
     # Account management
     path('members/', include('allauth.urls')),

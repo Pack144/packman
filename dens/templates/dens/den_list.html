@@ -3,8 +3,27 @@
 {% block title %}Dens{% endblock title %}
 
 {% block content %}
-  <h1>Dens</h1>
-  <div class="container" id="den-list">
+  <div class="container row">
+    <h1>Members</h1>
+    <form class="form-inline ml-auto my-2" action="{% url 'member_search_results' %}" method="get" id="member-search">
+      <input name="q" class="form-control" type="text" placeholder="&#xf002" aria-label="Search">
+    </form>
+  </div>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'member_list' %}">All Members</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'parent_list' %}">Parents</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'scout_list' %}">Cubs</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active" href="{% url 'dens_list' %}">Dens</a>
+    </li>
+  </ul>
+  <div class="container" id="member-list">
   {% if den_list %}
     <ul class="list-group">
       {% for den in den_list %}
@@ -12,7 +31,7 @@
           <a href="{{ den.get_absolute_url }}">
             <div class="font-weight-bold d-flex justify-content-between align-items-center">{{ den }}
               <span class="badge badge-pill badge-primary p-2"><span class="fa fa-user mr-2"></span>{{ den.active_cubs.count }}</span></div>
-            <div>{{ den.rank }} Den</div>
+            <div>{{ den.rank }}</div>
           </a>
         </li>
       {% endfor %}
