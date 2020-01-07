@@ -209,7 +209,7 @@ THUMBNAIL_ALIASES = {
             'quality': 90,
         },
         'card': {
-            'size': (200, 200),
+            'size': (320, 320),
             'crop': 'smart',
             'quality': 90,
         }
