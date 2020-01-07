@@ -130,7 +130,7 @@ class AdultAdmin(UserAdmin):
             ('role', 'family'),
             'slug'
         )}),
-        (_('Account Details'), {'fields': ('email', 'is_subscribed', 'is_published', 'password')}),
+        (_('Account Details'), {'fields': ('email', 'is_published', 'password')}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
