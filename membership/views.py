@@ -17,14 +17,14 @@ class MemberList(LoginRequiredMixin, ListView):
             # If you have active cubs or are a contributor, you can get all active members
             return models.Member.objects.filter(
                 Q(adultmember__family__children__status__exact=models.ChildMember.ACTIVE) |
-                Q(childmember__status__exact=models.ChildMember.ACTIVE))
+                Q(childmember__status__exact=models.ChildMember.ACTIVE)).distinct()
         elif not self.request.user.family:
             # The user doesn't belong to a family, so we'll just show them their own information
-            return models.Member.objects.filter(adultmember__id__exact=self.request.user.id)
+            return models.Member.objects.filter(adultmember__id__exact=self.request.user.id).distinct()
         else:
             # If you are not active, you can only get members of your own family
             return models.Member.objects.filter(Q(adultmember__family__exact=self.request.user.family) |
-                                                Q(childmember__family__exact=self.request.user.family))
+                                                Q(childmember__family__exact=self.request.user.family)).distinct()
 
 
 class MemberSearchResultsList(LoginRequiredMixin, ListView):
@@ -37,7 +37,7 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
         results = models.Member.objects.filter(Q(first_name__icontains=query) |
                                                Q(last_name__icontains=query) |
                                                Q(middle_name__icontains=query) |
-                                               Q(nickname__icontains=query))
+                                               Q(nickname__icontains=query)).distinct()
 
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all of the search results
@@ -48,7 +48,7 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
         else:
             # If you are not active, you can only get members of your own family
             return results.filter(Q(adultmember__family__exact=self.request.user.family) |
-                                  Q(childmember__family__exact=self.request.user.family))
+                                  Q(childmember__family__exact=self.request.user.family)).distinct()
 
 
 class FamilyUpdate(LoginRequiredMixin, DetailView):
@@ -93,13 +93,13 @@ class AdultMemberList(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all active members
-            return models.AdultMember.objects.filter(family__children__status=models.ChildMember.ACTIVE)
+            return models.AdultMember.objects.filter(family__children__status=models.ChildMember.ACTIVE).distinct()
         elif not self.request.user.family:
             # The user doesn't belong to a family, so we'll just show them their own information
             return models.AdultMember.objects.filter(id__exact=self.request.user.id)
         else:
             # If you are not active, you can only get members of your own family
-            return models.AdultMember.objects.filter(family__exact=self.request.user.family)
+            return models.AdultMember.objects.filter(family__exact=self.request.user.family).distinct()
 
 
 class AdultMemberCreate(LoginRequiredMixin, CreateView):
@@ -190,13 +190,13 @@ class ChildMemberList(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all active cubs
-            return models.ChildMember.objects.filter(status__exact=models.ChildMember.ACTIVE)
+            return models.ChildMember.objects.filter(status__exact=models.ChildMember.ACTIVE).distinct()
         elif not self.request.user.family:
             # The user doesn't belong to a family, so we'll just show them nothing
             return models.ChildMember.objects.none()
         else:
             # If you are not active, you can only get members of your own family
-            return models.ChildMember.objects.filter(family__exact=self.request.user.family)
+            return models.ChildMember.objects.filter(family__exact=self.request.user.family).distinct()
 
 
 class ChildMemberCreate(LoginRequiredMixin, CreateView):
