@@ -3,17 +3,7 @@
 
 <div class="card shadow-sm">
   <a href="{{ member.get_absolute_url }}">
-    {% if member.photo %}
-      <img src="{{ member.photo|thumbnail_url:'card' }}" class="card-img-top" alt="{{ member }}'s profile picture">
-    {% elif member.childmember %}
-      <img src="{% static 'img/avatar_cub.png' %}" class="card-img-top" alt="No profile picture">
-    {% elif member.gender == 'M' %}
-      <img src="{% static 'img/avatar_man.png' %}" class="card-img-top" alt="No profile picture">
-    {% elif member.gender == 'F' %}
-      <img src="{% static 'img/avatar_woman.png' %}" class="card-img-top" alt="No profile picture">
-    {% else %}
-      <img src="{% static 'img/avatar_generic.png' %}" class="card-img-top" alt="No profile picture">
-    {% endif %}
+    {% include 'membership/headshot_snippet.html' %}
   </a>
   <div class="card-body">
     <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}</h5></a>
@@ -83,12 +73,13 @@
         <div class="row card-text d-inline-flex">
           <div class="col col-1"><span class="fa fa-school"></span></div>
           <div class="col text-truncate">{{ member.school }}<br>
-          {% if member.grade > 0 %}{{ member.grade|ordinal }} grade{% elif member.grade == 'K' %}Kindergarten{% endif %}</div>
+            {% if member.grade > 0 %}{{ member.grade|ordinal }} grade{% elif member.grade == 'K' %}
+              Kindergarten{% endif %}</div>
         </div>
       </div>
     {% endif %}
     {% if member.den and member.den.patch %}
-        <img src="{{ member.den.patch.url }}" alt="Den {{ member.den.number }} patch" class="mt-2 card-img rounded">
+      <img src="{{ member.den.patch.url }}" alt="Den {{ member.den.number }} patch" class="mt-2 card-img rounded">
     {% endif %}
   </div>
   {% if member.childmember.start_date %}

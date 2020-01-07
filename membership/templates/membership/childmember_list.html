@@ -21,6 +21,9 @@
     <li class="nav-item">
       <a class="nav-link active" href="{% url 'scout_list' %}">Cubs</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'dens_list' %}">Dens</a>
+    </li>
   </ul>
   <div class="container" id="member-list">
     {% if member_list %}
@@ -30,11 +33,7 @@
             <a href="{{ member.get_absolute_url }}">
               <div class="row align-items-center">
                 <div class="col-sm-2">
-                  {% if member.photo %}
-                    <img src="{{ member.photo|thumbnail_url:'thumbnail' }}" class="img-fluid rounded" id="headshot" alt="{{ member }}'s profile picture">
-                  {% else %}
-                    <img src="{% static 'img/avatar_cub.png' %}" class="img-fluid rounded" id="headshot" alt="No profile picture">
-                  {% endif %}
+                {% include 'membership/headshot_thumbnail_snippet.html' %}
                 </div>
                 <div class="col-sm-10">
                   <h4>{{ member }}</h4>
@@ -47,8 +46,9 @@
       </ul>
     {% else %}
       <div class="alert alert-light" role="alert">
-        <p class="text-center">The pack has no active members. It's time to invite some to <a href="{% url 'account_signup' %}"
-                                                                          class="alert-link">join us</a></p>
+        <p class="text-center">The pack has no active members. It's time to invite some to <a
+            href="{% url 'account_signup' %}"
+            class="alert-link">join us</a></p>
       </div>
     {% endif %}
   </div>

@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     # Built-in Django apps
     'django.contrib.admin',
+    'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'crispy_forms',
     'debug_toolbar',
+    'dynamic_formsets',
     'easy_thumbnails',
     'localflavor',
     'phonenumber_field',
@@ -67,6 +69,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.admindocs.middleware.XViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -206,7 +209,7 @@ THUMBNAIL_ALIASES = {
             'quality': 90,
         },
         'card': {
-            'size': (200, 200),
+            'size': (320, 320),
             'crop': 'smart',
             'quality': 90,
         }
@@ -217,6 +220,7 @@ THUMBNAIL_ALIASES = {
 # http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
 # -----------------------------------------------------------------------------
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_FAIL_SILENTLY = not DEBUG
 
 # django-phonenumber-field
 # https://github.com/stefanfoulis/django-phonenumber-field

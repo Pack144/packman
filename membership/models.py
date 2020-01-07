@@ -158,9 +158,6 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
     )
 
     email = models.EmailField(_('Email Address'), unique=True)
-    is_subscribed = models.BooleanField(_('Subscribed'), default=True, help_text=_(
-        "Checking this box will allow the Pack to contact you using this e-mail address."
-    ))
     is_published = models.BooleanField(_('Published'), default=True, help_text=_(
         "Do you want to publish this address in the Pack directory so that other members can contact you directly?"
     ))
@@ -189,6 +186,7 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
 
     class Meta:
         indexes = [models.Index(fields=['role', 'email', 'family'])]
+        ordering = ['last_name', 'nickname', 'first_name']
         verbose_name = _('Adult')
         verbose_name_plural = _('Adults')
 
