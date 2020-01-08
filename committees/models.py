@@ -53,6 +53,6 @@ class Membership(models.Model):
         return f"{self.year_served} {self.get_position_display()}: {self.member}"
 
     class Meta:
-        ordering = ['year_served', 'position', 'member']
+        ordering = ['-year_served', 'position', 'member']
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
