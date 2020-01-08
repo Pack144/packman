@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import dateparse, timezone
 from django.utils.translation import gettext_lazy as _
 
 from ckeditor.fields import RichTextField
@@ -20,11 +20,11 @@ def get_pack_year(date_to_test=timezone.now()):
     """
     pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
 
-    if pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
+    if not pack_year_begins <= timezone.make_naive(date_to_test) < pack_year_begins.replace(year=pack_year_begins.year + 1):
         pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
 
     pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(days=1)
-    return pack_year_begins, pack_year_ends
+    return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
 
 
 class Category(models.Model):
