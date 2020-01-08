@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -14,6 +15,7 @@ class Committee(models.Model):
     leadership = models.ManyToManyField('membership.AdultMember', through='Membership', related_name='committees')
 
     slug = models.SlugField(unique=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -48,6 +50,7 @@ class Membership(models.Model):
     position = models.PositiveSmallIntegerField(choices=POSITION_CHOICES, default=MEMBER)
     year_served = models.PositiveSmallIntegerField(default=timezone.now().year)
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
