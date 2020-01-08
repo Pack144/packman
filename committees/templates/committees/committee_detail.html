@@ -8,13 +8,13 @@
   <div class="container p-3 bg-white rounded">
     <div class=" d-flex justify-content-between align-items-center">
       <h1>{{ committee }}</h1>
-      <h4 class="text-primary">{{ members.first.year_served|add:'-1' }}-{{ members.first.year_served }}</h4>
+      <h4 class="text-primary">{{ pack_year }}</h4>
     </div>
     {% if committee.description %}<p class="text-muted">{{ committee.description }}</p>{% endif %}
   </div>
 
-  <h2 class="mt-3">Committee Member{{ committee.leadership.count|pluralize }}</h2>
-  {% if committee.leadership.count %}
+  <h2 class="mt-3">Committee Member{{ members.count|pluralize }}</h2>
+  {% if members.count %}
     <ul class="list-group">
       {% for member in members.all %}
         <li class="list-group-item">
@@ -32,7 +32,26 @@
         </li>
       {% endfor %}
     </ul>
-  {% else %}
-    <div class="alert alert-warning" role="alert">There are no leaders assigned to this committee</div>
   {% endif %}
+
+  {% if akelas %}
+    <h2 class="mt-3">Supporting Akela{{ akelas.count|pluralize }}</h2>
+    <ul class="list-group">
+      {% for member in akelas.all %}
+        <li class="list-group-item">
+          <a href="{{ member.member.get_absolute_url }}">
+            <div class="row align-items-center">
+              <div class="col-sm-2">
+                {% include 'membership/headshot_thumbnail_snippet.html' with member=member.member %}
+              </div>
+              <div class="col-sm-10">
+                <strong>{{ member.member }}</strong><br>
+              </div>
+            </div>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
 {% endblock %}

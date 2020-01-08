@@ -16,7 +16,7 @@ class CommitteesList(LoginRequiredMixin, generic.ListView):
     current committees list based on the Pack Year as defined in settings.py.
     """
     model = models.Committee
-    paginate_by = 20
+    paginate_by = 50
     template_name = 'committees/committees_list.html'
 
     def get_queryset(self):
@@ -30,6 +30,15 @@ class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        year = self.kwargs['year'] if 'year' in self.kwargs else get_pack_year()['end_date'].year
-        context['members'] = models.Membership.objects.filter(committee=context['committee'], year_served=year)
+        year = get_pack_year(self.kwargs['year']) if 'year' in self.kwargs else get_pack_year()
+        if year['start_date'].year == year['end_date'].year:
+            context['pack_year'] = f"{year['end_date'].year}"
+        else:
+            context['pack_year'] = f"{year['start_date'].year} - {year['end_date'].year}"
+        context['members'] = models.Membership.objects.filter(committee=context['committee'],
+                                                              year_served=year['end_date'].year,
+                                                              position__lt=models.Membership.AKELA)
+        context['akelas'] = models.Membership.objects.filter(committee=context['committee'],
+                                                             year_served=year['end_date'].year,
+                                                             position=models.Membership.AKELA)
         return context
