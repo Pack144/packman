@@ -97,6 +97,8 @@ class Category(models.Model):
     color = models.CharField(max_length=16, choices=COLOR_CHOICES, blank=True, null=True,
                              help_text=_('Optionally choose a color to display these event in.'))
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [models.Index(fields=['name'])]
@@ -112,7 +114,6 @@ class Event(models.Model):
     """
     Store information about events
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=64)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events', blank=True, null=True)
     location = models.CharField(max_length=64, blank=True, null=True)
@@ -125,8 +126,9 @@ class Event(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events')
     attachments = models.ManyToManyField(Document, related_name='events', blank=True)
 
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [models.Index(fields=['name', 'venue', 'location', 'start', 'end', 'category'])]
