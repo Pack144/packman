@@ -99,7 +99,7 @@ class AdultMemberList(LoginRequiredMixin, ListView):
             # If you have active cubs or are a contributor, you can get all active members
             return models.AdultMember.objects.filter(
                 Q(family__children__status=models.ChildMember.ACTIVE) |
-                Q(adultmember__role__exact=models.AdultMember.CONTRIBUTOR)).distinct()
+                Q(role__exact=models.AdultMember.CONTRIBUTOR)).distinct()
         elif not self.request.user.family:
             # The user doesn't belong to a family, so we'll just show them their own information
             return models.AdultMember.objects.filter(id__exact=self.request.user.id)
