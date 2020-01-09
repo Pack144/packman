@@ -38,9 +38,9 @@ class Member(models.Model):
     FEMALE = 'F'
     OTHER = 'O'
     GENDER_CHOICES = (
-        (MALE, _('Male')),
-        (FEMALE, _('Female')),
-        (OTHER, _('Prefer not to say'))
+        (MALE, _("Male")),
+        (FEMALE, _("Female")),
+        (OTHER, _("Prefer not to say"))
     )
 
     # Personal information
@@ -75,14 +75,14 @@ class Member(models.Model):
             if not Member.objects.filter(slug__exact=slugify(self.get_full_name())):
                 self.slug = slugify(self.get_full_name())
             elif not Member.objects.filter(
-                    slug__exact=slugify(f'{self.first_name} {self.last_name} {self.suffix}')):
+                    slug__exact=slugify(f"{self.first_name} {self.last_name} {self.suffix}")):
                 self.slug = slugify(
-                    f'{self.first_name} {self.last_name} {self.suffix}'
+                    f"{self.first_name} {self.last_name} {self.suffix}"
                 )
             elif not Member.objects.filter(
-                    slug__exact=slugify(f'{self.first_name} {self.middle_name} {self.last_name} {self.suffix}')):
+                    slug__exact=slugify(f"{self.first_name} {self.middle_name} {self.last_name} {self.suffix}")):
                 self.slug = slugify(
-                    f'{self.first_name} {self.middle_name} {self.last_name} {self.suffix}'
+                    f"{self.first_name} {self.middle_name} {self.last_name} {self.suffix}"
                 )
         return super().save(*args, **kwargs)
 
@@ -98,7 +98,7 @@ class Member(models.Model):
         """
         Return the short name, either first_name or nickname, plus the last_name, with a space in between.
         """
-        full_name = '%s %s' % (self.get_short_name(), self.last_name)
+        full_name = f"{self.get_short_name()} {self.last_name}"
         return full_name.strip()
 
     def get_short_name(self):
@@ -125,8 +125,8 @@ class Family(models.Model):
     class Meta:
         indexes = [models.Index(fields=['name'])]
         ordering = ['date_added']
-        verbose_name = _('Family')
-        verbose_name_plural = _('Families')
+        verbose_name = _("Family")
+        verbose_name_plural = _("Families")
 
     def __str__(self):
         if self.name:
@@ -134,10 +134,10 @@ class Family(models.Model):
 
     def save(self, *args, **kwargs):
         last_names = []
-        for parent in self.adults.filter(role__exact=AdultMember.PARENT):
+        for parent in self.adults.all():
             if parent.last_name not in last_names:
                 last_names.append(parent.last_name)
-        self.name = '-'.join(last_names) + ' Family'
+        self.name = "-".join(last_names) + " Family"
         return super().save(*args, **kwargs)
 
 
@@ -167,16 +167,16 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
 
     objects = MemberManager()
     is_staff = models.BooleanField(
-        _('Staff'),
+        _("Staff"),
         default=False,
         help_text=_("Designates whether the user can log into this admin site."),
     )
     is_active = models.BooleanField(
-        _('Active'),
+        _("Active"),
         default=True,
         help_text=_(
-            'Designates whether this user should be treated as active. '
-            'Unselect this instead of deleting accounts.'
+            "Designates whether this user should be treated as active. "
+            "Unselect this instead of deleting accounts."
         ),
     )
 
@@ -187,8 +187,8 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
     class Meta:
         indexes = [models.Index(fields=['role', 'email', 'family'])]
         ordering = ['last_name', 'nickname', 'first_name']
-        verbose_name = _('Adult')
-        verbose_name_plural = _('Adults')
+        verbose_name = _("Adult")
+        verbose_name_plural = _("Adults")
 
     def __str__(self):
         return self.get_full_name()
@@ -248,7 +248,7 @@ class ChildMember(Member):
     # Give parents an opportunity to add more detail to their application
     reference = models.CharField(_("Referral(s)"), max_length=128, blank=True, null=True, help_text=_(
         "If you know someone who is already in the pack, you can tell us their name."))
-    member_comments = models.TextField(_('Comments'), blank=True, null=True, help_text=_(
+    member_comments = models.TextField(_("Comments"), blank=True, null=True, help_text=_(
         "What other information should we consider when reviewing your application?"))
 
     # These fields should be managed by the person(s) in charge of membership
@@ -260,7 +260,7 @@ class ChildMember(Member):
     status = models.PositiveSmallIntegerField(_("Status"), choices=STATUS_CHOICES, default=APPLIED, help_text=(
         "What is the Cub's current status? A new cub who has not been reviewed will start as 'Applied'."
         "Membership can choose then to approve or decline the application, or make them active."
-        "Once a Cub is no longer active in the pack, either through graduation or attrition, note that status here."
+        "Once a Cub is no longer active in the pack, either through graduation or attrition, note that change' here."
         "Any adult member connected to this Cub will get access only once the Cub's status is 'Active' or 'Approved'."
     ))
     den = models.ForeignKey('dens.Den', on_delete=models.CASCADE, related_name='scouts', blank=True, null=True)
