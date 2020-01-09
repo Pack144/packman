@@ -18,13 +18,17 @@ def get_pack_year(date_to_test=timezone.now()):
     """
     Given a date, calculate the date range (start, end) for the pack year which encapsulates that date.
     """
+    if not isinstance(date_to_test, datetime):
+        date_to_test = timezone.datetime(date_to_test, 1, 1)
+    if timezone.is_aware(date_to_test):
+        date_to_test = timezone.make_naive(date_to_test)
     pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
 
-    if pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
+    if not pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
         pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
 
     pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(days=1)
-    return pack_year_begins, pack_year_ends
+    return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
 
 
 class Category(models.Model):
@@ -95,6 +99,8 @@ class Category(models.Model):
     color = models.CharField(max_length=16, choices=COLOR_CHOICES, blank=True, null=True,
                              help_text=_('Optionally choose a color to display these event in.'))
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [models.Index(fields=['name'])]
@@ -110,7 +116,6 @@ class Event(models.Model):
     """
     Store information about events
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=64)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events', blank=True, null=True)
     location = models.CharField(max_length=64, blank=True, null=True)
@@ -123,8 +128,9 @@ class Event(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events')
     attachments = models.ManyToManyField(Document, related_name='events', blank=True)
 
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [models.Index(fields=['name', 'venue', 'location', 'start', 'end', 'category'])]

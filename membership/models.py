@@ -152,9 +152,9 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
     GUARDIAN = 'G'
     CONTRIBUTOR = 'C'
     ROLE_CHOICES = (
-        (PARENT, _('Parent')),
-        (GUARDIAN, _('Guardian')),
-        (CONTRIBUTOR, _('Friend of the Pack')),
+        (PARENT, _("Parent")),
+        (GUARDIAN, _("Guardian")),
+        (CONTRIBUTOR, _("Friend of the Pack")),
     )
 
     email = models.EmailField(_('Email Address'), unique=True)
@@ -169,7 +169,7 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
     is_staff = models.BooleanField(
         _('Staff'),
         default=False,
-        help_text=_('Designates whether the user can log into this admin site.'),
+        help_text=_("Designates whether the user can log into this admin site."),
     )
     is_active = models.BooleanField(
         _('Active'),
@@ -233,12 +233,12 @@ class ChildMember(Member):
     ACTIVE = 5
     GRADUATED = 6
     STATUS_CHOICES = (
-        (APPLIED, _('Applied')),
-        (DENIED, _('Denied')),
-        (APPROVED, _('Approved')),
-        (INACTIVE, _('Inactive')),
-        (ACTIVE, _('Active')),
-        (GRADUATED, _('Graduated')),
+        (APPLIED, _("Applied")),
+        (DENIED, _("Denied")),
+        (APPROVED, _("Approved")),
+        (INACTIVE, _("Inactive")),
+        (ACTIVE, _("Active")),
+        (GRADUATED, _("Graduated")),
     )
 
     school = models.ForeignKey('address_book.Venue', on_delete=models.CASCADE, blank=True, null=True,
@@ -246,18 +246,18 @@ class ChildMember(Member):
         "Tell us what school your child attends. If your school isn't listed, tell us in the comments section."))
 
     # Give parents an opportunity to add more detail to their application
-    reference = models.CharField(_('Referral(s)'), max_length=128, blank=True, null=True, help_text=_(
+    reference = models.CharField(_("Referral(s)"), max_length=128, blank=True, null=True, help_text=_(
         "If you know someone who is already in the pack, you can tell us their name."))
     member_comments = models.TextField(_('Comments'), blank=True, null=True, help_text=_(
         "What other information should we consider when reviewing your application?"))
 
     # These fields should be managed by the person(s) in charge of membership
     family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='children', blank=True, null=True)
-    pack_comments = models.TextField(_('Pack Comments'), blank=True, null=True, help_text=_(
+    pack_comments = models.TextField(_("Pack Comments"), blank=True, null=True, help_text=_(
         "Used by pack leadership to keep notes about a specific member."
         "This information is not generally disclosed to the member unless they are granted access to Membership."
     ))
-    status = models.PositiveSmallIntegerField(_('Status'), choices=STATUS_CHOICES, default=APPLIED, help_text=(
+    status = models.PositiveSmallIntegerField(_("Status"), choices=STATUS_CHOICES, default=APPLIED, help_text=(
         "What is the Cub's current status? A new cub who has not been reviewed will start as 'Applied'."
         "Membership can choose then to approve or decline the application, or make them active."
         "Once a Cub is no longer active in the pack, either through graduation or attrition, note that status here."
@@ -266,17 +266,17 @@ class ChildMember(Member):
     den = models.ForeignKey('dens.Den', on_delete=models.CASCADE, related_name='scouts', blank=True, null=True)
 
     # Important dates
-    date_of_birth = models.DateField(_('Birthday'), blank=True, null=True)
-    started_school = models.PositiveSmallIntegerField(_('year started school'), default=two_years_ago, null=True, help_text=_(
+    date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
+    started_school = models.PositiveSmallIntegerField(_("Year Started School"), default=two_years_ago, null=True, help_text=_(
         "What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
-    started_pack = models.DateField(_('Date Started'), blank=True, null=True, help_text=_(
+    started_pack = models.DateField(_("Date Started"), blank=True, null=True, help_text=_(
         "When does this cub join their first activity with the pack?"
     ))
 
     class Meta:
         indexes = [models.Index(fields=['school', 'family', 'status', 'den', 'date_of_birth', 'started_school'])]
-        verbose_name = _('Cub')
-        verbose_name_plural = _('Cubs')
+        verbose_name = _("Cub")
+        verbose_name_plural = _("Cubs")
 
     @property
     def age(self):
