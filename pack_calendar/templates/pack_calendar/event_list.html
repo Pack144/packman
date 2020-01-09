@@ -1,31 +1,11 @@
 {% extends '_base.html' %}
-{% load humanize %}
 
 {% block title %}Upcoming Events{% endblock %}
 
 {% block content %}
   <h1>Upcoming Events</h1>
   {% if event_list %}
-    {% for event in event_list %}
-      <a href="{% url 'event_detail' event.id %}"
-         class="btn btn-block btn{% if not forloop.first or page_obj.number > 1 %}-outline{% endif %}{% if event.category.color %}-{{ event.category.color }}{% else %}-dark{% endif %} p-3">
-        <div class="row">
-          <div class="col-md-4">
-            <h3 class="text-reset">
-              {% if event.category.icon %}{{ event.category.icon|safe }}<br>{% endif %}{{ event.name }}</h3>
-          </div>
-          <div class="col-md-8 text-left">
-            <h5>{{ event.start|naturalday:'l, F jS'|capfirst }}
-              {% if event.end and event.end|date != event.start|date %} &ndash;
-                {{ event.end|naturalday:'F jS'|capfirst }}{% endif %}</h5>
-              <p class="font-weight-bold">{{ event.start|time:'g:ia' }}{% if event.end and event.end != event.start %} &ndash;
-                {{ event.end|time:'g:ia' }}{% endif %}</p>
-              <p><strong>Where:</strong> {{ event.get_location }}{% if event.venue.address %}<br>{{ event.venue.address }}{% endif %}</p>
-              {% if event.description %}<p>{{ event.description|safe|truncatewords_html:12 }}</p>{% endif %}
-          </div>
-        </div>
-      </a>
-    {% endfor %}
+    {% include 'pack_calendar/events_list_snippet.html' %}
   {% else %}
     <div class="alert alert-secondary" role="alert">
       <p>The pack has no scheduled events in the next 6 months</p>
