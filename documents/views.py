@@ -13,4 +13,5 @@ class DocumentListView(ActiveMemberOrContributorTest, ListView):
 
     def get_queryset(self):
         """ Provide Category data and filter based on whether document should be displayed """
-        return Document.objects.filter(display_in_repository=True)
+        return Category.objects.prefetch_related(Prefetch('documents',
+                                                          queryset=Document.objects.filter(display_in_repository=True)))
