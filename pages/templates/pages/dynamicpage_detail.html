@@ -1,14 +1,8 @@
 {% extends '_base.html' %}
 
-{% block title %}{{ page_content.title }}{% endblock %}
+{% block title %}{% if page_content %}{{ page_content.title }}{% else %}Hello World{% endif %}{% endblock %}
 
 {% block content %}
-  <div class="text-right" id="edit-button"><a href="{% url 'dynamic_page_update' page_content.slug %}"> <span class="fa fa-edit"></span></a></div>
-  {% if page_content %}
-    <h1>{{ page_content.title }}</h1>
-    <p>{{ page_content.public_content|safe }}</p>
-  {% else %}
-    <div class="alert alert-warning" role="alert">This page has no content yet. Here is some sample text instead.</div>
-    {% lorem 3 p %}
-  {% endif %}
+  <h1>{% if page_content %}{{ page_content.title }}{% else %}Hello World{% endif %}</h1>
+  {% include 'pages/page_content_snippet.html' %}
 {% endblock %}
