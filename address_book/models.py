@@ -34,7 +34,7 @@ class Address(models.Model):
     published = models.BooleanField(default=True, help_text=_(
         "Display this address to other members of the pack on the member details page."))
 
-    member = models.ForeignKey(AdultMember, on_delete=models.CASCADE, related_name='addresses', blank=True, null=True)
+    member = models.ForeignKey(AdultMember, on_delete=models.SET_NULL, related_name='addresses', blank=True, null=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
@@ -55,41 +55,6 @@ class Address(models.Model):
             return f'{self.street} {self.street2}, {self.city} {self.state}, {self.zip_code}'
         else:
             return f'{self.street}, {self.city} {self.state}, {self.zip_code}'
-
-
-class PhoneNumber(models.Model):
-    """
-    Phone number object to store phone contact details. Used by Adult members and Venues. When associated with a
-    member, the published option controls whether the number will be displayed on a member's detail page. This setting
-    is not honored for venues, as the phone number should always be visible.
-    """
-    HOME = 'H'
-    MOBILE = 'M'
-    WORK = 'W'
-    OTHER = 'O'
-    TYPE_CHOICES = (
-        (HOME, _("Home")),
-        (MOBILE, _("Mobile")),
-        (WORK, _("Work")),
-        (OTHER, _("Other")),
-    )
-    number = PhoneNumberField(_("Phone Number"))
-    type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
-    published = models.BooleanField(default=True, help_text=_(
-        "Display this phone number to other members of the pack in the member details page."))
-
-    member = models.ForeignKey(AdultMember, on_delete=models.CASCADE, related_name='phone_numbers', blank=True, null=True)
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(default=timezone.now)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['number']
-        verbose_name = _("Phone Number")
-        verbose_name_plural = _("Phone Numbers")
-
-    def __str__(self):
-        return self.number.as_national
 
 
 class VenueType(models.Model):
@@ -119,11 +84,9 @@ class Venue(models.Model):
     attend.
     """
     name = models.CharField(max_length=128, unique=True)
-    type = models.ForeignKey(VenueType, on_delete=models.CASCADE, related_name='venue')
+    type = models.ManyToManyField(VenueType, related_name='venues')
     address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='venue', null=True, blank=True,
                                    limit_choices_to={'member': None})
-    phone_number = models.OneToOneField(PhoneNumber, on_delete=models.CASCADE, related_name='venue', null=True,
-                                        blank=True, limit_choices_to={'member': None})
     url = models.URLField(_("Website"), blank=True, null=True)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -137,3 +100,39 @@ class Venue(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class PhoneNumber(models.Model):
+    """
+    Phone number object to store phone contact details. Used by Adult members and Venues. When associated with a
+    member, the published option controls whether the number will be displayed on a member's detail page. This setting
+    is not honored for venues, as the phone number should always be visible.
+    """
+    HOME = 'H'
+    MOBILE = 'M'
+    WORK = 'W'
+    OTHER = 'O'
+    TYPE_CHOICES = (
+        (HOME, _("Home")),
+        (MOBILE, _("Mobile")),
+        (WORK, _("Work")),
+        (OTHER, _("Other")),
+    )
+    number = PhoneNumberField(_("Phone Number"))
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
+    published = models.BooleanField(default=True, help_text=_(
+        "Display this phone number to other members of the pack in the member details page."))
+
+    member = models.ForeignKey(AdultMember, on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['number']
+        verbose_name = _("Phone Number")
+        verbose_name_plural = _("Phone Numbers")
+
+    def __str__(self):
+        return self.number.as_national
