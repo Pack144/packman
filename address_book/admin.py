@@ -9,13 +9,17 @@ class PhoneNumberInline(admin.TabularInline):
     model = PhoneNumber
 
 
+class AddressInline(admin.StackedInline):
+    exclude = ['member', 'date_added', 'published', 'type']
+    model = Address
+
+
 @admin.register(Venue)
 class VenueAdmin(admin.ModelAdmin):
-    inlines = [PhoneNumberInline]
+    inlines = [AddressInline, PhoneNumberInline]
     list_filter = ('type', )
     list_display = ('name',)
     search_fields = ('name', )
 
 
-admin.site.register(Address)
 admin.site.register(VenueType)
