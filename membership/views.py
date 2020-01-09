@@ -17,6 +17,7 @@ class MemberList(LoginRequiredMixin, ListView):
             # If you have active cubs or are a contributor, you can get all active members
             return models.Member.objects.filter(
                 Q(adultmember__family__children__status__exact=models.ChildMember.ACTIVE) |
+                Q(adultmember__role__exact=models.AdultMember.CONTRIBUTOR) |
                 Q(childmember__status__exact=models.ChildMember.ACTIVE)).distinct()
         elif not self.request.user.family:
             # The user doesn't belong to a family, so we'll just show them their own information
@@ -34,7 +35,10 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         query = self.request.GET.get('q')
-        results = models.Member.objects.filter(Q(first_name__icontains=query) |
+        results = models.Member.objects.filter(
+                Q(adultmember__family__children__status__exact=models.ChildMember.ACTIVE) |
+                Q(adultmember__role__exact=models.AdultMember.CONTRIBUTOR) |
+                Q(childmember__status__exact=models.ChildMember.ACTIVE)).filter(Q(first_name__icontains=query) |
                                                Q(last_name__icontains=query) |
                                                Q(middle_name__icontains=query) |
                                                Q(nickname__icontains=query)).distinct()
@@ -93,7 +97,9 @@ class AdultMemberList(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.user.active or self.request.user.role == models.AdultMember.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all active members
-            return models.AdultMember.objects.filter(family__children__status=models.ChildMember.ACTIVE).distinct()
+            return models.AdultMember.objects.filter(
+                Q(family__children__status=models.ChildMember.ACTIVE) |
+                Q(role__exact=models.AdultMember.CONTRIBUTOR)).distinct()
         elif not self.request.user.family:
             # The user doesn't belong to a family, so we'll just show them their own information
             return models.AdultMember.objects.filter(id__exact=self.request.user.id)

@@ -29,6 +29,7 @@ urlpatterns = [
     path('members/', include('allauth.urls')),
 
     # Local Apps
+    path('committees/', include('committees.urls')),
     path('dens/', include('dens.urls')),
     path('documents/', include('documents.urls')),
     path('events/', include('pack_calendar.urls')),
