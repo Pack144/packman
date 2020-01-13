@@ -8,7 +8,18 @@
   <div class="container p-3 bg-white rounded">
     <div class=" d-flex justify-content-between align-items-center">
       <h1>{{ committee }}</h1>
-      <h4 class="text-primary">{{ pack_year }}</h4>
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{ pack_year }}
+        </button>
+        <div class="dropdown-menu">
+          {% for year in years %}
+            {% if not year == pack_year %}
+              <a class="dropdown-item" href="#">{{ year }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
     </div>
     {% if committee.description %}<p class="text-muted">{{ committee.description }}</p>{% endif %}
   </div>
