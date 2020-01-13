@@ -30,7 +30,7 @@
       {% endfor %}
     </fieldset>
     <input type="submit" value="Add Adult" class="btn btn-success"/>
-    <a href="{% url 'parent_detail' member.id %}" class="btn btn-primary">Cancel</a>
+    <a href="{% url 'parent_detail' request.user.id %}" class="btn btn-primary">Cancel</a>
   </form>
 {% endblock content %}
 
