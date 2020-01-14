@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from ckeditor.fields import RichTextField
+from django_ical.views import ICalFeed
 
 from address_book.models import Venue
 from documents.models import Document
