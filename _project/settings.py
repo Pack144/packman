@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'crispy_forms',
     'debug_toolbar',
+    'django_ical',
     'dynamic_formsets',
     'easy_thumbnails',
     'localflavor',
