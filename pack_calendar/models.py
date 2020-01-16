@@ -9,10 +9,13 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from ckeditor.fields import RichTextField
-from django_ical.views import ICalFeed
 
 from address_book.models import Venue
 from documents.models import Document
+
+
+def get_current_pack_year():
+    return PackYear.objects.get_or_create(year=PackYear.get_pack_year(timezone.now().year))
 
 
 def get_pack_year(date_to_test=timezone.now()):
@@ -30,6 +33,54 @@ def get_pack_year(date_to_test=timezone.now()):
 
     pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(days=1)
     return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
+
+
+class PackYear(models.Model):
+    """
+    FIXME: This doesn't actually work.
+    TODO: Replace static 'year' assignments with a foreign key or one-to-on reference to this model
+    Stores the start and end date of a pack year in the database. Used by committee assignments, den assignments, and
+    events to keep things neatly sorted.
+    """
+    year = models.PositiveSmallIntegerField(unique=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['year'])]
+        ordering = ('-year', )
+        verbose_name = _("Pack Year")
+        verbose_name_plural = _("Pack Years")
+
+    def __str__(self):
+        if self.get_pack_year().start_date == self.get_pack_year().end_date:
+            return self.get_pack_year().start_date
+        else:
+            return f"{self.get_pack_year().end_date} - {self.get_pack_year().end_date}"
+
+    def get_pack_year(self, date_to_test=timezone.now()):
+        """
+        Given a date, calculate the date range (start, end) for the pack year which encapsulates that date.
+        """
+        if not isinstance(date_to_test, datetime):
+            date_to_test = timezone.datetime(date_to_test, 1, 1)
+        if timezone.is_aware(date_to_test):
+            date_to_test = timezone.make_naive(date_to_test)
+        pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
+
+        if not pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
+            pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
+
+        pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(days=1)
+        return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
+
+    @property
+    def start_date(self):
+        # Calculate the start date of the pack year
+        return self.get_pack_year(self.year)['start_date']
+
+    @property
+    def end_date(self):
+        # Calculate the end date of the pack year
+        return self.get_pack_year(self.year)['end_date']
 
 
 class Category(models.Model):
@@ -126,6 +177,7 @@ class Event(models.Model):
     url = models.URLField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events')
     attachments = models.ManyToManyField(Document, related_name='events', blank=True)
+    published = models.BooleanField(_("Show on iCal"), default=True)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
@@ -145,13 +197,19 @@ class Event(models.Model):
 
     def get_location(self):
         if self.venue and self.location:
-            return "{} ({})".format(self.venue, self.location)
+            return f"{self.venue} ({self.location})"
         elif self.venue:
             return self.venue
         elif self.location:
             return self.location
         else:
             return _('TBD')
+
+    def get_location_with_address(self):
+        if hasattr(self.venue, 'address'):
+            return f"{self.get_location()}\n{self.venue.address}"
+        else:
+            return self.get_location()
 
     get_location.short_description = _('Location')
 
