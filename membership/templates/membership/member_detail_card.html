@@ -7,6 +7,7 @@
   </a>
   <div class="card-body">
     <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}</h5></a>
+    {% if member.den.rank and member.status == 5 %}<h6 class="text-muted">{{ member.den.rank }}</h6>{% endif %}
     {% if member.email %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
@@ -60,7 +61,7 @@
         {% endfor %}
       </div>
     {% endif %}
-    {% if member.birthday %}
+    {% if member.date_of_birth %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
           <div class="col col-1"><span class="fa fa-birthday-cake"></span></div>
@@ -68,18 +69,22 @@
         </div>
       </div>
     {% endif %}
-    {% if member.school %}
+    {% if member.school and member.status == 5 %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
           <div class="col col-1"><span class="fa fa-school"></span></div>
-          <div class="col text-truncate">{{ member.school }}<br>
-            {% if member.grade > 0 %}{{ member.grade|ordinal }} grade{% elif member.grade == 'K' %}
-              Kindergarten{% endif %}</div>
+          <div class="col text-truncate">{% if member.grade > 0 %}{{ member.grade }}<sup>{{ member.grade|ordinal|slice:'-2:' }}</sup> grade{% elif member.grade == 'K' %}
+              Kindergarten{% endif %}<br>{{ member.school }}
+            </div>
         </div>
       </div>
     {% endif %}
-    {% if member.den and member.den.patch %}
-      <img src="{{ member.den.patch.url }}" alt="Den {{ member.den.number }} patch" class="mt-2 card-img rounded">
+    {% if member.den and member.status == 5 %}
+      {% if member.den.patch %}
+        <img src="{{ member.den.patch.url }}" alt="Den {{ member.den.number }} patch" class="mt-2 card-img rounded">
+      {% else %}
+        <div class="container mt-2">{{ den }}</div>
+      {% endif %}
     {% endif %}
   </div>
   {% if member.childmember.start_date %}
