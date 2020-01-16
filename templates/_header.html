@@ -32,8 +32,11 @@
         <a class="nav-item nav-link mr-lg-3" href="{% url 'member_list' %}">Members</a>
         <a class="nav-item nav-link mr-lg-3" href="{% url 'committees_list' %}">Committees</a>
         <a class="nav-item nav-link mr-lg-3" href="{% url 'document_list' %}">Documents</a>
+      {% for item in navbar_private_navs %}
+        <a class="nav-item nav-link mr-lg-3" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
+      {% endfor %}
       {% endif %}
-      {% for item in navbar_items %}
+      {% for item in navbar_public_navs %}
         <a class="nav-item nav-link mr-lg-3" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
       {% endfor %}
       <a class="nav-item nav-link mr-lg-3" href="{% url 'about_page' %}">About Us</a>
