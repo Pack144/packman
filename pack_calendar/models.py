@@ -51,10 +51,10 @@ class PackYear(models.Model):
         verbose_name_plural = _("Pack Years")
 
     def __str__(self):
-        if self.get_pack_year().start_date == self.get_pack_year().end_date:
-            return self.get_pack_year().start_date
+        if self.start_date.year == self.end_date.year:
+            return self.start_date.year
         else:
-            return f"{self.get_pack_year().end_date} - {self.get_pack_year().end_date}"
+            return f"{self.start_date.year} - {self.end_date.year}"
 
     def get_pack_year(self, date_to_test=timezone.now()):
         """
@@ -69,7 +69,7 @@ class PackYear(models.Model):
         if not pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
             pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
 
-        pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(days=1)
+        pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(seconds=1)
         return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
 
     @property
