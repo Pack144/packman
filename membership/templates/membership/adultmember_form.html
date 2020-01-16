@@ -9,23 +9,21 @@
     {% csrf_token %}
     <fieldset class="mt-4">
       <legend>Personal Details</legend>
-      {{ form.non_form_errors }}
-      {{ form.errors }}
       {% crispy form %}
     </fieldset>
     <fieldset class="mt-4">
       <legend>Address{{ address_formset.total_form_count|pluralize:'es' }}</legend>
       {{ address_formset.management_form }}
-      {{ address_formset.errors }}
       {% for form in address_formset %}
+        {% if not forloop.first %}<hr>{% endif %}
         {% crispy form %}
       {% endfor %}
     </fieldset>
     <fieldset class="mt-4">
       <legend>Phone Number{{ phonenumber_formset.total_form_count|pluralize }}</legend>
       {{ phonenumber_formset.management_form }}
-      {{ phonenumber_formset.errors }}
       {% for form in phonenumber_formset %}
+        {% if not forloop.first %}<hr>{% endif %}
         {% crispy form %}
       {% endfor %}
     </fieldset>
