@@ -6,15 +6,7 @@
 {% block content %}
   <div class="container row">
     <div class="col-md-3">
-      {% if member.photo %}
-        <img src="{{ member.photo.url }}" class="img-fluid rounded" alt="{{ member }}'s profile picture">
-      {% elif member.gender == 'M' %}
-        <img src="{% static 'img/avatar_man.png' %}" class="img-fluid rounded" alt="No profile picture">
-      {% elif member.gender == 'F' %}
-        <img src="{% static 'img/avatar_woman.png' %}" class="img-fluid rounded" alt="No profile picture">
-      {% else %}
-        <img src="{% static 'img/avatar_generic.png' %}" class="img-fluid rounded" alt="No profile picture">
-      {% endif %}
+      {% include 'membership/headshot_snippet.html' %}
     </div>
     <div class="col-md-9">
       <h1>{{ member }}</h1>
