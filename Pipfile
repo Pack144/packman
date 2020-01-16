@@ -5,6 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
+mysql-connector = "*"
+blowfish = "*"
 
 [packages]
 argon2-cffi = "*"
@@ -25,6 +27,7 @@ django-tempus-dominus = "*"
 python-memcached = "*"
 docutils = "*"
 django-dynamic-formsets = "*"
+django-ical = "*"
 
 [requires]
 python_version = "3.7"
