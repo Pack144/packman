@@ -78,7 +78,7 @@ class Address(models.Model):
         "Display this address to other members of the pack on the member details page."))
 
     member = models.ForeignKey('membership.AdultMember', on_delete=models.SET_NULL, related_name='addresses', blank=True, null=True)
-    venue = models.OneToOneField(Venue, on_delete=models.SET_NULL, related_name='Address', null=True, blank=True)
+    venue = models.OneToOneField(Venue, on_delete=models.SET_NULL, related_name='address', null=True, blank=True)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
