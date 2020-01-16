@@ -241,7 +241,7 @@ class ChildMember(Member):
         (GRADUATED, _("Graduated")),
     )
 
-    school = models.ForeignKey('address_book.Venue', on_delete=models.CASCADE, blank=True, null=True,
+    school = models.ForeignKey('address_book.Venue', on_delete=models.SET_NULL, blank=True, null=True,
                                limit_choices_to={'type__type__icontains': 'School'}, help_text=_(
         "Tell us what school your child attends. If your school isn't listed, tell us in the comments section."))
 
