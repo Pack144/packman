@@ -4,6 +4,7 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.utils import OperationalError
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -12,27 +13,6 @@ from ckeditor.fields import RichTextField
 
 from address_book.models import Venue
 from documents.models import Document
-
-
-def get_current_pack_year():
-    return PackYear.objects.get_or_create(year=PackYear.get_pack_year(timezone.now().year))
-
-
-def get_pack_year(date_to_test=timezone.now()):
-    """
-    Given a date, calculate the date range (start, end) for the pack year which encapsulates that date.
-    """
-    if not isinstance(date_to_test, datetime):
-        date_to_test = timezone.datetime(date_to_test, 1, 1)
-    if timezone.is_aware(date_to_test):
-        date_to_test = timezone.make_naive(date_to_test)
-    pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
-
-    if not pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
-        pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
-
-    pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(days=1)
-    return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
 
 
 class PackYear(models.Model):
@@ -56,7 +36,8 @@ class PackYear(models.Model):
         else:
             return f"{self.start_date.year} - {self.end_date.year}"
 
-    def get_pack_year(self, date_to_test=timezone.now()):
+    @staticmethod
+    def get_pack_year(date_to_test=timezone.now()):
         """
         Given a date, calculate the date range (start, end) for the pack year which encapsulates that date.
         """
@@ -71,6 +52,14 @@ class PackYear(models.Model):
 
         pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(seconds=1)
         return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
+
+    @staticmethod
+    def get_current_pack_year():
+        try:
+            year, created = PackYear.objects.get_or_create(year=PackYear.get_pack_year()['end_date'].year)
+        except OperationalError:
+            year = PackYear(year=0)
+        return year
 
     @property
     def start_date(self):
@@ -180,6 +169,7 @@ class Event(models.Model):
 
     start = models.DateTimeField()
     end = models.DateTimeField(blank=True, null=True)
+    all_day = models.BooleanField(default=False)
 
     description = RichTextField(blank=True, null=True)
     url = models.URLField(blank=True, null=True)
