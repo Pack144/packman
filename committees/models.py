@@ -4,6 +4,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from pack_calendar.models import PackYear
+
 
 class Committee(models.Model):
     """
@@ -48,7 +50,7 @@ class Membership(models.Model):
     member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE)
     committee = models.ForeignKey(Committee, on_delete=models.CASCADE)
     position = models.PositiveSmallIntegerField(choices=POSITION_CHOICES, default=MEMBER)
-    year_served = models.PositiveSmallIntegerField(default=timezone.now().year)
+    year_served = models.ForeignKey(PackYear, on_delete=models.CASCADE, default=PackYear.get_current_pack_year().id, related_name='committee_memberships')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
@@ -58,6 +60,6 @@ class Membership(models.Model):
         return f"{self.year_served} {self.get_position_display()}: {self.member}"
 
     class Meta:
-        ordering = ['-year_served', 'position', 'member']
+        ordering = ['year_served', 'position', 'member']
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
