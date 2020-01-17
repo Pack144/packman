@@ -141,13 +141,13 @@ class Category(models.Model):
         (STAR, _('Star')),
     )
 
-    name = models.CharField(max_length=32, help_text=_('e.g. Pack Meeting, Den Meeting, Campout, etc.'))
+    name = models.CharField(max_length=32, help_text=_("e.g. Pack Meeting, Den Meeting, Camp out, etc."))
     description = models.CharField(max_length=256, blank=True, null=True,
-                                   help_text=_('Give a little more detail about the kinds of events in this category'))
+                                   help_text=_("Give a little more detail about the kinds of events in this category"))
     icon = models.CharField(max_length=64, choices=ICON_CHOICES, blank=True, null=True,
-                            help_text=_('Optionally choose an icon to display with these events'))
+                            help_text=_("Optionally choose an icon to display with these events"))
     color = models.CharField(max_length=16, choices=COLOR_CHOICES, blank=True, null=True,
-                             help_text=_('Optionally choose a color to display these event in.'))
+                             help_text=_("Optionally choose a color to display these event in."))
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
@@ -155,8 +155,8 @@ class Category(models.Model):
     class Meta:
         indexes = [models.Index(fields=['name'])]
         ordering = ('name',)
-        verbose_name = _('Category')
-        verbose_name_plural = _('Categories')
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
 
     def __str__(self):
         return self.name
@@ -166,6 +166,14 @@ class Event(models.Model):
     """
     Store information about events
     """
+    TENTATIVE = 'TENTATIVE'
+    CONFIRMED = 'CONFIRMED'
+    CANCELED = 'CANCELED'
+    STATUS_CHOICES = (
+        (TENTATIVE, _("Tentative")),
+        (CONFIRMED, _("Confirmed")),
+        (CANCELED, _("Canceled")),
+    )
     name = models.CharField(max_length=64)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events', blank=True, null=True)
     location = models.CharField(max_length=64, blank=True, null=True)
@@ -178,6 +186,7 @@ class Event(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events')
     attachments = models.ManyToManyField(Document, related_name='events', blank=True)
     published = models.BooleanField(_("Show on iCal"), default=True)
+    status = models.CharField(max_length=9, choices=STATUS_CHOICES, default=CONFIRMED)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
@@ -186,8 +195,8 @@ class Event(models.Model):
     class Meta:
         indexes = [models.Index(fields=['name', 'venue', 'location', 'start', 'end', 'category'])]
         ordering = ['-start']
-        verbose_name = _('Event')
-        verbose_name_plural = _('Events')
+        verbose_name = _("Event")
+        verbose_name_plural = _("Events")
 
     def __str__(self):
         return self.name
