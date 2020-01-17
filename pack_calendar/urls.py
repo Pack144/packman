@@ -5,6 +5,6 @@ from .feeds import EventFeed
 
 urlpatterns = [
     path('', EventListView.as_view(), name='event_list'),
-    path('feed/pack_calendar.ics', EventFeed(), name='event_feed'),
-    path('<uuid:pk>/', EventDetailView.as_view(), name='event_detail')
+    path('<uuid:pk>/', EventDetailView.as_view(), name='event_detail'),
+    path(f'feed/{EventFeed.file_name}', EventFeed(), name='event_feed'),
 ]
