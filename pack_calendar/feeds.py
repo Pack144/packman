@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.db.utils import OperationalError
 from django.utils.html import strip_tags
 
 from django_ical.views import ICalFeed
@@ -7,7 +8,12 @@ from django_ical.views import ICalFeed
 from .models import Event
 
 
-site = Site.objects.get_current()
+try:
+    site = Site.objects.get_current()
+except OperationalError:
+    # It's ugly. It's here in case initial migrations haven't been performed yet and the sites database doesn't exist
+    # Should only stick around until the initial migrations have been completed.
+    site = Site(name='fake', domain='localhost')
 
 
 class EventFeed(ICalFeed):
@@ -30,7 +36,7 @@ class EventFeed(ICalFeed):
         return item.name
     
     def item_description(self, item):
-        return strip_tags(item.description)
+        return strip_tags(item.description) if item.description else None
     
     def item_start_datetime(self, item):
         return item.start
