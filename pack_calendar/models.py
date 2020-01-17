@@ -22,7 +22,7 @@ class PackYear(models.Model):
     Stores the start and end date of a pack year in the database. Used by committee assignments, den assignments, and
     events to keep things neatly sorted.
     """
-    year = models.PositiveSmallIntegerField(unique=True)
+    year = models.PositiveSmallIntegerField(primary_key=True)
 
     class Meta:
         indexes = [models.Index(fields=['year'])]
@@ -218,7 +218,7 @@ class Event(models.Model):
 
     @property
     def pack_year(self):
-        year = get_pack_year(self.start.date)
+        year = PackYear.get_pack_year(self.start.date)
         return year
 
     @property
