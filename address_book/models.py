@@ -91,15 +91,15 @@ class Address(models.Model):
 
     def __str__(self):
         if self.member:
-            return f'{self.member}: {self.single_line_display()}'
+            return f"{self.member}: {self.single_line_display()}"
         else:
             return self.single_line_display()
 
     def single_line_display(self):
         if self.street2:
-            return f'{self.street} {self.street2}, {self.city} {self.state}, {self.zip_code}'
+            return f"{self.street} {self.street2}, {self.city}, {self.state} {self.zip_code}"
         else:
-            return f'{self.street}, {self.city} {self.state}, {self.zip_code}'
+            return f"{self.street}, {self.city}, {self.state} {self.zip_code}"
 
 
 class PhoneNumber(models.Model):
