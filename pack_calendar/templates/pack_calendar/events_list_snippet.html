@@ -13,7 +13,7 @@
             {{ event.end|naturalday:'F jS'|capfirst }}{% endif %}</h5>
         {% if event.start|time != 'midnight' %}
           <p class="font-weight-bold">
-            {{ event.start|time:'g:i a' }}{% if event.end and event.end != event.start %} &mdash;
+            {{ event.start|time:'g:i a' }}{% if event.end and event.end != event.start and event.end|time != '11:59 p.m.' %} &mdash;
               {{ event.end|time:'g:i a' }}{% endif %}</p>{% endif %}
         {% if event.get_location %}
           <p><strong>Where:</strong>
