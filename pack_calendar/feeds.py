@@ -18,7 +18,7 @@ class EventFeed(ICalFeed):
     product_id = f'-//{site.domain}//django-ical/EN'
     title = site.name
     timezone = settings.TIME_ZONE
-    file_name = 'pack_calendar.ics'
+    file_name = 'calendar.ics'
 
     def items(self):
         return Event.objects.filter(published=True)
@@ -46,3 +46,9 @@ class EventFeed(ICalFeed):
     
     def item_location(self, item):
         return item.get_location_with_address()
+
+    def item_status(self, item):
+        return item.status
+
+    def item_categories(self, item):
+        return (item.category, )
