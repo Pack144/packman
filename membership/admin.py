@@ -16,10 +16,10 @@ from . import forms, models
 
 class AnimalRankListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the right admin sidebar just above the filter options.
-    title = _("ranks")
+    title = _("Ranks")
 
     # Parameter for the filter that will be used in the URL query.
-    parameter_name = 'ranks'
+    parameter_name = 'rank'
 
     def lookups(self, request, model_admin):
         return (
