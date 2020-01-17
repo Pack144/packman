@@ -50,7 +50,7 @@ class Membership(models.Model):
     member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE)
     committee = models.ForeignKey(Committee, on_delete=models.CASCADE)
     position = models.PositiveSmallIntegerField(choices=POSITION_CHOICES, default=MEMBER)
-    year_served = models.ForeignKey(PackYear, on_delete=models.CASCADE, default=PackYear.get_current_pack_year().id, related_name='committee_memberships')
+    year_served = models.ForeignKey(PackYear, on_delete=models.CASCADE, default=PackYear.get_current_pack_year().year, related_name='committee_memberships')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
