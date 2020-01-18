@@ -41,11 +41,13 @@ class Membership(models.Model):
     MEMBER = 2
     APPRENTICE = 3
     AKELA = 5
+    ASSISTANT_AKELA = 6
     POSITION_CHOICES = [
         (CHAIR, _("Chair")),
         (MEMBER, _("Member")),
         (APPRENTICE, _("Apprentice")),
-        (AKELA, _("Akela Support")),
+        (AKELA, _("Akela")),
+        (ASSISTANT_AKELA, _("Assistant Akela")),
     ]
     member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE)
     committee = models.ForeignKey(Committee, on_delete=models.CASCADE)
