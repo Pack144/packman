@@ -36,5 +36,5 @@ class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
                                                               position__lt=models.Membership.AKELA)
         context['akelas'] = models.Membership.objects.filter(committee=context['committee'],
                                                              year_served=year,
-                                                             position=models.Membership.AKELA)
+                                                             position__gte=models.Membership.AKELA)
         return context
