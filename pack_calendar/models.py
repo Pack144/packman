@@ -4,7 +4,6 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.utils import OperationalError, ProgrammingError
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -57,7 +56,7 @@ class PackYear(models.Model):
     def get_current_pack_year():
         try:
             year, created = PackYear.objects.get_or_create(year=PackYear.get_pack_year()['end_date'].year)
-        except OperationalError or ProgrammingError:
+        except:
             year = PackYear(year=0)
         return year
 
