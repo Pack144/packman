@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.db.utils import OperationalError, ProgrammingError
 from django.utils.html import strip_tags
 
 from django_ical.views import ICalFeed
@@ -10,7 +9,7 @@ from .models import Event
 
 try:
     site = Site.objects.get_current()
-except OperationalError or ProgrammingError:
+except:
     # It's ugly. It's here in case initial migrations haven't been performed yet and the sites database doesn't exist
     # Should only stick around until the initial migrations have been completed.
     site = Site(name='fake', domain='localhost')
