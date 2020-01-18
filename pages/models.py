@@ -100,7 +100,7 @@ class Content(models.Model):
     title = models.CharField(max_length=256, blank=True, null=True)
     visibility = models.CharField(max_length=1, choices=VISIBILITY_CHOICES, default=PRIVATE, help_text=(
         "Private content will only be viewable to active members or contributors. Public content is viewable by anyone "
-        "on the website, including applicants, alumni, and anonomous vistors. Anonymous content will be displayed if "
+        "on the website, including applicants, alumni, and anonymous visitors. Anonymous content will be displayed if "
         "no user is logged-in."
     ))
     body = RichTextField()
