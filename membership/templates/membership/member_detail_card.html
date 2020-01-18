@@ -81,7 +81,7 @@
     {% endif %}
     {% if member.den and member.status == 5 %}
       {% if member.den.patch %}
-        <img src="{{ member.den.patch.url }}" alt="Den {{ member.den.number }} patch" class="mt-2 card-img rounded">
+        <img src="{{ member.den.patch }}" alt="Den {{ member.den.number }} patch" class="mt-2 card-img rounded">
       {% else %}
         <div class="container mt-2">{{ den }}</div>
       {% endif %}

@@ -1,4 +1,5 @@
 import uuid
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -31,7 +32,6 @@ class Rank(models.Model):
     )
     rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES, unique=True)
     description = models.CharField(max_length=128, blank=True, null=True)
-    patch = models.ImageField(upload_to='dens/rank', blank=True, null=True,)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
@@ -59,14 +59,27 @@ class Rank(models.Model):
         else:
             return None
 
+    @property
+    def patch(self):
+        if self.rank == Rank.BOBCAT:
+            return f"{settings.STATIC_URL}img/bobcat.jpg"
+        elif self.rank == Rank.TIGER:
+            return f"{settings.STATIC_URL}img/tiger.jpg"
+        elif self.rank == Rank.WOLF:
+            return f"{settings.STATIC_URL}img/wolf.jpg"
+        elif self.rank == Rank.BEAR:
+            return f"{settings.STATIC_URL}img/bear.jpg"
+        elif self.rank == Rank.JR_WEBE or self.rank == Rank.SR_WEBE or self.rank == Rank.WEBE:
+            return f"{settings.STATIC_URL}img/webelo.jpg"
+        elif self.rank == Rank.ARROW:
+            return f"{settings.STATIC_URL}img/arrow_of_light.jpg"
+
 
 class Den(models.Model):
     """ Each cub should be a member of 1 den """
 
     number = models.PositiveSmallIntegerField(primary_key=True, help_text=_("The Den's Number"))
     rank = models.ForeignKey(Rank, on_delete=models.CASCADE, related_name='dens', blank=True, null=True)
-    patch = models.ImageField(upload_to='dens', blank=True, null=True, help_text=_(
-        "Display an image of the den's patch on the den detail page and member detail pages."))
 
     date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
@@ -84,3 +97,8 @@ class Den(models.Model):
 
     def active_cubs(self):
         return self.scouts.filter(status__exact=ChildMember.ACTIVE)
+
+    @property
+    def patch(self):
+        if self.number <= 10:
+            return f"{settings.STATIC_URL}img/den_{self.number}_patch.jpg"

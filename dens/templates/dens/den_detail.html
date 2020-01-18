@@ -8,12 +8,12 @@
     <div class="container p-3 bg-white rounded d-none d-sm-flex justify-content-between align-items-center"
          id="den-patches">
       {% if den.patch %}
-        <img src="{{ den.patch.url }}" alt="Den {{ den.number }} patch" class="img-fluid h-100 rounded">
+        <img src="{{ den.patch }}" alt="Den {{ den.number }} patch" class="img-fluid h-100 rounded">
       {% else %}
         <h1>{{ den }}</h1>
       {% endif %}
       {% if den.rank.patch %}
-        <img src="{{ den.rank.patch.url }}" alt="{{ den.rank }} patch" class="img-fluid h-100 rounded">
+        <img src="{{ den.rank.patch }}" alt="{{ den.rank }} patch" class="img-fluid h-100 rounded">
       {% elif den.rank %}
         <h4 class="text-primary">{{ den.rank }} Den</h4>
       {% endif %}
