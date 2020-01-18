@@ -39,19 +39,19 @@ class AnimalRankListFilter(admin.SimpleListFilter):
         `self.value()`.
         """
         if self.value() == 'tigers':
-            return queryset.filter(den__rank__exact=Rank.TIGER)
+            return queryset.filter(den__rank__rank__exact=Rank.TIGER)
         if self.value() == 'wolves':
-            return queryset.filter(den__rank__exact=Rank.WOLF)
+            return queryset.filter(den__rank__rank__exact=Rank.WOLF)
         if self.value() == 'bears':
-            return queryset.filter(den__rank__exact=Rank.BEAR)
+            return queryset.filter(den__rank__rank__exact=Rank.BEAR)
         if self.value() == 'jr_weebs':
-            return queryset.filter(den__rank__exact=Rank.JR_WEBE)
+            return queryset.filter(den__rank__rank__exact=Rank.JR_WEBE)
         if self.value() == 'sr_weebs':
-            return queryset.filter(den__rank__exact=Rank.SR_WEBE)
+            return queryset.filter(den__rank__rank__exact=Rank.SR_WEBE)
         if self.value() == 'animals':
-            return queryset.filter(den__rank__lte=Rank.BEAR)
+            return queryset.filter(den__rank__rank__lte=Rank.BEAR)
         if self.value() == 'webelos':
-            return queryset.filter(den__rank__gte=Rank.JR_WEBE)
+            return queryset.filter(den__rank__rank__gte=Rank.JR_WEBE)
 
 
 class FamilyListFilter(admin.SimpleListFilter):
