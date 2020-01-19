@@ -29,7 +29,7 @@ class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         year = PackYear.objects.get(year=PackYear.get_pack_year(self.kwargs['year'])['end_date'].year) if 'year' in self.kwargs else PackYear.get_current_pack_year()
-        all_years = PackYear.objects.filter(committee_memberships__committee=context['committee']).distinct()
+        all_years = PackYear.objects.filter(committee_membership__committee=context['committee']).distinct()
         context['current_year'] = year
         context['all_years'] = all_years
         context['members'] = models.Membership.objects.filter(committee=context['committee'],
