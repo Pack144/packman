@@ -1,11 +1,9 @@
-from django.db.models import F
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.views import generic
-from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
 
 from membership.mixins import ActiveMemberOrContributorTest
-from pack_calendar.models import get_pack_year
+from pack_calendar.models import PackYear
 
 from . import models
 
@@ -20,7 +18,7 @@ class CommitteesList(LoginRequiredMixin, generic.ListView):
     template_name = 'committees/committees_list.html'
 
     def get_queryset(self):
-        year = self.kwargs['year'] if 'year' in self.kwargs else get_pack_year()['end_date'].year
+        year = PackYear.objects.get(year=PackYear.get_pack_year(self.kwargs['year'])['end_date'].year) if 'year' in self.kwargs else PackYear.get_current_pack_year()
         return models.Committee.objects.filter(membership__year_served=year).distinct()
 
 
@@ -30,15 +28,14 @@ class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        year = get_pack_year(self.kwargs['year']) if 'year' in self.kwargs else get_pack_year()
-        if year['start_date'].year == year['end_date'].year:
-            context['pack_year'] = f"{year['end_date'].year}"
-        else:
-            context['pack_year'] = f"{year['start_date'].year} - {year['end_date'].year}"
+        year = PackYear.objects.get(year=PackYear.get_pack_year(self.kwargs['year'])['end_date'].year) if 'year' in self.kwargs else PackYear.get_current_pack_year()
+        all_years = PackYear.objects.filter(committee_memberships__committee=context['committee']).distinct()
+        context['current_year'] = year
+        context['all_years'] = all_years
         context['members'] = models.Membership.objects.filter(committee=context['committee'],
-                                                              year_served=year['end_date'].year,
+                                                              year_served=year,
                                                               position__lt=models.Membership.AKELA)
         context['akelas'] = models.Membership.objects.filter(committee=context['committee'],
-                                                             year_served=year['end_date'].year,
-                                                             position=models.Membership.AKELA)
+                                                             year_served=year,
+                                                             position__gte=models.Membership.AKELA)
         return context

@@ -14,21 +14,61 @@ from address_book.models import Venue
 from documents.models import Document
 
 
-def get_pack_year(date_to_test=timezone.now()):
+class PackYear(models.Model):
     """
-    Given a date, calculate the date range (start, end) for the pack year which encapsulates that date.
+    FIXME: This doesn't actually work.
+    TODO: Replace static 'year' assignments with a foreign key or one-to-on reference to this model
+    Stores the start and end date of a pack year in the database. Used by committee assignments, den assignments, and
+    events to keep things neatly sorted.
     """
-    if not isinstance(date_to_test, datetime):
-        date_to_test = timezone.datetime(date_to_test, 1, 1)
-    if timezone.is_aware(date_to_test):
-        date_to_test = timezone.make_naive(date_to_test)
-    pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
+    year = models.PositiveSmallIntegerField(primary_key=True)
 
-    if not pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
-        pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
+    class Meta:
+        indexes = [models.Index(fields=['year'])]
+        ordering = ('-year', )
+        verbose_name = _("Pack Year")
+        verbose_name_plural = _("Pack Years")
 
-    pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(days=1)
-    return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
+    def __str__(self):
+        if self.start_date.year == self.end_date.year:
+            return self.start_date.year
+        else:
+            return f"{self.start_date.year} - {self.end_date.year}"
+
+    @staticmethod
+    def get_pack_year(date_to_test=timezone.now()):
+        """
+        Given a date, calculate the date range (start, end) for the pack year which encapsulates that date.
+        """
+        if not isinstance(date_to_test, datetime):
+            date_to_test = timezone.datetime(date_to_test, 1, 1)
+        if timezone.is_aware(date_to_test):
+            date_to_test = timezone.make_naive(date_to_test)
+        pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
+
+        if not pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
+            pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
+
+        pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(seconds=1)
+        return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
+
+    @staticmethod
+    def get_current_pack_year():
+        try:
+            year, created = PackYear.objects.get_or_create(year=PackYear.get_pack_year()['end_date'].year)
+        except:
+            year = PackYear(year=0)
+        return year
+
+    @property
+    def start_date(self):
+        # Calculate the start date of the pack year
+        return self.get_pack_year(self.year)['start_date']
+
+    @property
+    def end_date(self):
+        # Calculate the end date of the pack year
+        return self.get_pack_year(self.year)['end_date']
 
 
 class Category(models.Model):
@@ -91,13 +131,13 @@ class Category(models.Model):
         (STAR, _('Star')),
     )
 
-    name = models.CharField(max_length=32, help_text=_('e.g. Pack Meeting, Den Meeting, Campout, etc.'))
+    name = models.CharField(max_length=32, help_text=_("e.g. Pack Meeting, Den Meeting, Camp out, etc."))
     description = models.CharField(max_length=256, blank=True, null=True,
-                                   help_text=_('Give a little more detail about the kinds of events in this category'))
+                                   help_text=_("Give a little more detail about the kinds of events in this category"))
     icon = models.CharField(max_length=64, choices=ICON_CHOICES, blank=True, null=True,
-                            help_text=_('Optionally choose an icon to display with these events'))
+                            help_text=_("Optionally choose an icon to display with these events"))
     color = models.CharField(max_length=16, choices=COLOR_CHOICES, blank=True, null=True,
-                             help_text=_('Optionally choose a color to display these event in.'))
+                             help_text=_("Optionally choose a color to display these event in."))
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
@@ -105,8 +145,8 @@ class Category(models.Model):
     class Meta:
         indexes = [models.Index(fields=['name'])]
         ordering = ('name',)
-        verbose_name = _('Category')
-        verbose_name_plural = _('Categories')
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
 
     def __str__(self):
         return self.name
@@ -116,17 +156,28 @@ class Event(models.Model):
     """
     Store information about events
     """
+    TENTATIVE = 'TENTATIVE'
+    CONFIRMED = 'CONFIRMED'
+    CANCELED = 'CANCELED'
+    STATUS_CHOICES = (
+        (TENTATIVE, _("Tentative")),
+        (CONFIRMED, _("Confirmed")),
+        (CANCELED, _("Canceled")),
+    )
     name = models.CharField(max_length=64)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events', blank=True, null=True)
     location = models.CharField(max_length=64, blank=True, null=True)
 
     start = models.DateTimeField()
     end = models.DateTimeField(blank=True, null=True)
+    all_day = models.BooleanField(default=False)
 
     description = RichTextField(blank=True, null=True)
     url = models.URLField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events')
     attachments = models.ManyToManyField(Document, related_name='events', blank=True)
+    published = models.BooleanField(_("Show on iCal"), default=True)
+    status = models.CharField(max_length=9, choices=STATUS_CHOICES, default=CONFIRMED)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
@@ -135,8 +186,8 @@ class Event(models.Model):
     class Meta:
         indexes = [models.Index(fields=['name', 'venue', 'location', 'start', 'end', 'category'])]
         ordering = ['-start']
-        verbose_name = _('Event')
-        verbose_name_plural = _('Events')
+        verbose_name = _("Event")
+        verbose_name_plural = _("Events")
 
     def __str__(self):
         return self.name
@@ -146,13 +197,19 @@ class Event(models.Model):
 
     def get_location(self):
         if self.venue and self.location:
-            return "{} ({})".format(self.venue, self.location)
+            return f"{self.venue} ({self.location})"
         elif self.venue:
             return self.venue
         elif self.location:
             return self.location
         else:
             return _('TBD')
+
+    def get_location_with_address(self):
+        if hasattr(self.venue, 'address'):
+            return f"{self.get_location()}\n{self.venue.address}"
+        else:
+            return self.get_location()
 
     get_location.short_description = _('Location')
 
@@ -162,7 +219,7 @@ class Event(models.Model):
 
     @property
     def pack_year(self):
-        year = get_pack_year(self.start.date)
+        year = PackYear.get_pack_year(self.start.date)
         return year
 
     @property

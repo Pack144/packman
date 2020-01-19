@@ -9,19 +9,27 @@ A Cub Scout pack management web application, written in Python and Django
     * Friends of the Pack
 * Den Assignments - so you know what cubs belong to which den.
 * Committee assignments - Cubs aren't the only ones who get to have all the fun. A
-  well run pack has lots of parent involvement. 
+  well run pack has lots of parent involvement.
+* Calendar of Events - Always know when the next Pack Meeting, Community Service event,
+  or Den Meeting is scheduled.
+* Documents Repository. So you have a secure place to make files available to members
+  of the pack.
 * Dynamic content, manageable through Django's built-in admin frameworks.
 
 ## Why this app?
 Packman was written specifically for the purpose of managing Cub Scout Pack 144,
-a pack based in Seattle, WA.  Being a pack headquartered in a tech-heavy community
-in the Pacific Northwest, naturally we wanted to have a website that we could adapt
-for our own specific use cases.  At the same time, not all of our pack members are
-as tech savvy and we need to ensure that the frameworks we put in place with our
-web app are accessible to all.  We chose the Django framework because it is highly
-flexible, maintainable, and understandable.  That means that even members who do
-not live web development day to day should be able to pick it up and continue to
-maintain the site.
+a pack based in Seattle, WA.  We are the oldest and one of the largest Cub Scout
+Pack in the state of Washington.  We like to do things our way, but that doesn't mean
+that what we do doesn't work for your pack.  We built this for ourselves, but we are
+sure that there's use for other packs out there too.
+
+Being a pack headquartered in a tech-heavy community in the Pacific Northwest, naturally
+we wanted to have a website that we could adapt for our own specific needs.  
+At the same time, not all of our pack members are tech savvy and we need to ensure that 
+the frameworks we put in place with our web app are accessible to everyone in the pack. 
+We chose the Django framework because it is highly flexible, maintainable, and most
+importantly understandable.  That means that even members who do not live web development 
+day to day should be able to pick it up and continue to maintain the site.
 
 ## How do I get started?
 As with any Python and Django project, it is highly recommended that you install
@@ -55,8 +63,9 @@ the database and run Django.
 ```
 pipenv shell
 
+python manage.py makemigrations
 python manage.py migrate
-python manage.py createsuperuser
+
 python manage.py runserver
 ```
 
@@ -68,3 +77,4 @@ application is using:
 
 * [Python 3](https://python.org)
 * [Django 2.2](https://djangoproject.com)
+* [Yarn](https://yarnpkg.com/)

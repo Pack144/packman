@@ -1,4 +1,5 @@
 import uuid
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -17,21 +18,20 @@ class Rank(models.Model):
     BEAR = 4
     JR_WEBE = 5
     SR_WEBE = 6
-    WEEB = 7
+    WEBE = 7
     ARROW = 8
     RANK_CHOICES = (
-        (BOBCAT, _('Bobcat')),
-        (TIGER, _('Tiger')),
-        (WOLF, _('Wolf')),
-        (BEAR, _('Bear')),
-        (JR_WEBE, _('Jr. Webelos')),
-        (SR_WEBE, _('Sr. Webelos')),
-        (WEEB, _('Webelos')),
-        (ARROW, _('Arrow of Light')),
+        (BOBCAT, _("Bobcat")),
+        (TIGER, _("Tiger")),
+        (WOLF, _("Wolf")),
+        (BEAR, _("Bear")),
+        (JR_WEBE, _("Jr. Webelo")),
+        (SR_WEBE, _("Sr. Webelo")),
+        (WEBE, _("Webelo")),
+        (ARROW, _("Arrow of Light")),
     )
     rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES, unique=True)
     description = models.CharField(max_length=128, blank=True, null=True)
-    patch = models.ImageField(upload_to='dens/rank', blank=True, null=True,)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
@@ -42,44 +42,63 @@ class Rank(models.Model):
 
     class Meta:
         ordering = ['rank']
-        verbose_name = _('Rank')
-        verbose_name_plural = _('Ranks')
+        verbose_name = _("Rank")
+        verbose_name_plural = _("Ranks")
 
     @property
     def category(self):
-        if self.rank < 1:
+        if self.rank < Rank.BOBCAT:
             # We shouldn't see this
             return None
-        elif self.rank <= 4:
+        elif self.rank <= Rank.BEAR:
             # Bobcat - Bear
-            return _('Animal')
-        elif self.rank <= 7:
+            return _("Animal")
+        elif self.rank >= Rank.JR_WEBE:
             # Jr. & Sr. Webelos
             return _('Webelos')
         else:
             return None
 
+    @property
+    def patch(self):
+        if self.rank == Rank.BOBCAT:
+            return f"{settings.STATIC_URL}img/bobcat.jpg"
+        elif self.rank == Rank.TIGER:
+            return f"{settings.STATIC_URL}img/tiger.jpg"
+        elif self.rank == Rank.WOLF:
+            return f"{settings.STATIC_URL}img/wolf.jpg"
+        elif self.rank == Rank.BEAR:
+            return f"{settings.STATIC_URL}img/bear.jpg"
+        elif self.rank == Rank.JR_WEBE or self.rank == Rank.SR_WEBE or self.rank == Rank.WEBE:
+            return f"{settings.STATIC_URL}img/webelo.jpg"
+        elif self.rank == Rank.ARROW:
+            return f"{settings.STATIC_URL}img/arrow_of_light.jpg"
+
 
 class Den(models.Model):
     """ Each cub should be a member of 1 den """
 
-    number = models.PositiveSmallIntegerField(primary_key=True)
+    number = models.PositiveSmallIntegerField(primary_key=True, help_text=_("The Den's Number"))
     rank = models.ForeignKey(Rank, on_delete=models.CASCADE, related_name='dens', blank=True, null=True)
-    patch = models.ImageField(upload_to='dens', blank=True, null=True)
 
     date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['number']
-        verbose_name = _('Den')
-        verbose_name_plural = _('Dens')
+        verbose_name = _("Den")
+        verbose_name_plural = _("Dens")
 
     def __str__(self):
-        return 'Den {}'.format(self.number)
+        return f"Den {self.number}"
 
     def get_absolute_url(self):
         return reverse('den_detail', args=[int(self.number)])
 
     def active_cubs(self):
         return self.scouts.filter(status__exact=ChildMember.ACTIVE)
+
+    @property
+    def patch(self):
+        if self.number <= 10:
+            return f"{settings.STATIC_URL}img/den_{self.number}_patch.jpg"

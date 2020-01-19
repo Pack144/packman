@@ -4,16 +4,11 @@
 
 {% block content %}
   <h1>{{ page_content.title }}</h1>
-  {% if page_content.private_content and request.user.active %}
-    <p>{{ page_content.private_content|safe }}</p>
-  {% endif %}
-  {% if page_content.public_content %}
-    <p>{{ page_content.public_content|safe }}</p>
-  {% endif %}
   {% if event_list %}
     <div class="mt-5">
-      <h2>Coming Up</h2>
+      <h3>Coming Up</h3>
       {% include 'pack_calendar/events_list_snippet.html' %}
     </div>
   {% endif %}
+  {% include 'pages/page_content_snippet.html' %}
 {% endblock %}

@@ -11,7 +11,7 @@
                alt="Pack Logo">
         </div>
         <div class="col d-none d-sm-block">
-          <div class="row" id="pack-name">Cub Scout Pack 144</div>
+          <div class="row" id="pack-name">{{ request.site.name }}</div>
           <div class="row" id="pack-location">Seattle, Washington</div>
           <div class="row" id="pack-tagline">Since 1929</div>
         </div>
@@ -32,14 +32,15 @@
         <a class="nav-item nav-link mr-lg-3" href="{% url 'member_list' %}">Members</a>
         <a class="nav-item nav-link mr-lg-3" href="{% url 'committees_list' %}">Committees</a>
         <a class="nav-item nav-link mr-lg-3" href="{% url 'document_list' %}">Documents</a>
-      {% else %}
-        <a class="nav-item nav-link mr-lg-3" href="{% url 'account_signup' %}">Join Us</a>
-      {% endif %}
-      {% for item in navbar_items %}
+      {% for item in navbar_private_navs %}
         <a class="nav-item nav-link mr-lg-3" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
       {% endfor %}
-      <a class="nav-item nav-link mr-lg-3" href="{% url 'history_page' %}">Our History</a>
+      {% endif %}
+      {% for item in navbar_public_navs %}
+        <a class="nav-item nav-link mr-lg-3" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
+      {% endfor %}
       <a class="nav-item nav-link mr-lg-3" href="{% url 'about_page' %}">About Us</a>
+      <a class="nav-item nav-link mr-lg-3" href="{% url 'history_page' %}">Our History</a>
     </div>
     <ul class="navbar-nav ml-auto">{% if user.is_authenticated %}
       <li class="nav-item dropdown">
@@ -56,6 +57,9 @@
           <a class="dropdown-item text-danger" href="{% url 'account_logout' %}">Log out</a>
         </div>
       </li>{% else %}
+      <li class="nav-item">
+        <a class="nav-link mr-lg-3" href="{% url 'account_signup' %}">Join Us</a>
+      </li>
       <li class="nav-item">
         <a class="nav-link text-success" href="{% url 'account_login' %}?next={{ request.path }}">Sign in</a>
       </li>{% endif %}

@@ -1,20 +1,19 @@
 from django.contrib import admin
 
-from .models import Category, Event
+from .models import Category, Event, PackYear
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    model = Category
     list_display = ('name', 'color', 'icon', )
 
 
+@admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    model = Event
     list_display = ('name', 'get_location', 'start', 'end', 'category', )
     list_filter = ('category', )
-    search_fields = ('name', 'start', 'end')
+    search_fields = ('name', 'start', 'end', 'location', 'venue__name')
     readonly_fields = ('duration', )
 
 
-admin.site.register(Event, EventAdmin)
-admin.site.register(Category, CategoryAdmin)
+admin.site.register(PackYear)

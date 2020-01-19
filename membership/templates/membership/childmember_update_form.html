@@ -1,6 +1,5 @@
 {% extends "_base.html" %}
-{% load crispy_forms_tags %}
-{% load static %}
+{% load crispy_forms_tags static %}
 
 {% block title %}{{ member }} - Update{% endblock %}
 
@@ -19,3 +18,8 @@
     </div>
   </div>
 {% endblock content %}
+
+{% block js %}
+  <script src="{% static 'moment/moment.js' %}"></script>
+  <script src="{% static 'tempusdominus-bootstrap-4/build/js/tempusdominus-bootstrap-4.min.js' %}"></script>
+{% endblock %}

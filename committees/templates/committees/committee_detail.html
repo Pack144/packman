@@ -8,13 +8,27 @@
   <div class="container p-3 bg-white rounded">
     <div class=" d-flex justify-content-between align-items-center">
       <h1>{{ committee }}</h1>
-      <h4 class="text-primary">{{ pack_year }}</h4>
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary">{{ current_year }}</button>
+        <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+          {% for year in all_years %}
+            {% if not year == current_year %}
+              <a class="dropdown-item" href="{% url 'committee_detail_by_year' slug=committee.slug year=year.year %}">{{ year }}</a>
+              {% else %}
+              <div class="dropdown-item active">{{ year }}</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
     </div>
     {% if committee.description %}<p class="text-muted">{{ committee.description }}</p>{% endif %}
   </div>
 
-  <h2 class="mt-3">Committee Member{{ members.count|pluralize }}</h2>
   {% if members.count %}
+    <h2 class="mt-3">Member{{ members.count|pluralize }}</h2>
     <ul class="list-group">
       {% for member in members.all %}
         <li class="list-group-item">
@@ -35,7 +49,7 @@
   {% endif %}
 
   {% if akelas %}
-    <h2 class="mt-3">Supporting Akela{{ akelas.count|pluralize }}</h2>
+    {% if not 'Akela' in committee.name %}<h2 class="mt-3">Supporting Akela{{ akelas.count|pluralize }}</h2>{% endif %}
     <ul class="list-group">
       {% for member in akelas.all %}
         <li class="list-group-item">
