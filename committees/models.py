@@ -15,6 +15,8 @@ class Committee(models.Model):
     name = models.CharField(max_length=64)
     description = models.TextField(null=True, blank=True)
     members = models.ManyToManyField('membership.AdultMember', through='Membership', related_name='committees')
+    leadership = models.BooleanField(_("Pack Leadership"), default=False, help_text=_(
+        "e.g. Akela, Assistant Akela, Den Leader"))
 
     slug = models.SlugField(unique=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
