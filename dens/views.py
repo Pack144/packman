@@ -1,13 +1,23 @@
 from django.views.generic import DetailView, ListView
 
 from membership.mixins import ActiveMemberOrContributorTest
+from pack_calendar.models import PackYear
 
-from .models import Den
+from .models import Den, Leadership
 
 
 class DenDetailView(ActiveMemberOrContributorTest, DetailView):
     model = Den
     paginate_by = 20
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = PackYear.objects.get(year=PackYear.get_pack_year(self.kwargs['year'])['end_date'].year) if 'year' in self.kwargs else PackYear.get_current_pack_year()
+        all_years = PackYear.objects.filter(den_leadership__den=context['den']).distinct()
+        context['current_year'] = year
+        context['all_years'] = all_years
+        context['leaders'] = Leadership.objects.filter(den=context['den'], year_served=year,)
+        return context
 
 
 class DensListView(ActiveMemberOrContributorTest, ListView):

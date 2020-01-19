@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from .models import Den, Rank
+from .models import Den, Leadership, Rank
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
@@ -45,8 +45,16 @@ class AnimalRankListFilter(admin.SimpleListFilter):
             return queryset.filter(rank__rank__gte=Rank.JR_WEBE)
 
 
+class LeadershipAdmin(admin.TabularInline):
+    model = Leadership
+    classes = ['collapse']
+    exclude = ['date_added']
+    extra = 0
+
+
 @admin.register(Den)
 class DenAdmin(admin.ModelAdmin):
+    inlines = [LeadershipAdmin]
     list_display = ('number', 'rank', )
     list_filter = (AnimalRankListFilter, )
     search_fields = ('number', 'rank__rank', 'scouts__first_name', 'scouts__nickname', 'scouts__last_name')
