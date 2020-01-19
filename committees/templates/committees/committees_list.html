@@ -13,7 +13,7 @@
         <li class="list-group-item">
           <a href="{{ committee.get_absolute_url }}">
             <div class="d-flex justify-content-between align-items-center">
-              <div class="font-weight-bold ">{% if committee.leadership %}<i class="fas fa-star"></i> {% endif %}{{ committee }}</div>
+              <div class="font-weight-bold ">{{ committee }}{% if committee.leadership %} <i class="fas fa-star text-warning"></i>{% endif %}</div>
               {% if committee.description %}<small class="text-muted text-truncate ml-3">{{ committee.description }}</small>{% endif %}
             </div>
           </a>
