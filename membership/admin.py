@@ -112,8 +112,8 @@ class ScoutAdmin(admin.ModelAdmin):
 
 @admin.register(models.AdultMember)
 class AdultAdmin(UserAdmin):
-    add_form = forms.AdultMemberCreation
-    form = forms.AdultMemberChange
+    add_form = forms.AdminAdultMemberCreation
+    form = forms.AdminAdultMemberChange
     list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', 'family', 'is_staff', 'is_superuser')
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
     list_filter = ('is_staff', 'is_superuser')

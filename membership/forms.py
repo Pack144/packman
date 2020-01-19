@@ -20,7 +20,13 @@ AddressFormSet = inlineformset_factory(AdultMember, Address, form=AddressForm, c
 PhoneNumberFormSet = inlineformset_factory(AdultMember, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=1)
 
 
-class AdultMemberChange(UserChangeForm):
+class AdminAdultMemberChange(UserChangeForm):
+    class Meta:
+        model = AdultMember
+        fields = '__all__'
+
+
+class AdminAdultMemberCreation(UserCreationForm):
     class Meta:
         model = AdultMember
         fields = '__all__'
