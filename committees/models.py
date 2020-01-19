@@ -24,7 +24,7 @@ class Committee(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ['-leadership', 'name']
         verbose_name = _("Committee")
         verbose_name_plural = _("Committees")
 
