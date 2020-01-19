@@ -1,6 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponseRedirect
 from django.views.generic import CreateView, DetailView, UpdateView, ListView
 
 from . import forms, models
@@ -63,29 +62,6 @@ class FamilyUpdate(LoginRequiredMixin, DetailView):
     def get_object(self):
         # Return the currently signed on member's page
         return models.AdultMember.objects.get(id=self.request.user.id)
-
-    # def get_context_data(self, **kwargs):
-    #     context = super(FamilyUpdate, self).get_context_data(**kwargs)
-    #     if self.request.POST:
-    #         context['address_formset'] = forms.AddressFormSet(self.request.POST, instance=self.object)
-    #         context['address_formset'].full_clean()
-    #         context['phonenumber_formset'] = forms.PhoneNumberFormSet(self.request.POST, instance=self.object)
-    #         context['phonenumber_formset'].full_clean()
-    #     else:
-    #         context['address_formset'] = forms.AdultMemberChange(instance=self.object)
-    #         context['phonenumber_formset'] = forms.PhoneNumberFormSet(instance=self.object)
-    #     return context
-
-    # def form_valid(self, form):
-    #     context = self.get_context_data(form=form)
-    #     formset = context['address_formset']
-    #     if formset.is_valid():
-    #         response = super().form_valid(form)
-    #         formset.instance = self.object
-    #         formset.save()
-    #         return response
-    #     else:
-    #         return super().form_invalid(form)
 
 
 class AdultMemberList(LoginRequiredMixin, ListView):
