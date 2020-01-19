@@ -109,3 +109,4 @@ venv.bak/
 
 # Yarn Components
 /node_modules/
+.vscode/settings.json

@@ -8,27 +8,28 @@ from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
 
 from address_book.models import Address, PhoneNumber
+from address_book.forms import AddressForm, PhoneNumberForm
 from dens.models import Rank
 
-from .import forms, models
+from . import forms, models
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the right admin sidebar just above the filter options.
-    title = _('ranks')
+    title = _("Ranks")
 
     # Parameter for the filter that will be used in the URL query.
-    parameter_name = 'ranks'
+    parameter_name = 'rank'
 
     def lookups(self, request, model_admin):
         return (
-            ('tigers', _('Tigers')),
-            ('wolves', _('Wolves')),
-            ('bears', _('Bears')),
-            ('jr_weebs', _('Jr. Webelos')),
-            ('sr_weebs', _('Sr. Webelos')),
-            ('animals', _('Animal Ranks')),
-            ('webelos', _('Webelos')),
+            ('tigers', _("Tigers")),
+            ('wolves', _("Wolves")),
+            ('bears', _("Bears")),
+            ('jr_weebs', _("Jr. Webelos")),
+            ('sr_weebs', _("Sr. Webelos")),
+            ('animals', _("Animal Ranks")),
+            ('webelos', _("Webelos")),
         )
 
     def queryset(self, request, queryset):
@@ -38,19 +39,19 @@ class AnimalRankListFilter(admin.SimpleListFilter):
         `self.value()`.
         """
         if self.value() == 'tigers':
-            return queryset.filter(den__rank__exact=Rank.TIGER)
+            return queryset.filter(den__rank__rank__exact=Rank.TIGER)
         if self.value() == 'wolves':
-            return queryset.filter(den__rank__exact=Rank.WOLF)
+            return queryset.filter(den__rank__rank__exact=Rank.WOLF)
         if self.value() == 'bears':
-            return queryset.filter(den__rank__exact=Rank.BEAR)
+            return queryset.filter(den__rank__rank__exact=Rank.BEAR)
         if self.value() == 'jr_weebs':
-            return queryset.filter(den__rank__exact=Rank.JR_WEBE)
+            return queryset.filter(den__rank__rank__exact=Rank.JR_WEBE)
         if self.value() == 'sr_weebs':
-            return queryset.filter(den__rank__exact=Rank.SR_WEBE)
+            return queryset.filter(den__rank__rank__exact=Rank.SR_WEBE)
         if self.value() == 'animals':
-            return queryset.filter(den__rank__lte=Rank.BEAR)
+            return queryset.filter(den__rank__rank__lte=Rank.BEAR)
         if self.value() == 'webelos':
-            return queryset.filter(den__rank__gte=Rank.JR_WEBE)
+            return queryset.filter(den__rank__rank__gte=Rank.JR_WEBE)
 
 
 class FamilyListFilter(admin.SimpleListFilter):
@@ -62,10 +63,10 @@ class FamilyListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('complete', _('Parents and Cubs')),
-            ('childless', _('No children')),
-            ('orphan', _('No parents')),
-            ('empty', _('No family members')),
+            ('complete', _("Parents and Cubs")),
+            ('childless', _("No children")),
+            ('orphan', _("No parents")),
+            ('empty', _("No family members")),
         )
 
     def queryset(self, request, queryset):
@@ -85,13 +86,15 @@ class FamilyListFilter(admin.SimpleListFilter):
 
 
 class AddressInline(admin.StackedInline):
-    model = Address
     extra = 0
+    form = AddressForm
+    model = Address
 
 
 class PhoneNumberInline(admin.TabularInline):
-    model = PhoneNumber
     extra = 0
+    form = PhoneNumberForm
+    model = PhoneNumber
 
 
 @admin.register(models.ChildMember)
@@ -130,11 +133,17 @@ class AdultAdmin(UserAdmin):
             ('role', 'family'),
             'slug'
         )}),
-        (_('Account Details'), {'fields': ('email', 'is_published', 'password')}),
-        (_('Permissions'), {
+        (_("Account Details"), {
+            'fields': (('email', 'is_published'), 'password')
+        }),
+        (_("Permissions"), {
+            'classes': ('collapse',),
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
-        (_('Important Dates'), ({'fields': ('last_login', 'date_added')})),
+        (_("Important Dates"), {
+            'classes': ('collapse',),
+            'fields': ('last_login', 'date_added')
+        }),
     )
     add_fieldsets = (
         (None, {'fields': (
@@ -143,7 +152,7 @@ class AdultAdmin(UserAdmin):
             'photo',
             'slug',
         )}),
-        (_('Account Details'), {'fields': (
+        (_("Account Details"), {'fields': (
             ('email', 'password1', 'password2'))}),
     )
     inlines = [PhoneNumberInline, AddressInline]
@@ -153,7 +162,7 @@ class AdultAdmin(UserAdmin):
 class FamilyAdmin(admin.ModelAdmin):
     form = forms.Family
     list_display = ('name', 'get_adults_count', 'get_children_count',)
-    list_filter = (FamilyListFilter, )
+    list_filter = (FamilyListFilter,)
     search_fields = ('name',
                      'adults__first_name',
                      'adults__nickname',
@@ -165,12 +174,12 @@ class FamilyAdmin(admin.ModelAdmin):
     def get_adults_count(self, instance):
         return instance.adults.count()
 
-    get_adults_count.short_description = _('Number of adults')
+    get_adults_count.short_description = _("Number of adults")
 
     def get_children_count(self, instance):
         return instance.children.count()
 
-    get_children_count.short_description = _('Number of children')
+    get_children_count.short_description = _("Number of children")
 
 
 admin.site.login = login_required(admin.site.login)

@@ -30,25 +30,30 @@ class AnimalRankListFilter(admin.SimpleListFilter):
         `self.value()`.
         """
         if self.value() == 'tigers':
-            return queryset.filter(rank__exact=Rank.TIGER)
+            return queryset.filter(rank__rank__exact=Rank.TIGER)
         if self.value() == 'wolves':
-            return queryset.filter(rank__exact=Rank.WOLF)
+            return queryset.filter(rank__rank__exact=Rank.WOLF)
         if self.value() == 'bears':
-            return queryset.filter(rank__exact=Rank.BEAR)
+            return queryset.filter(rank__rank__exact=Rank.BEAR)
         if self.value() == 'jr_weebs':
-            return queryset.filter(rank__exact=Rank.JR_WEBE)
+            return queryset.filter(rank__rank__exact=Rank.JR_WEBE)
         if self.value() == 'sr_weebs':
-            return queryset.filter(rank__exact=Rank.SR_WEBE)
+            return queryset.filter(rank__rank__exact=Rank.SR_WEBE)
         if self.value() == 'animals':
-            return queryset.filter(rank__lte=Rank.BEAR)
+            return queryset.filter(rank__rank__lte=Rank.BEAR)
         if self.value() == 'webelos':
-            return queryset.filter(rank__gte=Rank.JR_WEBE)
+            return queryset.filter(rank__rank__gte=Rank.JR_WEBE)
 
 
 @admin.register(Den)
 class DenAdmin(admin.ModelAdmin):
     list_display = ('number', 'rank', )
     list_filter = (AnimalRankListFilter, )
+    search_fields = ('number', 'rank__rank', 'scouts__first_name', 'scouts__nickname', 'scouts__last_name')
 
 
-admin.site.register(Rank)
+@admin.register(Rank)
+class RankAdmin(admin.ModelAdmin):
+    list_display = ('rank', 'description', )
+    search_fields = ('rank', )
+

@@ -38,7 +38,7 @@
         <dt>Description</dt>
         <dd>{{ event.description|safe }}</dd>
       {% endif %}
-      {% if event.attachments %}
+      {% if event.attachments.count %}
         <dt>Attachments</dt>
         <dd>
         <ul class="list-group">

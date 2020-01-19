@@ -187,6 +187,10 @@ class SignupForm(AllauthSignupForm, UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(SignupForm, self).__init__(*args, **kwargs)
+        self.fields['role'].choices = (
+            (AdultMember.PARENT, _('Parent')),
+            (AdultMember.GUARDIAN, _('Guardian')),
+        )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
         self.helper.layout = Layout(

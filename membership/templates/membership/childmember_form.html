@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags static %}
 
 {% block title %}Nominate a scout{% endblock %}
 
@@ -7,3 +7,8 @@
   <h1>Nominate a Scout</h1>
   {% crispy form %}
 {% endblock content %}
+
+{% block js %}
+  <script src="{% static 'moment/moment.js' %}"></script>
+  <script src="{% static 'tempusdominus-bootstrap-4/build/js/tempusdominus-bootstrap-4.min.js' %}"></script>
+{% endblock %}

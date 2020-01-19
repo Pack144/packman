@@ -12,7 +12,10 @@
       {% for committee in committee_list %}
         <li class="list-group-item">
           <a href="{{ committee.get_absolute_url }}">
-            <div class="font-weight-bold d-flex justify-content-between align-items-center">{{ committee }}</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="font-weight-bold ">{{ committee }}</div>
+              {% if committee.description %}<small class="text-muted text-truncate ml-3">{{ committee.description }}</small>{% endif %}
+            </div>
           </a>
         </li>
       {% endfor %}
