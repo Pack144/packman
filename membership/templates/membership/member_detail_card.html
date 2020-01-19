@@ -8,7 +8,7 @@
   <div class="card-body">
     <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}</h5></a>
     {% if member.den.rank and member.status == 5 %}<h6 class="text-muted">{{ member.den.rank }}</h6>{% endif %}
-    {% if member.email %}
+    {% if member.is_published %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
           <div class="col col-1">
