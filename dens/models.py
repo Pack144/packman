@@ -114,7 +114,7 @@ class Leadership(models.Model):
     den = models.ForeignKey(Den, on_delete=models.CASCADE)
     year_served = models.ForeignKey(PackYear,
                                     on_delete=models.CASCADE,
-                                    default=PackYear.get_current_pack_year,
+                                    default=PackYear.get_current_pack_year_year,
                                     related_name='den_leadership')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
