@@ -9,6 +9,15 @@
     {% include 'membership/member_detail_card.html' %}
   </div>
   </div>
+  <div class="col mt-md-5">
+    <h3>Committee{{ member.committee_memberships.count|pluralize }} Served</h3>
+    <ul class="list-unstyled">
+    {% for membership in member.committee_memberships.all %}
+      {% ifchanged membership.year_served %}<h5 class="mt-4">{{ membership.year_served }}</h5>{% endifchanged %}
+      <a href="{% url 'committee_detail_by_year' slug=membership.committee.slug year=membership.year_served.year%}"><li><strong>{{ membership.committee }}:</strong> {{ membership.get_position_display }}</li></a>
+    {% endfor %}
+    </ul>
+  </div>
 
   {% if member.family.children.count or member.family.adults.count > 1 %}
     <hr>
