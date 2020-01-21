@@ -3,15 +3,13 @@
 {% block title %}{{ member }}{% endblock title %}
 
 {% block content %}
-  <div class="container row">
+  <div class="row">
+  <div class="col">
     <h1>{{ member }}</h1>
-    {% if user.family == member.family %}
-      <a href="{% url 'parent_update' member.id %}" class="badge badge-warning ml-3 my-auto p-2">
-        <i class="fa fa-user-edit"></i>
-      </a>
-    {% endif %}
+    {% include 'membership/member_detail_card.html' %}
   </div>
-  {% include 'membership/member_detail_card.html' %}
+  </div>
+
   {% if member.family.children.count or member.family.adults.count > 1 %}
     <hr>
     <h2>Family</h2>
@@ -24,9 +22,9 @@
       {% endfor %}
     </div>
   {% endif %}
-  {% if user == member %}
+  {% if user.family == member.family %}
     <div class="btn-group mt-4 btn-group-lg" role="group" aria-label="Add Family Members">
-      <a href="{% url 'parent_create' %}" class="btn btn-secondary">Add an adult<span class="ml-3 badge badge-light"><i class="fas fa-male"></i></span></a>
+      <a href="{% url 'parent_create' %}" class="btn btn-secondary">Add an adult<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
       <a href="{% url 'scout_create' %}" class="btn btn-secondary">Nominate a cub<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
     </div>
   {% endif %}

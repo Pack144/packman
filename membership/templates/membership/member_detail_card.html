@@ -6,7 +6,19 @@
     {% include 'membership/headshot_snippet.html' %}
   </a>
   <div class="card-body">
-    <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}</h5></a>
+    <div class="d-flex justify-content-between align-items-center">
+      <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}</h5></a>
+      {% if user.family == member.family %}
+        {% if member.adultmember %}
+          <a href="{% url 'parent_update' member.id %}" class="badge badge-dark ml-3 p-2">
+        {% else %}
+          <a href="{% url 'scout_update' member.id %}" class="badge badge-dark ml-3 p-2">
+        {% endif %}
+      <i class="fa fa-user-edit"></i>
+      </a>
+      {% endif %}
+
+    </div>
     {% if member.den.rank and member.status == 5 %}<h6 class="text-muted">{{ member.den.rank }}</h6>{% endif %}
     {% if member.is_published %}
       <div class="container mt-2">
@@ -73,9 +85,11 @@
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
           <div class="col col-1"><span class="fa fa-school"></span></div>
-          <div class="col text-truncate">{% if member.grade > 0 %}{{ member.grade }}<sup>{{ member.grade|ordinal|slice:'-2:' }}</sup> grade{% elif member.grade == 'K' %}
+          <div class="col text-truncate">
+            {% if member.grade > 0 %}{{ member.grade }}<sup>{{ member.grade|ordinal|slice:'-2:' }}</sup>
+              grade{% elif member.grade == 'K' %}
               Kindergarten{% endif %}<br>{{ member.school }}
-            </div>
+          </div>
         </div>
       </div>
     {% endif %}
