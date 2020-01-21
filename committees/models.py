@@ -14,7 +14,7 @@ class Committee(models.Model):
     """
     name = models.CharField(max_length=64)
     description = models.TextField(null=True, blank=True)
-    members = models.ManyToManyField('membership.AdultMember', through='Membership', related_name='committees')
+    members = models.ManyToManyField('membership.AdultMember', through='Membership')
     leadership = models.BooleanField(_("Pack Leadership"), default=False, help_text=_(
         "e.g. Akela, Assistant Akela, Den Leader"))
 
@@ -51,8 +51,8 @@ class Membership(models.Model):
         (AKELA, _("Akela")),
         (ASSISTANT_AKELA, _("Assistant Akela")),
     ]
-    member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE, related_name='committee_memberships')
-    committee = models.ForeignKey(Committee, on_delete=models.CASCADE, related_name='committee_memberships')
+    member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE, related_name='committees')
+    committee = models.ForeignKey(Committee, on_delete=models.CASCADE)
     position = models.PositiveSmallIntegerField(choices=POSITION_CHOICES, default=MEMBER)
     year_served = models.ForeignKey(PackYear,
                                     on_delete=models.CASCADE,
