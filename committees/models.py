@@ -51,13 +51,13 @@ class Membership(models.Model):
         (AKELA, _("Akela")),
         (ASSISTANT_AKELA, _("Assistant Akela")),
     ]
-    member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE)
-    committee = models.ForeignKey(Committee, on_delete=models.CASCADE)
+    member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE, related_name='committee_memberships')
+    committee = models.ForeignKey(Committee, on_delete=models.CASCADE, related_name='committee_memberships')
     position = models.PositiveSmallIntegerField(choices=POSITION_CHOICES, default=MEMBER)
     year_served = models.ForeignKey(PackYear,
                                     on_delete=models.CASCADE,
                                     default=PackYear.get_current_pack_year,
-                                    related_name='committee_membership')
+                                    related_name='committee_memberships')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
