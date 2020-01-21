@@ -60,6 +60,11 @@ class PackYear(models.Model):
             year = PackYear(year=0)
         return year
 
+    @staticmethod
+    def get_current_pack_year_year():
+        year_obj = PackYear.get_current_pack_year()
+        return year_obj.end_date.year
+
     @property
     def start_date(self):
         # Calculate the start date of the pack year

@@ -56,7 +56,7 @@ class Membership(models.Model):
     position = models.PositiveSmallIntegerField(choices=POSITION_CHOICES, default=MEMBER)
     year_served = models.ForeignKey(PackYear,
                                     on_delete=models.CASCADE,
-                                    default=PackYear.get_current_pack_year,
+                                    default=PackYear.get_current_pack_year_year,
                                     related_name='committee_memberships')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
