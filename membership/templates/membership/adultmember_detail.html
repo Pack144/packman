@@ -5,20 +5,21 @@
 {% block content %}
   <div class="row">
   <div class="col">
-    <h1>{{ member }}</h1>
     {% include 'membership/member_detail_card.html' %}
   </div>
-  </div>
-  <div class="col mt-md-5">
-    <h3>Committee{{ member.committee_memberships.count|pluralize }} Served</h3>
+  {% if member.committees.count %}
+  <div class="col">
+    <h3>Committee{{ member.committees.count|pluralize }} Served</h3>
     <ul class="list-unstyled">
-    {% for membership in member.committee_memberships.all %}
-      {% ifchanged membership.year_served %}<h5 class="mt-4">{{ membership.year_served }}</h5>{% endifchanged %}
-      <a href="{% url 'committee_detail_by_year' slug=membership.committee.slug year=membership.year_served.year%}"><li><strong>{{ membership.committee }}:</strong> {{ membership.get_position_display }}</li></a>
+    {% for committee in member.committees.all %}
+      {{ committee.membership }}
+      {% ifchanged committee.year_served %}<h5 class="mt-4">{{ committee.year_served }}</h5>{% endifchanged %}
+      <a href="{% url 'committee_detail_by_year' slug=committee.committee.slug year=committee.year_served.year%}"><li><strong>{{ committee.committee }}:</strong> {{ committee.get_position_display }}</li></a>
     {% endfor %}
     </ul>
   </div>
-
+  {% endif %}
+  </div>
   {% if member.family.children.count or member.family.adults.count > 1 %}
     <hr>
     <h2>Family</h2>
