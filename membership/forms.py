@@ -16,8 +16,8 @@ from address_book.models import Address, PhoneNumber
 
 from .models import AdultMember, ChildMember, Family
 
-AddressFormSet = inlineformset_factory(AdultMember, Address, form=AddressForm, can_delete=True, extra=1)
-PhoneNumberFormSet = inlineformset_factory(AdultMember, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=1)
+AddressFormSet = inlineformset_factory(AdultMember, Address, form=AddressForm, can_delete=True, extra=0)
+PhoneNumberFormSet = inlineformset_factory(AdultMember, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=0)
 
 
 class AdminAdultMemberChange(UserChangeForm):
