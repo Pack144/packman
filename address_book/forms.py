@@ -1,5 +1,4 @@
 from django import forms
-from django.utils.translation import ugettext_lazy as _
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Field
@@ -43,7 +42,7 @@ class AddressForm(forms.ModelForm):
             if field.widget.__class__ == forms.widgets.TextInput:
                 field.widget.attrs['placeholder'] = field.label
         self.helper = AddressFormHelper(self)
-        self.fields['state'].choices = STATE_CHOICES + ((None, _('Choose a state')),)
+        self.fields['state'].choices = STATE_CHOICES + ((None, self.fields['state'].label),)
 
 
 class PhoneNumberFormHelper(FormHelper):
