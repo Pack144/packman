@@ -49,7 +49,7 @@ class Member(models.Model):
     last_name = models.CharField(_('Last Name'), max_length=150)
     suffix = models.CharField(_('Suffix'), max_length=8, blank=True, null=True)
     nickname = models.CharField(_('Nickname'), max_length=32, blank=True, null=True, help_text=_(
-        "If there is another name you prefer to be called, tell us what it is we will use that on the website."))
+        "If there is another name you prefer to be called, tell us and we will use it on the website."))
     gender = models.CharField(_('Gender'), max_length=1, choices=GENDER_CHOICES, default=None, blank=False, null=True)
     photo = ThumbnailerImageField(_('Headshot Photo'), upload_to=get_headshot_path, blank=True, null=True, help_text=_(
         "We use member photos on the website to help match names with faces."))
@@ -159,7 +159,7 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
 
     email = models.EmailField(_('Email Address'), unique=True)
     is_published = models.BooleanField(_('Published'), default=True, help_text=_(
-        "Do you want to publish this address in the Pack directory so that other members can contact you directly?"
+        "Display this address to other members of the pack."
     ))
 
     role = models.CharField(_('Role'), max_length=1, choices=ROLE_CHOICES, default=PARENT)
