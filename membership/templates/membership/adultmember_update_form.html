@@ -16,39 +16,28 @@
           <legend>Personal Details</legend>
           {% crispy form %}
         </fieldset>
-        <fieldset class="mt-4">
+        <fieldset class="inline mt-4">
           <legend>Address{{ address_formset.total_form_count|pluralize:'es' }}</legend>
           {{ address_formset.management_form }}
-          {% for form in address_formset %}
-            <div class="row {{ address_formset.prefix }}">
-              {% if not forloop.first %}
-                <hr>
-              {% endif %}
-                <div class="col-10">
+          <div id="{{ address_formset.prefix }}-form_set">
+            {% for form in address_formset %}
+              <div class="form-row {{ address_formset.prefix }}">
+                <div class="col mt-5">
                   {% crispy form %}
                 </div>
-                {% if form.instance.pk %}
-                  <div class="col">{{ form.DELETE }}</div>
-                {% endif %}
               </div>
-          {% endfor %}
-          <a class="btn btn-sm btn-success btn-{{ address_formset.prefix }}-add" href="javascript:void(0)"><i class="fas fa-plus-circle"></i></a>
+            {% endfor %}
+          </div>
         </fieldset>
-        <fieldset class="mt-4">
+        <fieldset class="inline mt-4">
           <legend>Phone Number{{ phonenumber_formset.total_form_count|pluralize }}</legend>
           {{ phonenumber_formset.management_form }}
           {% for form in phonenumber_formset %}
-            <div class="row {{ phonenumber_formset.prefix }}">
-            {% if not forloop.first %}
-              <hr>
-            {% endif %}
-                <div class="col-10">
-                  {% crispy form %}
-                </div>
-            {% if form.instance.pk %}
-              <div class="col">{{ form.DELETE }}</div>
+            <div class="form-row {{ phonenumber_formset.prefix }}">
+              <div class="col mt-5">
+                {% crispy form %}
               </div>
-            {% endif %}
+            </div>
           {% endfor %}
         </fieldset>
         <input type="submit" value="Update" class="btn btn-success"/>
@@ -58,26 +47,29 @@
   </div>
 {% endblock content %}
 
+{% comment %}
 {% block js %}
   <script src="{% static "dynamic_formsets/jquery.formset.js" %}" type="text/javascript"></script>
   <script type="text/javascript">
-      $('div.{{ address_formset.prefix }}.row').formset({
-          prefix: "{{ address_formset.prefix }}",
-          formCssClass: "{{ address_formset.prefix }}-dynamic-formset",
-          addButtonHolder: "btn-{{ address_formset.prefix }}-add",
+      $('.form-row.{{ address_formset.prefix }}').formset({
+          prefix: '{{ address_formset.prefix }}',
+          addCssClass: 'btn btn-primary btn-block add-row',
+          deleteCssClass: 'btn btn-danger delete-row',
           uiText: {
-              addPrompt: "Add another address",
-              removePrompt: "Delete"
+              addPrompt: 'Add another address',
+              removePrompt: 'Delete this address'
           },
       });
-      $('div.{{ phonenumber_formset.prefix }}.row').formset({
-          prefix: "{{ phonenumber_formset.prefix }}",
-          formCssClass: "{{ phonenumber_formset.prefix }}-dyanmic-formset",
+      $('.form-row.{{ phonenumber_formset.prefix }}').formset({
+          prefix: '{{ phonenumber_formset.prefix }}',
+          addCssClass: 'btn btn-primary btn-block add-row',
+          deleteCssClass: 'btn btn-danger delete-row',
+
           uiText: {
-              addPrompt: "Add another Phone number",
-              removePrompt: "Delete"
+              addPrompt: 'Add another phone number',
+              removePrompt: 'Delete this number'
           },
       });
   </script>
-
 {% endblock %}
+{% endcomment %}

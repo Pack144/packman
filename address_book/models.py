@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from localflavor.us.us_states import STATE_CHOICES
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -65,6 +66,7 @@ class Address(models.Model):
         (HOME, _("Home")),
         (WORK, _("Work")),
         (OTHER, _("Other")),
+        (None, _("Type")),
     )
     street = models.CharField(_("Street"), max_length=128)
     street2 = models.CharField(_("Street"), max_length=128, blank=True, null=True)
@@ -117,6 +119,7 @@ class PhoneNumber(models.Model):
         (MOBILE, _("Mobile")),
         (WORK, _("Work")),
         (OTHER, _("Other")),
+        (None, _("Type")),
     )
     number = PhoneNumberField(_("Phone Number"))
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
