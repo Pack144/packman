@@ -16,8 +16,8 @@ from address_book.models import Address, PhoneNumber
 
 from .models import AdultMember, ChildMember, Family
 
-AddressFormSet = inlineformset_factory(AdultMember, Address, form=AddressForm, can_delete=True, extra=0)
-PhoneNumberFormSet = inlineformset_factory(AdultMember, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=0)
+AddressFormSet = inlineformset_factory(AdultMember, Address, form=AddressForm, can_delete=True, extra=1)
+PhoneNumberFormSet = inlineformset_factory(AdultMember, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=1)
 
 
 class AdminAdultMemberChange(UserChangeForm):
@@ -59,7 +59,7 @@ class AdultMemberCreation(UserCreationForm):
         self.helper.help_text_inline = True
         self.helper.layout = Layout(
             Row(
-                Column('first_name', css_class='col-md-4'),
+                Column('first_name', css_class='col-md-4', ),
                 Column('middle_name', css_class='col-md-2 text-truncate'),
                 Column('last_name', css_class='col-md-5'),
                 Column('suffix', css_class='col-md-1'),
@@ -161,6 +161,7 @@ class ChildMemberForm(forms.ModelForm):
                 attrs={
                     'append': 'far fa-calendar-alt',
                     'icon_toggle': True,
+                    'placeholder': _("Birthday")
                 },
             ),
             'photo': widgets.FileInput,
@@ -226,7 +227,7 @@ class SignupForm(AllauthSignupForm, UserCreationForm):
             ),
             'nickname',
             Row(
-                Column('email'),
+                Column('email', autofocus=None),
                 Column('is_published'),
             ),
             Row(

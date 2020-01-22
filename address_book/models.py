@@ -77,7 +77,7 @@ class Address(models.Model):
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
 
     published = models.BooleanField(default=True, help_text=_(
-        "Display this address to other members of the pack on the member details page."))
+        "Display this address to other members of the pack."))
 
     member = models.ForeignKey('membership.AdultMember', on_delete=models.SET_NULL, related_name='addresses', blank=True, null=True)
     venue = models.OneToOneField(Venue, on_delete=models.SET_NULL, related_name='address', null=True, blank=True)
@@ -124,7 +124,7 @@ class PhoneNumber(models.Model):
     number = PhoneNumberField(_("Phone Number"))
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
     published = models.BooleanField(default=True, help_text=_(
-        "Display this phone number to other members of the pack in the member details page."))
+        "Display this phone number to other members of the pack."))
 
     member = models.ForeignKey(AdultMember, on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
     venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
