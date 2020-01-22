@@ -43,6 +43,9 @@ class AdultMemberCreation(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(AdultMemberCreation, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
+                field.widget.attrs['placeholder'] = field.label
         self.fields['password1'].required = False
         self.fields['password2'].required = False
         self.fields['role'].choices = (
@@ -52,6 +55,8 @@ class AdultMemberCreation(UserCreationForm):
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
         self.helper.form_tag = False
+        self.helper.form_show_labels = False
+        self.helper.help_text_inline = True
         self.helper.layout = Layout(
             Row(
                 Column('first_name', css_class='col-md-4'),
@@ -109,6 +114,9 @@ class AdultMemberForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(AdultMemberForm, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
+                field.widget.attrs['placeholder'] = field.label
         self.fields['role'].choices = (
             (AdultMember.PARENT, _('Parent')),
             (AdultMember.GUARDIAN, _('Guardian')),
@@ -116,6 +124,8 @@ class AdultMemberForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
         self.helper.form_tag = False
+        self.helper.form_show_labels = False
+        self.helper.help_text_inline = True
         self.render_required_fields = True
         self.helper.layout = Layout(
             Row(
@@ -158,8 +168,12 @@ class ChildMemberForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ChildMemberForm, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if field.widget.__class__ == forms.widgets.TextInput:
+                field.widget.attrs['placeholder'] = field.label
         self.helper = FormHelper(self)
         self.helper.form_id = 'scout_update'
+        self.helper.form_show_labels = False
         self.helper.render_required_fields = True
         self.helper.layout = Layout(
             Row(
@@ -193,12 +207,16 @@ class SignupForm(AllauthSignupForm, UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(SignupForm, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
+                field.widget.attrs['placeholder'] = field.label
         self.fields['role'].choices = (
             (AdultMember.PARENT, _('Parent')),
             (AdultMember.GUARDIAN, _('Guardian')),
         )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
+        self.helper.form_show_labels = False
         self.helper.layout = Layout(
             Row(
                 Column('first_name', css_class='col-md-4'),
