@@ -42,18 +42,21 @@ class Membership(models.Model):
     CHAIR = 1
     MEMBER = 2
     APPRENTICE = 3
+    DEN_LEADER = 4
     AKELA = 5
     ASSISTANT_AKELA = 6
     POSITION_CHOICES = [
         (CHAIR, _("Chair")),
         (MEMBER, _("Member")),
         (APPRENTICE, _("Apprentice")),
+        (DEN_LEADER, _("Den Leader")),
         (AKELA, _("Akela")),
         (ASSISTANT_AKELA, _("Assistant Akela")),
     ]
     member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE, related_name='committees')
     committee = models.ForeignKey(Committee, on_delete=models.CASCADE)
     position = models.PositiveSmallIntegerField(choices=POSITION_CHOICES, default=MEMBER)
+    den = models.ForeignKey('dens.Den', on_delete=models.CASCADE, related_name='leadership', blank=True, null=True)
     year_served = models.ForeignKey(PackYear,
                                     on_delete=models.CASCADE,
                                     default=PackYear.get_current_pack_year_year,
@@ -67,6 +70,6 @@ class Membership(models.Model):
         return f"{self.year_served} {self.get_position_display()}: {self.member}"
 
     class Meta:
-        ordering = ['year_served', 'position', 'member']
+        ordering = ['year_served', 'den', 'position', 'member']
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
