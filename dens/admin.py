@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from .models import Den, Leadership, Rank
+from committees.models import Membership
+from .models import Den, Rank
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
@@ -46,10 +47,12 @@ class AnimalRankListFilter(admin.SimpleListFilter):
 
 
 class LeadershipAdmin(admin.TabularInline):
-    model = Leadership
+    model = Membership
     classes = ['collapse']
     exclude = ['date_added']
     extra = 0
+    verbose_name = _("Leader")
+    verbose_name_plural = _("Leaders")
 
 
 @admin.register(Den)

@@ -81,7 +81,6 @@ class Den(models.Model):
 
     number = models.PositiveSmallIntegerField(primary_key=True, help_text=_("The Den's Number"))
     rank = models.ForeignKey(Rank, on_delete=models.CASCADE, related_name='dens', blank=True, null=True)
-    leaders = models.ManyToManyField('membership.AdultMember', through='Leadership', related_name='dens')
 
     date_added = models.DateField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
@@ -104,27 +103,3 @@ class Den(models.Model):
     def patch(self):
         if self.number <= 10:
             return f"{settings.STATIC_URL}img/den_{self.number}_patch.jpg"
-
-
-class Leadership(models.Model):
-    """
-    Tracks members who have signed up to lead a den and the year their service
-    """
-    member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE)
-    den = models.ForeignKey(Den, on_delete=models.CASCADE)
-    year_served = models.ForeignKey(PackYear,
-                                    on_delete=models.CASCADE,
-                                    default=PackYear.get_current_pack_year_year,
-                                    related_name='den_leadership')
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(default=timezone.now)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.year_served}: {self.member}"
-
-    class Meta:
-        ordering = ['year_served', 'member']
-        verbose_name = _("Member")
-        verbose_name_plural = _("Members")

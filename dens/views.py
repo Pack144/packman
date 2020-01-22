@@ -1,9 +1,11 @@
 from django.views.generic import DetailView, ListView
 
+from committees.models import Membership
 from membership.mixins import ActiveMemberOrContributorTest
+from membership.models import ChildMember
 from pack_calendar.models import PackYear
 
-from .models import Den, Leadership
+from .models import Den
 
 
 class DenDetailView(ActiveMemberOrContributorTest, DetailView):
@@ -13,13 +15,16 @@ class DenDetailView(ActiveMemberOrContributorTest, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         year = PackYear.objects.get(year=PackYear.get_pack_year(self.kwargs['year'])['end_date'].year) if 'year' in self.kwargs else PackYear.get_current_pack_year()
-        all_years = PackYear.objects.filter(den_leadership__den=context['den']).distinct()
+        all_years = PackYear.objects.filter(committee_memberships__den=context['den']).distinct()
         context['current_year'] = year
         context['all_years'] = all_years
-        context['leaders'] = Leadership.objects.filter(den=context['den'], year_served=year,)
+        context['leaders'] = Membership.objects.filter(den=context['den'], year_served=year,)
         return context
 
 
 class DensListView(ActiveMemberOrContributorTest, ListView):
     model = Den
     paginate_by = 20
+
+    def get_queryset(self):
+        return Den.objects.filter(scouts__status=ChildMember.ACTIVE).distinct()

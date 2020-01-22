@@ -30,7 +30,7 @@
           <a href="{{ scout.get_absolute_url }}">
             <div class="row align-items-center">
               <div class="col-sm-2">
-                {% include 'membership/headshot_thumbnail_snippet.html' %}
+                {% include 'membership/headshot_thumbnail_snippet.html' with member=scout %}
               </div>
               <div class="col-sm-10">{{ scout }}</div>
             </div>
@@ -46,7 +46,7 @@
     <ul class="list-group">
       {% for leader in leaders.all %}
       <li class="list-group-item">
-        <a href="{{ leader.get_absolute_url }}">
+        <a href="{{ leader.member.get_absolute_url }}">
           <div class="row align-items-center">
             <div class="col-sm-2">
                 {% include 'membership/headshot_thumbnail_snippet.html' with member=leader.member %}

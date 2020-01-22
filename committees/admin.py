@@ -14,3 +14,6 @@ class MembershipAdmin(admin.TabularInline):
 class CommitteeAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ['name']}
     inlines = [MembershipAdmin]
+    list_display = ['name', 'description', 'leadership']
+    list_filter = ['membership__year_served', 'leadership']
+    search_fields = ('name', 'description', 'membership__den')
