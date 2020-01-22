@@ -7,7 +7,7 @@
   </a>
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center">
-      <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}</h5></a>
+      <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}{% if member.den.rank and member.status == 5 %}<small class="ml-3 text-muted">{{ member.den.rank }}</small>{% endif %}</h5></a>
       {% if user.family == member.family %}
         {% if member.adultmember %}
           <a href="{% url 'parent_update' member.id %}" class="badge badge-dark ml-3 p-2">
@@ -19,7 +19,6 @@
       {% endif %}
 
     </div>
-    {% if member.den.rank and member.status == 5 %}<h6 class="text-muted">{{ member.den.rank }}</h6>{% endif %}
     {% if member.is_published %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
