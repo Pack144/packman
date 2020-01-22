@@ -14,7 +14,12 @@
     {% for committee in member.committees.all %}
       {{ committee.membership }}
       {% ifchanged committee.year_served %}<h5 class="mt-4">{{ committee.year_served }}</h5>{% endifchanged %}
-      <a href="{% url 'committee_detail_by_year' slug=committee.committee.slug year=committee.year_served.year%}"><li><strong>{{ committee.committee }}:</strong> {{ committee.get_position_display }}</li></a>
+      <a href="{% url 'committee_detail_by_year' slug=committee.committee.slug year=committee.year_served.year%}">
+        <li>
+          <strong>{{ committee.committee }}</strong>
+          <small class="ml-1">{% if committee.den %}{{ committee.den }}{% elif 'Akela' in committee.committee.name %}{% else %}{{ committee.get_position_display }}{% endif %}</small>
+        </li>
+      </a>
     {% endfor %}
     </ul>
   </div>
