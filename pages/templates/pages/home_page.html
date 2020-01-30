@@ -3,7 +3,7 @@
 {% block title %}{% if page_content %}{{ page_content.title }}{% else %}Home{% endif %}{% endblock %}
 
 {% block content %}
-  <h1>{{ page_content.title }}</h1>
+  <h1>{% if page_content %}{{ page_content.title }}{% else %}Home{% endif %}</h1>
   {% if event_list %}
     <div class="mt-5">
       <h3>Coming Up</h3>
