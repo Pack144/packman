@@ -7,21 +7,21 @@ User = get_user_model()
 class AdultMemberManagersTests(TestCase):
 
     def test_create_user(self):
-        user = User.objects.create_user(email='normal@user.com', password='foo')
-        self.assertEqual(user.email, 'normal@user.com')
+        user = User.objects.create_user(email='normal@example.com', password='foo')
+        self.assertEqual(user.email, 'normal@example.com')
         self.assertTrue(user.is_active)
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             User.objects.create_user()
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             User.objects.create_user(email='')
         with self.assertRaises(ValueError):
             User.objects.create_user(email='', password="foo")
 
     def test_create_superuser(self):
-        admin_user = User.objects.create_superuser('super@user.com', 'foo')
-        self.assertEqual(admin_user.email, 'super@user.com')
+        admin_user = User.objects.create_superuser('super@example.com', 'foo')
+        self.assertEqual(admin_user.email, 'super@example.com')
         self.assertTrue(admin_user.is_active)
         self.assertTrue(admin_user.is_staff)
         self.assertTrue(admin_user.is_superuser)
