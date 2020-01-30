@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from allauth.account.forms import SignupForm as AllauthSignupForm
+# from allauth.registration.forms import SignupForm as AllauthSignupForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field
 from crispy_forms.bootstrap import FormActions, InlineRadios
@@ -199,7 +199,7 @@ class ChildMemberForm(forms.ModelForm):
         )
 
 
-class SignupForm(AllauthSignupForm, UserCreationForm):
+class SignupForm(UserCreationForm):
     class Meta:
         model = AdultMember
         fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',

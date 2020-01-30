@@ -1,6 +1,8 @@
+from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import DetailView, TemplateView, UpdateView
+from django.views.generic import DetailView, TemplateView, UpdateView, CreateView
 
+from membership.forms import SignupForm
 from pack_calendar.models import Event
 
 from .models import StaticPage, DynamicPage
@@ -42,6 +44,20 @@ class HistoryPageView(TemplateView):
         context = super().get_context_data(**kwargs)
         try:
             context['page_content'] = StaticPage.objects.get(page=StaticPage.HISTORY)
+        except StaticPage.DoesNotExist:
+            context['page_content'] = None
+        return context
+
+
+class SignUpPageView(CreateView):
+    form_class = SignupForm
+    success_url = reverse_lazy('login')
+    template_name = 'pages/signup_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context['page_content'] = StaticPage.objects.get(page=StaticPage.SIGNUP)
         except StaticPage.DoesNotExist:
             context['page_content'] = None
         return context

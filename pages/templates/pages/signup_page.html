@@ -1,0 +1,10 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if page_content %}{{ page_content.title }}{% else %}Sign Up{% endif %}{% endblock %}
+
+{% block content %}
+  <h1>{% if page_content %}{{ page_content.title }}{% else %}Sign Up {% endif %}</h1>
+  {% include 'pages/page_content_snippet.html' %}
+  {% crispy form %}
+{% endblock %}

@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
 
     # Third party packages
-    'allauth',
-    'allauth.account',
+#    'allauth',
+#    'allauth.registration',
     'ckeditor',
     'crispy_forms',
     'debug_toolbar',
@@ -164,8 +164,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_files')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-LOGIN_URL = 'account_login'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home_page'
+LOGOUT_REDIRECT_URL = 'home_page'
 
 # django-allauth
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
@@ -173,7 +174,7 @@ LOGIN_REDIRECT_URL = 'home_page'
 SITE_ID = 1
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+#    'allauth.registration.auth_backends.AuthenticationBackend',
 )
 ACCOUNT_ADAPTER = 'membership.adapters.MemberAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
