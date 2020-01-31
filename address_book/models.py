@@ -78,8 +78,13 @@ class Address(models.Model):
     published = models.BooleanField(default=True, help_text=_(
         "Display this address to other members of the pack."))
 
+    # Related models
     member = models.ForeignKey('membership.AdultMember', on_delete=models.SET_NULL, related_name='addresses', blank=True, null=True)
     venue = models.OneToOneField(Venue, on_delete=models.SET_NULL, related_name='address', null=True, blank=True)
+
+    # Geolocation
+    longitude = models.FloatField(blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)
