@@ -23,7 +23,7 @@
                 </div>
                 <div class="col-sm-10">
                   <h4>{{ member }}</h4>
-                  {% if member.childmember.den %}<p>{% if member.childmember.den.rank %}{{ member.childmember.den.rank }}<br>{% endif %}<small>{{ member.childmember.den }}</small></p>{% endif %}
+                  {% if member.childmember.current_den %}<p>{% if member.childmember.current_den.rank %}{{ member.childmember.current_den.rank }}<br>{% endif %}<small>{{ member.childmember.current_den }}</small></p>{% endif %}
                 </div>
               </div>
             </a>
