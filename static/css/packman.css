@@ -1,8 +1,8 @@
 @font-face {
-    font-family: 'Cooper Black';
-    src: url('/static/webfonts/cooperblack.woff2') format('woff2'),
-    url('/static/webfonts/cooperblack.woff') format('woff');
-    font-weight: normal;
+    font-family: 'Cooper';
+    src: url('/static/webfonts/CooperBlackStd.woff2') format('woff2'),
+        url('/static/webfonts/CooperBlackStd.woff') format('woff');
+    font-weight: 900;
     font-style: normal;
 }
 
@@ -95,7 +95,7 @@ main {
 }
 
 .navbar-brand {
-    font-family: 'Cooper Black', serif;
+    font-family: 'Cooper', serif;
     line-height: .9em;
     text-shadow: 0 0 16px #000000;
 }
@@ -135,7 +135,7 @@ main {
 
 h1, h2, h3 {
     color: #fa9428;
-    font-family: 'Cooper Black', serif;
+    font-family: 'Cooper', serif;
     text-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
 }
 
