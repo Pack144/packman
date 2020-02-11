@@ -11,6 +11,9 @@ from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.signals import saved_file
 from easy_thumbnails.signal_handlers import generate_aliases
 
+from dens.models import Den
+from pack_calendar.models import PackYear
+
 from .managers import MemberManager
 
 
@@ -263,7 +266,7 @@ class ChildMember(Member):
         "Once a Cub is no longer active in the pack, either through graduation or attrition, note that change' here."
         "Any adult member connected to this Cub will get access only once the Cub's status is 'Active' or 'Approved'."
     ))
-    den = models.ForeignKey('dens.Den', on_delete=models.CASCADE, related_name='scouts', blank=True, null=True)
+    dens = models.ManyToManyField('dens.Den', blank=True, through='dens.Membership')
 
     # Important dates
     date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
@@ -274,7 +277,7 @@ class ChildMember(Member):
     ))
 
     class Meta:
-        indexes = [models.Index(fields=['school', 'family', 'status', 'den', 'date_of_birth', 'started_school'])]
+        indexes = [models.Index(fields=['school', 'family', 'status', 'date_of_birth', 'started_school'])]
         verbose_name = _("Cub")
         verbose_name_plural = _("Cubs")
 
@@ -291,6 +294,10 @@ class ChildMember(Member):
         """ Return a list of other Scouts who share the same parent(s) """
         if self.family:
             return self.family.children.exclude(id=self.id)
+
+    @property
+    def current_den(self):
+        return Den.objects.get(scouts__scout=self, scouts__year_assigned=PackYear.get_current_pack_year())
 
     @property
     def grade(self):
