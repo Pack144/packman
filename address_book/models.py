@@ -6,8 +6,6 @@ from django.utils.translation import gettext_lazy as _
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
-from membership.models import AdultMember
-
 
 class VenueType(models.Model):
     """
@@ -126,7 +124,7 @@ class PhoneNumber(models.Model):
     published = models.BooleanField(default=True, help_text=_(
         "Display this phone number to other members of the pack."))
 
-    member = models.ForeignKey(AdultMember, on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
+    member = models.ForeignKey('membership.AdultMember', on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
     venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateField(default=timezone.now)

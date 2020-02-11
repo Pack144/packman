@@ -5,7 +5,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from membership.models import ChildMember
 from pack_calendar.models import PackYear
 
 
@@ -97,9 +96,33 @@ class Den(models.Model):
         return reverse('den_detail', args=[int(self.number)])
 
     def active_cubs(self):
-        return self.scouts.filter(status__exact=ChildMember.ACTIVE)
+        return self.scouts.filter(year_assigned=PackYear.get_current_pack_year())
 
     @property
     def patch(self):
         if self.number <= 10:
             return f"{settings.STATIC_URL}img/den_{self.number}_patch.jpg"
+
+
+class Membership(models.Model):
+    """
+    Tracks the year(s) a cub is assigned to a Den
+    """
+    scout = models.ForeignKey('membership.ChildMember', on_delete=models.CASCADE, related_name='den')
+    den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name='scouts')
+    year_assigned = models.ForeignKey(PackYear,
+                                    on_delete=models.CASCADE,
+                                    default=PackYear.get_current_pack_year_year,
+                                    related_name='den_memberships')
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.year_assigned}: {self.scout}"
+
+    class Meta:
+        ordering = ['year_assigned', 'den', 'scout']
+        verbose_name = _("Member")
+        verbose_name_plural = _("Members")
