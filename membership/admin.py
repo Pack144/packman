@@ -114,9 +114,9 @@ class ScoutAdmin(admin.ModelAdmin):
 class AdultAdmin(UserAdmin):
     add_form = forms.AdminAdultMemberCreation
     form = forms.AdminAdultMemberChange
-    list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', 'family', 'is_staff', 'is_superuser')
+    list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', 'family', '_is_staff', 'is_superuser')
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
-    list_filter = ('is_staff', 'is_superuser')
+    list_filter = ('_is_staff', 'is_superuser')
     ordering = ('last_name', 'nickname', 'first_name')
     readonly_fields = ('date_added', 'last_updated', 'last_login')
     autocomplete_fields = ['family']
@@ -138,7 +138,7 @@ class AdultAdmin(UserAdmin):
         }),
         (_("Permissions"), {
             'classes': ('collapse',),
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+            'fields': ('is_active', '_is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
         (_("Important Dates"), {
             'classes': ('collapse',),
