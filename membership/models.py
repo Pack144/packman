@@ -169,7 +169,7 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
     family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='adults', blank=True, null=True)
 
     objects = MemberManager()
-    is_staff = models.BooleanField(
+    _is_staff = models.BooleanField(
         _("Staff"),
         default=False,
         help_text=_("Designates whether the user can log into this admin site."),
@@ -215,6 +215,12 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
             return self.family.adults.exclude(id=self.id)
 
     @property
+    def is_staff(self):
+        if self._is_staff or self.committees.filter(committee__is_staff=True).filter(
+                year_served=PackYear.get_current_pack_year()):
+            return True
+
+    @property
     def active(self):
         """ If member has scouts who are currently, then they should also be considered active in the Pack. """
         if self.get_active_scouts():
@@ -246,7 +252,7 @@ class ChildMember(Member):
 
     school = models.ForeignKey('address_book.Venue', on_delete=models.SET_NULL, blank=True, null=True,
                                limit_choices_to={'type__type__icontains': 'School'}, help_text=_(
-        "Tell us what school your child attends. If your school isn't listed, tell us in the comments section."))
+            "Tell us what school your child attends. If your school isn't listed, tell us in the comments section."))
 
     # Give parents an opportunity to add more detail to their application
     reference = models.CharField(_("Referral(s)"), max_length=128, blank=True, null=True, help_text=_(
@@ -270,8 +276,9 @@ class ChildMember(Member):
 
     # Important dates
     date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
-    started_school = models.PositiveSmallIntegerField(_("Year Started School"), default=two_years_ago, null=True, help_text=_(
-        "What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
+    started_school = models.PositiveSmallIntegerField(_("Year Started School"), default=two_years_ago, null=True,
+                                                      help_text=_(
+                                                          "What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
     started_pack = models.DateField(_("Date Started"), blank=True, null=True, help_text=_(
         "When does this cub join their first activity with the pack?"
     ))

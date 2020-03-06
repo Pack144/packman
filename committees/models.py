@@ -18,6 +18,12 @@ class Committee(models.Model):
     leadership = models.BooleanField(_("Pack Leadership"), default=False, help_text=_(
         "e.g. Akela, Assistant Akela, Den Leader"))
 
+    is_staff = models.BooleanField(
+        _("Staff"),
+        default=False,
+        help_text=_("Designates whether members can log into this admin site."),
+    )
+
     slug = models.SlugField(unique=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(default=timezone.now)
