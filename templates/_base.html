@@ -8,19 +8,27 @@
   <div class="collapse navbar-collapse" id="navbarContent">
     <div class="navbar-nav mr-auto">
       {% if user.is_authenticated %}
-        <a class="nav-item nav-link mr-lg-3" href="{% url 'event_list' %}">Calendar</a>
-        <a class="nav-item nav-link mr-lg-3" href="{% url 'member_list' %}">Members</a>
-        <a class="nav-item nav-link mr-lg-3" href="{% url 'committees_list' %}">Committees</a>
-        <a class="nav-item nav-link mr-lg-3" href="{% url 'document_list' %}">Documents</a>
+        <a class="nav-item nav-link mr-lg-3 {% if request.resolver_match.url_name == 'event_list' %}active{% endif %}"
+           href="{% url 'event_list' %}">Calendar</a>
+        <a class="nav-item nav-link mr-lg-3 {% if request.resolver_match.url_name == 'member_list' %}active{% endif %}"
+           href="{% url 'member_list' %}">Members</a>
+        <a class="nav-item nav-link mr-lg-3 {% if request.resolver_match.url_name == 'committees_list' %}active{% endif %}"
+           href="{% url 'committees_list' %}">Committees</a>
+        <a class="nav-item nav-link mr-lg-3 {% if request.resolver_match.url_name == 'document_list' %}active{% endif %}"
+           href="{% url 'document_list' %}">Documents</a>
       {% for item in navbar_private_navs %}
-        <a class="nav-item nav-link mr-lg-3" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
+        <a class="nav-item nav-link mr-lg-3 {% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %}active{% endif %}"
+           href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
       {% endfor %}
       {% endif %}
       {% for item in navbar_public_navs %}
-        <a class="nav-item nav-link mr-lg-3" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
+        <a class="nav-item nav-link mr-lg-3 {% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %}active{% endif %}"
+           href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
       {% endfor %}
-      <a class="nav-item nav-link mr-lg-3" href="{% url 'about_page' %}">About Us</a>
-      <a class="nav-item nav-link mr-lg-3" href="{% url 'history_page' %}">Our History</a>
+      <a class="nav-item nav-link mr-lg-3 {% if request.resolver_match.url_name == 'about_page' %}active{% endif %}"
+         href="{% url 'about_page' %}">About Us</a>
+      <a class="nav-item nav-link mr-lg-3 {% if request.resolver_match.url_name == 'history_page' %}active{% endif %}"
+         href="{% url 'history_page' %}">Our History</a>
     </div>
     <ul class="navbar-nav ml-auto">{% if user.is_authenticated %}
       <li class="nav-item dropdown">
