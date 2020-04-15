@@ -1,13 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-100">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static '@fortawesome/fontawesome-free/css/all.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/packman.css' %}">
-  {% block head_option %}{% endblock %}
+  {% block css %}{% endblock %}
   <title>Pack 144: {% block title %}Hello World!{% endblock %}</title>
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
@@ -21,32 +21,32 @@
   <meta name="msapplication-config" content="{% static 'icons/browserconfig.xml' %}">
   <meta name="theme-color" content="#5b5d8a">
 </head>
-<body>
+
+<body class="d-flex flex-column h-100">
 <header>
   <div class="jumbotron">
     <a class="navbar-brand" href="{% url 'home_page' %}">
       <div class="row align-items-center">
         <div class="col d-none d-sm-block">
-          <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-inline align-top"
-               alt="Pack Logo">
+          <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-inline align-top" alt="Pack Logo">
         </div>
         <div class="col d-block d-sm-none">
-          <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-inline align-top"
-               alt="Pack Logo">
+          <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-inline align-top" alt="Pack Logo">
         </div>
         <div class="col d-none d-sm-block">
-          <div class="row" id="pack-name">{{ request.site.name }}</div>
+          <div class="row" id="pack-name">Cub Scout Pack 144</div>
           <div class="row" id="pack-location">Seattle, Washington</div>
           <div class="row" id="pack-tagline">Since 1929</div>
         </div>
       </div>
     </a>
   </div>
-<div class="navbar sticky-top navbar-expand-lg navbar-dark" id="top-bar">
-  {% block navbar %}{% endblock %}
-</div>
+  <div class="navbar sticky-top navbar-expand-lg navbar-dark" id="top-bar">
+    {% block navbar %}{% endblock %}
+  </div>
 </header>
-<main role="main">
+
+<main role="main" class="flex-shrink-0">
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-md-10">
@@ -90,9 +90,13 @@
     </div>
   </div>
 </main>
-<footer>
-  <p>A scout is trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</p>
+
+<footer class="footer mt-auto py-3">
+  <div class="container">
+    <p>A scout is trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</p>
+  </div>
 </footer>
+
 <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
 <script src="{% static 'popper.js/dist/umd/popper.js' %}"></script>
 <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
