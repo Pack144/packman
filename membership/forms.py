@@ -14,27 +14,27 @@ from tempus_dominus.widgets import DatePicker
 from address_book.forms import AddressForm, PhoneNumberForm
 from address_book.models import Address, PhoneNumber
 
-from .models import AdultMember, ChildMember, Family
+from .models import Adult, Scout, Family
 
-AddressFormSet = inlineformset_factory(AdultMember, Address, form=AddressForm, can_delete=True, extra=1)
-PhoneNumberFormSet = inlineformset_factory(AdultMember, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=1)
+AddressFormSet = inlineformset_factory(Adult, Address, form=AddressForm, can_delete=True, extra=1)
+PhoneNumberFormSet = inlineformset_factory(Adult, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=1)
 
 
-class AdminAdultMemberChange(UserChangeForm):
+class AdminAdultChange(UserChangeForm):
     class Meta:
-        model = AdultMember
+        model = Adult
         fields = '__all__'
 
 
-class AdminAdultMemberCreation(UserCreationForm):
+class AdminAdultCreation(UserCreationForm):
     class Meta:
-        model = AdultMember
+        model = Adult
         fields = '__all__'
 
 
-class AdultMemberCreation(UserCreationForm):
+class AdultCreation(UserCreationForm):
     class Meta:
-        model = AdultMember
+        model = Adult
         fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
                   'gender', 'role', 'photo')
         widgets = {
@@ -42,15 +42,15 @@ class AdultMemberCreation(UserCreationForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(AdultMemberCreation, self).__init__(*args, **kwargs)
+        super(AdultCreation, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
                 field.widget.attrs['placeholder'] = field.label
         self.fields['password1'].required = False
         self.fields['password2'].required = False
         self.fields['role'].choices = (
-            (AdultMember.PARENT, _('Parent')),
-            (AdultMember.GUARDIAN, _('Guardian')),
+            (Adult.PARENT, _('Parent')),
+            (Adult.GUARDIAN, _('Guardian')),
         )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
@@ -82,8 +82,8 @@ class Family(forms.ModelForm):
         model = Family
         fields = '__all__'
 
-    adults = forms.ModelMultipleChoiceField(queryset=AdultMember.objects.all(), required=False)
-    children = forms.ModelMultipleChoiceField(queryset=ChildMember.objects.all(), required=False)
+    adults = forms.ModelMultipleChoiceField(queryset=Adult.objects.all(), required=False)
+    children = forms.ModelMultipleChoiceField(queryset=Scout.objects.all(), required=False)
 
     def __init__(self, *args, **kwargs):
         super(Family, self).__init__(*args, **kwargs)
@@ -103,9 +103,9 @@ class Family(forms.ModelForm):
         return instance
 
 
-class AdultMemberForm(forms.ModelForm):
+class AdultForm(forms.ModelForm):
     class Meta:
-        model = AdultMember
+        model = Adult
         fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
                   'gender', 'role', 'photo')
         widgets = {
@@ -113,13 +113,13 @@ class AdultMemberForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(AdultMemberForm, self).__init__(*args, **kwargs)
+        super(AdultForm, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
                 field.widget.attrs['placeholder'] = field.label
         self.fields['role'].choices = (
-            (AdultMember.PARENT, _('Parent')),
-            (AdultMember.GUARDIAN, _('Guardian')),
+            (Adult.PARENT, _('Parent')),
+            (Adult.GUARDIAN, _('Guardian')),
         )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
@@ -147,9 +147,9 @@ class AdultMemberForm(forms.ModelForm):
         )
 
 
-class ChildMemberForm(forms.ModelForm):
+class ScoutForm(forms.ModelForm):
     class Meta:
-        model = ChildMember
+        model = Scout
         exclude = ('started_pack', 'status', 'den', 'family', 'pack_comments')
         widgets = {
             'date_of_birth': DatePicker(
@@ -168,7 +168,7 @@ class ChildMemberForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ChildMemberForm, self).__init__(*args, **kwargs)
+        super(ScoutForm, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if field.widget.__class__ == forms.widgets.TextInput:
                 field.widget.attrs['placeholder'] = field.label
@@ -201,7 +201,7 @@ class ChildMemberForm(forms.ModelForm):
 
 class SignupForm(UserCreationForm):
     class Meta:
-        model = AdultMember
+        model = Adult
         fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
                   'gender', 'role', 'photo')
         widgets = {'gender': widgets.RadioSelect, 'role': widgets.RadioSelect, 'photo': widgets.FileInput}
@@ -212,8 +212,8 @@ class SignupForm(UserCreationForm):
             if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
                 field.widget.attrs['placeholder'] = field.label
         self.fields['role'].choices = (
-            (AdultMember.PARENT, _('Parent')),
-            (AdultMember.GUARDIAN, _('Guardian')),
+            (Adult.PARENT, _('Parent')),
+            (Adult.GUARDIAN, _('Guardian')),
         )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'

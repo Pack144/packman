@@ -29,7 +29,7 @@ class EventFeed(ICalFeed):
         return Event.objects.filter(published=True)
 
     def item_guid(self, item):
-        return item.id
+        return item.uuid
     
     def item_title(self, item):
         return item.name

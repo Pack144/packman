@@ -143,8 +143,8 @@ class Category(models.Model):
                             help_text=_("Optionally choose an icon to display with these events"))
     color = models.CharField(max_length=16, choices=COLOR_CHOICES, blank=True, null=True,
                              help_text=_("Optionally choose a color to display these event in."))
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -184,8 +184,8 @@ class Event(models.Model):
     published = models.BooleanField(_("Show on iCal"), default=True)
     status = models.CharField(max_length=9, choices=STATUS_CHOICES, default=CONFIRMED)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:

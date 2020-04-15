@@ -189,7 +189,7 @@ ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_USER_DISPLAY = 'membership.models.AdultMember'
+ACCOUNT_USER_DISPLAY = 'membership.models.Adult'
 
 # Email settings for development environment
 # https://docs.djangoproject.com/en/3.0/topics/email/#console-backend
@@ -290,7 +290,7 @@ LOGGING = {
 # Custom User Model
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#auth-custom-user
 # -----------------------------------------------------------------------------
-AUTH_USER_MODEL = 'membership.AdultMember'
+AUTH_USER_MODEL = 'membership.Adult'
 
 # django-ckeditor
 # https://django-ckeditor.readthedocs.io/en/latest/

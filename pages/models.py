@@ -11,8 +11,8 @@ from ckeditor.fields import RichTextField
 class Category(models.Model):
     name = models.CharField(max_length=32)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(_("Date Added"), default=timezone.now, blank=True)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(_("Date Added"), auto_now_add=True, blank=True)
     last_updated = models.DateTimeField(_("Last Updated"), auto_now=True)
 
     class Meta:
@@ -29,7 +29,7 @@ class Page(models.Model):
     title = models.CharField(max_length=64)
     # attachments = models.ManyToManyField(_('Attachments'), 'documents.Document', related_name='page', blank=True)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_on = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -106,10 +106,10 @@ class Content(models.Model):
     body = RichTextField()
     page = models.ForeignKey(Page, on_delete=models.CASCADE)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(_("Date Added"), default=timezone.now, blank=True)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(_("Date Added"), auto_now_add=True, blank=True)
     last_updated = models.DateTimeField(_("Last Updated"), auto_now=True)
-    published_on = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    published_on = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         if self.title:

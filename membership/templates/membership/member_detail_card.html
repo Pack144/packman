@@ -9,7 +9,7 @@
     <div class="d-flex justify-content-between align-items-center">
       <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}{% if member.current_den.rank %}<small class="ml-3 text-muted">{{ member.current_den.rank }}</small>{% endif %}</h5></a>
       {% if user.family == member.family %}
-        {% if member.adultmember %}
+        {% if member.adult %}
           <a href="{% url 'parent_update' member.id %}" class="badge badge-dark ml-3 p-2">
         {% else %}
           <a href="{% url 'scout_update' member.id %}" class="badge badge-dark ml-3 p-2">
@@ -96,9 +96,9 @@
         <img src="{{ member.current_den.patch }}" alt="Den {{ member.current_den.number }} patch" class="mt-2 card-img rounded">
     {% endif %}
   </div>
-  {% if member.childmember.start_date %}
+  {% if member.scout.start_date %}
     <div class="card-footer text-center">
-      <small class="text-muted">Member since {{ member.childmember.start_date|date:'Y' }}</small>
+      <small class="text-muted">Member since {{ member.scout.start_date|date:'Y' }}</small>
     </div>
   {% endif %}
 </div>
