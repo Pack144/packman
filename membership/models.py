@@ -17,12 +17,12 @@ from pack_calendar.models import PackYear
 from .managers import MemberManager
 
 
-def get_headshot_path(instance, filename):
+def photo_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/headshots/user_slug/<filename>
-    return f'headshots/{slugify(instance.get_full_name())}/{filename}'
+    return f"headshots/{instance.slug}/{filename}"
 
 
-def two_years_ago():
+def get_two_years_ago():
     """
     Calculate the year two years before the current year.
     Used by the Scout model to provide a sane default for when they start school.
@@ -32,7 +32,7 @@ def two_years_ago():
 
 class Member(models.Model):
     """
-    An abstract base class implementing the details we would want to capture for any person on the site.
+    A class implementing the details we would want to capture for any person on the site.
     Used by the later models, Adult and Scout, to populate common fields used in those models.
     """
 
@@ -47,21 +47,27 @@ class Member(models.Model):
     )
 
     # Personal information
-    first_name = models.CharField(_('First Name'), max_length=30)
-    middle_name = models.CharField(_('Middle Name'), max_length=32, blank=True, null=True)
-    last_name = models.CharField(_('Last Name'), max_length=150)
-    suffix = models.CharField(_('Suffix'), max_length=8, blank=True, null=True)
-    nickname = models.CharField(_('Nickname'), max_length=32, blank=True, null=True, help_text=_(
+    first_name = models.CharField(_("First Name"), max_length=30)
+    middle_name = models.CharField(_("Middle Name"), max_length=32, blank=True, null=True)
+    last_name = models.CharField(_("Last Name"), max_length=150)
+    suffix = models.CharField(_("Suffix"), max_length=8, blank=True, null=True)
+    nickname = models.CharField(_("Nickname"), max_length=32, blank=True, null=True, help_text=_(
         "If there is another name you prefer to be called, tell us and we will use it on the website."))
-    gender = models.CharField(_('Gender'), max_length=1, choices=GENDER_CHOICES, default=None, blank=False, null=True)
-    photo = ThumbnailerImageField(_('Headshot Photo'), upload_to=get_headshot_path, blank=True, null=True, help_text=_(
+    gender = models.CharField(_("Gender"), max_length=1, choices=GENDER_CHOICES, default=None, blank=False, null=True)
+    photo = ThumbnailerImageField(_("Headshot Photo"), upload_to=photo_path, blank=True, null=True, help_text=_(
         "We use member photos on the website to help match names with faces."))
+    date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
 
     # Administrative
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = models.SlugField(unique=True, blank=True, null=True)
-    date_added = models.DateTimeField(_('Date Joined'), default=timezone.now, blank=True)
-    last_updated = models.DateTimeField(_('Last Updated'), auto_now=True)
+    pack_comments = models.TextField(_("Pack Comments"), blank=True, null=True, help_text=_(
+        "Used by pack leadership to keep notes about a specific member."
+        "This information is not generally disclosed to the member unless they are granted access to Membership."
+    ))
+
+    uuuuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(_("Date Added"), auto_now_add=True)
+    last_updated = models.DateTimeField(_("Last Updated"), auto_now=True)
 
     class Meta:
         indexes = [models.Index(fields=['first_name', 'middle_name', 'nickname', 'last_name', 'gender'])]
@@ -71,58 +77,61 @@ class Member(models.Model):
         return self.get_full_name()
 
     def save(self, *args, **kwargs):
-        # if not self.family:
-        #     self.family = Family.objects.create()
         if not self.slug:
-            # TODO: Make this more robust. We have three passes to get a unique slug before giving up.
-            if not Member.objects.filter(slug__exact=slugify(self.get_full_name())):
-                self.slug = slugify(self.get_full_name())
-            elif not Member.objects.filter(
-                    slug__exact=slugify(f"{self.first_name} {self.last_name} {self.suffix}")):
-                self.slug = slugify(
-                    f"{self.first_name} {self.last_name} {self.suffix}"
-                )
-            elif not Member.objects.filter(
-                    slug__exact=slugify(f"{self.first_name} {self.middle_name} {self.last_name} {self.suffix}")):
-                self.slug = slugify(
-                    f"{self.first_name} {self.middle_name} {self.last_name} {self.suffix}"
-                )
+            candidates = [self.get_full_name()]
+            if self.middle_name and self.suffix:
+                candidates.append(f"{self.first_name} {self.middle_name[0]} {self.last_name} {self.suffix}")
+                candidates.append(f"{self.first_name} {self.middle_name} {self.last_name} {self.suffix}")
+            elif self.suffix:
+                candidates.append(f"{self.first_name} {self.last_name} {self.suffix}")
+            elif self.middle_name:
+                candidates.append(f"{self.first_name} {self.middle_name[0]} {self.last_name}")
+                candidates.append(f"{self.first_name} {self.middle_name} {self.last_name}")
+            for candidate in candidates:
+                if not Member.objects.filter(slug=slugify(candidate)):
+                    self.slug = slugify(candidate)
+                    break
         return super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        if hasattr(self, 'adultmember'):
+        if hasattr(self, 'adult'):
             return reverse('parent_detail', kwargs={'slug': self.slug})
-        elif hasattr(self, 'childmember'):
+        elif hasattr(self, 'scout'):
             return reverse('scout_detail', kwargs={'slug': self.slug})
         else:
             return None
 
     def get_full_name(self):
-        """
-        Return the short name, either first_name or nickname, plus the last_name, with a space in between.
-        """
-        full_name = f"{self.get_short_name()} {self.last_name}"
-        return full_name.strip()
+        """ Return the short name, either first_name or nickname, plus the last_name, with a space in between. """
+        if self.suffix:
+            return f"{self.get_short_name()} {self.last_name} {self.suffix}"
+        else:
+            return f"{self.get_short_name()} {self.last_name}"
 
     def get_short_name(self):
-        """
-        Return the short name for the user.
-        """
-        if self.nickname:
-            return self.nickname
-        else:
-            return self.first_name
+        """ Return either the first_name or nickname for the member. """
+        return self.nickname if self.nickname else self.first_name
+
+    @property
+    def age(self):
+        """ If we have a birthday set, calculate the current age of the member. """
+        if self.birthday:
+            today = timezone.now()
+            return today.year - self.birthday.year - ((today.month, today.day) < (self.birthday.month, self.birthday.day))
 
 
 class Family(models.Model):
-    """
-    Members who are related are tracked by this model
-    """
+    """ Track the relationship between members """
     name = models.CharField(max_length=64, blank=True, null=True)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    pack_comments = models.TextField(_("Pack Comments"), blank=True, null=True, help_text=_(
+        "Used by pack leadership to keep notes about a specific family."
+        "This information is not generally disclosed to members unless they are granted access to Membership."
+    ))
+
+    uuuuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     legacy_id = models.PositiveSmallIntegerField(unique=True, blank=True, null=True)
-    date_added = models.DateField(default=timezone.now)
+    date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -144,7 +153,7 @@ class Family(models.Model):
         return super().save(*args, **kwargs)
 
 
-class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
+class Adult(AbstractBaseUser, PermissionsMixin, Member):
     """
     Any adult member such as a parent, guardian, or other use this model. Being an adult gives you access to the
     website with an e-mail address and password.
@@ -207,12 +216,12 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
     def get_active_scouts(self):
         """ Return a list of all currently active scouts associated with this member. """
         if self.family:
-            return self.family.children.filter(status__exact=ChildMember.ACTIVE)
+            return self.family.children.filter(status__exact=Scout.ACTIVE)
 
     def get_partners(self):
         """ Return a list of other parents who share the same scout(s) """
         if self.family:
-            return self.family.adults.exclude(id=self.id)
+            return self.family.adults.exclude(id=self.uuid)
 
     @property
     def is_staff(self):
@@ -229,7 +238,7 @@ class AdultMember(AbstractBaseUser, PermissionsMixin, Member):
             return False
 
 
-class ChildMember(Member):
+class Scout(Member):
     """
     Cub scouts use this model to store profile details
     """
@@ -262,10 +271,6 @@ class ChildMember(Member):
 
     # These fields should be managed by the person(s) in charge of membership
     family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name='children', blank=True, null=True)
-    pack_comments = models.TextField(_("Pack Comments"), blank=True, null=True, help_text=_(
-        "Used by pack leadership to keep notes about a specific member."
-        "This information is not generally disclosed to the member unless they are granted access to Membership."
-    ))
     status = models.PositiveSmallIntegerField(_("Status"), choices=STATUS_CHOICES, default=APPLIED, help_text=(
         "What is the Cub's current status? A new cub who has not been reviewed will start as 'Applied'."
         "Membership can choose then to approve or decline the application, or make them active."
@@ -275,32 +280,21 @@ class ChildMember(Member):
     dens = models.ManyToManyField('dens.Den', blank=True, through='dens.Membership')
 
     # Important dates
-    date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
-    started_school = models.PositiveSmallIntegerField(_("Year Started School"), default=two_years_ago, null=True,
-                                                      help_text=_(
-                                                          "What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
+    started_school = models.PositiveSmallIntegerField(_("Year Started School"), default=get_two_years_ago, null=True,
+        help_text=_("What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
     started_pack = models.DateField(_("Date Started"), blank=True, null=True, help_text=_(
         "When does this cub join their first activity with the pack?"
     ))
 
     class Meta:
-        indexes = [models.Index(fields=['school', 'family', 'status', 'date_of_birth', 'started_school'])]
+        indexes = [models.Index(fields=['school', 'family', 'status', 'started_school'])]
         verbose_name = _("Cub")
         verbose_name_plural = _("Cubs")
-
-    @property
-    def age(self):
-        """ Calculates the cub scout's age when a birthday is specified """
-        if not self.date_of_birth:
-            return None
-        today = timezone.now()
-        return today.year - self.date_of_birth.year - (
-                (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
 
     def get_siblings(self):
         """ Return a list of other Scouts who share the same parent(s) """
         if self.family:
-            return self.family.children.exclude(id=self.id)
+            return self.family.children.exclude(id=self.uuid)
 
     @property
     def current_den(self):

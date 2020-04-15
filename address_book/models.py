@@ -15,8 +15,8 @@ class VenueType(models.Model):
     type = models.CharField(max_length=16, help_text=_(
         "e.g. School, Campground, Park, etc."))
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -30,15 +30,15 @@ class VenueType(models.Model):
 
 class Venue(models.Model):
     """
-    Venues are locations where the pack may meet in the pack_caledar app and by ChildMembers to record the school they
+    Venues are locations where the pack may meet in the pack_caledar app and by Scouts to record the school they
     attend.
     """
     name = models.CharField(max_length=128, unique=True)
     type = models.ManyToManyField(VenueType, related_name='venues')
     url = models.URLField(_("Website"), blank=True, null=True)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -77,11 +77,11 @@ class Address(models.Model):
         "Display this address to other members of the pack."))
 
     # Related models
-    member = models.ForeignKey('membership.AdultMember', on_delete=models.SET_NULL, related_name='addresses', blank=True, null=True)
+    member = models.ForeignKey('membership.Adult', on_delete=models.SET_NULL, related_name='addresses', blank=True, null=True)
     venue = models.OneToOneField(Venue, on_delete=models.SET_NULL, related_name='address', null=True, blank=True)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -119,15 +119,15 @@ class PhoneNumber(models.Model):
         (OTHER, _("Other")),
         (None, _("Type")),
     )
-    number = PhoneNumberField(_("Phone Number"))
+    number = PhoneNumberField(_("Phone Number"), region="US")
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
     published = models.BooleanField(default=True, help_text=_(
         "Display this phone number to other members of the pack."))
 
-    member = models.ForeignKey('membership.AdultMember', on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
+    member = models.ForeignKey('membership.Adult', on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
     venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:

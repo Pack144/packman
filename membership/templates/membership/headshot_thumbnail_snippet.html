@@ -1,7 +1,7 @@
 {% load static thumbnail %}
     {% if member.photo %}
       <img src="{{ member.photo|thumbnail_url:'thumbnail' }}" class="img-fluid rounded" id="headshot" alt="{{ member }}'s profile picture">
-    {% elif member.childmember %}
+    {% elif member.scout %}
       <img src="{% static 'img/avatar_cub.png' %}" class="img-fluid rounded" id="headshot" alt="No profile picture">
     {% elif member.gender == 'M' %}
       <img src="{% static 'img/avatar_man.png' %}" class="img-fluid rounded" id="headshot" alt="No profile picture">

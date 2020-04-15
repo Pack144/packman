@@ -10,11 +10,11 @@ from pack_calendar.models import PackYear
 class Committee(models.Model):
     """
     A well run pack relies on its members stepping up to provide support. Define a list of ongoing committees on which
-    AdultMembers can offer their services to assist with pack operations.
+    Adults can offer their services to assist with pack operations.
     """
     name = models.CharField(max_length=64)
     description = models.TextField(null=True, blank=True)
-    members = models.ManyToManyField('membership.AdultMember', through='Membership')
+    members = models.ManyToManyField('membership.Adult', through='Membership')
     leadership = models.BooleanField(_("Pack Leadership"), default=False, help_text=_(
         "e.g. Akela, Assistant Akela, Den Leader"))
 
@@ -25,8 +25,8 @@ class Committee(models.Model):
     )
 
     slug = models.SlugField(unique=True)
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -59,7 +59,7 @@ class Membership(models.Model):
         (AKELA, _("Akela")),
         (ASSISTANT_AKELA, _("Assistant Akela")),
     ]
-    member = models.ForeignKey('membership.AdultMember', on_delete=models.CASCADE, related_name='committees')
+    member = models.ForeignKey('membership.Adult', on_delete=models.CASCADE, related_name='committees')
     committee = models.ForeignKey(Committee, on_delete=models.CASCADE)
     position = models.PositiveSmallIntegerField(choices=POSITION_CHOICES, default=MEMBER)
     den = models.ForeignKey('dens.Den', on_delete=models.CASCADE, related_name='leadership', blank=True, null=True)
@@ -68,8 +68,8 @@ class Membership(models.Model):
                                     default=PackYear.get_current_pack_year_year,
                                     related_name='committee_memberships')
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):

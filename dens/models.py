@@ -33,8 +33,8 @@ class Rank(models.Model):
     rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES, unique=True)
     description = models.CharField(max_length=128, blank=True, null=True)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(default=timezone.now)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -81,7 +81,7 @@ class Den(models.Model):
     number = models.PositiveSmallIntegerField(primary_key=True, help_text=_("The Den's Number"))
     rank = models.ForeignKey(Rank, on_delete=models.CASCADE, related_name='dens', blank=True, null=True)
 
-    date_added = models.DateField(default=timezone.now)
+    date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -108,14 +108,14 @@ class Membership(models.Model):
     """
     Tracks the year(s) a cub is assigned to a Den
     """
-    scout = models.ForeignKey('membership.ChildMember', on_delete=models.CASCADE, related_name='den')
+    scout = models.ForeignKey('membership.Scout', on_delete=models.CASCADE, related_name='den')
     den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name='scouts')
     year_assigned = models.ForeignKey(PackYear,
                                     on_delete=models.CASCADE,
                                     default=PackYear.get_current_pack_year_year,
                                     related_name='den_memberships')
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 

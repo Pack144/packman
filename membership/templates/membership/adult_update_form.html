@@ -25,7 +25,7 @@
           {% crispy phonenumber_formset phonenumber_formset.form.helper %}
         </fieldset>
         <input type="submit" value="Update" class="btn btn-success"/>
-        <a href="{% url 'parent_detail' member.id %}" class="btn btn-primary">Cancel</a>
+        <a href="{% url 'parent_detail' member.uuid %}" class="btn btn-primary">Cancel</a>
       </form>
     </div>
   </div>
