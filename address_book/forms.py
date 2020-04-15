@@ -25,7 +25,7 @@ class AddressFormHelper(FormHelper):
                 Column('zip_code', css_class='col-md-3')
             ),
             'published',
-            Field('id', type='hidden'),
+            Field('uuid', type='hidden'),
             Field('member', type='hidden'),
         )
         self.render_required_fields = True
@@ -59,7 +59,7 @@ class PhoneNumberFormHelper(FormHelper):
                 Column('type', css_class='col-md-2'),
             ),
             Field('published'),
-            Field('id', type='hidden'),
+            Field('uuid', type='hidden'),
             Field('member', type='hidden'),
         )
         self.render_required_fields = True
