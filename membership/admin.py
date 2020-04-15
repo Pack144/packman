@@ -97,7 +97,7 @@ class PhoneNumberInline(admin.TabularInline):
     model = PhoneNumber
 
 
-@admin.register(models.ChildMember)
+@admin.register(models.Scout)
 class ScoutAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'nickname', 'last_name', 'school', 'grade', 'age', 'status', 'family')
     list_display_links = ['first_name', 'nickname', 'last_name']
@@ -110,10 +110,10 @@ class ScoutAdmin(admin.ModelAdmin):
     }
 
 
-@admin.register(models.AdultMember)
+@admin.register(models.Adult)
 class AdultAdmin(UserAdmin):
-    add_form = forms.AdminAdultMemberCreation
-    form = forms.AdminAdultMemberChange
+    add_form = forms.AdminAdultCreation
+    form = forms.AdminAdultChange
     list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', 'family', '_is_staff', 'is_superuser')
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
     list_filter = ('_is_staff', 'is_superuser')
