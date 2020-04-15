@@ -10,9 +10,9 @@
       <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}{% if member.current_den.rank %}<small class="ml-3 text-muted">{{ member.current_den.rank }}</small>{% endif %}</h5></a>
       {% if user.family == member.family %}
         {% if member.adult %}
-          <a href="{% url 'parent_update' member.id %}" class="badge badge-dark ml-3 p-2">
+          <a href="{% url 'parent_update' member.uuid %}" class="badge badge-dark ml-3 p-2">
         {% else %}
-          <a href="{% url 'scout_update' member.id %}" class="badge badge-dark ml-3 p-2">
+          <a href="{% url 'scout_update' member.uuid %}" class="badge badge-dark ml-3 p-2">
         {% endif %}
       <i class="fa fa-user-edit"></i>
       </a>

@@ -65,7 +65,7 @@ class Member(models.Model):
         "This information is not generally disclosed to the member unless they are granted access to Membership."
     ))
 
-    uuuuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(_("Date Added"), auto_now_add=True)
     last_updated = models.DateTimeField(_("Last Updated"), auto_now=True)
 
@@ -115,9 +115,11 @@ class Member(models.Model):
     @property
     def age(self):
         """ If we have a birthday set, calculate the current age of the member. """
-        if self.birthday:
+        if self.date_of_birth:
             today = timezone.now()
-            return today.year - self.birthday.year - ((today.month, today.day) < (self.birthday.month, self.birthday.day))
+            return today.year - self.date_of_birth.year - (
+                    (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
+            )
 
 
 class Family(models.Model):
@@ -129,7 +131,7 @@ class Family(models.Model):
         "This information is not generally disclosed to members unless they are granted access to Membership."
     ))
 
-    uuuuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     legacy_id = models.PositiveSmallIntegerField(unique=True, blank=True, null=True)
     date_added = models.DateField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -221,7 +223,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
     def get_partners(self):
         """ Return a list of other parents who share the same scout(s) """
         if self.family:
-            return self.family.adults.exclude(id=self.uuid)
+            return self.family.adults.exclude(uuid=self.uuid)
 
     @property
     def is_staff(self):
@@ -294,7 +296,7 @@ class Scout(Member):
     def get_siblings(self):
         """ Return a list of other Scouts who share the same parent(s) """
         if self.family:
-            return self.family.children.exclude(id=self.uuid)
+            return self.family.children.exclude(uuid=self.uuid)
 
     @property
     def current_den(self):
