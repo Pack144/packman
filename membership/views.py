@@ -61,7 +61,7 @@ class FamilyUpdate(LoginRequiredMixin, DetailView):
 
     def get_object(self):
         # Return the currently signed on member's page
-        return models.Adult.objects.get(id=self.request.user.uuid)
+        return models.Adult.objects.get(uuid=self.request.user.uuid)
 
 
 class AdultList(LoginRequiredMixin, ListView):
@@ -109,7 +109,7 @@ class AdultCreate(LoginRequiredMixin, CreateView):
         context = self.get_context_data(form=form)
         address_formset = context['address_formset']
         phonenumber_formset = context['phonenumber_formset']
-        request_user = models.Adult.objects.get(id=self.request.user.uuid)
+        request_user = models.Adult.objects.get(uuid=self.request.user.uuid)
         if address_formset.is_valid() and phonenumber_formset.is_valid():
             self.object = form.save()
             address_formset.instance = self.object
@@ -194,7 +194,7 @@ class ScoutCreate(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.status = models.Scout.APPLIED
-        request_user = models.Adult.objects.get(id=self.request.user.uuid)
+        request_user = models.Adult.objects.get(uuid=self.request.user.uuid)
         if not request_user.family:
             request_user.family = models.Family.objects.create()
             request_user.save()
