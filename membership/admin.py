@@ -99,22 +99,43 @@ class PhoneNumberInline(admin.TabularInline):
 
 @admin.register(models.Scout)
 class ScoutAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'nickname', 'last_name', 'school', 'grade', 'age', 'status', 'family')
+    list_display = ('first_name', 'nickname', 'last_name', 'school', 'grade', 'age', 'status')
     list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den')
-    readonly_fields = ('date_added', 'last_updated', 'reference', 'member_comments')
+    readonly_fields = ('date_added', 'last_updated', 'reference', 'member_comments', 'grade')
     autocomplete_fields = ['family', 'school']
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name')
     formfield_overrides = {
         ThumbnailerImageField: {'widget': ImageClearableFileInput},
     }
 
+    fieldsets = (
+        (None, {'fields': (
+            ('prefix', 'first_name', 'middle_name', 'last_name', 'suffix'),
+            ('nickname', 'gender'),
+            'photo',
+            ('status', 'family'),
+            'slug'
+        )}),
+        (_("School"), {
+            'fields': ('school', ('started_school', 'grade'))
+        }),
+        (_("Important Dates"), {
+            'classes': ('collapse',),
+            'fields': ('date_of_birth', 'date_added', 'started_pack')
+        }),
+        (_("Comments"), {
+            'classes': ('collapse', ),
+            'fields': ('member_comments', 'reference', 'pack_comments',),
+        })
+    )
+
 
 @admin.register(models.Adult)
 class AdultAdmin(UserAdmin):
     add_form = forms.AdminAdultCreation
     form = forms.AdminAdultChange
-    list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', 'family', '_is_staff', 'is_superuser')
+    list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', '_is_staff', 'is_superuser', 'last_login')
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
     list_filter = ('_is_staff', 'is_superuser')
     ordering = ('last_name', 'nickname', 'first_name')
@@ -127,7 +148,7 @@ class AdultAdmin(UserAdmin):
 
     fieldsets = (
         (None, {'fields': (
-            ('first_name', 'middle_name', 'last_name', 'suffix'),
+            ('prefix', 'first_name', 'middle_name', 'last_name', 'suffix'),
             ('nickname', 'gender'),
             'photo',
             ('role', 'family'),
@@ -142,8 +163,12 @@ class AdultAdmin(UserAdmin):
         }),
         (_("Important Dates"), {
             'classes': ('collapse',),
-            'fields': ('last_login', 'date_added')
+            'fields': ('date_of_birth', 'last_login', 'date_added')
         }),
+        (_("Comments"), {
+            'classes': ('collapse', ),
+            'fields': ('pack_comments', ),
+        })
     )
     add_fieldsets = (
         (None, {'fields': (
