@@ -6,15 +6,9 @@
     font-style: normal;
 }
 
-body {
-    background-color: #2b2b2b;
-}
-
 main {
-    background-color: whitesmoke;
     padding-top: 40px;
     padding-bottom: 100px;
-    min-height: 640px;
 }
 
 #top-bar {
@@ -29,12 +23,14 @@ main {
     border-bottom-left-radius: .25rem;
     border-bottom-right-radius: .25rem;
     border-top-right-radius: .25rem;
-    background-color: #fff;
     border: 1px solid transparent;
-    border-color: #fff #dee2e6 #dee2e6;
 }
 
 #den-patches {
+    height: 120px;
+}
+
+#rank-patches {
     height: 120px;
 }
 
@@ -145,55 +141,4 @@ footer {
     text-align: center;
     font-style: italic;
     font-size: x-small;
-}
-
-@media (prefers-color-scheme: dark) {
-    html {
-        background-color: #222;
-    }
-
-    main {
-        background-color: #333;
-        color: #eee;
-    }
-
-    a {
-        color: #26aee3;
-    }
-
-    .breadcrumb {
-        background-color: #666;
-    }
-
-    .breadcrumb-item.active {
-        color: #92A1B1;
-    }
-
-    .card {
-        background-color: #666;
-    }
-
-    #member-list {
-        background-color: #666;
-        border-color: #666;
-    }
-
-    .nav-tabs {
-        border-bottom: #666;
-    }
-
-    .nav-tabs .nav-link {
-        border-color: #666;
-    }
-
-    .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        color: #ddd;
-        background-color: #666;
-        border-color: #666;
-    }
-
-    .text-muted {
-        color: #a5a5a5 !important;
-    }
 }
