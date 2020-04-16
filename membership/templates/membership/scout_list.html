@@ -5,12 +5,7 @@
 {% block title %}Members - Cubs{% endblock %}
 
 {% block content %}
-  <div class="container row">
-    <h1>Members</h1>
-    <form class="form-inline ml-auto my-2" action="{% url 'member_search_results' %}" method="get" id="member-search">
-      <input name="q" class="form-control" type="text" placeholder="&#xf002" aria-label="Search">
-    </form>
-  </div>
+  {% include 'membership/snippets/member_search.html' %}
   <ul class="nav nav-tabs">
     <li class="nav-item">
       <a class="nav-link" href="{% url 'member_list' %}">All Members</a>
@@ -27,23 +22,23 @@
   </ul>
   <div class="container" id="member-list">
     {% if member_list %}
-      <ul class="list-group">
+      <div class="list-group">
         {% for member in member_list %}
-          <li class="list-group-item">
-            <a href="{{ member.get_absolute_url }}">
-              <div class="row align-items-center">
-                <div class="col-sm-2">
+          <a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
+            <div class="row align-items-center">
+              <div class="col-sm-2">
                 {% include 'membership/headshot_thumbnail_snippet.html' %}
-                </div>
-                <div class="col-sm-10">
-                  <h4>{{ member }}</h4>
-                  {% if member.current_den %}<p>{% if member.current_den.rank %}{{ member.current_den.rank }}<br>{% endif %}<small>{{ member.current_den }}</small></p>{% endif %}
-                </div>
               </div>
-            </a>
-          </li>
+              <div class="col-sm-10">
+                <h4>{{ member }}</h4>
+                {% if member.current_den %}<p>
+                  {% if member.current_den.rank %}{{ member.current_den.rank }} — {% endif %}<small>{{ member.current_den }}</small>
+                </p>{% endif %}
+              </div>
+            </div>
+          </a>
         {% endfor %}
-      </ul>
+      </div>
     {% else %}
       <div class="alert alert-light" role="alert">
         <p class="text-center">The pack has no active members. It's time to invite some to <a
