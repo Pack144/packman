@@ -150,7 +150,7 @@ class AdultForm(forms.ModelForm):
 class ScoutForm(forms.ModelForm):
     class Meta:
         model = Scout
-        exclude = ('started_pack', 'status', 'den', 'family', 'pack_comments')
+        exclude = ('started_pack', 'status', 'den', 'family', 'pack_comments', 'slug')
         widgets = {
             'date_of_birth': DatePicker(
                 options={
