@@ -35,6 +35,7 @@ urlpatterns = [
     path('documents/', include('documents.urls')),
     path('calendar/', include('pack_calendar.urls')),
     path('members/', include('membership.urls')),
+    path('polls/', include('polls.urls')),
     path('', include('pages.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

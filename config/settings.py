@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'membership.apps.MembershipConfig',
     'pack_calendar.apps.PackCalendarConfig',
     'pages.apps.PagesConfig',
+    'polls.apps.PollsConfig',
 ]
 
 MIDDLEWARE = [
