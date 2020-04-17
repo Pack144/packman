@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 # from allauth.registration.forms import SignupForm as AllauthSignupForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field
-from crispy_forms.bootstrap import FormActions, InlineRadios
+from crispy_forms.bootstrap import FormActions, InlineRadios, AppendedText
 from tempus_dominus.widgets import DatePicker
 
 from address_book.forms import AddressForm, PhoneNumberForm
@@ -173,7 +173,7 @@ class ScoutForm(forms.ModelForm):
                 field.widget.attrs['placeholder'] = field.label
         self.helper = FormHelper(self)
         self.helper.form_id = 'scout_update'
-        self.helper.form_show_labels = False
+        self.helper.form_show_labels = True
         self.helper.render_required_fields = True
         self.helper.layout = Layout(
             Row(
@@ -188,7 +188,7 @@ class ScoutForm(forms.ModelForm):
             'photo',
             Row(
                 Column('school', css_class='col-md-8'),
-                Column('started_school', css_class='col-md-4'),
+                Column(AppendedText('started_school', 'grade'), css_class='col-md-4'),
             ),
             'reference',
             'member_comments',
