@@ -3,7 +3,7 @@ from django.forms import widgets
 from django.forms.models import inlineformset_factory
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 # from allauth.registration.forms import SignupForm as AllauthSignupForm
 from crispy_forms.helper import FormHelper
