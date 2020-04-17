@@ -18,14 +18,20 @@
         </fieldset>
         <fieldset class="mt-4" id="{{ address_formset.prefix }}">
           <legend>Address{{ address_formset.total_form_count|pluralize:'es' }}</legend>
-          {% crispy address_formset address_formset.form.helper %}
+          {{ address_formset.management_form|crispy }}
+          {% for form in address_formset.forms %}
+            {% crispy form %}
+          {% endfor %}
         </fieldset>
         <fieldset class="mt-4" id="{{ phonenumber_formset.prefix }}">
           <legend>Phone Number{{ phonenumber_formset.total_form_count|pluralize }}</legend>
-          {% crispy phonenumber_formset phonenumber_formset.form.helper %}
+          {{ phonenumber_formset.management_form|crispy }}
+          {% for form in phonenumber_formset.forms %}
+            {% crispy form %}
+          {% endfor %}
         </fieldset>
         <input type="submit" value="Update" class="btn btn-success"/>
-        <a href="{% url 'parent_detail' member.uuid %}" class="btn btn-primary">Cancel</a>
+        <a href="{% url 'parent_detail' member.slug %}" class="btn btn-primary">Cancel</a>
       </form>
     </div>
   </div>
@@ -34,20 +40,24 @@
 {% block js %}
   <script src="{% static "dynamic_formsets/jquery.formset.js" %}" type="text/javascript"></script>
   <script type="text/javascript">
-      $('.{{ address_formset.prefix }}').formset({
+      $('#{{ address_formset.prefix }}').formset({
+          addCssClass: "btn btn-primary mr-5",
+          deleteCssClass: 'text-danger',
+          formCssClass: 'address-dynamic-form',
           prefix: "{{ address_formset.prefix }}",
-          formCssClass: "{{ address_formset.prefix }}-dynamic-formset",
           uiText: {
-              addPrompt: "Add another address",
-              removePrompt: "Delete"
+              addPrompt: "<i class=\"fas fa-plus-circle\"></i> Add another address",
+              removePrompt: "<i class=\"fas fa-minus-circle\"></i>"
           },
       });
-      $('.{{ phonenumber_formset.prefix }}').formset({
+      $('#{{ phonenumber_formset.prefix }}').formset({
+          addCssClass: "btn btn-primary mr-5",
+          deleteCssClass: 'text-danger',
+          formCssClass: 'phonenumber-dynamic-form',
           prefix: "{{ phonenumber_formset.prefix }}",
-          formCssClass: "{{ phonenumber_formset.prefix }}-dyanmic-formset",
           uiText: {
-              addPrompt: "Add another Phone number",
-              removePrompt: "Delete"
+              addPrompt: "<i class=\"fas fa-plus-circle\"></i> Add another phone number",
+              removePrompt: "<i class=\"fas fa-minus-circle\"></i>"
           },
       });
   </script>
