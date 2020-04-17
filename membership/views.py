@@ -136,7 +136,7 @@ class AdultUpdate(LoginRequiredMixin, UpdateView):
     model = models.Adult
     form_class = forms.AdultForm
     context_object_name = 'member'
-    template_name = 'membership/adult_update_form.html'
+    template_name = 'membership/adult_form.html'
 
     def get_context_data(self, **kwargs):
         context = super(AdultUpdate, self).get_context_data(**kwargs)

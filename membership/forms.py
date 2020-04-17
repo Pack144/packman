@@ -125,7 +125,6 @@ class AdultForm(forms.ModelForm):
         self.helper.form_id = 'parent_update'
         self.helper.form_tag = False
         self.helper.form_show_labels = False
-        self.helper.help_text_inline = True
         self.render_required_fields = True
         self.helper.layout = Layout(
             Row(
