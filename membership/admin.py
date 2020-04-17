@@ -99,9 +99,9 @@ class PhoneNumberInline(admin.TabularInline):
 
 @admin.register(models.Scout)
 class ScoutAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'nickname', 'last_name', 'school', 'grade', 'age', 'status')
+    list_display = ('first_name', 'nickname', 'last_name', 'school', 'get_grade', 'age', 'status')
     list_display_links = ['first_name', 'nickname', 'last_name']
-    list_filter = ('status', AnimalRankListFilter, 'den')
+    list_filter = ('status', AnimalRankListFilter, 'den__den')
     readonly_fields = ('date_added', 'last_updated', 'reference', 'member_comments', 'grade')
     autocomplete_fields = ['family', 'school']
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name')

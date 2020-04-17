@@ -1,29 +1,67 @@
 {% extends "_base.html" %}
 {% load crispy_forms_tags static %}
 
-{% block title %}Add a Parent/Guardian{% endblock %}
+{% block title %}{% if member %}{{ member }} - Update{% else %}Add Adult{% endif %}{% endblock %}
 
 {% block content %}
-  <h1>Add a Parent/Guardian</h1>
-  <form method="post" enctype="multipart/form-data">
+  <div class="container row">
+    <div class="col-md-3" id="headshot">
+      {% include 'membership/headshot_snippet.html' %}
+    </div>
+    <div class="col-md-9" id="profile">
+      <h1>{% if member %}Update{% else %}Add Adult{% endif %}</h1>
+      <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <fieldset class="mt-4" id="personal-details">
+        <fieldset class="mt-3" id="personal-details">
           <legend>Personal Details</legend>
           {% crispy form %}
         </fieldset>
-        <fieldset class="mt-4" id="{{ address_formset.prefix }}">
+        <fieldset class="mt-5" id="{{ address_formset.prefix }}">
           <legend>Address{{ address_formset.total_form_count|pluralize:'es' }}</legend>
-          {% crispy address_formset address_formset.form.helper %}
+          {{ address_formset.management_form|crispy }}
+          {% for form in address_formset.forms %}
+            {% crispy form %}
+          {% endfor %}
         </fieldset>
-        <fieldset class="mt-4" id="{{ phonenumber_formset.prefix }}">
+        <fieldset class="mt-5" id="{{ phonenumber_formset.prefix }}">
           <legend>Phone Number{{ phonenumber_formset.total_form_count|pluralize }}</legend>
-          {% crispy phonenumber_formset phonenumber_formset.form.helper %}
+          {{ phonenumber_formset.management_form|crispy }}
+          {% for form in phonenumber_formset.forms %}
+            {% crispy form %}
+          {% endfor %}
         </fieldset>
-    <input type="submit" value="Add Adult" class="btn btn-success"/>
-    <a href="{% url 'parent_detail' request.user.id %}" class="btn btn-primary">Cancel</a>
-  </form>
+        <div class="row justify-content-end mt-5">
+          <input type="submit" value="Update" class="btn btn-success btn-lg mr-3"/>
+          <a href="{% url 'parent_detail' member.slug %}" class="btn btn-primary btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
 {% endblock content %}
 
 {% block js %}
+  <script src="{% static "dynamic_formsets/jquery.formset.js" %}" type="text/javascript"></script>
+  <script type="text/javascript">
+      $('#{{ address_formset.prefix }}').formset({
+          addCssClass: "btn btn-primary btn-sm",
+          deleteCssClass: 'btn btn-danger align-self-start',
+          formCssClass: 'address-dynamic-form',
+          prefix: "{{ address_formset.prefix }}",
+          uiText: {
+              addPrompt: "<i class=\"fas fa-plus-circle mr-2\"></i> address",
+              removePrompt: "<i class=\"fas fa-minus-circle\"></i>"
+          },
+      });
+      $('#{{ phonenumber_formset.prefix }}').formset({
+          addCssClass: "btn btn-primary btn-sm",
+          deleteCssClass: 'btn btn-danger align-self-start',
+          formCssClass: 'phonenumber-dynamic-form',
+          prefix: "{{ phonenumber_formset.prefix }}",
+          uiText: {
+              addPrompt: "<i class=\"fas fa-plus-circle mr-2\"></i> phone number",
+              removePrompt: "<i class=\"fas fa-minus-circle\"></i>"
+          },
+      });
+  </script>
 
 {% endblock %}

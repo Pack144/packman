@@ -232,6 +232,7 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 # https://github.com/stefanfoulis/django-phonenumber-field
 # -----------------------------------------------------------------------------
 PHONENUMBER_DEFAULT_REGION = 'US'
+PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'
 
 # SECURITY
 # ------------------------------------------------------------------------------

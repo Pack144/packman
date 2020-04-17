@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 # from allauth.registration.forms import SignupForm as AllauthSignupForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field
-from crispy_forms.bootstrap import FormActions, InlineRadios
+from crispy_forms.bootstrap import FormActions, InlineRadios, AppendedText
 from tempus_dominus.widgets import DatePicker
 
 from address_book.forms import AddressForm, PhoneNumberForm
@@ -125,7 +125,6 @@ class AdultForm(forms.ModelForm):
         self.helper.form_id = 'parent_update'
         self.helper.form_tag = False
         self.helper.form_show_labels = False
-        self.helper.help_text_inline = True
         self.render_required_fields = True
         self.helper.layout = Layout(
             Row(
@@ -174,7 +173,7 @@ class ScoutForm(forms.ModelForm):
                 field.widget.attrs['placeholder'] = field.label
         self.helper = FormHelper(self)
         self.helper.form_id = 'scout_update'
-        self.helper.form_show_labels = False
+        self.helper.form_show_labels = True
         self.helper.render_required_fields = True
         self.helper.layout = Layout(
             Row(
@@ -186,15 +185,15 @@ class ScoutForm(forms.ModelForm):
             'nickname',
             InlineRadios('gender'),
             Field('date_of_birth', css_class='col-md-3'),
-            'photo',
+            Field('photo'),
             Row(
-                Column('school', css_class='col-md-8'),
-                Column('started_school', css_class='col-md-4'),
+                Column(Field('school', css_class='custom-select'), css_class='col-md-8'),
+                Column(AppendedText('started_school', 'grade'), css_class='col-md-4'),
             ),
             'reference',
             'member_comments',
             FormActions(
-                Submit('save', 'Submit', css_class='btn-success'),
+                Submit('save', 'Submit', css_class='btn-success btn-lg'),
             ),
         )
 
