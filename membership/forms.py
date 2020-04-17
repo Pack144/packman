@@ -185,15 +185,15 @@ class ScoutForm(forms.ModelForm):
             'nickname',
             InlineRadios('gender'),
             Field('date_of_birth', css_class='col-md-3'),
-            'photo',
+            Field('photo'),
             Row(
-                Column('school', css_class='col-md-8'),
+                Column(Field('school', css_class='custom-select'), css_class='col-md-8'),
                 Column(AppendedText('started_school', 'grade'), css_class='col-md-4'),
             ),
             'reference',
             'member_comments',
             FormActions(
-                Submit('save', 'Submit', css_class='btn-success'),
+                Submit('save', 'Submit', css_class='btn-success btn-lg'),
             ),
         )
 
