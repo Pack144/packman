@@ -212,4 +212,4 @@ class ScoutUpdate(LoginRequiredMixin, UpdateView):
     model = models.Scout
     form_class = forms.ScoutForm
     context_object_name = 'member'
-    template_name = 'membership/scout_update_form.html'
+    template_name = 'membership/scout_form.html'
