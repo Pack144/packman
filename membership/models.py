@@ -283,7 +283,7 @@ class Scout(Member):
     dens = models.ManyToManyField('dens.Den', blank=True, through='dens.Membership')
 
     # Important dates
-    started_school = models.PositiveSmallIntegerField(_("Year Started School"), default=get_two_years_ago, null=True,
+    started_school = models.PositiveSmallIntegerField(_("When Started School"), default=get_two_years_ago, null=True,
         help_text=_("What year did your child start kindergarten? We use this to assign your child to an appropriate den."))
     started_pack = models.DateField(_("Date Started"), blank=True, null=True, help_text=_(
         "When does this cub join their first activity with the pack?"
@@ -324,10 +324,16 @@ class Scout(Member):
                 # this Scout isn't in grade school anymore
                 return None
 
+    def get_grade(self):
+        return self.grade
+
     @property
     def rank(self):
         """ A cub's rank is derived from the den they are a member of. """
         return self.den.rank
+
+    get_grade.admin_order_field = 'started_school'
+    get_grade.short_description = _("School Grade")
 
 
 saved_file.connect(generate_aliases)
