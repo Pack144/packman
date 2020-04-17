@@ -3,21 +3,33 @@
 {% block title %}{{ question.question_text|truncatewords:5 }}{% endblock %}
 
 {% block content %}
-  <h1>{{ question.question_text }}</h1>
-  {% if error_message %}
-    <div class="alert alert-danger">
-      {{ error_message }}
+  <div class="card w-75">
+    <div class="card-body">
+      <h4 class="card-title">{{ question.question_text }}</h4>
+      {% if question.description %}<p class="card-subtitle text-muted">{{ question.description|safe }}</p>{% endif %}
+      {% if error_message %}
+        <div class="alert alert-{{ error_level }}">
+          <h4 class="alert-heading">{{ error_title }}</h4>
+          <p>{{ error_message }}</p>
+        </div>
+      {% elif question.votable %}
+        <div class="card-text">
+          <div class="alert alert-light"><small>You have {{ question.votable }} vote{{ question.votable|pluralize }} available.</small></div>
+          <form action="{% url 'polls:vote' question.id %}" method="post">
+            {% csrf_token %}
+            {% for choice in question.choice_set.all %}
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+                <label class="form-check-label" for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label>
+              </div>
+            {% endfor %}
+            <input class="btn btn-primary mt-3" type="submit" value="Vote">
+          </form>
+        </div>
+      {% endif %}
+      {% for vote in question.vote_set.all %}
+        {{ vote }}
+      {% endfor %}
     </div>
-  {% endif %}
-
-  <form action="{% url 'polls:vote' question.id %}" method="post">
-    {% csrf_token %}
-    {% for choice in question.choice_set.all %}
-      <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label>
-      <input class="form-control" type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
-    {% endfor %}
-    <input class="form-control" type="submit" value="Vote">
-  </form>
-  <ul class="list-unstyled">
-  </ul>
+  </div>
 {% endblock content %}
