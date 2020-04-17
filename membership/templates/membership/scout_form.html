@@ -1,16 +1,61 @@
 {% extends "_base.html" %}
 {% load crispy_forms_tags static %}
 
-{% block title %}Nominate a scout{% endblock %}
+{% block title %}{% if member %}{{ member }} - Update{% else %}Nominate a Cub{% endif %}{% endblock %}
 
-{% block css %}<link rel="stylesheet" href="{% static 'tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.min.css' %}">{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{% static 'tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.min.css' %}">{% endblock %}
 
 {% block content %}
-  <h1>Nominate a Scout</h1>
-  {% crispy form %}
+  <div class="container row">
+    <div class="col-md-3" id="headshot">
+      {% include 'membership/headshot_snippet.html' %}
+    </div>
+    <div class="col-md-9" id="profile">
+      <h1>{% if member %}Update{% else %}Nominate a Cub{% endif %}</h1>
+      {% crispy form %}
+    </div>
+  </div>
 {% endblock content %}
 
 {% block js %}
-  <script src="{% static 'moment/moment.js' %}"></script>
-  <script src="{% static 'tempusdominus-bootstrap-4/build/js/tempusdominus-bootstrap-4.min.js' %}"></script>
-{% endblock %}
+  <script src="{% static 'moment/moment.js' %}" type="text/javascript"></script>
+  <script src="{% static 'tempusdominus-bootstrap-4/build/js/tempusdominus-bootstrap-4.min.js' %}" type="text/javascript"></script>
+  <script type="text/javascript">
+      function getGrade(staringYear) {
+          let now = new Date();
+          let gradeString = '';
+
+          if (now.getMonth() <= 9) {
+              staringYear++
+          };
+          let grade = now.getFullYear() - staringYear;
+
+          if (grade < 0) {
+              gradeString = 'Not yet in school'
+          } else if (grade == 0) {
+              gradeString = 'Kindergaden'
+          } else if (grade == 1) {
+              gradeString = grade + '<sup>st</sup> Grade'
+          } else if (grade == 2) {
+              gradeString = grade + '<sup>nd</sup> Grade'
+          } else if (grade == 3) {
+              gradeString = grade + '<sup>rd</sup> Grade'
+          } else if (grade <= 12) {
+              gradeString = grade + '<sup>th</sup> Grade'
+          } else gradeString = 'Graduated High School'
+
+          return gradeString
+      }
+
+      $('#div_id_started_school .input-group-text').html(getGrade(
+          $('#div_id_started_school :input').val()
+      ));
+
+      $('#div_id_started_school :input').change(function () {
+          $('#div_id_started_school .input-group-text').html(getGrade(
+              $('#div_id_started_school :input').val()
+          ))
+      });
+  </script>
+{% endblock js %}
