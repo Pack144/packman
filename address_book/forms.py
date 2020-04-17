@@ -16,29 +16,30 @@ class AddressFormHelper(FormHelper):
         self.disable_csrf = True
         self.form_show_labels = False
         self.form_tag = False
-        self.help_text_inline = True
+        self.help_text_inline = False
         self.layout = Layout(
             Row(
                 Column(
                     Field('street'),
                     Field('street2'),
                     Row(
-                        Column('city', css_class='col-md-6'),
-                        Column('state', css_class='col-md-3'),
-                        Column('zip_code', css_class='col-md-3')
+                        Column(Field('city'), css_class='col-md-6'),
+                        Column(Field('state', css_class='custom-select'), css_class='col-md-3'),
+                        Column(Field('zip_code'), css_class='col-md-3'),
+                        css_class='mb-0'
                     ),
                     Row(
-                        Field('type'),
-                        Field('published'),
+                        Column(Field('type', css_class='custom-select')),
+                        Column(Field('published', css_class='custom-control custom-checkbox')),
                     ),
                     Field('uuid', type='hidden'),
                     Field('member', type='hidden'),
                 ),
                 Column(
                     Field('DELETE'),
-                    css_class='col-1'
+                    css_class='col-0'
                 ),
-                css_class="address-dynamic-form mb-4"
+                css_class="address-dynamic-form mb-5"
             )
         )
         self.render_required_fields = True
@@ -63,28 +64,25 @@ class PhoneNumberFormHelper(FormHelper):
     def __init__(self, *args, **kwargs):
         super(PhoneNumberFormHelper, self).__init__(*args, **kwargs)
 
-        formtag_prefix = re.sub('-[0-9]+$', '', kwargs.get('prefix', ''))
-
         self.disable_csrf = True
         self.form_show_labels = False
         self.form_tag = False
-        self.help_text_inline = True
         self.layout = Layout(
             Row(
                 Column(
-                    Field('number'),
                     Row(
-                        Field('type'),
-                        Field('published'),
+                        Column(Field('type', css_class='custom-select'), css_class='col-md-3'),
+                        Column(Field('number')),
                     ),
+                    Field('published', css_class='custom-control custom-checkbox'),
                     Field('uuid', type='hidden'),
                     Field('member', type='hidden'),
                 ),
                 Column(
                     Field('DELETE'),
-                    css_class='col-1'
+                    css_class='col-0'
                 ),
-                css_class="phonenumber-dynamic-form mb-4"
+                css_class="phonenumber-dynamic-form mb-3"
             ),
         )
 
