@@ -29,6 +29,7 @@ class MemberList(LoginRequiredMixin, ListView):
 
 class MemberSearchResultsList(LoginRequiredMixin, ListView):
     model = models.Member
+    paginate_by = 25
     context_object_name = 'member_list'
     template_name = 'membership/member_search_results.html'
 
