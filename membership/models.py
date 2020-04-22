@@ -250,15 +250,15 @@ class Scout(Member):
     APPLIED = 1
     DENIED = 2
     APPROVED = 3
-    INACTIVE = 4
-    ACTIVE = 5
+    ACTIVE = 4
+    INACTIVE = 5
     GRADUATED = 6
     STATUS_CHOICES = (
         (APPLIED, _("Applied")),
         (DENIED, _("Denied")),
         (APPROVED, _("Approved")),
-        (INACTIVE, _("Inactive")),
         (ACTIVE, _("Active")),
+        (INACTIVE, _("Inactive")),
         (GRADUATED, _("Graduated")),
     )
 
