@@ -35,13 +35,21 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         query = self.request.GET.get('q')
-        results = models.Member.objects.filter(
-            Q(adult__family__children__status__exact=models.Scout.ACTIVE) |
-            Q(adult__role__exact=models.Adult.CONTRIBUTOR) |
-            Q(scout__status__exact=models.Scout.ACTIVE)).filter(Q(first_name__icontains=query) |
-                                                                      Q(last_name__icontains=query) |
-                                                                      Q(middle_name__icontains=query) |
-                                                                      Q(nickname__icontains=query)).distinct()
+        if self.request.GET.get('alum') == 'on':
+            results = models.Member.objects.filter(
+                Q(adult__family__children__status__gte=models.Scout.ACTIVE) |
+                Q(scout__status__gte=models.Scout.ACTIVE)).filter(Q(first_name__icontains=query) |
+                                                                       Q(last_name__icontains=query) |
+                                                                       Q(middle_name__icontains=query) |
+                                                                       Q(nickname__icontains=query)).distinct()
+        else:
+            results = models.Member.objects.filter(
+                Q(adult__family__children__status__exact=models.Scout.ACTIVE) |
+                Q(adult__role__exact=models.Adult.CONTRIBUTOR) |
+                Q(scout__status__exact=models.Scout.ACTIVE)).filter(Q(first_name__icontains=query) |
+                                                                    Q(last_name__icontains=query) |
+                                                                    Q(middle_name__icontains=query) |
+                                                                    Q(nickname__icontains=query)).distinct()
 
         if self.request.user.active or self.request.user.role == models.Adult.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all of the search results
