@@ -1,9 +1,9 @@
 {% load static thumbnail %}
 {% load humanize %}
 
-<div class="card shadow-sm">
+<div class="card shadow-sm" id="member-detail">
   <a href="{{ member.get_absolute_url }}">
-    {% include 'membership/headshot_snippet.html' %}
+    {% include 'membership/snippets/headshot_snippet.html' %}
   </a>
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center">
