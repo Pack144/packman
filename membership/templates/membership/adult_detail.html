@@ -5,7 +5,7 @@
 {% block content %}
   <div class="row">
   <div class="col">
-    {% include 'membership/member_detail_card.html' %}
+    {% include 'membership/snippets/member_detail_card.html' %}
   </div>
   {% if member.committees.count %}
   <div class="col">
@@ -30,10 +30,10 @@
     <h2>Family</h2>
     <div class="card-group" id="family-card-group">
       {% for member in member.get_partners %}
-        {% include 'membership/member_detail_card.html' with member=member %}
+        {% include 'membership/snippets/member_detail_card.html' with member=member %}
       {% endfor %}
       {% for child in member.family.children.all %}
-        {% include 'membership/member_detail_card.html' with member=child %}
+        {% include 'membership/snippets/member_detail_card.html' with member=child %}
       {% endfor %}
     </div>
   {% endif %}
