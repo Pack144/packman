@@ -5,21 +5,22 @@
 {% block title %}{% trans "Sign In" %}{% endblock title %}
 
 {% block content %}
-  <div class="text-center">
-    <h1>Please sign in</h1>{% if user.is_authenticated %}
-    <p>Your account doesn't have access to this page. To proceed, please login with an account that has
-      access.</p>{% endif %}
-    <form method="post" class="form-signin">
-      {% csrf_token %}
-      {{ form|crispy }}
-      {% if redirect_field_value %}
-        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
-      {% endif %}
-      <button type="submit" class="btn btn-success btn-block">Log In</button>
-    </form>
-    <p class="text-muted text-centered small">
-      <a href="{% url 'password_reset' %}">Forgot your password</a> |
-      <a href="{% url 'signup' %}">Not yet a member</a>
-    </p>
+  <div class="card mt-5 w-50">
+    <div class="card-header">
+      <h2>Please Sign In</h2>
+    </div>
+    <div class="card-body">
+      <form method="POST" class="form form-signin">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <input class="btn btn-success btn-block" type="submit" value="Login">
+      </form>
+    </div>
+    <div class="card-footer text-center">
+      <p class="text-muted text-centered small">
+        <a href="{% url 'password_reset' %}">Forgot your password</a> |
+        <a href="{% url 'signup' %}">Not yet a member</a>
+      </p>
+    </div>
   </div>
 {% endblock %}

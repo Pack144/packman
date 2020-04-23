@@ -62,27 +62,16 @@ main {
     padding-inline-start: 0px;
 }
 
-.form-signin input[type="email"] {
+.form-signin #id_username {
     margin-bottom: -1px;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
 }
 
-.form-signin input[type="password"] {
+.form-signin #id_password {
     margin-bottom: 10px;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
-}
-
-.form-signin label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    border: 0;
 }
 
 #headshot {
@@ -105,19 +94,14 @@ main {
     color: snow;
 }
 
-.card {
-    max-width: 20rem;
-}
-
 .jumbotron {
     background-image: url('/static/img/jumbotron.jpg');
     background-size: cover;
     margin-bottom: 0;
 }
 
-#family-card-group .card .card-img-top {
-    max-height: 320px;
-    width: auto;
+.card > #member-detail {
+    max-width: 20rem;
 }
 
 #member-search .form-control {
