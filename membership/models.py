@@ -208,6 +208,11 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
     def __str__(self):
         return self.get_full_name()
 
+    def save(self, *args, **kwargs):
+        super(Adult, self).save(*args, **kwargs)
+        if self.family:
+            self.family.save()
+
     def clean(self):
         super().clean()
         self.email = self.__class__.objects.normalize_email(self.email)
