@@ -2,7 +2,6 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from pack_calendar.models import PackYear
@@ -45,7 +44,6 @@ class Rank(models.Model):
         verbose_name = _("Rank")
         verbose_name_plural = _("Ranks")
 
-    @property
     def category(self):
         if self.rank < Rank.BOBCAT:
             # We shouldn't see this
@@ -98,11 +96,33 @@ class Den(models.Model):
     def active_cubs(self):
         return self.scouts.filter(year_assigned=PackYear.get_current_pack_year())
 
+    def count_current_members(self):
+        return self.active_cubs().count()
+
+    def get_rank_category(self):
+        if self.rank:
+            if self.rank.rank <= Rank.BEAR:
+                return _("Animals")
+            if self.rank.rank >= Rank.JR_WEBE:
+                return _("Webelos")
+
+
     @property
     def patch(self):
         if self.number <= 10:
             return f"{settings.STATIC_URL}img/den_{self.number}_patch.jpg"
 
+    @property
+    def animals(self):
+        return self.rank <= Rank.BEAR
+
+    @property
+    def webelos(self):
+        return self.rank >= Rank.JR_WEBE
+
+    count_current_members.short_description = _("# of Cubs")
+    get_rank_category.admin_order_field = 'rank'
+    get_rank_category.short_description = _("Rank Category")
 
 class Membership(models.Model):
     """

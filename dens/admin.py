@@ -66,7 +66,7 @@ class MembershipAdmin(admin.TabularInline):
 @admin.register(Den)
 class DenAdmin(admin.ModelAdmin):
     inlines = [LeadershipAdmin, MembershipAdmin]
-    list_display = ('number', 'rank', )
+    list_display = ('number', 'count_current_members', 'rank', 'get_rank_category')
     list_filter = (AnimalRankListFilter, )
     search_fields = ('number', 'rank__rank', 'scouts__first_name', 'scouts__nickname', 'scouts__last_name')
 
