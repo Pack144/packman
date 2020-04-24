@@ -100,7 +100,7 @@ main {
     margin-bottom: 0;
 }
 
-.card > #member-detail {
+.card.member-detail {
     max-width: 20rem;
 }
 
