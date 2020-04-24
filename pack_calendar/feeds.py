@@ -1,18 +1,10 @@
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.utils.html import strip_tags
+from django.utils.text import slugify
 
 from django_ical.views import ICalFeed
 
 from .models import Event
-
-
-try:
-    site = Site.objects.get_current()
-except:
-    # It's ugly. It's here in case initial migrations haven't been performed yet and the sites database doesn't exist
-    # Should only stick around until the initial migrations have been completed.
-    site = Site(name='fake', domain='localhost')
 
 
 class EventFeed(ICalFeed):
@@ -20,8 +12,8 @@ class EventFeed(ICalFeed):
     A simple event calendar feed
     """
 
-    product_id = f'-//{site.domain}//django-ical/EN'
-    title = site.name
+    product_id = f'-//{slugify(settings.PACK_NAME)}//django-ical/EN'
+    title = settings.PACK_NAME
     timezone = settings.TIME_ZONE
     file_name = 'calendar.ics'
 
