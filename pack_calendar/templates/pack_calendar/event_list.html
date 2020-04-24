@@ -6,7 +6,7 @@
   <div class="d-flex justify-content-between align-items-center">
 
     <h1>Upcoming Events</h1>
-    <a href="webcal://{{ request.site.domain }}{% url 'event_feed' %}" class="btn btn-lg btn-danger" data-toggle="tooltip" title="Subscribe to this calendar"><i class="fas fa-calendar-alt"></i></a>
+    <a href="webcal://{{ request.META.HTTP_HOST }}{% url 'event_feed' %}" class="btn btn-lg btn-danger" data-toggle="tooltip" title="Subscribe to this calendar"><i class="fas fa-calendar-alt"></i></a>
   </div>
   {% if event_list %}
     <div class="mt-5">
