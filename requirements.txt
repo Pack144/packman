@@ -2,6 +2,8 @@
 argon2-cffi==19.2.0
 asgiref==3.2.7
 babel==2.8.0
+beautifulsoup4==4.9.0
+bs4==0.0.1
 cffi==1.14.0
 django-ckeditor==5.9.0
 django-crispy-forms==1.9.0
@@ -18,7 +20,7 @@ django==3.0.5
 docutils==0.16
 easy-thumbnails==2.7
 icalendar==4.0.5
-phonenumbers==8.12.1
+phonenumbers==8.12.2
 pillow==7.1.1
 psycopg2-binary==2.8.5
 pycparser==2.20
@@ -27,4 +29,5 @@ python-memcached==1.59
 python-stdnum==1.13
 pytz==2019.3
 six==1.14.0
+soupsieve==2.0
 sqlparse==0.3.1
