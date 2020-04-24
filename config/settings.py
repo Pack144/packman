@@ -38,12 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
     'django.contrib.humanize',
 
     # Third party packages
-#    'allauth',
-#    'allauth.registration',
     'ckeditor',
     'crispy_forms',
     'debug_toolbar',
@@ -68,7 +65,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.common.CommonMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -168,29 +164,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home_page'
 LOGOUT_REDIRECT_URL = 'home_page'
-
-# django-allauth
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-# ------------------------------------------------------------------------------
-SITE_ID = 1
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-#    'allauth.registration.auth_backends.AuthenticationBackend',
-)
-ACCOUNT_ADAPTER = 'membership.adapters.MemberAdapter'
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'family_update'
-ACCOUNT_FORMS = {
-    'signup': 'membership.forms.SignupForm',
-}
-ACCOUNT_LOGOUT_REDIRECT_URL = 'home_page'
-ACCOUNT_SESSION_REMEMBER = True
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_USER_DISPLAY = 'membership.models.Adult'
 
 # Email settings for development environment
 # https://docs.djangoproject.com/en/3.0/topics/email/#console-backend
@@ -320,15 +293,20 @@ CKEDITOR_CONFIGS = {
 # -----------------------------------------------------------------------------
 TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
 
+
 # When does the site start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank.
 # -----------------------------------------------------------------------------
 PACK_YEAR_BEGIN_MONTH = 9  # September
 PACK_YEAR_BEGIN_DAY = 1  # 1st
+PACK_NAME = 'Cub Scouts Pack 144'
+PACK_TAGLINE = 'Since 1929'
+PACK_LOCATION = 'Seattle, Washington'
+
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository
-# use it to store your production settings such as SECRET_KEY, DEBUG, DATABASES, and EMAIL_BACKEND
+# use it to store your production settings such as SECRET_KEY, DEBUG, DATABASES, EMAIL_BACKEND, etc.
 try:
     from .local_settings import *
 except ImportError:

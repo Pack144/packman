@@ -17,7 +17,7 @@ from pack_calendar.models import PackYear
 from .managers import MemberManager
 
 
-def photo_path(instance, filename):
+def get_photo_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/headshots/user_slug/<filename>
     return f"headshots/{instance.slug}/{filename}"
 
@@ -55,7 +55,7 @@ class Member(models.Model):
     nickname = models.CharField(_("Nickname"), max_length=32, blank=True, null=True, help_text=_(
         "If there is another name you prefer to be called, tell us and we will use it on the website."))
     gender = models.CharField(_("Gender"), max_length=1, choices=GENDER_CHOICES, default=None, blank=False, null=True)
-    photo = ThumbnailerImageField(_("Headshot Photo"), upload_to=photo_path, blank=True, null=True, help_text=_(
+    photo = ThumbnailerImageField(_("Headshot Photo"), upload_to=get_photo_path, blank=True, null=True, help_text=_(
         "We use member photos on the website to help match names with faces."))
     date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
 
@@ -88,10 +88,10 @@ class Member(models.Model):
             elif self.middle_name:
                 candidates.append(f"{self.first_name} {self.middle_name[0]} {self.last_name}")
                 candidates.append(f"{self.first_name} {self.middle_name} {self.last_name}")
-            for candidate in candidates:
-                if not Member.objects.filter(slug=slugify(candidate)):
-                    self.slug = slugify(candidate)
-                    break
+            self.choose_slug(candidates=candidates)
+            if not self.slug:      # try adding numbers to the member's name
+                candidates = [f"{self.get_full_name()} {i}" for i in range(100)]
+                self.choose_slug(candidates=candidates)
         return super().save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -112,6 +112,13 @@ class Member(models.Model):
     def get_short_name(self):
         """ Return either the first_name or nickname for the member. """
         return self.nickname if self.nickname else self.first_name
+
+    def choose_slug(self, candidates):
+        for candidate in candidates:
+            if not Member.objects.filter(slug=slugify(candidate)):
+                self.slug = slugify(candidate)
+                break
+        return self.slug
 
     @property
     def age(self):

@@ -36,9 +36,9 @@
           <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-inline align-top" alt="Pack Logo">
         </div>
         <div class="col d-none d-sm-block">
-          <div class="row" id="pack-name">Cub Scout Pack 144</div>
-          <div class="row" id="pack-location">Seattle, Washington</div>
-          <div class="row" id="pack-tagline">Since 1929</div>
+          <div class="row" id="pack-name">{{ pack_name }}</div>
+          <div class="row" id="pack-location">{{ pack_location }}</div>
+          <div class="row" id="pack-tagline">{{ pack_tagline }}</div>
         </div>
       </div>
     </a>
@@ -57,11 +57,11 @@
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'member_list' %} active{% endif %}" href="{% url 'member_list' %}">Members</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'committees_list' %} active{% endif %}" href="{% url 'committees_list' %}">Committees</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'document_list' %} active{% endif %}" href="{% url 'document_list' %}">Documents</a>
-            {% for item in navbar_private_navs %}
+            {% for item in private_pages %}
               <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
             {% endfor %}
           {% endif %}
-          {% for item in navbar_public_navs %}
+          {% for item in public_pages %}
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
           {% endfor %}
           <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'about_page' %} active{% endif %}" href="{% url 'about_page' %}">About Us</a>
