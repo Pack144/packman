@@ -89,8 +89,8 @@ class Member(models.Model):
                 candidates.append(f"{self.first_name} {self.middle_name[0]} {self.last_name}")
                 candidates.append(f"{self.first_name} {self.middle_name} {self.last_name}")
             self.choose_slug(candidates=candidates)
-            if not self.slug:      # try adding numbers to the member's name
-                candidates = [f"{self.get_full_name()} {i}" for i in range(100)]
+            if not self.slug:                               # try adding numbers to the member's name
+                candidates = [f"{self.get_full_name()} {i}" for i in range(1, 100)]
                 self.choose_slug(candidates=candidates)
         return super().save(*args, **kwargs)
 
