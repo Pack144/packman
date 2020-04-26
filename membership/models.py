@@ -15,6 +15,8 @@ from dens.models import Den
 from pack_calendar.models import PackYear
 
 from .managers import MemberManager
+from .managers import CurrentAnimalsManager, CurrentTigersManager, CurrentWolvesManager, CurrentBearsManager
+from .managers import CurrentWebelosManager, CurrentJrWebesManager, CurrentSrWebesManager
 
 
 def get_photo_path(instance, filename):
@@ -300,6 +302,16 @@ class Scout(Member):
     started_pack = models.DateField(_("Date Started"), blank=True, null=True, help_text=_(
         "When does this cub join their first activity with the pack?"
     ))
+
+    # Custom managers to simplify the selection of cubs based on their rank in the current pack year
+    animals = CurrentAnimalsManager()  # All animal ranks from Tiger through Bear
+    tigers = CurrentTigersManager()
+    wolves = CurrentWolvesManager()
+    bears = CurrentBearsManager()
+
+    webelos = CurrentWebelosManager()  # All Webelo ranks including Jr. & Sr. Webe
+    jr_webes = CurrentJrWebesManager()
+    sr_webes = CurrentSrWebesManager()
 
     class Meta:
         indexes = [models.Index(fields=['school', 'family', 'status', 'started_school'])]
