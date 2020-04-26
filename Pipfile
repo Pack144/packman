@@ -10,7 +10,7 @@ blowfish = "*"
 
 [packages]
 argon2-cffi = "*"
-django = "*"
+django = "~=2.2"
 django-ckeditor = "*"
 django-crispy-forms = "*"
 django-debug-toolbar = "*"
