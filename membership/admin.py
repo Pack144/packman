@@ -11,6 +11,9 @@ from address_book.models import Address, PhoneNumber
 from address_book.forms import AddressForm, PhoneNumberForm
 from dens.models import Rank
 
+from committees.models import Membership as CommitteeMembership
+from dens.models import Membership as DenMembership
+
 from . import forms, models
 
 
@@ -91,6 +94,18 @@ class AddressInline(admin.StackedInline):
     model = Address
 
 
+class CommitteeMembershipInline(admin.TabularInline):
+    extra = 0
+    model = CommitteeMembership
+    verbose_name_plural = _("Committee Assignments")
+
+
+class DenMembershipInline(admin.TabularInline):
+    extra = 0
+    model = DenMembership
+    verbose_name_plural = _("Den Assignments")
+
+
 class PhoneNumberInline(admin.TabularInline):
     extra = 0
     form = PhoneNumberForm
@@ -104,6 +119,7 @@ class ScoutAdmin(admin.ModelAdmin):
     list_filter = ('status', AnimalRankListFilter, 'den__den')
     readonly_fields = ('date_added', 'last_updated', 'reference', 'member_comments', 'grade')
     autocomplete_fields = ['family', 'school']
+    inlines = [DenMembershipInline]
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name')
     formfield_overrides = {
         ThumbnailerImageField: {'widget': ImageClearableFileInput},
@@ -180,7 +196,7 @@ class AdultAdmin(UserAdmin):
         (_("Account Details"), {'fields': (
             ('email', 'password1', 'password2'))}),
     )
-    inlines = [PhoneNumberInline, AddressInline]
+    inlines = [PhoneNumberInline, AddressInline, CommitteeMembershipInline]
 
 
 @admin.register(models.Family)
