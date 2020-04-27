@@ -10,11 +10,29 @@ from easy_thumbnails.widgets import ImageClearableFileInput
 from address_book.models import Address, PhoneNumber
 from address_book.forms import AddressForm, PhoneNumberForm
 from dens.models import Rank
+from pack_calendar.models import PackYear
 
 from committees.models import Membership as CommitteeMembership
 from dens.models import Membership as DenMembership
 
 from . import forms, models
+
+
+def make_active(modeladmin, request, queryset):
+    queryset.update(status=models.Scout.ACTIVE)
+
+
+def make_approved(modeladmin, request, queryset):
+    queryset.update(status=models.Scout.APPROVED)
+
+
+def make_inactive(modeladmin, request, queryset):
+    queryset.update(status=models.Scout.INACTIVE)
+
+
+make_active.short_description = _("Mark selected Cubs active")
+make_approved.short_description = _("Approve selected Cubs for membership")
+make_inactive.short_description = _("Mark selected Cubs inactive")
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
@@ -42,19 +60,19 @@ class AnimalRankListFilter(admin.SimpleListFilter):
         `self.value()`.
         """
         if self.value() == 'tigers':
-            return queryset.filter(den__rank__rank__exact=Rank.TIGER)
+            return queryset.filter(den__den__rank__rank__exact=Rank.TIGER).filter(den__year_assigned=PackYear.get_current_pack_year())
         if self.value() == 'wolves':
-            return queryset.filter(den__rank__rank__exact=Rank.WOLF)
+            return queryset.filter(den__den__rank__rank__exact=Rank.WOLF).filter(den__year_assigned=PackYear.get_current_pack_year())
         if self.value() == 'bears':
-            return queryset.filter(den__rank__rank__exact=Rank.BEAR)
+            return queryset.filter(den__den__rank__rank__exact=Rank.BEAR).filter(den__year_assigned=PackYear.get_current_pack_year())
         if self.value() == 'jr_weebs':
-            return queryset.filter(den__rank__rank__exact=Rank.JR_WEBE)
+            return queryset.filter(den__den__rank__rank__exact=Rank.JR_WEBE).filter(den__year_assigned=PackYear.get_current_pack_year())
         if self.value() == 'sr_weebs':
-            return queryset.filter(den__rank__rank__exact=Rank.SR_WEBE)
+            return queryset.filter(den__den__rank__rank__exact=Rank.SR_WEBE).filter(den__year_assigned=PackYear.get_current_pack_year())
         if self.value() == 'animals':
-            return queryset.filter(den__rank__rank__lte=Rank.BEAR)
+            return queryset.filter(den__den__rank__rank__lte=Rank.BEAR).filter(den__year_assigned=PackYear.get_current_pack_year())
         if self.value() == 'webelos':
-            return queryset.filter(den__rank__rank__gte=Rank.JR_WEBE)
+            return queryset.filter(den__den__rank__rank__gte=Rank.JR_WEBE).filter(den__year_assigned=PackYear.get_current_pack_year())
 
 
 class FamilyListFilter(admin.SimpleListFilter):
@@ -114,6 +132,7 @@ class PhoneNumberInline(admin.TabularInline):
 
 @admin.register(models.Scout)
 class ScoutAdmin(admin.ModelAdmin):
+    actions = [make_approved, make_active, make_inactive]
     list_display = ('first_name', 'nickname', 'last_name', 'school', 'get_grade', 'age', 'status')
     list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den__den')
@@ -224,4 +243,3 @@ class FamilyAdmin(admin.ModelAdmin):
 
 
 admin.site.login = login_required(admin.site.login)
-admin.site.unregister(Group)

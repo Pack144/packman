@@ -1,7 +1,7 @@
 import uuid
+from django.contrib.auth.models import Group
 from django.db import models
 from django.urls import reverse_lazy
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from pack_calendar.models import PackYear
@@ -72,10 +72,16 @@ class Membership(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"{self.year_served} {self.get_position_display()}: {self.member}"
-
     class Meta:
         ordering = ['year_served', 'den', 'position', 'member']
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
+
+    def __str__(self):
+        return f"{self.year_served} {self.get_position_display()}: {self.member}"
+
+    def save(self, *args, **kwargs):
+        group, created = Group.objects.get_or_create(name=self.committee.name)
+        if group not in self.member.groups.all():
+            self.member.groups.add(group)
+        super(Membership, self).save(*args, **kwargs)

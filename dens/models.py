@@ -106,7 +106,6 @@ class Den(models.Model):
             if self.rank.rank >= Rank.JR_WEBE:
                 return _("Webelos")
 
-
     @property
     def patch(self):
         if self.number <= 10:
@@ -114,15 +113,16 @@ class Den(models.Model):
 
     @property
     def animals(self):
-        return self.rank <= Rank.BEAR
+        return self.rank.rank <= Rank.BEAR
 
     @property
     def webelos(self):
-        return self.rank >= Rank.JR_WEBE
+        return self.rank.rank >= Rank.JR_WEBE
 
     count_current_members.short_description = _("# of Cubs")
     get_rank_category.admin_order_field = 'rank'
     get_rank_category.short_description = _("Rank Category")
+
 
 class Membership(models.Model):
     """
@@ -131,9 +131,9 @@ class Membership(models.Model):
     scout = models.ForeignKey('membership.Scout', on_delete=models.CASCADE, related_name='den')
     den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name='scouts')
     year_assigned = models.ForeignKey(PackYear,
-                                    on_delete=models.CASCADE,
-                                    default=PackYear.get_current_pack_year_year,
-                                    related_name='den_memberships')
+                                      on_delete=models.CASCADE,
+                                      default=PackYear.get_current_pack_year_year,
+                                      related_name='den_memberships')
 
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(auto_now_add=True)
