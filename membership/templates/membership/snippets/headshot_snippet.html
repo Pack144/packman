@@ -1,7 +1,7 @@
 {% load static thumbnail %}
     {% if member.photo %}
       <img src="{{ member.photo|thumbnail_url:'card' }}" class="card-img-top" alt="{{ member }}'s profile picture">
-    {% elif member.scout %}
+    {% elif member.scout or scout %}
       <img src="{% static 'img/avatar_cub.png' %}" class="card-img-top" alt="No profile picture">
     {% elif member.gender == 'M' %}
       <img src="{% static 'img/avatar_man.png' %}" class="card-img-top" alt="No profile picture">
