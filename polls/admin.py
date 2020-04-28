@@ -15,7 +15,14 @@ class QuestionAdmin(admin.ModelAdmin):
         ('Date information', {'fields': ['poll_opens', 'poll_closes']}),
     ]
     inlines = [ChoiceInline]
-    list_display = ('question_text', 'count_choices', 'count_total_votes', 'poll_opens', 'poll_closes', 'was_published_recently')
+    list_display = (
+        'question_text',
+        'count_choices',
+        'count_total_votes',
+        'poll_opens',
+        'poll_closes',
+        'was_published_recently'
+    )
     list_filter = ['poll_opens', 'poll_closes']
     search_fields = ['question_text']
 
