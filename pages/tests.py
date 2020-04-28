@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse, resolve
 
 
-from .views import AboutPageView, DynamicPage, HomePageView, HistoryPageView, SignUpPageView
+from .views import AboutPageView, HomePageView, HistoryPageView, SignUpPageView
 
 
 class AboutPageTests(TestCase):
@@ -19,7 +19,10 @@ class AboutPageTests(TestCase):
 
     def test_aboutpage_url_resolves_aboutpageview(self):
         view = resolve('/about/')
-        self.assertEqual(view.func.__name__, AboutPageView.as_view().__name__)
+        self.assertEqual(
+            view.func.__name__,
+            AboutPageView.as_view().__name__
+        )
 
 
 class HomePageTests(TestCase):
@@ -56,7 +59,10 @@ class HistoryPageTests(TestCase):
 
     def test_historypage_url_resolves_historypageview(self):
         view = resolve('/history/')
-        self.assertEqual(view.func.__name__, HistoryPageView.as_view().__name__)
+        self.assertEqual(
+            view.func.__name__,
+            HistoryPageView.as_view().__name__
+        )
 
 
 class SignUpPageTests(TestCase):
@@ -73,4 +79,7 @@ class SignUpPageTests(TestCase):
 
     def test_signuppage_url_resolves_signuppageview(self):
         view = resolve('/signup/')
-        self.assertEqual(view.func.__name__, SignUpPageView.as_view().__name__)
+        self.assertEqual(
+            view.func.__name__,
+            SignUpPageView.as_view().__name__
+        )
