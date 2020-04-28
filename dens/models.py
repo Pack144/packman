@@ -9,7 +9,8 @@ from pack_calendar.models import PackYear
 
 class Rank(models.Model):
     """
-    All of the Cub Scout ranks are defined. Packs can specify which ranks they support.
+    All of the Cub Scout ranks are defined. Packs can specify which ranks they
+    support.
     """
     BOBCAT = 1
     TIGER = 2
@@ -29,20 +30,36 @@ class Rank(models.Model):
         (WEBE, _("Webelo")),
         (ARROW, _("Arrow of Light")),
     )
-    rank = models.PositiveSmallIntegerField(choices=RANK_CHOICES, unique=True)
-    description = models.CharField(max_length=128, blank=True, null=True)
 
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    rank = models.PositiveSmallIntegerField(
+        choices=RANK_CHOICES,
+        unique=True,
+    )
+    description = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+    )
 
-    def __str__(self):
-        return self.get_rank_display()
+    uuid = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    date_added = models.DateField(
+        auto_now_add=True,
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
         ordering = ['rank']
         verbose_name = _("Rank")
         verbose_name_plural = _("Ranks")
+
+    def __str__(self):
+        return self.get_rank_display()
 
     def category(self):
         if self.rank < Rank.BOBCAT:
@@ -53,7 +70,7 @@ class Rank(models.Model):
             return _("Animal")
         elif self.rank >= Rank.JR_WEBE:
             # Jr. & Sr. Webelos
-            return _('Webelos')
+            return _("Webelos")
         else:
             return None
 
@@ -67,20 +84,33 @@ class Rank(models.Model):
             return f"{settings.STATIC_URL}img/wolf.jpg"
         elif self.rank == Rank.BEAR:
             return f"{settings.STATIC_URL}img/bear.jpg"
-        elif self.rank == Rank.JR_WEBE or self.rank == Rank.SR_WEBE or self.rank == Rank.WEBE:
+        elif Rank.JR_WEBE <= self.rank <= Rank.WEBE:
             return f"{settings.STATIC_URL}img/webelo.jpg"
         elif self.rank == Rank.ARROW:
             return f"{settings.STATIC_URL}img/arrow_of_light.jpg"
 
 
 class Den(models.Model):
-    """ Each cub should be a member of 1 den """
+    """ Each active cub should be a member of 1 den each Pack Year """
 
-    number = models.PositiveSmallIntegerField(primary_key=True, help_text=_("The Den's Number"))
-    rank = models.ForeignKey(Rank, on_delete=models.CASCADE, related_name='dens', blank=True, null=True)
+    number = models.PositiveSmallIntegerField(
+        primary_key=True,
+        help_text=_("The Den number"),
+    )
+    rank = models.ForeignKey(
+        Rank,
+        on_delete=models.CASCADE,
+        related_name='dens',
+        blank=True,
+        null=True,
+    )
 
-    date_added = models.DateField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    date_added = models.DateField(
+        auto_now_add=True,
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
         ordering = ['number']
@@ -94,7 +124,9 @@ class Den(models.Model):
         return reverse('den_detail', args=[int(self.number)])
 
     def active_cubs(self):
-        return self.scouts.filter(year_assigned=PackYear.get_current_pack_year())
+        return self.scouts.filter(
+            year_assigned=PackYear.get_current_pack_year()
+        )
 
     def count_current_members(self):
         return self.active_cubs().count()
@@ -128,21 +160,39 @@ class Membership(models.Model):
     """
     Tracks the year(s) a cub is assigned to a Den
     """
-    scout = models.ForeignKey('membership.Scout', on_delete=models.CASCADE, related_name='den')
-    den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name='scouts')
-    year_assigned = models.ForeignKey(PackYear,
-                                      on_delete=models.CASCADE,
-                                      default=PackYear.get_current_pack_year_year,
-                                      related_name='den_memberships')
+    scout = models.ForeignKey(
+        'membership.Scout',
+        on_delete=models.CASCADE,
+        related_name='den',
+    )
+    den = models.ForeignKey(
+        Den,
+        on_delete=models.CASCADE,
+        related_name='scouts',
+    )
+    year_assigned = models.ForeignKey(
+        PackYear,
+        on_delete=models.CASCADE,
+        default=PackYear.get_current_pack_year_year,
+        related_name='den_memberships',
+    )
 
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.year_assigned}: {self.scout}"
+    uuid = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    date_added = models.DateTimeField(
+        auto_now_add=True,
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
         ordering = ['year_assigned', 'den', 'scout']
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
+
+    def __str__(self):
+        return f"{self.year_assigned}: {self.scout}"
