@@ -10,18 +10,15 @@ from django.utils.translation import gettext_lazy as _
 
 from ckeditor.fields import RichTextField
 
-from address_book.models import Venue
-from documents.models import Document
-
 
 class PackYear(models.Model):
     """
-    FIXME: This doesn't actually work.
-    TODO: Replace static 'year' assignments with a foreign key or one-to-on reference to this model
-    Stores the start and end date of a pack year in the database. Used by committee assignments, den assignments, and
-    events to keep things neatly sorted.
+    Stores the start and end date of a pack year in the database. Used by
+    committee assignments, den assignments, and events to keep things sorted.
     """
-    year = models.PositiveSmallIntegerField(primary_key=True)
+    year = models.PositiveSmallIntegerField(
+        primary_key=True,
+    )
 
     class Meta:
         indexes = [models.Index(fields=['year'])]
@@ -38,26 +35,36 @@ class PackYear(models.Model):
     @staticmethod
     def get_pack_year(date_to_test=timezone.now()):
         """
-        Given a date, calculate the date range (start, end) for the pack year which encapsulates that date.
+        Given a date, calculate the date range (start, end) for the pack year
+        which encapsulates that date.
         """
         if not isinstance(date_to_test, datetime):
             date_to_test = timezone.datetime(date_to_test, 1, 1)
         if timezone.is_aware(date_to_test):
             date_to_test = timezone.make_naive(date_to_test)
-        pack_year_begins = datetime(date_to_test.year, settings.PACK_YEAR_BEGIN_MONTH, settings.PACK_YEAR_BEGIN_DAY)
+        pack_year_begins = datetime(
+            date_to_test.year,
+            settings.PACK_YEAR_BEGIN_MONTH,
+            settings.PACK_YEAR_BEGIN_DAY
+        )
 
-        if not pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
-            pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
+        if not pack_year_begins <= date_to_test < pack_year_begins.replace(
+                year=pack_year_begins.year + 1
+        ):
+            pack_year_begins = pack_year_begins.replace(
+                year=pack_year_begins.year - 1
+            )
 
-        pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(seconds=1)
+        pack_year_ends = pack_year_begins.replace(
+            year=pack_year_begins.year + 1
+        ) - timezone.timedelta(seconds=1)
         return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
 
     @staticmethod
     def get_current_pack_year():
-        try:
-            year, created = PackYear.objects.get_or_create(year=PackYear.get_pack_year()['end_date'].year)
-        except:
-            year = PackYear(year=0)
+        year, created = PackYear.objects.get_or_create(
+            year=PackYear.get_pack_year()['end_date'].year
+        )
         return year
 
     @staticmethod
@@ -78,7 +85,7 @@ class PackYear(models.Model):
 
 class Category(models.Model):
     """
-    Events should be tagged with a category for filtering and display on the website
+    Events should be tagged with a category for filtering and display
     """
     # Define available colors for the category, mapped to Bootstrap text-colors
     # (https://getbootstrap.com/docs/4.4/utilities/colors/)
@@ -86,15 +93,20 @@ class Category(models.Model):
     GREEN = 'success'
     RED = 'danger'
     YELLOW = 'warning'
-    AQUA = 'info'
+    TEAL = 'info'
     GREY = 'secondary'
+    TRANSPARENT = 'transparent'
+    LIGHT = 'light'
+    DARK = 'dark'
+    WHITE = 'white'
     COLOR_CHOICES = (
-        (BLUE, _('Blue')),
-        (GREEN, _('Green')),
-        (RED, _('Red')),
-        (YELLOW, _('Yellow')),
-        (AQUA, _('Light Blue')),
-        (GREY, _('Grey/Muted')),
+        (BLUE, _("Blue")),
+        (GREEN, _("Green")),
+        (RED, _("Red")),
+        (YELLOW, _("Yellow")),
+        (TEAL, _("Teal")),
+        (GREY, _("Grey/Muted")),
+        (TRANSPARENT, _("Transparent"))
     )
 
     # Define available FontAwesome icons for the category
@@ -117,35 +129,63 @@ class Category(models.Model):
     SEEDLING = '<i class="fas fa-seedling"></i>'
     STAR = '<i class="fas fa-star"></i>'
     ICON_CHOICES = (
-        (ALARM_CLOCK, _('Alarm Clock')),
-        (AWARD, _('Award')),
-        (BELL, _('Bell')),
-        (CALENDAR, _('Calendar')),
-        (CAMPGROUND, _('Campground')),
+        (ALARM_CLOCK, _("Alarm Clock")),
+        (AWARD, _("Award")),
+        (BELL, _("Bell")),
+        (CALENDAR, _("Calendar")),
+        (CAMPGROUND, _("Campground")),
         (CIRCLED_X, _("Circled 'X'")),
-        (DONATE, _('Donate')),
-        (GIFT, _('Gift box')),
-        (LARGE_GROUP, _('Group (large)')),
-        (SMALL_GROUP, _('Group (small)')),
-        (HELPING_HANDS, _('Hands Helping')),
-        (HANDSHAKE, _('Hands Shaking')),
-        (HEART, _('Heart')),
-        (MEDAL, _('Medal')),
-        (RIBBON, _('Ribbon')),
-        (SEEDLING, _('Seedling')),
-        (STAR, _('Star')),
+        (DONATE, _("Donate")),
+        (GIFT, _("Gift box")),
+        (LARGE_GROUP, _("Group (large)")),
+        (SMALL_GROUP, _("Group (small)")),
+        (HELPING_HANDS, _("Hands Helping")),
+        (HANDSHAKE, _("Hands Shaking")),
+        (HEART, _("Heart")),
+        (MEDAL, _("Medal")),
+        (RIBBON, _("Ribbon")),
+        (SEEDLING, _("Seedling")),
+        (STAR, _("Star")),
     )
 
-    name = models.CharField(max_length=32, help_text=_("e.g. Pack Meeting, Den Meeting, Camp out, etc."))
-    description = models.CharField(max_length=256, blank=True, null=True,
-                                   help_text=_("Give a little more detail about the kinds of events in this category"))
-    icon = models.CharField(max_length=64, choices=ICON_CHOICES, blank=True, null=True,
-                            help_text=_("Optionally choose an icon to display with these events"))
-    color = models.CharField(max_length=16, choices=COLOR_CHOICES, blank=True, null=True,
-                             help_text=_("Optionally choose a color to display these event in."))
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    name = models.CharField(
+        max_length=32,
+        help_text=_("e.g. Pack Meeting, Den Meeting, Camp out, etc."),
+    )
+    description = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text=_(
+            "Give a little more detail about the kinds of events in this "
+            "category"),
+    )
+    icon = models.CharField(
+        max_length=64,
+        choices=ICON_CHOICES,
+        blank=True,
+        null=True,
+        help_text=_("Optionally choose an icon to display with these events"),
+    )
+    color = models.CharField(
+        max_length=16,
+        choices=COLOR_CHOICES,
+        blank=True,
+        null=True,
+        help_text=_("Optionally choose a color to display these event in."),
+    )
+
+    uuid = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    date_added = models.DateTimeField(
+        auto_now_add=True,
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
         indexes = [models.Index(fields=['name'])]
@@ -158,9 +198,7 @@ class Category(models.Model):
 
 
 class Event(models.Model):
-    """
-    Store information about events
-    """
+    """ Store information about events """
     TENTATIVE = 'TENTATIVE'
     CONFIRMED = 'CONFIRMED'
     CANCELED = 'CANCELED'
@@ -169,27 +207,72 @@ class Event(models.Model):
         (CONFIRMED, _("Confirmed")),
         (CANCELED, _("Canceled")),
     )
-    name = models.CharField(max_length=64)
-    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events', blank=True, null=True)
-    location = models.CharField(max_length=64, blank=True, null=True)
+    name = models.CharField(
+        max_length=64,
+    )
+    venue = models.ForeignKey(
+        'address_book.Venue',
+        on_delete=models.CASCADE,
+        related_name='events',
+        blank=True,
+        null=True,
+    )
+    location = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+    )
 
     start = models.DateTimeField()
-    end = models.DateTimeField(blank=True, null=True)
-    all_day = models.BooleanField(default=False)
+    end = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
 
-    description = RichTextField(blank=True, null=True)
-    url = models.URLField(blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events')
-    attachments = models.ManyToManyField(Document, related_name='events', blank=True)
-    published = models.BooleanField(_("Show on iCal"), default=True)
-    status = models.CharField(max_length=9, choices=STATUS_CHOICES, default=CONFIRMED)
+    description = RichTextField(
+        blank=True,
+        null=True,
+    )
+    url = models.URLField(
+        blank=True,
+        null=True,
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name='events',
+    )
+    attachments = models.ManyToManyField(
+        'documents.Document',
+        related_name='events',
+        blank=True
+    )
+    published = models.BooleanField(
+        _("Show on iCal"),
+        default=True,
+    )
+    status = models.CharField(
+        max_length=9,
+        choices=STATUS_CHOICES,
+        default=CONFIRMED,
+    )
 
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    uuid = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    date_added = models.DateTimeField(
+        auto_now_add=True,
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
-        indexes = [models.Index(fields=['name', 'venue', 'location', 'start', 'end', 'category'])]
+        indexes = [models.Index(
+            fields=['name', 'venue', 'location', 'start', 'end', 'category']
+        )]
         ordering = ['-start']
         verbose_name = _("Event")
         verbose_name_plural = _("Events")
@@ -208,7 +291,7 @@ class Event(models.Model):
         elif self.location:
             return self.location
         else:
-            return _('TBD')
+            return ""
 
     def get_location_with_address(self):
         if hasattr(self.venue, 'address'):
@@ -216,11 +299,11 @@ class Event(models.Model):
         else:
             return self.get_location()
 
-    get_location.short_description = _('Location')
+    get_location.short_description = _("Location")
 
     def clean(self):
         if self.end and self.end < self.start:
-            raise ValidationError(_('Event cannot end before it starts.'))
+            raise ValidationError(_("Event cannot end before it starts."))
 
     @property
     def pack_year(self):
