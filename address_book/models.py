@@ -1,6 +1,5 @@
 import uuid
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from localflavor.us.models import USStateField, USZipCodeField
@@ -9,15 +8,25 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class VenueType(models.Model):
     """
-    Specifying a VenueType allows for sorting and filtering venues. Used by the cub sign-up view to provide a list of
-    schools the pack is aware of.
+    Specifying a VenueType allows for sorting and filtering venues. Used by the
+    cub sign-up view to provide a list of schools the pack is aware of.
     """
-    type = models.CharField(max_length=16, help_text=_(
-        "e.g. School, Campground, Park, etc."))
+    type = models.CharField(
+        max_length=16,
+        help_text=_("e.g. School, Campground, Park, etc.")
+    )
 
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    uuid = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    date_added = models.DateField(
+        auto_now_add=True
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True
+    )
 
     class Meta:
         ordering = ['type']
@@ -30,16 +39,34 @@ class VenueType(models.Model):
 
 class Venue(models.Model):
     """
-    Venues are locations where the pack may meet in the pack_caledar app and by Scouts to record the school they
-    attend.
+    Venues are locations where the pack may meet in the pack_calendar app and
+    by Scouts to record the school they attend.
     """
-    name = models.CharField(max_length=128, unique=True)
-    type = models.ManyToManyField(VenueType, related_name='venues')
-    url = models.URLField(_("Website"), blank=True, null=True)
+    name = models.CharField(
+        max_length=128,
+        unique=True
+    )
+    type = models.ManyToManyField(
+        VenueType,
+        related_name='venues'
+    )
+    url = models.URLField(
+        _("Website"),
+        blank=True,
+        null=True
+    )
 
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    uuid = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    date_added = models.DateField(
+        auto_now_add=True
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True
+    )
 
     class Meta:
         ordering = ['name']
@@ -52,9 +79,10 @@ class Venue(models.Model):
 
 class Address(models.Model):
     """
-    Address object to store physical address information. Used by Adult members and Venues. When associated with a
-    member, the published option controls whether the address will be displayed on a member's detail page. This setting
-    is not honored for venues, as the address should always be visible.
+    Address object to store physical address information. Used by Adult members
+    and Venues. When associated with a member, the published option controls
+    whether the address will be displayed on a member's detail page. This
+    setting is ignored for venues, as the address should always be visible.
     """
     HOME = 'H'
     WORK = 'W'
@@ -65,24 +93,65 @@ class Address(models.Model):
         (OTHER, _("Other")),
         (None, _("Type")),
     )
-    street = models.CharField(_("Address"), max_length=128)
-    street2 = models.CharField(_("Unit / Apartment / Suite"), max_length=128, blank=True, null=True)
-    city = models.CharField(_("City"), max_length=64)
-    state = USStateField(_("State"))
-    zip_code = USZipCodeField(_("ZIP Code"))
 
-    type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
-
-    published = models.BooleanField(default=True, help_text=_(
-        "Display this address to other members of the pack."))
+    street = models.CharField(
+        _("Address"),
+        max_length=128,
+    )
+    street2 = models.CharField(
+        _("Unit / Apartment / Suite"),
+        max_length=128,
+        blank=True,
+        null=True,
+    )
+    city = models.CharField(
+        _("City"),
+        max_length=64,
+    )
+    state = USStateField(
+        _("State"),
+    )
+    zip_code = USZipCodeField(
+        _("ZIP Code"),
+    )
+    type = models.CharField(
+        max_length=1,
+        choices=TYPE_CHOICES,
+        blank=True,
+        null=True,
+    )
+    published = models.BooleanField(
+        default=True,
+        help_text=_("Display this address to other members of the pack."),
+    )
 
     # Related models
-    member = models.ForeignKey('membership.Adult', on_delete=models.SET_NULL, related_name='addresses', blank=True, null=True)
-    venue = models.OneToOneField(Venue, on_delete=models.SET_NULL, related_name='address', null=True, blank=True)
+    member = models.ForeignKey(
+        'membership.Adult',
+        on_delete=models.SET_NULL,
+        related_name='addresses',
+        blank=True,
+        null=True,
+    )
+    venue = models.OneToOneField(
+        Venue,
+        on_delete=models.SET_NULL,
+        related_name='address',
+        null=True,
+        blank=True,
+    )
 
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    uuid = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    date_added = models.DateField(
+        auto_now_add=True,
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
         ordering = ['street']
@@ -97,16 +166,24 @@ class Address(models.Model):
 
     def single_line_display(self):
         if self.street2:
-            return f"{self.street} {self.street2}, {self.city}, {self.state} {self.zip_code}"
+            return f"{self.street} " \
+                   f"{self.street2}, " \
+                   f"{self.city}, " \
+                   f"{self.state} " \
+                   f"{self.zip_code}"
         else:
-            return f"{self.street}, {self.city}, {self.state} {self.zip_code}"
+            return f"{self.street}, " \
+                   f"{self.city}, " \
+                   f"{self.state} " \
+                   f"{self.zip_code}"
 
 
 class PhoneNumber(models.Model):
     """
-    Phone number object to store phone contact details. Used by Adult members and Venues. When associated with a
-    member, the published option controls whether the number will be displayed on a member's detail page. This setting
-    is not honored for venues, as the phone number should always be visible.
+    Phone number object to store phone contact details. Used by Adult members
+    and Venues. When associated with a member, the published option controls
+    whether the number will be displayed on a member's detail page. This
+    setting is ignored for venues, as the number should always be visible.
     """
     HOME = 'H'
     MOBILE = 'M'
@@ -119,16 +196,47 @@ class PhoneNumber(models.Model):
         (OTHER, _("Other")),
         (None, _("Type")),
     )
-    number = PhoneNumberField(_("Phone Number"), region="US")
-    type = models.CharField(max_length=1, choices=TYPE_CHOICES, blank=True, null=True)
-    published = models.BooleanField(default=True, help_text=_(
-        "Display this phone number to other members of the pack."))
 
-    member = models.ForeignKey('membership.Adult', on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
-    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, related_name='phone_numbers', blank=True, null=True)
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    number = PhoneNumberField(
+        _("Phone Number"),
+        region='US',
+    )
+    type = models.CharField(
+        max_length=1,
+        choices=TYPE_CHOICES,
+        blank=True,
+        null=True,
+    )
+    published = models.BooleanField(
+        default=True,
+        help_text=_("Display this phone number to other members of the pack."),
+    )
+    member = models.ForeignKey(
+        'membership.Adult',
+        on_delete=models.SET_NULL,
+        related_name='phone_numbers',
+        blank=True,
+        null=True,
+    )
+    venue = models.ForeignKey(
+        Venue,
+        on_delete=models.SET_NULL,
+        related_name='phone_numbers',
+        blank=True,
+        null=True,
+    )
+
+    uuid = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    date_added = models.DateField(
+        auto_now_add=True,
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
         ordering = ['number']
