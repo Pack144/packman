@@ -5,7 +5,6 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-# from allauth.registration.forms import SignupForm as AllauthSignupForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field
 from crispy_forms.bootstrap import FormActions, InlineRadios, AppendedText
@@ -16,8 +15,20 @@ from address_book.models import Address, PhoneNumber
 
 from .models import Adult, Scout, Family
 
-AddressFormSet = inlineformset_factory(Adult, Address, form=AddressForm, can_delete=True, extra=1)
-PhoneNumberFormSet = inlineformset_factory(Adult, PhoneNumber, form=PhoneNumberForm, can_delete=True, extra=1)
+AddressFormSet = inlineformset_factory(
+    Adult,
+    Address,
+    form=AddressForm,
+    can_delete=True,
+    extra=1,
+)
+PhoneNumberFormSet = inlineformset_factory(
+    Adult,
+    PhoneNumber,
+    form=PhoneNumberForm,
+    can_delete=True,
+    extra=1,
+)
 
 
 class AdminAdultChange(UserChangeForm):
@@ -35,8 +46,10 @@ class AdminAdultCreation(UserCreationForm):
 class AdultCreation(UserCreationForm):
     class Meta:
         model = Adult
-        fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
-                  'gender', 'role', 'photo')
+        fields = (
+            'first_name', 'middle_name', 'last_name', 'suffix', 'nickname',
+            'email', 'is_published', 'gender', 'role', 'photo'
+        )
         widgets = {
             'photo': widgets.FileInput,
         }
@@ -49,8 +62,8 @@ class AdultCreation(UserCreationForm):
         self.fields['password1'].required = False
         self.fields['password2'].required = False
         self.fields['role'].choices = (
-            (Adult.PARENT, _('Parent')),
-            (Adult.GUARDIAN, _('Guardian')),
+            (Adult.PARENT, _("Parent")),
+            (Adult.GUARDIAN, _("Guardian")),
         )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
@@ -77,16 +90,22 @@ class AdultCreation(UserCreationForm):
         )
 
 
-class Family(forms.ModelForm):
+class FamilyForm(forms.ModelForm):
     class Meta:
         model = Family
         fields = '__all__'
 
-    adults = forms.ModelMultipleChoiceField(queryset=Adult.objects.all(), required=False)
-    children = forms.ModelMultipleChoiceField(queryset=Scout.objects.all(), required=False)
+    adults = forms.ModelMultipleChoiceField(
+        queryset=Adult.objects.all(),
+        required=False,
+    )
+    children = forms.ModelMultipleChoiceField(
+        queryset=Scout.objects.all(),
+        required=False,
+    )
 
     def __init__(self, *args, **kwargs):
-        super(Family, self).__init__(*args, **kwargs)
+        super(FamilyForm, self).__init__(*args, **kwargs)
         if self.instance:
             self.fields['adults'].initial = self.instance.adults.all()
             self.fields['children'].initial = self.instance.children.all()
@@ -95,7 +114,7 @@ class Family(forms.ModelForm):
         # FIXME: 'commit' argument is not handled
         # TODO: Wrap reassignments into transaction
         # NOTE: Previously assigned Foos are silently reset
-        instance = super(Family, self).save(commit=False)
+        instance = super(FamilyForm, self).save(commit=False)
         self.fields['adults'].initial.update(family=None)
         self.fields['children'].initial.update(family=None)
         self.cleaned_data['adults'].update(family=instance)
@@ -106,8 +125,10 @@ class Family(forms.ModelForm):
 class AdultForm(forms.ModelForm):
     class Meta:
         model = Adult
-        fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
-                  'gender', 'role', 'photo')
+        fields = (
+            'first_name', 'middle_name', 'last_name', 'suffix', 'nickname',
+            'email', 'is_published', 'gender', 'role', 'photo'
+        )
         widgets = {
             'photo': widgets.FileInput,
         }
@@ -118,8 +139,8 @@ class AdultForm(forms.ModelForm):
             if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
                 field.widget.attrs['placeholder'] = field.label
         self.fields['role'].choices = (
-            (Adult.PARENT, _('Parent')),
-            (Adult.GUARDIAN, _('Guardian')),
+            (Adult.PARENT, _("Parent")),
+            (Adult.GUARDIAN, _("Guardian")),
         )
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
@@ -149,13 +170,30 @@ class AdultForm(forms.ModelForm):
 class ScoutForm(forms.ModelForm):
     class Meta:
         model = Scout
-        exclude = ('started_pack', 'status', 'den', 'family', 'pack_comments', 'slug')
+        fields = (
+            'first_name',
+            'middle_name',
+            'nickname',
+            'last_name',
+            'suffix',
+            'gender',
+            'date_of_birth',
+            'photo',
+            'school',
+            'started_school',
+            'reference',
+            'member_comments',
+        )
         widgets = {
             'date_of_birth': DatePicker(
                 options={
                     'maxDate': str(timezone.now()),
-                    'minDate': str(timezone.now().replace(year=timezone.now().year - 13)),
-                    'defaultDate': str(timezone.now().replace(year=timezone.now().year - 6)),
+                    'minDate': str(timezone.now().replace(
+                        year=timezone.now().year - 13)
+                    ),
+                    'defaultDate': str(timezone.now().replace(
+                        year=timezone.now().year - 6)
+                    ),
                 },
                 attrs={
                     'append': 'far fa-calendar-alt',
@@ -187,8 +225,14 @@ class ScoutForm(forms.ModelForm):
             Field('date_of_birth', css_class='col-md-3'),
             Field('photo'),
             Row(
-                Column(Field('school', css_class='custom-select'), css_class='col-md-8'),
-                Column(AppendedText('started_school', 'grade'), css_class='col-md-4'),
+                Column(
+                    Field('school', css_class='custom-select'),
+                    css_class='col-md-8',
+                ),
+                Column(
+                    AppendedText('started_school', 'grade'),
+                    css_class='col-md-4',
+                ),
             ),
             'reference',
             'member_comments',
@@ -201,9 +245,23 @@ class ScoutForm(forms.ModelForm):
 class SignupForm(UserCreationForm):
     class Meta:
         model = Adult
-        fields = ('first_name', 'middle_name', 'last_name', 'suffix', 'nickname', 'email', 'is_published',
-                  'gender', 'role', 'photo')
-        widgets = {'gender': widgets.RadioSelect, 'role': widgets.RadioSelect, 'photo': widgets.FileInput}
+        fields = (
+            'first_name',
+            'middle_name',
+            'last_name',
+            'suffix',
+            'nickname',
+            'email',
+            'is_published',
+            'gender',
+            'role',
+            'photo'
+        )
+        widgets = {
+            'gender': widgets.RadioSelect,
+            'role': widgets.RadioSelect,
+            'photo': widgets.FileInput
+        }
 
     def __init__(self, *args, **kwargs):
         super(SignupForm, self).__init__(*args, **kwargs)
@@ -254,7 +312,6 @@ class SignupForm(UserCreationForm):
         user.photo = self.cleaned_data['photo']
         user.email = self.cleaned_data['email']
         user.is_published = self.cleaned_data['is_published']
-        user.family = Family.objects.create()
+        user.family = FamilyForm.objects.create()
         user.save()
         return user
-

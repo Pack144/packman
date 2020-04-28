@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
 from easy_thumbnails.fields import ThumbnailerImageField
@@ -36,7 +35,8 @@ make_inactive.short_description = _("Mark selected Cubs inactive")
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
-    # Human-readable title which will be displayed in the right admin sidebar just above the filter options.
+    # Human-readable title which will be displayed in the right admin sidebar
+    # just above the filter options.
     title = _("Ranks")
 
     # Parameter for the filter that will be used in the URL query.
@@ -44,40 +44,82 @@ class AnimalRankListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
+            ('bobcats', _("Bobcats")),
             ('tigers', _("Tigers")),
             ('wolves', _("Wolves")),
             ('bears', _("Bears")),
-            ('jr_weebs', _("Jr. Webelos")),
-            ('sr_weebs', _("Sr. Webelos")),
+            ('jr_webes', _("Jr. Webelos")),
+            ('sr_webes', _("Sr. Webelos")),
+            ('arrow', _("Arrow of Light")),
             ('animals', _("Animal Ranks")),
             ('webelos', _("Webelos")),
         )
 
     def queryset(self, request, queryset):
         """
-        Returns the filtered queryset based on the value
-        provided in the query string and retrievable via
-        `self.value()`.
+        Returns the filtered queryset based on the value provided in the query
+        string and retrievable via `self.value()`.
         """
+        if self.value() == 'bobcats':
+            return queryset.filter(
+                den__den__rank__rank__exact=Rank.BOBCAT
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
         if self.value() == 'tigers':
-            return queryset.filter(den__den__rank__rank__exact=Rank.TIGER).filter(den__year_assigned=PackYear.get_current_pack_year())
+            return queryset.filter(
+                den__den__rank__rank__exact=Rank.TIGER
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
         if self.value() == 'wolves':
-            return queryset.filter(den__den__rank__rank__exact=Rank.WOLF).filter(den__year_assigned=PackYear.get_current_pack_year())
+            return queryset.filter(
+                den__den__rank__rank__exact=Rank.WOLF
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
         if self.value() == 'bears':
-            return queryset.filter(den__den__rank__rank__exact=Rank.BEAR).filter(den__year_assigned=PackYear.get_current_pack_year())
-        if self.value() == 'jr_weebs':
-            return queryset.filter(den__den__rank__rank__exact=Rank.JR_WEBE).filter(den__year_assigned=PackYear.get_current_pack_year())
-        if self.value() == 'sr_weebs':
-            return queryset.filter(den__den__rank__rank__exact=Rank.SR_WEBE).filter(den__year_assigned=PackYear.get_current_pack_year())
+            return queryset.filter(
+                den__den__rank__rank__exact=Rank.BEAR
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
+        if self.value() == 'jr_webes':
+            return queryset.filter(
+                den__den__rank__rank__exact=Rank.JR_WEBE
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
+        if self.value() == 'sr_webes':
+            return queryset.filter(
+                den__den__rank__rank__exact=Rank.SR_WEBE
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
+        if self.value() == 'arrow':
+            return queryset.filter(
+                den__den__rank__rank__exact=Rank.ARROW
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
         if self.value() == 'animals':
-            return queryset.filter(den__den__rank__rank__lte=Rank.BEAR).filter(den__year_assigned=PackYear.get_current_pack_year())
+            return queryset.filter(
+                den__den__rank__rank__lte=Rank.BEAR
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
         if self.value() == 'webelos':
-            return queryset.filter(den__den__rank__rank__gte=Rank.JR_WEBE).filter(den__year_assigned=PackYear.get_current_pack_year())
+            return queryset.filter(
+                den__den__rank__rank__gte=Rank.JR_WEBE
+            ).filter(
+                den__year_assigned=PackYear.get_current_pack_year()
+            )
 
 
 class FamilyListFilter(admin.SimpleListFilter):
-    # Human-readable title which will be displayed in the right admin sidebar just above the filter options.
-    title = _('Family Members')
+    # Human-readable title which will be displayed in the right admin sidebar
+    # just above the filter options.
+    title = _("Family Members")
 
     # Parameter for the filter that will be used in the URL query.
     parameter_name = 'members'
@@ -92,18 +134,25 @@ class FamilyListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         """
-        Returns the filtered queryset based on the value
-        provided in the query string and retrievable via
-        `self.value()`.
+        Returns the filtered queryset based on the value provided in the query
+        string and retrievable via `self.value()`.
         """
         if self.value() == 'complete':
-            return queryset.filter(adults__isnull=False, children__isnull=False).distinct()
+            return queryset.filter(
+                adults__isnull=False, children__isnull=False
+            ).distinct()
         if self.value() == 'empty':
-            return queryset.filter(adults__isnull=True, children__isnull=True).distinct()
+            return queryset.filter(
+                adults__isnull=True, children__isnull=True
+            ).distinct()
         if self.value() == 'orphan':
-            return queryset.filter(adults__isnull=True, children__isnull=False).distinct()
+            return queryset.filter(
+                adults__isnull=True, children__isnull=False
+            ).distinct()
         if self.value() == 'childless':
-            return queryset.filter(adults__isnull=False, children__isnull=True).distinct()
+            return queryset.filter(
+                adults__isnull=False, children__isnull=True
+            ).distinct()
 
 
 class AddressInline(admin.StackedInline):
@@ -133,10 +182,24 @@ class PhoneNumberInline(admin.TabularInline):
 @admin.register(models.Scout)
 class ScoutAdmin(admin.ModelAdmin):
     actions = [make_approved, make_active, make_inactive]
-    list_display = ('first_name', 'nickname', 'last_name', 'school', 'get_grade', 'age', 'status')
+    list_display = (
+        'first_name',
+        'nickname',
+        'last_name',
+        'school',
+        'get_grade',
+        'age',
+        'status'
+    )
     list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den__den')
-    readonly_fields = ('date_added', 'last_updated', 'reference', 'member_comments', 'grade')
+    readonly_fields = (
+        'date_added',
+        'last_updated',
+        'reference',
+        'member_comments',
+        'grade'
+    )
     autocomplete_fields = ['family', 'school']
     inlines = [DenMembershipInline]
     search_fields = ('first_name', 'middle_name', 'nickname', 'last_name')
@@ -170,7 +233,16 @@ class ScoutAdmin(admin.ModelAdmin):
 class AdultAdmin(UserAdmin):
     add_form = forms.AdminAdultCreation
     form = forms.AdminAdultChange
-    list_display = ('first_name', 'middle_name', 'last_name', 'email', 'role', '_is_staff', 'is_superuser', 'last_login')
+    list_display = (
+        'first_name',
+        'middle_name',
+        'last_name',
+        'email',
+        'role',
+        '_is_staff',
+        'is_superuser',
+        'last_login'
+    )
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
     list_filter = ('_is_staff', 'is_superuser')
     ordering = ('last_name', 'nickname', 'first_name')
@@ -194,7 +266,10 @@ class AdultAdmin(UserAdmin):
         }),
         (_("Permissions"), {
             'classes': ('collapse',),
-            'fields': ('is_active', '_is_staff', 'is_superuser', 'groups', 'user_permissions'),
+            'fields': (
+                'is_active', '_is_staff', 'is_superuser', 'groups',
+                'user_permissions',
+            ),
         }),
         (_("Important Dates"), {
             'classes': ('collapse',),
@@ -220,16 +295,18 @@ class AdultAdmin(UserAdmin):
 
 @admin.register(models.Family)
 class FamilyAdmin(admin.ModelAdmin):
-    form = forms.Family
+    form = forms.FamilyForm
     list_display = ('name', 'get_adults_count', 'get_children_count',)
     list_filter = (FamilyListFilter,)
-    search_fields = ('name',
-                     'adults__first_name',
-                     'adults__nickname',
-                     'adults__last_name',
-                     'children__first_name',
-                     'children__nickname',
-                     'children__last_name')
+    search_fields = (
+        'name',
+        'adults__first_name',
+        'adults__nickname',
+        'adults__last_name',
+        'children__first_name',
+        'children__nickname',
+        'children__last_name',
+    )
 
     def get_adults_count(self, instance):
         return instance.adults.count()
