@@ -1,6 +1,8 @@
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import DetailView, TemplateView, UpdateView, CreateView
+from django.views.generic import (
+    DetailView, TemplateView, UpdateView, CreateView
+)
 
 from membership.forms import SignupForm
 from pack_calendar.models import Event
@@ -15,7 +17,9 @@ class AboutPageView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         try:
-            context['page_content'] = StaticPage.objects.get(page=StaticPage.ABOUT)
+            context['page_content'] = StaticPage.objects.get(
+                page=StaticPage.ABOUT
+            )
         except StaticPage.DoesNotExist:
             context['page_content'] = None
 
@@ -27,11 +31,15 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(HomePageView, self).get_context_data(**kwargs)
-        context['event_list'] = Event.objects.filter(start__lte=timezone.now() + timezone.timedelta(weeks=1))\
-            .filter(start__gte=timezone.now() - timezone.timedelta(hours=8))\
-            .order_by('start')
+        context['event_list'] = Event.objects.filter(
+            start__lte=timezone.now() + timezone.timedelta(weeks=1)
+        ).filter(
+            start__gte=timezone.now() - timezone.timedelta(hours=8)
+        ).order_by('start')
         try:
-            context['page_content'] = StaticPage.objects.get(page=StaticPage.HOME)
+            context['page_content'] = StaticPage.objects.get(
+                page=StaticPage.HOME
+            )
         except StaticPage.DoesNotExist:
             context['page_content'] = None
         return context
@@ -43,7 +51,9 @@ class HistoryPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            context['page_content'] = StaticPage.objects.get(page=StaticPage.HISTORY)
+            context['page_content'] = StaticPage.objects.get(
+                page=StaticPage.HISTORY
+            )
         except StaticPage.DoesNotExist:
             context['page_content'] = None
         return context
@@ -57,7 +67,9 @@ class SignUpPageView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            context['page_content'] = StaticPage.objects.get(page=StaticPage.SIGNUP)
+            context['page_content'] = StaticPage.objects.get(
+                page=StaticPage.SIGNUP
+            )
         except StaticPage.DoesNotExist:
             context['page_content'] = None
         return context

@@ -17,6 +17,7 @@ class ContentInline(admin.StackedInline):
     verbose_name = _("Content Section")
     verbose_name_plural = _("Content")
 
+
 @admin.register(Content)
 class ContentAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'page')

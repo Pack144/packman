@@ -13,7 +13,10 @@ def navbar_items(request):
         'private_pages': [],
     }
     for page in DynamicPage.objects.filter(include_in_nav=True):
-        if page.content_set.filter(Q(visibility=Content.PUBLIC) | Q(visibility=Content.ANONYMOUS)):
+        if page.content_set.filter(
+                Q(visibility=Content.PUBLIC) |
+                Q(visibility=Content.ANONYMOUS)
+        ):
             navbar['public_pages'].append(page)
         else:
             navbar['private_pages'].append(page)
