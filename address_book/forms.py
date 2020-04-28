@@ -1,5 +1,3 @@
-import re
-
 from django import forms
 
 from crispy_forms.helper import FormHelper
@@ -23,14 +21,28 @@ class AddressFormHelper(FormHelper):
                     Field('street'),
                     Field('street2'),
                     Row(
-                        Column(Field('city'), css_class='col-md-6'),
-                        Column(Field('state', css_class='custom-select'), css_class='col-md-3'),
-                        Column(Field('zip_code'), css_class='col-md-3'),
+                        Column(
+                            Field('city'), css_class='col-md-6'
+                        ),
+                        Column(
+                            Field('state', css_class='custom-select'),
+                            css_class='col-md-3'
+                        ),
+                        Column(
+                            Field('zip_code'), css_class='col-md-3'
+                        ),
                         css_class='mb-0'
                     ),
                     Row(
-                        Column(Field('type', css_class='custom-select')),
-                        Column(Field('published', css_class='custom-control custom-checkbox')),
+                        Column(
+                            Field('type', css_class='custom-select')
+                        ),
+                        Column(
+                            Field(
+                                'published',
+                                css_class='custom-control custom-checkbox'
+                            )
+                        ),
                     ),
                     Field('uuid', type='hidden'),
                     Field('member', type='hidden'),
@@ -56,7 +68,9 @@ class AddressForm(forms.ModelForm):
             if visible.field.widget.__class__ == forms.widgets.TextInput:
                 visible.field.widget.attrs['placeholder'] = visible.label
         self.helper = AddressFormHelper(self)
-        self.fields['state'].choices = STATE_CHOICES + ((None, self.fields['state'].label),)
+        self.fields['state'].choices = STATE_CHOICES + (
+            (None, self.fields['state'].label),
+        )
 
 
 class PhoneNumberFormHelper(FormHelper):
@@ -71,10 +85,18 @@ class PhoneNumberFormHelper(FormHelper):
             Row(
                 Column(
                     Row(
-                        Column(Field('type', css_class='custom-select'), css_class='col-md-3'),
-                        Column(Field('number')),
+                        Column(
+                            Field('type', css_class='custom-select'),
+                            css_class='col-md-3'
+                        ),
+                        Column(
+                            Field('number')
+                        ),
                     ),
-                    Field('published', css_class='custom-control custom-checkbox'),
+                    Field(
+                        'published',
+                        css_class='custom-control custom-checkbox'
+                    ),
                     Field('uuid', type='hidden'),
                     Field('member', type='hidden'),
                 ),
