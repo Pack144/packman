@@ -9,8 +9,9 @@ class MemberManager(UserManager):
 
     def _create_user(self, email, password, **extra_fields):
         """
-        Custom user model manager where email is the unique identifiers for authentication instead of usernames.
-        All other code is shamelessly ripped off directly from Django's own UserManager
+        Custom user model manager where email is the unique identifiers for
+        authentication instead of usernames. All other code is shamelessly
+        ripped off directly from Django's own UserManager
         https://github.com/django/django/blob/master/django/contrib/auth/models.py
         """
         if not email:
@@ -41,41 +42,48 @@ class MemberManager(UserManager):
 
 class CurrentTigersManager(models.Manager):
     def get_query_set(self):
-        return self.objects.filter(den__year_assigned=PackYear.get_current_pack_year()).filter(
+        return self.objects.filter(
+            den__year_assigned=PackYear.get_current_pack_year()).filter(
             den__den__rank__rank=Rank.TIGER)
 
 
 class CurrentWolvesManager(models.Manager):
     def get_query_set(self):
-        return self.objects.filter(den__year_assigned=PackYear.get_current_pack_year()).filter(
+        return self.objects.filter(
+            den__year_assigned=PackYear.get_current_pack_year()).filter(
             den__den__rank__rank=Rank.WOLF)
 
 
 class CurrentBearsManager(models.Manager):
     def get_query_set(self):
-        return self.objects.filter(den__year_assigned=PackYear.get_current_pack_year()).filter(
+        return self.objects.filter(
+            den__year_assigned=PackYear.get_current_pack_year()).filter(
             den__den__rank__rank=Rank.BEAR)
 
 
 class CurrentJrWebesManager(models.Manager):
     def get_query_set(self):
-        return self.objects.filter(den__year_assigned=PackYear.get_current_pack_year()).filter(
+        return self.objects.filter(
+            den__year_assigned=PackYear.get_current_pack_year()).filter(
             den__den__rank__rank=Rank.JR_WEBE)
 
 
 class CurrentSrWebesManager(models.Manager):
     def get_query_set(self):
-        return self.objects.filter(den__year_assigned=PackYear.get_current_pack_year()).filter(
+        return self.objects.filter(
+            den__year_assigned=PackYear.get_current_pack_year()).filter(
             den__den__rank__rank=Rank.SR_WEBE)
 
 
 class CurrentAnimalsManager(models.Manager):
     def get_query_set(self):
-        return self.objects.filter(den__year_assigned=PackYear.get_current_pack_year()).filter(
+        return self.objects.filter(
+            den__year_assigned=PackYear.get_current_pack_year()).filter(
             den__den__rank__rank__lte=Rank.BEAR)
 
 
 class CurrentWebelosManager(models.Manager):
     def get_query_set(self):
-        return self.objects.filter(den__year_assigned=PackYear.get_current_pack_year()).filter(
+        return self.objects.filter(
+            den__year_assigned=PackYear.get_current_pack_year()).filter(
             den__den__rank__rank__gte=Rank.JR_WEBE)
