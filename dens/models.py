@@ -77,17 +77,17 @@ class Rank(models.Model):
     @property
     def patch(self):
         if self.rank == Rank.BOBCAT:
-            return f"{settings.STATIC_URL}img/bobcat.jpg"
+            return f"{settings.STATIC_URL}img/bobcat.png"
         elif self.rank == Rank.TIGER:
-            return f"{settings.STATIC_URL}img/tiger.jpg"
+            return f"{settings.STATIC_URL}img/tiger.png"
         elif self.rank == Rank.WOLF:
-            return f"{settings.STATIC_URL}img/wolf.jpg"
+            return f"{settings.STATIC_URL}img/wolf.png"
         elif self.rank == Rank.BEAR:
-            return f"{settings.STATIC_URL}img/bear.jpg"
+            return f"{settings.STATIC_URL}img/bear.png"
         elif Rank.JR_WEBE <= self.rank <= Rank.WEBE:
-            return f"{settings.STATIC_URL}img/webelo.jpg"
+            return f"{settings.STATIC_URL}img/webelos.png"
         elif self.rank == Rank.ARROW:
-            return f"{settings.STATIC_URL}img/arrow_of_light.jpg"
+            return f"{settings.STATIC_URL}img/arrowoflight.png"
 
 
 class Den(models.Model):
