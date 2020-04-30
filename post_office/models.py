@@ -1,14 +1,14 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from ckeditor.fields import RichTextField
+from tinymce.models import HTMLField
 
 
 class Message(models.Model):
     to_field = models.ManyToManyField('dens.Den')
     from_field = models.CharField(max_length=128)
     subject = models.CharField(max_length=64, blank=True)
-    body = RichTextField(blank=True)
+    body = HTMLField(blank=True)
 
     def __str__(self):
         return self.subject

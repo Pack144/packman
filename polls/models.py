@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from ckeditor.fields import RichTextField
+from tinymce.models import HTMLField
 
 
 def two_weeks_hence(when=timezone.now()):
@@ -14,7 +14,7 @@ class Question(models.Model):
     question_text = models.CharField(
         max_length=200,
     )
-    description = RichTextField(
+    description = HTMLField(
         blank=True,
         null=True,
     )

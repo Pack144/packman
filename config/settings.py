@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
 
     # Third party packages
-    'ckeditor',
     'crispy_forms',
     'debug_toolbar',
     'django_ical',
@@ -50,6 +49,7 @@ INSTALLED_APPS = [
     'localflavor',
     'phonenumber_field',
     'tempus_dominus',
+    'tinymce',
 
     # Local apps
     'address_book.apps.AddressBookConfig',
@@ -268,25 +268,20 @@ LOGGING = {
 # -----------------------------------------------------------------------------
 AUTH_USER_MODEL = 'membership.Adult'
 
-# django-ckeditor
-# https://django-ckeditor.readthedocs.io/en/latest/
+
+# django-tinymce
+# https://django-tinymce.readthedocs.io/en/latest/installation.html#configuration
 # -----------------------------------------------------------------------------
-CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'packman',
-        'toolbar_packman': [
-            ['Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo'],
-            ['Link', 'Unlink', 'Anchor'],
-            ['Table', 'HorizontalRule', 'SpecialChar'],
-            ['Maximize'],
-            ['Source'],
-            '/',
-            ['Format'],
-            ['Bold', 'Italic', 'Underline', 'Strike', 'Superscript', 'Subscript', '-', 'RemoveFormat'],
-            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
-        ],
-    },
-}
+# TINYMCE_DEFAULT_CONFIG = {
+#     'branding': False,
+#     'height': 500,
+#     'menubar': False,
+#     'skin': 'oxide-dark',
+#     'content_css': 'dark',
+#
+# }
+TINYMCE_INCLUDE_JQUERY = False
+
 
 # django-tempus-dominus
 # https://tempusdominus.github.io/bootstrap-4/
