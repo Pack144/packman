@@ -71,9 +71,9 @@ class EventFeed(ICalFeed):
         return (item.category, )
 
     def item_attendee(self, item):
-        if item.get_attendee_list.count:
+        if item.get_attendee_list().count:
             attendees = []
-            for a in item.get_attendee_list:
+            for a in item.get_attendee_list():
                 attendee = vCalAddress('MAILTO:pack@pack144.org')
                 attendee.params['cn'] = vText('All Pack 144')
                 attendees.append(attendee)
