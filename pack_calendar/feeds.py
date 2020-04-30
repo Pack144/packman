@@ -75,6 +75,6 @@ class EventFeed(ICalFeed):
             attendees = []
             for a in item.get_attendee_list():
                 attendee = vCalAddress('MAILTO:pack@pack144.org')
-                attendee.params['cn'] = vText('All Pack 144')
+                attendee.params['cn'] = vText(f'{a}')
                 attendees.append(attendee)
             return attendees
