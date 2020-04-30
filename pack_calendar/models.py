@@ -82,17 +82,6 @@ class PackYear(models.Model):
         return self.get_pack_year(self.year)['end_date']
 
 
-class AttendeeGroup(models.Model):
-    """
-    Model to represent groups or categories of event attendees, such as an
-    individual Den, specific rank or ranks, or pack position.
-    """
-    group = models.CharField(max_length=32)
-
-    def __str__(self):
-        return self.group
-
-
 class Category(models.Model):
     """
     Events should be tagged with a category for filtering and display
@@ -306,7 +295,7 @@ class Event(models.Model):
         blank=True,
     )
     attendee_groups = models.ManyToManyField(
-        AttendeeGroup,
+        'post_office.GroupMailbox',
         blank=True,
     )
     attachments = models.ManyToManyField(
