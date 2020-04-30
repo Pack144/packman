@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'pack_calendar.apps.PackCalendarConfig',
     'pages.apps.PagesConfig',
     'polls.apps.PollsConfig',
+    'post_office.apps.PostOfficeConfig',
 ]
 
 MIDDLEWARE = [
@@ -300,6 +301,7 @@ TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
 PACK_YEAR_BEGIN_MONTH = 9  # September
 PACK_YEAR_BEGIN_DAY = 1  # 1st
 PACK_NAME = 'Cub Scouts Pack 144'
+PACK_SHORTNAME = 'Pack 144'
 PACK_TAGLINE = 'Since 1929'
 PACK_LOCATION = 'Seattle, Washington'
 
