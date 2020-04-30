@@ -1,11 +1,6 @@
 from django.contrib import admin
 
-from .models import AttendeeGroup, Category, Event, PackYear
-
-
-@admin.register(AttendeeGroup)
-class AttendeeGroupAdmin(admin.ModelAdmin):
-    search_fields = ('group',)
+from .models import Category, Event, PackYear
 
 
 @admin.register(Category)
