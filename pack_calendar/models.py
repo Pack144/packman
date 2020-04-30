@@ -1,14 +1,13 @@
 import uuid
 from datetime import datetime
 
+from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-
-from ckeditor.fields import RichTextField
 
 
 class PackYear(models.Model):
@@ -22,7 +21,7 @@ class PackYear(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=['year'])]
-        ordering = ('-year', )
+        ordering = ('-year',)
         verbose_name = _("Pack Year")
         verbose_name_plural = _("Pack Years")
 
@@ -81,6 +80,17 @@ class PackYear(models.Model):
     def end_date(self):
         # Calculate the end date of the pack year
         return self.get_pack_year(self.year)['end_date']
+
+
+class AttendeeGroup(models.Model):
+    """
+    Model to represent groups or categories of event attendees, such as an
+    individual Den, specific rank or ranks, or pack position.
+    """
+    group = models.CharField(max_length=32)
+
+    def __str__(self):
+        return self.group
 
 
 class Category(models.Model):
@@ -199,6 +209,54 @@ class Category(models.Model):
 
 class Event(models.Model):
     """ Store information about events """
+
+    ALL = 'ALL'
+    ANIMALS = 'ANIMAL'
+    WEBES = 'WEBES'
+    LEADERSHIP = 'LEADERS'
+    PARENTS = 'PARENTS'
+    NEW_MEMBERS = 'NEW'
+    DEN1 = 'DEN1'
+    DEN2 = 'DEN2'
+    DEN3 = 'DEN3'
+    DEN4 = 'DEN4'
+    DEN5 = 'DEN5'
+    DEN6 = 'DEN6'
+    DEN7 = 'DEN7'
+    DEN8 = 'DEN8'
+    DEN9 = 'DEN9'
+    DEN10 = 'DEN10'
+    TIGERS = 'TIGER'
+    WOLVES = 'WOLF'
+    BEARS = 'BEAR'
+    ATTENDEE_CHOICES = [
+        (ALL, _("All of the Pack")),
+        (_("By Rank"), (
+            (ANIMALS, _("Animal Ranks")),
+            (WEBES, _("Webelos Ranks")),
+            (TIGERS, _("Tigers")),
+            (WOLVES, _("Wolves")),
+            (BEARS, _("Bears")),
+        )),
+        (_("By Den"), (
+            (DEN1, _("Den 1")),
+            (DEN2, _("Den 2")),
+            (DEN3, _("Den 3")),
+            (DEN4, _("Den 4")),
+            (DEN5, _("Den 5")),
+            (DEN6, _("Den 6")),
+            (DEN7, _("Den 7")),
+            (DEN8, _("Den 8")),
+            (DEN9, _("Den 9")),
+            (DEN10, _("Den 10")),
+        )),
+        (_("By Person"), (
+            (PARENTS, _("Parents Only")),
+            (NEW_MEMBERS, _("New Members")),
+            (LEADERSHIP, _("Pack Leadership")),
+        ))
+    ]
+
     TENTATIVE = 'TENTATIVE'
     CONFIRMED = 'CONFIRMED'
     CANCELED = 'CANCELED'
@@ -207,6 +265,7 @@ class Event(models.Model):
         (CONFIRMED, _("Confirmed")),
         (CANCELED, _("Canceled")),
     )
+
     name = models.CharField(
         max_length=64,
     )
@@ -218,7 +277,7 @@ class Event(models.Model):
         null=True,
     )
     location = models.CharField(
-        max_length=64,
+        max_length=128,
         blank=True,
         null=True,
     )
@@ -241,6 +300,14 @@ class Event(models.Model):
         Category,
         on_delete=models.CASCADE,
         related_name='events',
+    )
+    attendees = models.ManyToManyField(
+        'membership.Adult',
+        blank=True,
+    )
+    attendee_groups = models.ManyToManyField(
+        AttendeeGroup,
+        blank=True,
     )
     attachments = models.ManyToManyField(
         'documents.Document',
@@ -302,7 +369,8 @@ class Event(models.Model):
     get_location.short_description = _("Location")
 
     def clean(self):
-        if self.end and self.end < self.start:
+        """ Verify that end datetime is not before the start datetime. """
+        if self.end and self.end <= self.start:
             raise ValidationError(_("Event cannot end before it starts."))
 
     @property
@@ -312,6 +380,14 @@ class Event(models.Model):
 
     @property
     def duration(self):
-        """ Tells us how long the event is scheduled for """
+        """ Calculate how long the event is scheduled for """
         if self.start and self.end:
             return self.end - self.start
+
+    def get_attendee_list(self):
+        attendee_list = list()
+        if self.attendees:
+            attendee_list.append(self.attendees)
+        if self.attendee_groups:
+            attendee_list.append(self.attendee_groups)
+        return attendee_list
