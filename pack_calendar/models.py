@@ -386,8 +386,10 @@ class Event(models.Model):
 
     def get_attendee_list(self):
         attendee_list = list()
-        if self.attendees:
-            attendee_list.append(self.attendees)
-        if self.attendee_groups:
-            attendee_list.append(self.attendee_groups)
+        if self.attendees.count():
+            for attendee in self.attendees_set:
+                attendee_list.append(attendee)
+        if self.attendee_groups.count():
+            for attendee in self.attendee_groups.all():
+                attendee_list.append(attendee)
         return attendee_list
