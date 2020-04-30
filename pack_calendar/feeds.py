@@ -1,9 +1,12 @@
+from icalendar import vCalAddress, vText
+
 from django.conf import settings
 from django.utils.text import gettext_lazy as _
 
 from bs4 import BeautifulSoup
 from django_ical.views import ICalFeed
 
+from membership.models import Family
 from .models import Event
 
 
@@ -19,10 +22,14 @@ class EventFeed(ICalFeed):
         f"{settings.PACK_NAME} calendar of meetings, events, outings, and "
         f"campouts."
     )
-    file_name = 'calendar.ics'
-    method = 'PUBLISH'
 
-    def items(self):
+    def get_object(self, request, family_uuid):
+        return Family.objects.get(uuid=family_uuid)
+
+    def file_name(self, obj):
+        return f'{obj.uuid}.ics'
+
+    def items(self, obj):
         return Event.objects.filter(published=True)
 
     def item_guid(self, item):
@@ -53,6 +60,12 @@ class EventFeed(ICalFeed):
 
     def item_status(self, item):
         return item.status
+
+    def item_transparency(self, item):
+        if item.status == 'CANCELED':
+            return 'TRANSPARENT'
+        else:
+            return 'OPAQUE'
 
     def item_categories(self, item):
         return (item.category, )
