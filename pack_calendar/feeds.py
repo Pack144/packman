@@ -1,10 +1,8 @@
-from icalendar import vCalAddress, vText
-
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils.text import gettext_lazy as _
-
-from bs4 import BeautifulSoup
 from django_ical.views import ICalFeed
+from icalendar import vCalAddress, vText
 
 from membership.models import Family
 from .models import Event
@@ -18,18 +16,25 @@ class EventFeed(ICalFeed):
     product_id = f"-//{settings.PACK_NAME}//ical/EN"
     title = settings.PACK_NAME
     timezone = settings.TIME_ZONE
-    description = _(
-        f"{settings.PACK_NAME} calendar of meetings, events, outings, and "
-        f"campouts."
-    )
 
     def get_object(self, request, family_uuid):
         return Family.objects.get(uuid=family_uuid)
 
+    def description(self, obj):
+        return _(
+            f"{settings.PACK_NAME} calendar of meetings, events, outings, and "
+            f"campouts and personalized for the {obj.name}."
+        )
+
     def file_name(self, obj):
+        """ Generate a unique calendar file per family """
         return f'{obj.uuid}.ics'
 
     def items(self, obj):
+        """
+        Gather all calendar events applicable for the family
+        TODO: create filter for the family's events
+        """
         return Event.objects.filter(published=True)
 
     def item_guid(self, item):
@@ -68,13 +73,13 @@ class EventFeed(ICalFeed):
             return 'OPAQUE'
 
     def item_categories(self, item):
-        return (item.category, )
+        return (item.category,)
 
     def item_attendee(self, item):
         if item.get_attendee_list().count:
             attendees = []
             for a in item.get_attendee_list():
-                attendee = vCalAddress('MAILTO:pack@pack144.org')
+                attendee = vCalAddress(f'MAILTO:{a.email if a.email else None}')
                 attendee.params['cn'] = vText(f'{a}')
                 attendees.append(attendee)
             return attendees
