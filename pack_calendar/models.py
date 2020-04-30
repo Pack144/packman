@@ -248,11 +248,11 @@ class Event(models.Model):
 
     TENTATIVE = 'TENTATIVE'
     CONFIRMED = 'CONFIRMED'
-    CANCELED = 'CANCELED'
+    CANCELLED = 'CANCELLED'
     STATUS_CHOICES = (
         (TENTATIVE, _("Tentative")),
         (CONFIRMED, _("Confirmed")),
-        (CANCELED, _("Canceled")),
+        (CANCELLED, _("Cancelled")),
     )
 
     name = models.CharField(
