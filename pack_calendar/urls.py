@@ -15,7 +15,7 @@ urlpatterns = [
         name='event_detail'
     ),
     path(
-        f'feed/<uuid:family>/{EventFeed.file_name}',
+        'feed/<uuid:family_uuid>.ics',
         EventFeed(),
         name='event_feed'
     ),
