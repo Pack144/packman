@@ -27,7 +27,7 @@ urlpatterns = [
 
     # Account management
     path('members/', include('django.contrib.auth.urls')),
-    # path('members/', include('allauth.urls')),
+
 
     # Local Apps
     path('committees/', include('committees.urls')),

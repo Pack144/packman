@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from ckeditor.fields import RichTextField
+from tinymce.models import HTMLField
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -199,53 +199,6 @@ class Category(models.Model):
 class Event(models.Model):
     """ Store information about events """
 
-    ALL = 'ALL'
-    ANIMALS = 'ANIMAL'
-    WEBES = 'WEBES'
-    LEADERSHIP = 'LEADERS'
-    PARENTS = 'PARENTS'
-    NEW_MEMBERS = 'NEW'
-    DEN1 = 'DEN1'
-    DEN2 = 'DEN2'
-    DEN3 = 'DEN3'
-    DEN4 = 'DEN4'
-    DEN5 = 'DEN5'
-    DEN6 = 'DEN6'
-    DEN7 = 'DEN7'
-    DEN8 = 'DEN8'
-    DEN9 = 'DEN9'
-    DEN10 = 'DEN10'
-    TIGERS = 'TIGER'
-    WOLVES = 'WOLF'
-    BEARS = 'BEAR'
-    ATTENDEE_CHOICES = [
-        (ALL, _("All of the Pack")),
-        (_("By Rank"), (
-            (ANIMALS, _("Animal Ranks")),
-            (WEBES, _("Webelos Ranks")),
-            (TIGERS, _("Tigers")),
-            (WOLVES, _("Wolves")),
-            (BEARS, _("Bears")),
-        )),
-        (_("By Den"), (
-            (DEN1, _("Den 1")),
-            (DEN2, _("Den 2")),
-            (DEN3, _("Den 3")),
-            (DEN4, _("Den 4")),
-            (DEN5, _("Den 5")),
-            (DEN6, _("Den 6")),
-            (DEN7, _("Den 7")),
-            (DEN8, _("Den 8")),
-            (DEN9, _("Den 9")),
-            (DEN10, _("Den 10")),
-        )),
-        (_("By Person"), (
-            (PARENTS, _("Parents Only")),
-            (NEW_MEMBERS, _("New Members")),
-            (LEADERSHIP, _("Pack Leadership")),
-        ))
-    ]
-
     TENTATIVE = 'TENTATIVE'
     CONFIRMED = 'CONFIRMED'
     CANCELLED = 'CANCELLED'
@@ -277,11 +230,7 @@ class Event(models.Model):
         null=True,
     )
 
-    description = RichTextField(
-        blank=True,
-        null=True,
-    )
-    url = models.URLField(
+    description = HTMLField(
         blank=True,
         null=True,
     )
