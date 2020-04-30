@@ -86,15 +86,21 @@ class Document(models.Model):
 
     def get_file_type(self):
         extension = self.file.file.split('.')[-1]
-        if extension == 'txt':
-            return _("text document")
-        if extension == 'pdf':
+        if extension in ('txt', 'rtf'):
+            return _("Text Document")
+        elif extension in ('pdf', ):
             return _("PDF")
-        if extension == 'doc' or 'docx':
+        elif extension in ('doc', 'docx'):
             return _("Microsoft Word Document")
-        if extension == 'xls' or 'xlsx':
+        elif extension in ('xls', 'xlsx'):
             return _("Microsoft Excel Spreadsheet")
-        if extension == 'ppt' or 'pptx':
+        elif extension in ('ppt', 'pptx', 'pps', 'ppsx'):
             return _("Microsoft Powerpoint Presentation")
-        if extension == 'jpg' or 'jpeg' or 'gif' or 'png':
+        elif extension in ('jpg', 'jpeg', 'gif', 'png', 'tiff', 'bmp'):
             return _("Image")
+        elif extension in ('mp4', 'm4v', 'ogv', 'webm', 'mov'):
+            return _("Video")
+        elif extension in ('wav', 'wave', 'mp3', 'ogg', 'oga', 'ogm', 'spx', 'opus'):
+            return _("Audio")
+        elif extension in ('zip', ):
+            return _("Compressed Archive")
