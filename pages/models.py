@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
-from ckeditor.fields import RichTextField
+from tinymce.models import HTMLField
 
 
 class Category(models.Model):
@@ -159,7 +159,7 @@ class Content(models.Model):
             "website, including applicants, alumni, and anonymous visitors. "
             "Anonymous content will be displayed if no user is logged-in."),
     )
-    body = RichTextField()
+    body = HTMLField()
     page = models.ForeignKey(
         Page,
         on_delete=models.CASCADE,
