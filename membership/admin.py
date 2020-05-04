@@ -189,7 +189,8 @@ class ScoutAdmin(admin.ModelAdmin):
         'school',
         'get_grade',
         'age',
-        'status'
+        'status',
+        'current_den',
     )
     list_display_links = ['first_name', 'nickname', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den__den')
