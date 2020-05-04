@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # Third party packages
     'crispy_forms',
     'debug_toolbar',
+    'django_extensions',
     'django_ical',
     'dynamic_formsets',
     'easy_thumbnails',
