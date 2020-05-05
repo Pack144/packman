@@ -191,6 +191,6 @@ class Content(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=['title', 'published_on'])]
-        get_latest_by = 'published_on'
+        ordering = ['-published_on']
         verbose_name = _("Content")
         verbose_name_plural = _("Content")
