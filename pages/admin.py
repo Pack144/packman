@@ -22,6 +22,8 @@ class ContentInline(admin.StackedInline):
 class ContentAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'page')
     list_display_links = ('__str__', )
+    list_filter = ('page',)
+    search_fields = ['title', 'body']
 
 
 @admin.register(DynamicPage)
