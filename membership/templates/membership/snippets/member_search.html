@@ -1,26 +1,24 @@
 <div class="row align-items-center">
-    <div class="col">
-        <h1>Members</h1>
-    </div>
-    <div class="col-3 align-self-end">
-    <form class="form-inline" action="{% url 'member_search_results' %}" method="get">
-        <div class="col">
-            <div class="row">
-                <div class="input-group">
-                    <input name="q" type="text" class="form-control" placeholder="Search" aria-label="Search" required>
-                    <div class="input-group-append">
-                        <button type="submit" class="btn btn-secondary"><i class="fa fa-search"></i></button>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-1 pl-1">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox"
-                           aria-label="Checkbox for following text input" id="alum" name="alum">
-                    <label class="form-check-label text-muted" for="alum">include alumni</label>
-                </div>
-            </div>
+  <div class="col">
+    <h1>Members</h1>
+  </div>
+  <div class="col-md-6 mb-3 align-self-end">
+    <form class="form col" action="{% url 'member_search_results' %}" method="get">
+      <div class="row">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search" aria-label="Search" required>
+          <div class="input-group-append">
+            <button type="submit" class="btn btn-secondary"><i class="fa fa-search"></i></button>
+          </div>
         </div>
+      </div>
+      <div class="row mt-1">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox"
+                 aria-label="Checkbox for following text input" id="alum" name="alum">
+          <label class="form-check-label text-muted" for="alum">include alumni</label>
+        </div>
+      </div>
     </form>
-    </div>
+  </div>
 </div>
