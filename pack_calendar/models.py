@@ -1,4 +1,6 @@
+import html as python_html
 import uuid
+
 from datetime import datetime
 
 from tinymce.models import HTMLField
@@ -6,7 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import html, timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -321,6 +323,10 @@ class Event(models.Model):
         """ Calculate how long the event is scheduled for """
         if self.start and self.end:
             return self.end - self.start
+
+    @property
+    def plain_text_description(self):
+        return python_html.unescape(html.strip_tags(self.description))
 
     def get_attendee_list(self):
         attendee_list = list()
