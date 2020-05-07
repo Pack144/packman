@@ -24,7 +24,7 @@
     <div class="col">
     <dl>
       <dt>Start</dt>
-      <dd>{{ event.start|naturalday|capfirst }}</dd>
+      <dd>{{ event.start|naturalday|capfirst }}, {{ event.start|time }}</dd>
       {% if event.end %}
         <dt>End</dt>
         <dd>{{ event.end }}</dd>
