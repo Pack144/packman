@@ -13,10 +13,7 @@ from easy_thumbnails.signals import saved_file
 
 from dens.models import Den
 from pack_calendar.models import PackYear
-from .managers import CurrentAnimalsManager, CurrentBearsManager, \
-    CurrentJrWebesManager, CurrentSrWebesManager, CurrentTigersManager, \
-    CurrentWebelosManager, CurrentWolvesManager
-from .managers import MemberManager
+from .managers import MemberManager, ScoutManager
 
 
 def get_photo_path(instance, filename):
@@ -226,8 +223,8 @@ class Member(models.Model):
             today = timezone.now()
             return today.year - self.date_of_birth.year - (
                 # This will calculate a 1 if the date hasn't come yet this year
-                (today.month, today.day) <
-                (self.date_of_birth.month, self.date_of_birth.day)
+                    (today.month, today.day) <
+                    (self.date_of_birth.month, self.date_of_birth.day)
             )
 
 
@@ -385,7 +382,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
     def is_staff(self):
         if self._is_staff or self.committees.filter(
                 committee__is_staff=True).filter(
-                year_served=PackYear.get_current_pack_year()
+            year_served=PackYear.get_current_pack_year()
         ):
             return True
 
@@ -500,15 +497,7 @@ class Scout(Member):
 
     # Custom managers to simplify the selection of cubs based on their rank
     # All animal ranks from Tiger through Bear
-    animals = CurrentAnimalsManager()
-    tigers = CurrentTigersManager()
-    wolves = CurrentWolvesManager()
-    bears = CurrentBearsManager()
-
-    # All Webelo ranks including Jr. & Sr. Webe
-    webelos = CurrentWebelosManager()
-    jr_webes = CurrentJrWebesManager()
-    sr_webes = CurrentSrWebesManager()
+    objects = ScoutManager()
 
     class Meta:
         indexes = [models.Index(
