@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils.text import gettext_lazy as _
 from django_ical.views import ICalFeed
@@ -44,9 +43,7 @@ class EventFeed(ICalFeed):
         return item.name
 
     def item_description(self, item):
-        return BeautifulSoup(
-            item.description, 'html.parser'
-        ).text if item.description else None
+        return item.plain_text_description
 
     def item_start_datetime(self, item):
         return item.start
