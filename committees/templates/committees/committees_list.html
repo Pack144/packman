@@ -11,9 +11,9 @@
     <div class="list-group">
       {% for committee in committee_list %}
           <a class="list-group-item list-group-item-action" href="{{ committee.get_absolute_url }}">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="font-weight-bold ">{{ committee }}{% if committee.leadership %} <i class="fas fa-star text-warning"></i>{% endif %}</div>
-              {% if committee.description %}<small class="text-muted text-truncate ml-3">{{ committee.description }}</small>{% endif %}
+            <div class="row">
+              {% if committee.leadership %}<i class="fas fa-star text-warning"></i>{% endif %}<div class="col-md-3 font-weight-bold ">{{ committee }}</div>
+              {% if committee.description %}<div class="col text-truncate"><small class="text-muted ml-3">{{ committee.description }}</small></div>{% endif %}
             </div>
           </a>
       {% endfor %}
