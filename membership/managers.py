@@ -40,50 +40,98 @@ class MemberManager(UserManager):
         return self._create_user(email, password, **extra_fields)
 
 
-class CurrentTigersManager(models.Manager):
-    def get_query_set(self):
-        return self.objects.filter(
-            den__year_assigned=PackYear.get_current_pack_year()).filter(
-            den__den__rank__rank=Rank.TIGER)
+class ScoutQuerySet(models.QuerySet):
+    def lions(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank=Rank.LION
+        )
+
+    def tigers(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank=Rank.TIGER
+        )
+
+    def wolves(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank=Rank.WOLF
+        )
+
+    def bears(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank=Rank.BEAR
+        )
+
+    def jr_webes(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank=Rank.JR_WEBE
+        )
+
+    def sr_webes(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank=Rank.SR_WEBE
+        )
+
+    def arrows_of_light(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank=Rank.ARROW
+        )
+
+    def animal_ranks(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank__lte=Rank.BEAR
+        )
+
+    def webelo_ranks(self):
+        return self.filter(
+            den__year_assigned=PackYear.get_current_pack_year()
+        ).filter(
+            den__den__rank__rank__gte=Rank.JR_WEBE
+        )
 
 
-class CurrentWolvesManager(models.Manager):
-    def get_query_set(self):
-        return self.objects.filter(
-            den__year_assigned=PackYear.get_current_pack_year()).filter(
-            den__den__rank__rank=Rank.WOLF)
+class ScoutManager(models.Manager):
+    def get_queryset(self):
+        return ScoutQuerySet(self.model, using=self._db)
 
+    def lions(self):
+        return self.get_queryset().lions()
 
-class CurrentBearsManager(models.Manager):
-    def get_query_set(self):
-        return self.objects.filter(
-            den__year_assigned=PackYear.get_current_pack_year()).filter(
-            den__den__rank__rank=Rank.BEAR)
+    def tigers(self):
+        return self.get_queryset().tigers()
 
+    def wolves(self):
+        return self.get_queryset().wolves()
 
-class CurrentJrWebesManager(models.Manager):
-    def get_query_set(self):
-        return self.objects.filter(
-            den__year_assigned=PackYear.get_current_pack_year()).filter(
-            den__den__rank__rank=Rank.JR_WEBE)
+    def bears(self):
+        return self.get_queryset().bears()
 
+    def jr_webes(self):
+        return self.get_queryset().jr_webes()
 
-class CurrentSrWebesManager(models.Manager):
-    def get_query_set(self):
-        return self.objects.filter(
-            den__year_assigned=PackYear.get_current_pack_year()).filter(
-            den__den__rank__rank=Rank.SR_WEBE)
+    def sr_webes(self):
+        return self.get_queryset().sr_webes()
 
+    def arrows_of_lights(self):
+        return self.get_queryset().arrows_of_light()
 
-class CurrentAnimalsManager(models.Manager):
-    def get_query_set(self):
-        return self.objects.filter(
-            den__year_assigned=PackYear.get_current_pack_year()).filter(
-            den__den__rank__rank__lte=Rank.BEAR)
+    def animal_ranks(self):
+        return self.get_queryset().animal_ranks()
 
-
-class CurrentWebelosManager(models.Manager):
-    def get_query_set(self):
-        return self.objects.filter(
-            den__year_assigned=PackYear.get_current_pack_year()).filter(
-            den__den__rank__rank__gte=Rank.JR_WEBE)
+    def webelo_ranks(self):
+        return self.get_queryset().webelo_ranks()
