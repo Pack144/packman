@@ -378,15 +378,18 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
         if self.family:
             return self.family.adults.exclude(uuid=self.uuid)
 
-    @property
     def is_staff(self):
         if self._is_staff or self.committees.filter(
                 committee__is_staff=True).filter(
             year_served=PackYear.get_current_pack_year()
         ):
             return True
+        else:
+            return False
 
-    @property
+    is_staff.boolean = True
+    is_staff.short_description = _("Staff")
+
     def active(self):
         """
         If member has scouts who are currently active, then they should also be
@@ -396,6 +399,9 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
             return True
         else:
             return False
+
+    active.boolean = True
+    active.short_description = _("Active")
 
 
 class Scout(Member):
