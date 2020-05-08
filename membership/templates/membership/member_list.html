@@ -31,6 +31,7 @@
               </div>
               <div class="col">
                 <h4>{{ member }}</h4>
+                {% if member.adult.role == 'C' %}<p><small class="text-muted">Friend of the Pack</small></p>{% endif %}
                 {% if member.scout.current_den %}<p>
                   {% if member.scout.current_den.rank %}{{ member.scout.current_den.rank }} — {% endif %}<small>{{ member.scout.current_den }}</small>
                 </p>{% endif %}

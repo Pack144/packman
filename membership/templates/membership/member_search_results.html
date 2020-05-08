@@ -10,18 +10,20 @@
     {% if member_list %}
       <div class="list-group">
         {% for member in member_list %}
-            <a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
-              <div class="row align-items-center">
-                <div class="col-sm-2">
-                  {% include 'membership/snippets/headshot_thumbnail_snippet.html' %}
-                </div>
-                <div class="col-sm-10">
-                  <h4>{{ member }}</h4>
-                  {% if member.scout.current_den %}<p>
-                    {% if member.scout.current_den.rank %}{{ member.scout.current_den.rank }} — {% endif %}<small>{{ member.scout.current_den }}</small></p>{% endif %}
-                </div>
+          <a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
+            <div class="row align-items-center">
+              <div class="col-sm-2">
+                {% include 'membership/snippets/headshot_thumbnail_snippet.html' %}
               </div>
-            </a>
+              <div class="col-sm-10">
+                <h4>{{ member }}</h4>
+                {% if member.adult.role == 'C' %}<p><small class="text-muted">Friend of the Pack</small></p>{% endif %}
+                {% if member.scout.current_den %}<p>
+                  {% if member.scout.current_den.rank %}{{ member.scout.current_den.rank }} — {% endif %}<small>{{ member.scout.current_den }}</small>
+                </p>{% endif %}
+              </div>
+            </div>
+          </a>
         {% endfor %}
       </div>
     {% else %}
