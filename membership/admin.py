@@ -239,8 +239,9 @@ class AdultAdmin(UserAdmin):
         'middle_name',
         'last_name',
         'email',
+        'active',
         'role',
-        '_is_staff',
+        'is_staff',
         'is_superuser',
         'last_login'
     )

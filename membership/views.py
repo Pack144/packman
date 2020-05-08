@@ -15,7 +15,7 @@ class MemberList(LoginRequiredMixin, ListView):
     template_name = 'membership/member_list.html'
 
     def get_queryset(self):
-        if self.request.user.active or self.request.user.role == Adult.CONTRIBUTOR:
+        if self.request.user.active() or self.request.user.role == Adult.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can see all
             # active members
             return Member.objects.filter(
@@ -27,7 +27,7 @@ class MemberList(LoginRequiredMixin, ListView):
             # The user doesn't belong to a family, so we'll just show them
             # their own information
             return Member.objects.filter(
-                adult__id__exact=self.request.user.uuid
+                adult__uuid__exact=self.request.user.uuid
             ).distinct()
         else:
             # If you are not active, you can only see your own family
@@ -66,7 +66,7 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
                 Q(nickname__icontains=query)
             ).distinct()
 
-        if self.request.user.active or self.request.user.role == Adult.CONTRIBUTOR:
+        if self.request.user.active() or self.request.user.role == Adult.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all of
             # the search results
             return results
@@ -74,7 +74,7 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
             # The user doesn't belong to a family, so we'll just show them
             # their own information
             return Member.objects.filter(
-                adult__id__exact=self.request.user.uuid
+                adult__uuid__exact=self.request.user.uuid
             )
         else:
             # If you are not active, you only get members of your own family
@@ -101,7 +101,7 @@ class AdultList(LoginRequiredMixin, ListView):
     template_name = 'membership/adult_list.html'
 
     def get_queryset(self):
-        if self.request.user.active or self.request.user.role == Adult.CONTRIBUTOR:
+        if self.request.user.active() or self.request.user.role == Adult.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all
             # active members
             return Adult.objects.filter(
@@ -112,7 +112,7 @@ class AdultList(LoginRequiredMixin, ListView):
             # The user doesn't belong to a family, so we'll just show them
             # their own information
             return Adult.objects.filter(
-                id__exact=self.request.user.uuid
+                uuid__exact=self.request.user.uuid
             )
         else:
             # If you are not active, you only get members of your own family
@@ -221,7 +221,7 @@ class ScoutList(LoginRequiredMixin, ListView):
     template_name = 'membership/scout_list.html'
 
     def get_queryset(self):
-        if self.request.user.active or self.request.user.role == Adult.CONTRIBUTOR:
+        if self.request.user.active() or self.request.user.role == Adult.CONTRIBUTOR:
             # If you have active cubs or are a contributor, you can get all
             # active cubs
             return Scout.objects.filter(
