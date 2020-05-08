@@ -272,6 +272,7 @@ class SignupForm(UserCreationForm):
             (Adult.PARENT, _('Parent')),
             (Adult.GUARDIAN, _('Guardian')),
         )
+        self.fields['email'].widget.attrs['autofocus'] = False
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
         self.helper.form_show_labels = False
@@ -282,22 +283,22 @@ class SignupForm(UserCreationForm):
                 Column('last_name', css_class='col-md-5'),
                 Column('suffix', css_class='col-md-1'),
             ),
-            'nickname',
+            Field('nickname', css_class='col-md-4'),
             Row(
-                Column('email', autofocus=None),
+                Column('email'),
                 Column('is_published'),
             ),
             Row(
-                Column('password1'),
-                Column('password2'),
+                Column('password1', autocomplete='off'),
+                Column('password2', autocomplete='off'),
             ),
             Row(
                 Column(InlineRadios('gender')),
                 Column(InlineRadios('role')),
             ),
-            'photo',
+            Field('photo', css_class='col-md-4'),
             FormActions(
-                Submit('save', 'Sign me up!', css_class='btn-success btn-lg'),
+                Submit('save', 'Sign me up!', css_class='btn-success btn-lg btn-block'),
             ),
         )
 
