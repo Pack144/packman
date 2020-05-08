@@ -256,6 +256,8 @@ class ScoutCreate(LoginRequiredMixin, CreateView):
             request_user.family = Family.objects.create()
             request_user.save()
         form.instance.family = request_user.family
+        form.notify_membership(submitter=request_user)
+        form.send_confirmation_email(submitter=request_user)
         return super().form_valid(form)
 
 
