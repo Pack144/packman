@@ -4,7 +4,9 @@ from django.views.generic import (
     DetailView, TemplateView, UpdateView, CreateView
 )
 
-from membership.forms import SignupForm
+from membership.forms import SignupForm, AddressFormSet, PhoneNumberFormSet
+from membership.models import Family
+
 from pack_calendar.models import Event
 
 from .models import StaticPage, DynamicPage
@@ -66,6 +68,16 @@ class SignUpPageView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_formset'] = AddressFormSet(
+                self.request.POST
+            )
+            context['phonenumber_formset'] = PhoneNumberFormSet(
+                self.request.POST
+            )
+        else:
+            context['address_formset'] = AddressFormSet()
+            context['phonenumber_formset'] = PhoneNumberFormSet()
         try:
             context['page_content'] = StaticPage.objects.get(
                 page=StaticPage.SIGNUP
@@ -73,6 +85,21 @@ class SignUpPageView(CreateView):
         except StaticPage.DoesNotExist:
             context['page_content'] = None
         return context
+
+    def form_valid(self, form):
+        context = self.get_context_data(form=form)
+        address_formset = context['address_formset']
+        phonenumber_formset = context['phonenumber_formset']
+        if address_formset.is_valid() and phonenumber_formset.is_valid():
+            self.object = form.save()
+            form.instance.family = Family.objects.create()
+            address_formset.instance = self.object
+            address_formset.save()
+            phonenumber_formset.instance = self.object
+            phonenumber_formset.save()
+        else:
+            return super().form_invalid(form)
+        return super().form_valid(form)
 
 
 class DynamicPageView(DetailView):
