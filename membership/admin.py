@@ -184,15 +184,15 @@ class ScoutAdmin(admin.ModelAdmin):
     actions = [make_approved, make_active, make_inactive]
     list_display = (
         'first_name',
-        'nickname',
         'last_name',
         'school',
         'get_grade',
         'age',
         'status',
         'current_den',
+        'pack_comments',
     )
-    list_display_links = ['first_name', 'nickname', 'last_name']
+    list_display_links = ['first_name', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den__den')
     readonly_fields = (
         'date_added',
@@ -203,7 +203,15 @@ class ScoutAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ['family', 'school']
     inlines = [DenMembershipInline]
-    search_fields = ('first_name', 'middle_name', 'nickname', 'last_name')
+    search_fields = (
+        'first_name',
+        'middle_name',
+        'nickname',
+        'last_name',
+        'family__adults__first_name',
+        'family__adults__nickname',
+        'family__adults__last_name',
+    )
     formfield_overrides = {
         ThumbnailerImageField: {'widget': ImageClearableFileInput},
     }
@@ -250,7 +258,15 @@ class AdultAdmin(UserAdmin):
     ordering = ('last_name', 'nickname', 'first_name')
     readonly_fields = ('date_added', 'last_updated', 'last_login')
     autocomplete_fields = ['family']
-    search_fields = ('email', 'first_name', 'nickname', 'last_name')
+    search_fields = (
+        'email',
+        'first_name',
+        'nickname',
+        'last_name',
+        'family__children__first_name',
+        'family__children__nickname',
+        'family__children__last_name',
+    )
     formfield_overrides = {
         ThumbnailerImageField: {'widget': ImageClearableFileInput},
     }
