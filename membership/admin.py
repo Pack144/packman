@@ -191,6 +191,7 @@ class ScoutAdmin(admin.ModelAdmin):
         'status',
         'current_den',
         'pack_comments',
+        'date_added',
     )
     list_display_links = ['first_name', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den__den')
