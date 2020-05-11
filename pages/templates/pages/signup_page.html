@@ -41,8 +41,8 @@
           formCssClass: 'address-dynamic-form',
           prefix: "{{ address_formset.prefix }}",
           uiText: {
-              addPrompt: "<i class=\"fas fa-plus-circle mr-2\"></i> address",
-              removePrompt: "<i class=\"fas fa-minus-circle\"></i>"
+              addPrompt: "<i class=\"fas fa-plus-circle mr-1\"></i> address",
+              removePrompt: "<i class=\"fas fa-trash-alt\"></i>"
           },
       });
       $('#{{ phonenumber_formset.prefix }}').formset({
@@ -51,8 +51,8 @@
           formCssClass: 'phonenumber-dynamic-form',
           prefix: "{{ phonenumber_formset.prefix }}",
           uiText: {
-              addPrompt: "<i class=\"fas fa-plus-circle mr-2\"></i> phone number",
-              removePrompt: "<i class=\"fas fa-minus-circle\"></i>"
+              addPrompt: "<i class=\"fas fa-plus-circle mr-1\"></i> phone number",
+              removePrompt: "<i class=\"fas fa-trash-alt\"></i>"
           },
       });
   </script>
