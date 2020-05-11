@@ -141,11 +141,6 @@ class AdultCreate(LoginRequiredMixin, CreateView):
             context['phonenumber_formset'] = PhoneNumberFormSet()
         return context
 
-    def get_initial(self, *args, **kwargs):
-        initial = super(AdultCreate, self).get_initial(**kwargs)
-        initial['last_name'] = self.request.user.last_name
-        return initial
-
     def form_valid(self, form):
         context = self.get_context_data(form=form)
         address_formset = context['address_formset']
