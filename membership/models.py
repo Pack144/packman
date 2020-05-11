@@ -486,7 +486,6 @@ class Scout(Member):
     # Important dates
     started_school = models.PositiveSmallIntegerField(
         _("Kindergarten Year"),
-        default=get_two_years_ago,
         null=True,
         help_text=_(
             "What year did your child start kindergarten? We use this to "
