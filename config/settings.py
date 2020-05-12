@@ -196,6 +196,7 @@ THUMBNAIL_ALIASES = {
         }
     },
 }
+THUMBNAIL_SUBDIR = 'thumbs'
 
 # django-crispy-forms
 # http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
