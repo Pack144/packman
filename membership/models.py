@@ -46,12 +46,6 @@ class Member(models.Model):
     )
 
     # Personal information
-    prefix = models.CharField(
-        _("Title"),
-        max_length=16,
-        blank=True,
-        null=True
-    )
     first_name = models.CharField(
         _("First Name"),
         max_length=30
