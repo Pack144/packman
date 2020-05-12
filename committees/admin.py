@@ -4,8 +4,8 @@ from .models import Committee, Membership
 
 
 class MembershipAdmin(admin.TabularInline):
+    autocomplete_fields = ['member']
     model = Membership
-    classes = ['collapse']
     exclude = ['date_added']
     extra = 0
 
