@@ -12,7 +12,7 @@ class VenueType(models.Model):
     cub sign-up view to provide a list of schools the pack is aware of.
     """
     type = models.CharField(
-        max_length=16,
+        max_length=32,
         help_text=_("e.g. School, Campground, Park, etc.")
     )
 
