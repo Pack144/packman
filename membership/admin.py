@@ -219,7 +219,7 @@ class ScoutAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {'fields': (
-            ('prefix', 'first_name', 'middle_name', 'last_name', 'suffix'),
+            ('first_name', 'middle_name', 'last_name', 'suffix'),
             ('nickname', 'gender'),
             'photo',
             ('status', 'family'),
@@ -274,7 +274,7 @@ class AdultAdmin(UserAdmin):
 
     fieldsets = (
         (None, {'fields': (
-            ('prefix', 'first_name', 'middle_name', 'last_name', 'suffix'),
+            ('first_name', 'middle_name', 'last_name', 'suffix'),
             ('nickname', 'gender'),
             'photo',
             ('role', 'family'),
