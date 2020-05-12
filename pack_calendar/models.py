@@ -112,13 +112,13 @@ class Category(models.Model):
 
     # Define available FontAwesome icons for the category
     # https://fontawesome.com/icons?d=gallery
-    ALARM_CLOCK = '<i class="far fa-alarm-clock"></i>'
     AWARD = '<i class="fas fa-award"></i>'
-    BELL = '<i class="far fa-bell"></i>'
+    BELL = '<i class="fas fa-bell"></i>'
     CAMPGROUND = '<i class="fas fa-campground"></i>'
-    CALENDAR = '<i class="far fa-calendar-alt"></i>'
-    CIRCLED_X = '<i class="far fa-times-circle"></i>'
+    CALENDAR = '<i class="fas fa-calendar-alt"></i>'
+    CIRCLED_X = '<i class="fas fa-times-circle"></i>'
     DONATE = '<i class="fas fa-donate"></i>'
+    EXCLAMATION_TRIANGLE = '<i class="fas fa-exclamation-triangle"></i>'
     GIFT = '<i class="fas fa-gift"></i>'
     SMALL_GROUP = '<i class="fas fa-user-friends"></i>'
     LARGE_GROUP = '<i class="fas fa-users"></i>'
@@ -130,13 +130,13 @@ class Category(models.Model):
     SEEDLING = '<i class="fas fa-seedling"></i>'
     STAR = '<i class="fas fa-star"></i>'
     ICON_CHOICES = (
-        (ALARM_CLOCK, _("Alarm Clock")),
         (AWARD, _("Award")),
         (BELL, _("Bell")),
         (CALENDAR, _("Calendar")),
         (CAMPGROUND, _("Campground")),
         (CIRCLED_X, _("Circled 'X'")),
         (DONATE, _("Donate")),
+        (EXCLAMATION_TRIANGLE, _("Exclamation")),
         (GIFT, _("Gift box")),
         (LARGE_GROUP, _("Group (large)")),
         (SMALL_GROUP, _("Group (small)")),
