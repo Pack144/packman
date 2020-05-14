@@ -7,7 +7,14 @@
   </a>
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center">
-      <a href="{{ member.get_absolute_url }}" class="text-reset"><h5 class="card-title">{{ member }}{% if member.current_den.rank %}<small class="ml-3 text-muted">{{ member.current_den.rank }}</small>{% endif %}</h5></a>
+      <a href="{{ member.get_absolute_url }}" class="text-reset">
+        <h5 class="card-title">
+          {{ member }}
+          {% if member.current_den.rank %}
+            <small class="ml-3 text-muted">{{ member.current_den.rank }}</small>
+          {% endif %}
+        </h5>
+      </a>
       {% if user.family == member.family %}
         {% if member.adult %}
           <a href="{% url 'parent_update' member.uuid %}" class="badge badge-dark ml-3 p-2">
@@ -17,17 +24,16 @@
       <i class="fa fa-user-edit"></i>
       </a>
       {% endif %}
-
     </div>
     {% if member.is_published %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
           <div class="col col-1">
-            <span class="fa fa-envelope"></span>
+            <abbr title="email"><span class="fa fa-envelope"></span></abbr>
           </div>
-          <div class="col text-truncate">
+          <address class="col text-truncate">
             <a href="mailto:{{ member.email }}" class="text-reset">{{ member.email }}</a>
-          </div>
+          </address>
         </div>
       </div>
     {% endif %}
@@ -37,15 +43,19 @@
           {% if number.published %}
             <div class="row card-text d-inline-flex">
               <div class="col col-1">
-                {% if number.type == 'H' %}<span class="fa fa-home"></span>
-                {% elif number.type == 'M' %}<span class="fa fa-mobile"></span>
-                {% elif number.type == 'W' %}<span class="fa fa-briefcase"></span>
-                {% else %}<span class="fa fa-phone"></span>
+                {% if number.type == 'H' %}
+                  <abbr title="Home"><span class="fa fa-home"></span></abbr>
+                {% elif number.type == 'M' %}
+                  <abbr title="Mobile"><span class="fa fa-mobile"></span></abbr>
+                {% elif number.type == 'W' %}
+                  <abbr title="Work"><span class="fa fa-briefcase"></span></abbr>
+                {% else %}
+                  <abbr title="Phone"><span class="fa fa-phone"></span></abbr>
                 {% endif %}
               </div>
-              <div class="col text-truncate">
+              <address class="col text-truncate">
                 {{ number }}
-              </div>
+              </address>
             </div>
           {% endif %}
         {% endfor %}
@@ -57,16 +67,19 @@
           {% if address.published %}
             <div class="row card-text d-inline-flex">
               <div class="col col-1">
-                {% if address.type == 'H' %}<span class="fas fa-home"></span>
-                {% elif address.type == 'W' %}<span class="fa fa-building"></span>
-                {% else %}<span class="fa fa-mail-bulk"></span>
+                {% if address.type == 'H' %}
+                  <abbr title="Home"><span class="fas fa-home"></span></abbr>
+                {% elif address.type == 'W' %}
+                  <abbr title="Work"><span class="fa fa-building"></span></abbr>
+                {% else %}
+                  <abbr title="address"><span class="fa fa-mail-bulk"></span></abbr>
                 {% endif %}
               </div>
-              <div class="col text-truncate">
+              <address class="col text-truncate">
                 {{ address.street }}<br>
                 {% if address.street2 %}{{ address.street2 }}<br>{% endif %}
                 {{ address.city }}, {{ address.state }} {{ address.zip_code }}
-              </div>
+              </address>
             </div>
           {% endif %}
         {% endfor %}
@@ -85,15 +98,19 @@
         <div class="row card-text d-inline-flex">
           <div class="col col-1"><span class="fa fa-school"></span></div>
           <div class="col text-truncate">
-            {% if member.grade > 0 %}{{ member.grade }}<sup>{{ member.grade|ordinal|slice:'-2:' }}</sup>
-              grade{% elif member.grade == 'K' %}
-              Kindergarten{% endif %}<br>{{ member.school }}
+            {% if member.grade > 0 %}
+              {{ member.grade }}<sup>{{ member.grade|ordinal|slice:'-2:' }}</sup> grade
+            {% elif member.grade == 'K' %}
+              Kindergarten
+            {% endif %}
+            <br>
+            {{ member.school }}
           </div>
         </div>
       </div>
     {% endif %}
     {% if member.current_den %}
-        <img src="{{ member.current_den.patch }}" alt="Den {{ member.current_den.number }} patch" class="mt-2 card-img rounded">
+      <img src="{{ member.current_den.patch }}" alt="Den {{ member.current_den.number }} patch" class="mt-2 card-img rounded">
     {% endif %}
   </div>
   {% if member.scout.start_date %}
