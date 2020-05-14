@@ -110,7 +110,9 @@
       </div>
     {% endif %}
     {% if member.current_den %}
-      <img src="{{ member.current_den.patch }}" alt="Den {{ member.current_den.number }} patch" class="mt-2 card-img rounded">
+      <a href="{{ member.current_den.get_absolute_url }}">
+        <img src="{{ member.current_den.patch }}" alt="Den {{ member.current_den.number }} patch" class="mt-2 card-img rounded">
+      </a>
     {% endif %}
   </div>
   {% if member.scout.start_date %}
