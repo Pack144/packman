@@ -18,6 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from django.views import defaults as default_views
+from django.views.generic import RedirectView
 
 
 urlpatterns = [
@@ -27,6 +28,7 @@ urlpatterns = [
 
     # Account management
     path('members/', include('django.contrib.auth.urls')),
+    path('.well-known/change-password/', RedirectView.as_view(pattern_name='password_change')),
 
 
     # Local Apps
@@ -37,6 +39,7 @@ urlpatterns = [
     path('members/', include('membership.urls')),
     path('polls/', include('polls.urls')),
     path('', include('pages.urls')),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
