@@ -6,7 +6,7 @@
     <form class="form col" action="{% url 'member_search_results' %}" method="get">
       <div class="row">
         <div class="input-group">
-          <input name="q" type="text" class="form-control" placeholder="Search" aria-label="Search" required>
+          <input name="q" type="text" class="form-control" placeholder="Search" value="{{ request.GET.q }}" aria-label="Search" required>
           <div class="input-group-append">
             <button type="submit" class="btn btn-secondary"><i class="fa fa-search"></i></button>
           </div>
