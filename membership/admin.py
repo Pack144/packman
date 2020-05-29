@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.decorators import login_required
@@ -15,6 +17,9 @@ from committees.models import Membership as CommitteeMembership
 from dens.models import Membership as DenMembership
 
 from . import forms, models
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_active(modeladmin, request, queryset):
@@ -155,6 +160,24 @@ class FamilyListFilter(admin.SimpleListFilter):
             ).distinct()
 
 
+class AdultsBasedOnCubStatusFilter(admin.SimpleListFilter):
+    title = _('Cub Status')
+    parameter_name = 'cub_status'
+
+    def lookups(self, request, model_admin):
+        return models.Scout.STATUS_CHOICES
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value provided in the query
+        string and retrievable via `self.value()`.
+        """
+        if self.value() is None:
+            return queryset
+        else:
+            return queryset.filter(family__children__status=self.value()).distinct()
+
+
 class AddressInline(admin.StackedInline):
     extra = 0
     form = AddressForm
@@ -255,7 +278,7 @@ class AdultAdmin(UserAdmin):
         'last_login'
     )
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
-    list_filter = ('_is_staff', 'is_superuser')
+    list_filter = ('_is_staff', 'is_superuser', AdultsBasedOnCubStatusFilter)
     ordering = ('last_name', 'nickname', 'first_name')
     readonly_fields = ('date_added', 'last_updated', 'last_login')
     autocomplete_fields = ['family']
