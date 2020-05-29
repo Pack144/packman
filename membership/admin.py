@@ -3,6 +3,7 @@ import logging
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.urls import reverse
 from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -361,7 +362,7 @@ class AdultAdmin(UserAdmin):
 @admin.register(models.Family)
 class FamilyAdmin(admin.ModelAdmin):
     form = forms.FamilyForm
-    list_display = ('name', 'get_adults_count', 'get_children_count',)
+    list_display = ('name', 'adults_count', 'children_count',)
     list_filter = (FamilyListFilter,)
     search_fields = (
         'name',
@@ -373,15 +374,25 @@ class FamilyAdmin(admin.ModelAdmin):
         'children__last_name',
     )
 
-    def get_adults_count(self, instance):
-        return instance.adults.count()
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.annotate(
+            _adults_count=Count('adults', distinct=True),
+            _children_count=Count('children', distinct=True)
+        )
+        return queryset
 
-    get_adults_count.short_description = _("Number of adults")
+    def adults_count(self, obj):
+        return obj._adults_count
 
-    def get_children_count(self, instance):
-        return instance.children.count()
+    adults_count.admin_order_field = '_adults_count'
+    adults_count.short_description = _("Number of adults")
 
-    get_children_count.short_description = _("Number of children")
+    def children_count(self, obj):
+        return obj._children_count
+
+    children_count.admin_order_field = '_children_count'
+    children_count.short_description = _("Number of children")
 
 
 admin.site.login = login_required(admin.site.login)
