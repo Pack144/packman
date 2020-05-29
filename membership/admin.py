@@ -3,6 +3,8 @@ import logging
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
@@ -18,7 +20,6 @@ from committees.models import Membership as CommitteeMembership
 from dens.models import Membership as DenMembership
 
 from . import forms, models
-
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +152,8 @@ class ScoutAdmin(admin.ModelAdmin):
         'last_updated',
         'reference',
         'member_comments',
-        'grade'
+        'grade',
+        'get_adults'
     )
     autocomplete_fields = ['family', 'school']
     inlines = [DenMembershipInline]
@@ -173,9 +175,12 @@ class ScoutAdmin(admin.ModelAdmin):
             ('first_name', 'middle_name', 'last_name', 'suffix'),
             ('nickname', 'gender'),
             'photo',
-            ('status', 'family'),
+            'status',
             'slug'
         )}),
+        (_("Family"), {
+            'fields': ('family', 'get_adults')
+        }),
         (_("School"), {
             'fields': ('school', ('started_school', 'grade'))
         }),
@@ -184,10 +189,24 @@ class ScoutAdmin(admin.ModelAdmin):
             'fields': ('date_of_birth', 'date_added', 'started_pack')
         }),
         (_("Comments"), {
-            'classes': ('collapse', ),
+            'classes': ('collapse',),
             'fields': ('member_comments', 'reference', 'pack_comments',),
         })
     )
+
+    def get_adults(self, obj):
+        display_text = ", ".join([
+            "<a href={}>{}</a>".format(
+                reverse('admin:{}_{}_change'.format(adult._meta.app_label, adult._meta.model_name),
+                        args=(adult.pk,)),
+                adult.get_short_name())
+            for adult in obj.family.adults.all()
+        ])
+        if display_text:
+            return mark_safe(display_text)
+        else:
+            return '-'
+    get_adults.short_description = _('adults')
 
     def make_active(self, request, queryset):
         updated = queryset.update(status=models.Scout.ACTIVE)
@@ -221,7 +240,6 @@ class ScoutAdmin(admin.ModelAdmin):
             updated
         ) % updated, messages.SUCCESS)
 
-
     make_active.short_description = _("Mark selected Cubs as active")
     make_approved.short_description = _("Approve selected Cubs for membership")
     make_inactive.short_description = _("Mark selected Cubs as inactive")
@@ -246,7 +264,7 @@ class AdultAdmin(UserAdmin):
     list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
     list_filter = ('_is_staff', 'is_superuser', AdultsBasedOnCubStatusFilter)
     ordering = ('last_name', 'nickname', 'first_name')
-    readonly_fields = ('date_added', 'last_updated', 'last_login')
+    readonly_fields = ('date_added', 'last_updated', 'last_login', 'get_children')
     autocomplete_fields = ['family']
     search_fields = (
         'email',
@@ -266,9 +284,12 @@ class AdultAdmin(UserAdmin):
             ('first_name', 'middle_name', 'last_name', 'suffix'),
             ('nickname', 'gender'),
             'photo',
-            ('role', 'family'),
+            'role',
             'slug'
         )}),
+        (_('Family'), {
+            'fields': ('family', 'get_children')
+        }),
         (_("Account Details"), {
             'fields': (('email', 'is_published'), 'password')
         }),
@@ -284,8 +305,8 @@ class AdultAdmin(UserAdmin):
             'fields': ('date_of_birth', 'last_login', 'date_added')
         }),
         (_("Comments"), {
-            'classes': ('collapse', ),
-            'fields': ('pack_comments', ),
+            'classes': ('collapse',),
+            'fields': ('pack_comments',),
         })
     )
     add_fieldsets = (
@@ -299,6 +320,20 @@ class AdultAdmin(UserAdmin):
             ('email', 'password1', 'password2'))}),
     )
     inlines = [PhoneNumberInline, AddressInline, CommitteeMembershipInline]
+
+    def get_children(self, obj):
+        display_text = ", ".join([
+            "<a href={}>{}</a>".format(
+                reverse('admin:{}_{}_change'.format(child._meta.app_label, child._meta.model_name),
+                        args=(child.pk,)),
+                child.get_short_name())
+            for child in obj.family.children.all()
+        ])
+        if display_text:
+            return mark_safe(display_text)
+        else:
+            return '-'
+    get_children.short_description = _('children')
 
 
 @admin.register(models.Family)
