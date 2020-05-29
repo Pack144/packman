@@ -250,11 +250,11 @@ class ScoutAdmin(admin.ModelAdmin):
                     if not c:
                         self.message_user(request, _(
                             f'{obj} is already assigned to Den {obj.current_den} for the {next_year} Pack Year.'
-                        )), messages.WARNING
+                        ), messages.WARNING)
                         n -= 1
                 else:
                     n -= 1
-                    self.message_user(request, _(f'{obj} is not currently assigned to a den.')), messages.WARNING
+                    self.message_user(request, _(f'{obj} is not currently assigned to a den.'), messages.WARNING)
         self.message_user(request, ngettext(
             f'Successfully rolled {n} Cub into the {next_year} Pack Year.',
             f'Successfully rolled {n} Cubs into the {next_year} Pack Year.',
