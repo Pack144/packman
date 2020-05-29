@@ -13,7 +13,7 @@ from easy_thumbnails.widgets import ImageClearableFileInput
 
 from address_book.models import Address, PhoneNumber
 from address_book.forms import AddressForm, PhoneNumberForm
-from dens.models import Rank
+from dens.models import Rank, Membership
 from pack_calendar.models import PackYear
 
 from committees.models import Membership as CommitteeMembership
@@ -133,7 +133,7 @@ class PhoneNumberInline(admin.TabularInline):
 
 @admin.register(models.Scout)
 class ScoutAdmin(admin.ModelAdmin):
-    actions = ['make_approved', 'make_active', 'make_inactive', 'make_graduated']
+    actions = ['make_approved', 'make_active', 'make_inactive', 'make_graduated', 'continue_in_same_den_one_more_year']
     list_display = (
         'first_name',
         'last_name',
@@ -240,10 +240,32 @@ class ScoutAdmin(admin.ModelAdmin):
             updated
         ) % updated, messages.SUCCESS)
 
+    def continue_in_same_den_one_more_year(self, request, queryset):
+        next_year, created = PackYear.objects.get_or_create(year=PackYear.get_current_pack_year_year() + 1)
+        n = queryset.count()
+        if n:
+            for obj in queryset:
+                if obj.current_den:
+                    m, c = Membership.objects.get_or_create(den=obj.current_den, scout=obj, year_assigned=next_year)
+                    if not c:
+                        self.message_user(request, _(
+                            f'{obj} is already assigned to Den {obj.current_den} for the {next_year} Pack Year.'
+                        )), messages.WARNING
+                        n -= 1
+                else:
+                    n -= 1
+                    self.message_user(request, _(f'{obj} is not currently assigned to a den.')), messages.WARNING
+        self.message_user(request, ngettext(
+            f'Successfully rolled {n} Cub into the {next_year} Pack Year.',
+            f'Successfully rolled {n} Cubs into the {next_year} Pack Year.',
+            n,
+        ), messages.SUCCESS)
+
     make_active.short_description = _("Mark selected Cubs as active")
     make_approved.short_description = _("Approve selected Cubs for membership")
     make_inactive.short_description = _("Mark selected Cubs as inactive")
     make_graduated.short_description = _("Graduate selected Cubs")
+    continue_in_same_den_one_more_year.short_description = _('Assign selected Cubs to the same den for the next Pack Year')
 
 
 @admin.register(models.Adult)
