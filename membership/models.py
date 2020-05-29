@@ -221,6 +221,8 @@ class Member(models.Model):
                     (self.date_of_birth.month, self.date_of_birth.day)
             )
 
+    age.admin_order_field = 'date_of_birth'
+
 
 class Family(models.Model):
     """ Track the relationship between members """
