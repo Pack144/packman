@@ -199,7 +199,7 @@ class ScoutAdmin(admin.ModelAdmin):
             "<a href={}>{}</a>".format(
                 reverse('admin:{}_{}_change'.format(adult._meta.app_label, adult._meta.model_name),
                         args=(adult.pk,)),
-                adult.get_short_name())
+                adult.get_full_name())
             for adult in obj.family.adults.all()
         ])
         if display_text:
