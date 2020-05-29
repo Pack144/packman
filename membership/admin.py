@@ -46,7 +46,7 @@ class AnimalRankListFilter(admin.SimpleListFilter):
                 den__den__rank__rank__exact=self.value()
             ).filter(
                 den__year_assigned=PackYear.get_current_pack_year()
-            )
+            ).distinct()
 
 
 class FamilyListFilter(admin.SimpleListFilter):
@@ -221,8 +221,6 @@ class ScoutAdmin(admin.ModelAdmin):
             updated
         ) % updated, messages.SUCCESS)
 
-    def continue_into_next_year(self, request, queryset):
-        pass
 
     make_active.short_description = _("Mark selected Cubs as active")
     make_approved.short_description = _("Approve selected Cubs for membership")
