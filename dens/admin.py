@@ -109,7 +109,7 @@ class DenAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         queryset = queryset.annotate(
-            _cubs_count=Count('scouts', filter=Q(year_assigned=PackYear.get_current_pack_year())),
+            _cubs_count=Count('scouts', filter=Q(scouts__year_assigned=PackYear.get_current_pack_year())),
         )
         return queryset
 
