@@ -512,10 +512,14 @@ class Scout(Member):
 
     @property
     def current_den(self):
-        return Den.objects.get(
-            scouts__scout=self,
-            scouts__year_assigned=PackYear.get_current_pack_year()
-        )
+        try:
+            den = Den.objects.get(
+                scouts__scout=self,
+                scouts__year_assigned=PackYear.get_current_pack_year()
+            )
+        except Den.DoesNotExist:
+            den = None
+        return den
 
     @property
     def grade(self):
