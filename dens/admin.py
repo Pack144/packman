@@ -1,7 +1,9 @@
 from django.contrib import admin
+from django.db.models import Count, Q
 from django.utils.translation import gettext_lazy as _
 
 from committees import models
+from pack_calendar.models import PackYear
 from .models import Den, Rank, Membership
 
 
@@ -91,7 +93,7 @@ class DenAdmin(admin.ModelAdmin):
     inlines = [LeadershipAdmin, MembershipAdmin]
     list_display = (
         'number',
-        'count_current_members',
+        'cubs_count',
         'rank',
         'get_rank_category',
     )
@@ -103,6 +105,19 @@ class DenAdmin(admin.ModelAdmin):
         'scouts__nickname',
         'scouts__last_name',
     )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.annotate(
+            _cubs_count=Count('scouts', filter=Q(year_assigned=PackYear.get_current_pack_year())),
+        )
+        return queryset
+
+    def cubs_count(self, obj):
+        return obj._cubs_count
+
+    cubs_count.admin_order_field = '_cubs_count'
+    cubs_count.short_description = _("# of cubs")
 
 
 @admin.register(Rank)
