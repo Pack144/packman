@@ -195,7 +195,6 @@ class ScoutAdmin(admin.ModelAdmin):
     )
     list_display_links = ['first_name', 'last_name']
     list_filter = ('status', AnimalRankListFilter, 'den__den')
-    list_select_related = ('current_den', )
     readonly_fields = (
         'date_added',
         'last_updated',
