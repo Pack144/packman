@@ -210,7 +210,6 @@ class Member(models.Model):
                 break
         return self.slug
 
-    @property
     def age(self):
         """ If we have a birthday, calculate the current age of the member. """
         if self.date_of_birth:
