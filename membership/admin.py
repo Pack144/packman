@@ -1,9 +1,10 @@
 import logging
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
@@ -20,23 +21,6 @@ from . import forms, models
 
 
 logger = logging.getLogger(__name__)
-
-
-def make_active(modeladmin, request, queryset):
-    queryset.update(status=models.Scout.ACTIVE)
-
-
-def make_approved(modeladmin, request, queryset):
-    queryset.update(status=models.Scout.APPROVED)
-
-
-def make_inactive(modeladmin, request, queryset):
-    queryset.update(status=models.Scout.INACTIVE)
-
-
-make_active.short_description = _("Mark selected Cubs active")
-make_approved.short_description = _("Approve selected Cubs for membership")
-make_inactive.short_description = _("Mark selected Cubs inactive")
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
@@ -148,7 +132,7 @@ class PhoneNumberInline(admin.TabularInline):
 
 @admin.register(models.Scout)
 class ScoutAdmin(admin.ModelAdmin):
-    actions = [make_approved, make_active, make_inactive]
+    actions = ['make_approved', 'make_active', 'make_inactive', 'make_graduated']
     list_display = (
         'first_name',
         'last_name',
@@ -204,6 +188,46 @@ class ScoutAdmin(admin.ModelAdmin):
             'fields': ('member_comments', 'reference', 'pack_comments',),
         })
     )
+
+    def make_active(self, request, queryset):
+        updated = queryset.update(status=models.Scout.ACTIVE)
+        self.message_user(request, ngettext(
+            '%d Cub was successfully marked as active.',
+            '%d Cubs were successfully marked as active',
+            updated
+        ) % updated, messages.SUCCESS)
+
+    def make_approved(self, request, queryset):
+        updated = queryset.update(status=models.Scout.APPROVED)
+        self.message_user(request, ngettext(
+            '%d Cub was successfully marked as approved.',
+            '%d Cubs were successfully marked as approved',
+            updated
+        ) % updated, messages.SUCCESS)
+
+    def make_inactive(self, request, queryset):
+        updated = queryset.update(status=models.Scout.INACTIVE)
+        self.message_user(request, ngettext(
+            '%d Cub was successfully marked as inactive.',
+            '%d Cubs were successfully marked as inactive',
+            updated
+        ) % updated, messages.SUCCESS)
+
+    def make_graduated(self, request, queryset):
+        updated = queryset.update(status=models.Scout.GRADUATED)
+        self.message_user(request, ngettext(
+            '%d Cub was successfully marked as graduated.',
+            '%d Cubs were successfully marked as graduated',
+            updated
+        ) % updated, messages.SUCCESS)
+
+    def continue_into_next_year(self, request, queryset):
+        pass
+
+    make_active.short_description = _("Mark selected Cubs as active")
+    make_approved.short_description = _("Approve selected Cubs for membership")
+    make_inactive.short_description = _("Mark selected Cubs as inactive")
+    make_graduated.short_description = _("Graduate selected Cubs")
 
 
 @admin.register(models.Adult)
