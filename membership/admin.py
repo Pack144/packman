@@ -48,74 +48,18 @@ class AnimalRankListFilter(admin.SimpleListFilter):
     parameter_name = 'rank'
 
     def lookups(self, request, model_admin):
-        return (
-            ('bobcats', _("Bobcats")),
-            ('tigers', _("Tigers")),
-            ('wolves', _("Wolves")),
-            ('bears', _("Bears")),
-            ('jr_webes', _("Jr. Webelos")),
-            ('sr_webes', _("Sr. Webelos")),
-            ('arrow', _("Arrow of Light")),
-            ('animals', _("Animal Ranks")),
-            ('webelos', _("Webelos")),
-        )
+        return Rank.RANK_CHOICES
 
     def queryset(self, request, queryset):
         """
         Returns the filtered queryset based on the value provided in the query
         string and retrievable via `self.value()`.
         """
-        if self.value() == 'bobcats':
+        if self.value() is None:
+            return queryset
+        else:
             return queryset.filter(
-                den__den__rank__rank__exact=Rank.BOBCAT
-            ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
-            )
-        if self.value() == 'tigers':
-            return queryset.filter(
-                den__den__rank__rank__exact=Rank.TIGER
-            ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
-            )
-        if self.value() == 'wolves':
-            return queryset.filter(
-                den__den__rank__rank__exact=Rank.WOLF
-            ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
-            )
-        if self.value() == 'bears':
-            return queryset.filter(
-                den__den__rank__rank__exact=Rank.BEAR
-            ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
-            )
-        if self.value() == 'jr_webes':
-            return queryset.filter(
-                den__den__rank__rank__exact=Rank.JR_WEBE
-            ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
-            )
-        if self.value() == 'sr_webes':
-            return queryset.filter(
-                den__den__rank__rank__exact=Rank.SR_WEBE
-            ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
-            )
-        if self.value() == 'arrow':
-            return queryset.filter(
-                den__den__rank__rank__exact=Rank.ARROW
-            ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
-            )
-        if self.value() == 'animals':
-            return queryset.filter(
-                den__den__rank__rank__lte=Rank.BEAR
-            ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
-            )
-        if self.value() == 'webelos':
-            return queryset.filter(
-                den__den__rank__rank__gte=Rank.JR_WEBE
+                den__den__rank__rank__exact=self.value()
             ).filter(
                 den__year_assigned=PackYear.get_current_pack_year()
             )
