@@ -406,6 +406,7 @@ class Scout(Member):
 
     # Define the various statuses a Scout can be. Are the a currently active
     # member, new applicant, or even graduated?
+    WITHDRAWN = 0
     APPLIED = 1
     DENIED = 2
     APPROVED = 3
@@ -413,6 +414,7 @@ class Scout(Member):
     INACTIVE = 5
     GRADUATED = 6
     STATUS_CHOICES = (
+        (WITHDRAWN, _("Application Withdrawn")),
         (APPLIED, _("Applied")),
         (DENIED, _("Denied")),
         (APPROVED, _("Approved")),
