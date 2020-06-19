@@ -40,7 +40,7 @@
               <div class="col">
                 <strong>{{ member.member }}</strong><br>
                 <span class="text-muted">
-                  {% if member.position == 4 %}
+                  {% if member.position == member.DEN_LEADER %}
                     {{ member.den }}
                   {% else %}
                     {{ member.get_position_display }}
