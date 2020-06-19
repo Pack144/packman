@@ -93,7 +93,7 @@
         </div>
       </div>
     {% endif %}
-    {% if member.school and member.status == 4 %}
+    {% if member.school and member.status == member.ACTIVE %}
       <div class="container mt-2">
         <div class="row card-text d-inline-flex">
           <div class="col col-1"><span class="fa fa-school"></span></div>
