@@ -4,53 +4,56 @@
 {% block title %}{{ event }}{% endblock title %}
 
 {% block content %}
-  <div class="row">
-    <div class="col-md-2"></div>
-    <div class="col">
-      <h1>{% if event.status == 'CANCELLED' %}<del>{{ event.name }}</del>{% else %}{{ event.name }}{% endif %}</h1>
-    </div>
-  </div>
-  <div class="row mt-3">
-    <div class="col-md-2">
-      <div class="card text-center d-none d-sm-block">
-        <div class="card-header text-white bg-danger py-2">
-          <h3 class="font-weight-bold d-none d-xl-block text-white">{{ event.start|date:'F' }}</h3>
+  <div class="card border-0">
+    <div class="card-body">
+      <div class="row">
+        <div class="d-none d-xl-block col-xl-2">
+          <div class="card text-center">
+            <div class="card-header text-white bg-danger py-2">
+              <h3 class="text-white m-0">{{ event.start|date:'M' }}</h3>
+            </div>
+            <div class="card-body border-success bg-white py-2">
+              <h1 class="display-4 text-dark m-0">{{ event.start|date:'j' }}</h1>
+            </div>
+          </div>
         </div>
-        <div class="card-body border-success py-4 bg-white">
-          <h1 class="text-black-50">{{ event.start|date:'j' }}</h1>
+        <div class="col">
+          <h1>{% if event.status == event.CANCELLED %}
+            <del>{{ event.name }}</del>{% else %}{{ event.name }}{% endif %}</h1>
+          <ul class="list-inline text-muted" id="datetime-details-list">
+            {% if event.end and event.end.date != event.start.date %}
+              <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
+              <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}</li>
+              <li class="list-inline-item">&ndash;</li>
+              <li class="list-inline-item"><i class="fas fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}</li>
+              <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.end|time }}</li>
+            {% elif event.end %}
+              <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
+              <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}</li>
+            {% else %}
+              <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
+              <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}</li>
+            {% endif %}
+            {% if event.venue.address %}
+              <li class="list-inline-item"><i class="fas fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}</li>
+            {% elif event.get_location %}
+              <li class="list-inline-item"><i class="fas fa-map-marker" aria-label="location"></i> {{ event.get_location }}</li>
+            {% endif %}
+          </ul>
+          {% if event.description %}
+            <p>{{ event.description|safe }}</p>
+          {% endif %}
+          {% if event.attachments.count %}
+            <ul class="list-group">
+              {% for attachment in event.attachments.all %}
+                <a href="{{ attachment.file.url }}" target="_blank">
+                  <li class="list-group-item">{{ attachment }}</li>
+                </a>
+              {% endfor %}
+            </ul>
+          {% endif %}
         </div>
       </div>
-    </div>
-    <div class="col">
-    <dl>
-      <dt>Start</dt>
-      <dd>{{ event.start|naturalday|capfirst }}, {{ event.start|time }}</dd>
-      {% if event.end %}
-        <dt>End</dt>
-        <dd>{{ event.end }}</dd>
-      {% endif %}
-      <dt>Location</dt>
-      <dd>
-        {{ event.get_location }}
-        {% if event.venue.address %}<br>{{ event.venue.address }}{% endif %}
-      </dd>
-      {% if event.description %}
-        <dt>Description</dt>
-        <dd>{{ event.description|safe }}</dd>
-      {% endif %}
-      {% if event.attachments.count %}
-        <dt>Attachments</dt>
-        <dd>
-        <ul class="list-group">
-          {% for attachment in event.attachments.all %}
-            <a href="{{ attachment.file.url }}" target="_blank">
-              <li class="list-group-item">{{ attachment }}</li>
-            </a>
-          {% endfor %}
-        </ul>
-        </dd>
-      {% endif %}
-    </dl>
     </div>
   </div>
 {% endblock %}
