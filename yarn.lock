@@ -2,24 +2,29 @@
 # yarn lockfile v1
 
 
-"@forevolve/bootstrap-dark@^1.0.0-alpha.981":
-  version "1.0.0-alpha.981"
-  resolved "https://registry.yarnpkg.com/@forevolve/bootstrap-dark/-/bootstrap-dark-1.0.0-alpha.981.tgz#bffa869f5e54f69c54dd4a8e31cd8a4c276648c9"
-  integrity sha512-3oN8O8nrbfziK4d0QJ3xcL7zctaEWiNaPGX90xsuXxCoW9kVwRbb1Mz97W/yf/8vklq3vycqz9ieCAUY92P89A==
+"@forevolve/bootstrap-dark@^1.0.0-alpha.1075":
+  version "1.0.0-alpha.1091"
+  resolved "https://registry.yarnpkg.com/@forevolve/bootstrap-dark/-/bootstrap-dark-1.0.0-alpha.1091.tgz#8bb5d30d88456c5891534b3138cbb3b8126ea616"
+  integrity sha512-nclqiPd77TfSPfHfA/rTfJrsH2vpwybnCIOotw7iU7Nb43JzroQqBDHnTev6N64lS5lgNLqwoVe43DlX3n0fbQ==
   dependencies:
-    bootstrap "^4.4.1"
-    jquery "^3.4.1"
+    bootstrap "^4.5.0"
+    jquery "^3.5.1"
     popper.js "^1.16.1"
 
 "@fortawesome/fontawesome-free@^5.11.2":
-  version "5.13.0"
-  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.13.0.tgz#fcb113d1aca4b471b709e8c9c168674fbd6e06d9"
-  integrity sha512-xKOeQEl5O47GPZYIMToj6uuA2syyFlq9EMSl2ui0uytjY9xbe8XS0pexNWmxrdcCyNGyDmLyYw5FtKsalBUeOg==
+  version "5.13.1"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.13.1.tgz#c53b4066edae16cd1fd669f687baf031b45fb9d6"
+  integrity sha512-D819f34FLHeBN/4xvw0HR0u7U2G7RqjPSggXqf7LktsxWQ48VAfGwvMrhcVuaZV2fF069c/619RdgCCms0DHhw==
 
-bootstrap@>=4.1.2, bootstrap@^4.3.1, bootstrap@^4.4.1:
+bootstrap@>=4.1.2:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.4.1.tgz#8582960eea0c5cd2bede84d8b0baf3789c3e8b01"
   integrity sha512-tbx5cHubwE6e2ZG7nqM3g/FZ5PQEDMWmMGNrCUBVRPHXTJaH7CBDdsLeu3eCh3B1tzAxTnAbtmrzvWEvT2NNEA==
+
+bootstrap@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.5.0.tgz#97d9dbcb5a8972f8722c9962483543b907d9b9ec"
+  integrity sha512-Z93QoXvodoVslA+PWNdk23Hze4RBYIkpb5h8I2HY2Tu2h7A0LpAgLcyrhrSUyo2/Oxm2l1fRZPs1e5hnxnliXA==
 
 bs-custom-file-input@^1.3.2:
   version "1.3.4"
@@ -31,7 +36,7 @@ jquery@^3.0:
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
   integrity sha512-36+AdBzCL+y6qjw5Tx7HgzeGCzC81MDDgaUP8ld2zhx58HdqXGoBd+tHdrBMiyjGQs0Hxs/MLZTu/eHNJJuWPw==
 
-jquery@^3.4.1, jquery@^3.5.1:
+jquery@^3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.5.1.tgz#d7b4d08e1bfdb86ad2f1a3d039ea17304717abb5"
   integrity sha512-XwIBPqcMn57FxfT+Go5pzySnm4KWkT1Tv7gjrpT1srtf8Weynl6R273VJ5GjkRb51IzMp5nbaPjJXMWeju2MKg==
