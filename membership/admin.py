@@ -4,6 +4,7 @@ from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -136,7 +137,7 @@ class PhoneNumberInline(admin.TabularInline):
 class ScoutAdmin(admin.ModelAdmin):
     actions = ['make_approved', 'make_active', 'make_inactive', 'make_graduated', 'continue_in_same_den_one_more_year']
     list_display = (
-        'first_name',
+        'name',
         'last_name',
         'school',
         'get_grade',
@@ -146,7 +147,7 @@ class ScoutAdmin(admin.ModelAdmin):
         'pack_comments',
         'date_added',
     )
-    list_display_links = ['first_name', 'last_name']
+    list_display_links = ('name', 'last_name')
     list_filter = ('status', AnimalRankListFilter, 'den__den')
     readonly_fields = (
         'date_added',
@@ -194,6 +195,18 @@ class ScoutAdmin(admin.ModelAdmin):
             'fields': ('member_comments', 'reference', 'pack_comments',),
         })
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.annotate(
+            _name=Coalesce('nickname', 'first_name')
+        )
+        return qs
+
+    def name(self, obj):
+        return obj._name
+
+    name.admin_order_field = '_name'
 
     def get_adults(self, obj):
         display_text = ", ".join([
@@ -274,8 +287,7 @@ class AdultAdmin(UserAdmin):
     add_form = forms.AdminAdultCreation
     form = forms.AdminAdultChange
     list_display = (
-        'first_name',
-        'middle_name',
+        'name',
         'last_name',
         'email',
         'active',
@@ -284,7 +296,7 @@ class AdultAdmin(UserAdmin):
         'is_superuser',
         'last_login'
     )
-    list_display_links = ('first_name', 'middle_name', 'last_name', 'email')
+    list_display_links = ('name', 'last_name', 'email')
     list_filter = ('_is_staff', 'is_superuser', AdultsBasedOnCubStatusFilter)
     ordering = ('last_name', 'nickname', 'first_name')
     readonly_fields = ('date_added', 'last_updated', 'last_login', 'get_children')
@@ -343,6 +355,18 @@ class AdultAdmin(UserAdmin):
             ('email', 'password1', 'password2'))}),
     )
     inlines = [PhoneNumberInline, AddressInline, CommitteeMembershipInline]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.annotate(
+            _name=Coalesce('nickname', 'first_name')
+        )
+        return qs
+
+    def name(self, obj):
+        return obj._name
+
+    name.admin_order_field = '_name'
 
     def get_children(self, obj):
         display_text = ", ".join([
