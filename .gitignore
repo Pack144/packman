@@ -110,3 +110,6 @@ venv.bak/
 # Yarn Components
 /node_modules/
 .vscode/settings.json
+
+# Django Static root
+/static_files/
