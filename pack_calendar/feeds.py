@@ -22,7 +22,7 @@ class EventFeed(ICalFeed):
     def description(self, obj):
         return _(
             f"{settings.PACK_NAME} calendar of meetings, events, outings, and "
-            f"campouts and personalized for the {obj.name}."
+            f"campouts. Created specifically for the {obj.name}."
         )
 
     def file_name(self, obj):
