@@ -13,7 +13,7 @@ class EventFeed(ICalFeed):
     """
 
     product_id = f"-//{settings.PACK_NAME}//ical/EN"
-    title = settings.PACK_NAME
+    title = settings.PACK_SHORTNAME
     timezone = settings.TIME_ZONE
 
     def get_object(self, request, family_uuid):
