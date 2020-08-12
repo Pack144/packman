@@ -4,9 +4,19 @@
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center">
-
     <h1>Upcoming Events</h1>
-    <a href="webcal://{{ request.META.HTTP_HOST }}{% url 'event_feed' user.family.uuid %}" class="btn btn-lg btn-danger" data-toggle="tooltip" title="Subscribe to this calendar"><i class="fas fa-calendar-alt"></i></a>
+
+    <div class="btn-group" role="group">
+      <button id="btnGroupDrop1" type="button" class="btn btn-lg btn-danger dropdown-toggle" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false" title="Subscribe to this calendar">
+        <i class="fas fa-calendar-alt"></i>
+      </button>
+      <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'event_feed' user.family.uuid %}">Subscribe
+          to this calendar</a>
+        <button class="dropdown-item" id="copy">Copy link to this calendar</button>
+      </div>
+    </div>
   </div>
   {% if event_list %}
     <div class="mt-5">
@@ -21,8 +31,31 @@
 
 {% block js %}
   <script type="text/javascript">
-      $(function () {
-          $('[data-toggle="tooltip"]').tooltip()
-      })
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  <script typ="text/javascript">
+    function copy() {
+      var textArea = document.createElement("textarea");
+      textArea.value = "{{ request.scheme }}://{{ request.META.HTTP_HOST }}{% url 'event_feed' user.family.uuid %}";
+
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Fallback: Copying text command was ' + msg);
+      } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+      }
+
+      document.body.removeChild(textArea);
+    }
+
+    document.querySelector("#copy").addEventListener("click", copy);
   </script>
 {% endblock %}
