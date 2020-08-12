@@ -7,6 +7,7 @@ verify_ssl = true
 pylint = "*"
 mysql-connector = "*"
 blowfish = "*"
+upisort = "*"
 
 [packages]
 argon2-cffi = "*"
