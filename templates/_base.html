@@ -1,4 +1,4 @@
-{% load static %}
+{% load i18n static %}
 <!DOCTYPE html>
 <html lang="en" class="h-100">
 <head>
@@ -136,11 +136,15 @@
   </div>
 </main>
 
-<footer class="footer mt-auto py-3">
-  <div class="container">
-    <p>A scout is trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</p>
-  </div>
-</footer>
+{% block footer %}
+  <!-- Footer Section ------------------------------------------------------>
+  <footer class="footer">
+    <div class="my-3">
+      <div>{% blocktrans %}A scout is <em>trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</em>{% endblocktrans %}</div>
+      <div><i class="far fa-copyright"></i> {% now "Y" %}{% if settings.SITE_NAME %} <strong>{{ settings.SITE_NAME }}</strong>{% endif %}</div>
+    </div>
+  </footer>
+{% endblock footer %}
 
 <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
 <script src="{% static 'popper.js/dist/umd/popper.js' %}"></script>
