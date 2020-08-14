@@ -8,6 +8,7 @@ def navbar_items(request):
     navbar = {
         'pack_name': settings.PACK_NAME,
         'pack_location': settings.PACK_LOCATION,
+        'pack_shortname': settings.PACK_SHORTNAME,
         'pack_tagline': settings.PACK_TAGLINE,
         'public_pages': [],
         'private_pages': [],
@@ -22,3 +23,8 @@ def navbar_items(request):
             navbar['private_pages'].append(page)
 
     return navbar
+
+
+def settings_context(_request):
+    """Make project settings available to templates under the settings context"""
+    return {"settings": settings}

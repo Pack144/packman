@@ -1,8 +1,7 @@
 {% extends '_base.html' %}
-
 {% load i18n static %}
 
-{% block title %}{{ block.super }}: {% trans 'Password Change Successful' %}{% endblock title %}
+{% block title %}{{ block.super }}: {% trans 'Log Out Successful' %}{% endblock title %}
 
 {% block content %}
   <div class="row justify-content-center mt-5">
@@ -11,10 +10,11 @@
         <div class="card-header text-center">
           <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-block d-sm-none mx-auto my-4 img-thumbnail" alt="{% trans 'Pack Logo' %}">
           <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-none d-sm-block mx-auto my-4 img-thumbnail" alt="{% trans 'Pack Logo' %}">
-          <h3 class="card-subtitle text-muted">{% trans 'Password Change Successful' %}</h3>
+          <h3 class="card-subtitle text-muted">{% trans 'Log Out Successful' %}</h3>
         </div>
         <div class="card-body">
-          <p>{% trans 'Your password has been changed.' %}</p>
+          <p>{% trans 'You have successfully logged out of' %} {{ pack_name }}.</p>
+          <p><a class="btn btn-block btn-success mt-5" href="{% url 'login' %}">{% trans 'Log in again' %}</a></p>
         </div>
       </div>
     </div>
