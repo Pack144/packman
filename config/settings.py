@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     # Local apps
     'address_book.apps.AddressBookConfig',
     'committees.apps.CommitteesConfig',
+    'core.apps.CoreConfig',
     'dens.apps.DensConfig',
     'documents.apps.DocumentsConfig',
     'membership.apps.MembershipConfig',
