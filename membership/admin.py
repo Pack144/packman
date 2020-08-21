@@ -417,6 +417,3 @@ class FamilyAdmin(admin.ModelAdmin):
 
     children_count.admin_order_field = '_children_count'
     children_count.short_description = _("Number of children")
-
-
-admin.site.login = login_required(admin.site.login)
