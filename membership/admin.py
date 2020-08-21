@@ -2,7 +2,6 @@ import logging
 
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.db.models.functions import Coalesce
 from django.urls import reverse
