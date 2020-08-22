@@ -1,7 +1,10 @@
+from django.conf import settings
+from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.generic import (
-    DetailView, TemplateView, UpdateView, CreateView
+    DetailView, TemplateView, UpdateView, CreateView, FormView
 )
 
 from membership.forms import SignupForm, AddressFormSet, PhoneNumberFormSet
@@ -9,6 +12,7 @@ from membership.models import Family
 
 from pack_calendar.models import Event
 
+from .forms import ContactForm
 from .models import StaticPage, DynamicPage
 
 
@@ -59,6 +63,18 @@ class HistoryPageView(TemplateView):
         except StaticPage.DoesNotExist:
             context['page_content'] = None
         return context
+
+
+class ContactPageView(SuccessMessageMixin, FormView):
+    form_class = ContactForm
+    success_message = _('Thank you for reaching out. Your message has been sent and we will be reviewing '
+                        'it momentarily. If you requested a response, we will get back to you at %(from_email)s.')
+    success_url = reverse_lazy('home_page')
+    template_name = 'pages/contact_page.html'
+
+    def form_valid(self, form):
+        form.send_mail()
+        return super().form_valid(form)
 
 
 class SignUpPageView(CreateView):
