@@ -23,8 +23,3 @@ def navbar_items(request):
             navbar['private_pages'].append(page)
 
     return navbar
-
-
-def settings_context(_request):
-    """Make project settings available to templates under the settings context"""
-    return {"settings": settings}
