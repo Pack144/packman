@@ -60,6 +60,8 @@
             {% for item in private_pages %}
               <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
             {% endfor %}
+          {% else %}
+              <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'contact_page' %} active{% endif %}" href="{% url 'contact_page' %}">Contact Us</a>
           {% endif %}
           {% for item in public_pages %}
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
