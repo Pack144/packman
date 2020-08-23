@@ -1,28 +1,35 @@
 {% extends "_base.html" %}
+{% load i18n %}
 
 {% block title %}{{ member }}{% endblock title %}
 
 {% block content %}
-  <div class="container row">
-    <h1>{{ member }}</h1>
+  <div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-4">{{ member }}</h1>
   </div>
-  {% include 'membership/snippets/member_detail_card.html' %}
+
+  <div class="card-group mb-5">
+    {% include 'membership/snippets/detail_card.html' with member_email=email member_addresses=addresses member_phone_numbers=phone_numbers %}
+  </div>
+
+
   {% if member.family.children.count > 1 or member.family.adults.count %}
-    <hr>
-    <h2>Family</h2>
+    <h2>{% trans 'Family' %}</h2>
     <div class="card-group" id="family-card-group">
       {% for adult in member.family.adults.all %}
-        {% include 'membership/snippets/member_detail_card.html' with member=adult %}
+        {% include 'membership/snippets/detail_card.html' with member=adult %}
       {% endfor %}
       {% for sibling in member.get_siblings.all %}
-        {% include 'membership/snippets/member_detail_card.html' with member=sibling %}
+        {% include 'membership/snippets/detail_card.html' with member=sibling %}
       {% endfor %}
     </div>
   {% endif %}
+
   {% if user.family == member.family %}
-    <div class="btn-group mt-4 btn-group-lg" role="group" aria-label="Add Family Members">
-      <a href="{% url 'parent_create' %}" class="btn btn-secondary">Add an adult<span class="ml-3 badge badge-light"><i class="fas fa-male"></i></span></a>
-      <a href="{% url 'scout_create' %}" class="btn btn-secondary">Nominate a cub<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
+    <div class="btn-group mt-4 btn-group-lg" role="group" aria-label="{% trans 'Add Family Members' %}">
+      <a href="{% url 'parent_create' %}" class="btn btn-secondary">{% trans 'Add an adult' %}<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
+      <a href="{% url 'scout_create' %}" class="btn btn-secondary">{% trans 'Nominate a cub' %}<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
     </div>
   {% endif %}
+
 {% endblock %}

@@ -167,6 +167,13 @@ class AdultDetail(LoginRequiredMixin, DetailView):
     context_object_name = 'member'
     template_name = 'membership/adult_detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['email'] = self.object.email if self.object.is_published else None
+        context['addresses'] = self.object.addresses.filter(published__exact=True)
+        context['phone_numbers'] = self.object.phone_numbers.filter(published__exact=True)
+        return context
+
 
 class AdultUpdate(LoginRequiredMixin, UpdateView):
     model = Adult
