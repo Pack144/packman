@@ -1,0 +1,120 @@
+{% load humanize i18n static %}
+
+{% blocktrans asvar alt_text %}{{ member }}'s profile picture{% endblocktrans %}
+
+<div class="card member-detail{% if request.resolver_match.kwargs.slug == member.slug and member.committees.count %} border-right-0{% endif %}" id="{{ member.slug }}-details">
+  <a href="{{ member.get_absolute_url }}">
+    {% include 'membership/snippets/headshot.html' %}
+  </a>
+  <div class="card-body">
+    {% if not request.resolver_match.kwargs.slug == member.slug %}
+      <a href="{{ member.get_absolute_url }}" class="card-link">
+        <h4 class="card-title text-center">{{ member.get_short_name }}</h4>
+      </a>
+    {% endif %}
+
+    {% if member.current_den.rank %}
+      <h5 class="card-subtitle text-muted text-center mb-3">{{ member.current_den.rank }}</h5>
+    {% endif %}
+
+    {% if member_email %}
+      <div class="row mb-1">
+        <div class="col col-1">
+          <abbr title="{% trans 'E-mail address' %}"><i class="fas fa-envelope fa-fw"></i></abbr>
+        </div>
+        <div class="col card-text text-truncate">
+          <a href="mailto:{{ email }}?subject=[{{ settings.PACK_SHORTNAME }}] " class="card-link">{{ member_email }}</a>
+        </div>
+      </div>
+    {% endif %}
+
+    {% for phone_number in member_phone_numbers.all %}
+      <div class="row mb-1">
+        <div class="col col-1">
+          {% if phone_number.type == phone_number.HOME %}
+            <abbr title="{% trans 'Home phone' %}"><i class="fas fa-home fa-fw"></i></abbr>
+          {% elif phone_number.type == phone_number.MOBILE %}
+            <abbr title="{% trans 'Mobile phone' %}"><i class="fas fa-mobile fa-fw"></i></abbr>
+          {% elif phone_number.type == phone_number.WORK %}
+            <abbr title="{% trans 'Work phone' %}"><i class="fas fa-briefcase fa-fw"></i></abbr>
+          {% else %}
+            <abbr title="{% trans 'Phone number' %}"><i class="fas fa-phone fa-fw"></i></abbr>
+          {% endif %}
+        </div>
+        <div class="col card-text text-truncate">
+          <a href="tel:{{ phone_number.number.as_e164 }}" class="card-link">{{ phone_number }}</a>
+        </div>
+      </div>
+    {% endfor %}
+
+    {% for address in member_addresses.all %}
+      <div class="row mb-1">
+        <div class="col col-1">
+          {% if address.type == address.HOME %}
+            <abbr title="{% trans 'Home address' %}"><i class="fas fa-home fa-fw"></i></abbr>
+          {% elif address.type == address.WORK %}
+            <abbr title="{% trans 'Work address' %}"><i class="fas fa-building fa-fw"></i></abbr>
+          {% else %}
+            <abbr title="{% trans 'Address' %}"><i class="fas fa-mail-bulk fa-fw"></i></abbr>
+          {% endif %}
+        </div>
+        <div class="col text-truncate">
+          {{ address.street }}<br>
+          {% if address.street2 %}{{ address.street2 }}<br>{% endif %}
+          {{ address.city }}, {{ address.state }} {{ address.zip_code }}
+        </div>
+      </div>
+    {% endfor %}
+
+    {% if member.date_of_birth and member.get_age <= 18 %}
+      <div class="row mb-1">
+        <div class="col col-1">
+          <abbr title="{% trans 'Age' %}"><i class="fas fa-birthday-cake fa-fw"></i></abbr>
+        </div>
+        <div class="col text-truncate card-text">
+          {% blocktrans count age=member.get_age %}
+            <strong>{{ age }}</strong> year old
+          {% plural %}
+            <strong>{{ age }}</strong> years old
+          {% endblocktrans %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if member.school and member.status == member.ACTIVE %}
+      <div class="row mb-1">
+        <div class="col col-1">
+          <abbr title="{% trans 'School' %}"><i class="fa fa-school"></i></abbr>
+        </div>
+        <div class="col text-truncate card-text">
+          {{ member.school }}<br>
+          <strong>
+            {% if member.grade > 0 %}
+              {{ member.grade }}<sup>{{ member.grade|ordinal|slice:'-2:' }}</sup> grade
+            {% elif member.grade == 'K' %}
+              Kindergarten
+            {% endif %}
+          </strong>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if member.current_den %}
+      <a href="{{ member.current_den.get_absolute_url }}">
+        <img src="{{ member.current_den.patch }}" alt="Den {{ member.current_den.number }} patch" class="mt-2 card-img rounded">
+      </a>
+    {% endif %}
+
+  </div>
+
+  {% if user.family == member.family %}
+    {% if member.adult %}
+      <a href="{% url 'parent_update' member.uuid %}" class="badge badge-dark p-2" title="Update {{ member.get_short_name }}'s profile">
+    {% else %}
+      <a href="{% url 'scout_update' member.uuid %}" class="badge badge-dark p-2" title="Update {{ member.get_short_name }}'s profile">
+    {% endif %}
+  <i class="fa fa-user-edit"></i>
+  </a>
+  {% endif %}
+
+</div>

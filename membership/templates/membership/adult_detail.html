@@ -1,46 +1,85 @@
 {% extends "_base.html" %}
+{% load i18n %}
 
 {% block title %}{{ member }}{% endblock title %}
 
 {% block content %}
-  <div class="row">
-  <div class="col">
-    {% include 'membership/snippets/member_detail_card.html' %}
+  <div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-4">{{ member }}</h1>
   </div>
-  {% if member.committees.count %}
-  <div class="col">
-    <h3>Committee{{ member.committees.count|pluralize }} Served</h3>
-    <ul class="list-unstyled">
-    {% for committee in member.committees.all %}
-      {{ committee.membership }}
-      {% ifchanged committee.year_served %}<h5 class="mt-4">{{ committee.year_served }}</h5>{% endifchanged %}
-      <a href="{% url 'committee_detail_by_year' slug=committee.committee.slug year=committee.year_served.year%}">
-        <li>
-          <strong>{{ committee.committee }}</strong>
-          <small class="ml-1">{% if committee.den %}{{ committee.den }}{% elif 'Akela' in committee.committee.name %}{% else %}{{ committee.get_position_display }}{% endif %}</small>
-        </li>
-      </a>
-    {% endfor %}
-    </ul>
+
+  <div class="card-group mb-5">
+    {% include 'membership/snippets/detail_card.html' with member_email=email member_addresses=addresses member_phone_numbers=phone_numbers %}
+
+    {% if member.committees.count %}
+      {% regroup member.committees.all by year_served as assignments_by_year %}
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">{% blocktrans count assignments=member.committees.count %}
+            Committee Served
+            {% plural %}
+            Committees Served
+          {% endblocktrans %}
+          </h3>
+          <div class="accordion" id="assignments-accordion">
+
+            {% for year in assignments_by_year %}
+              <div class="card">
+                <div class="card-header" id="heading-{{ year.grouper.year }}">
+                  <h2 class="mb-0">
+                    <button class="btn btn-link btn-block text-left card-link{% if not forloop.first %} collapsed{% endif %}" type="button" data-toggle="collapse" data-target="#collapse-{{ year.grouper.year }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse-{{ year.grouper.year }}">
+                      {{ year.grouper }}
+                    </button>
+                  </h2>
+                </div>
+                <div id="collapse-{{ year.grouper.year }}" class="collapse{% if forloop.first %} show{% endif %}" aria-labelledby="heading-{{ year.grouper.year }}" data-parent="#assignments-accordion">
+                  <div class="card-body">
+                    <div class="list-group list-group-flush">
+
+                      {% for assignment in year.list %}
+                        <a href="{% url 'committee_detail_by_year' slug=assignment.committee.slug year=assignment.year_served.year %}" class="list-group-item list-group-item-action border-bottom-0">
+                          <strong>{{ assignment.committee }}</strong>
+                          <small class="ml-1">
+                            {% if assignment.den %}
+                              {{ assignment.den }}
+                            {% elif 'Akela' in assignment.committee.name %}
+                            {% else %}
+                              {{ assignment.get_position_display }}
+                            {% endif %}
+                          </small>
+                        </a>
+                      {% endfor %}
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
   </div>
-  {% endif %}
-  </div>
+
   {% if member.family.children.count or member.family.adults.count > 1 %}
-    <hr>
-    <h2>Family</h2>
+    <h2>{% trans 'Family' %}</h2>
     <div class="card-group" id="family-card-group">
-      {% for member in member.get_partners %}
-        {% include 'membership/snippets/member_detail_card.html' with member=member %}
+      {% for partner in member.get_partners %}
+        {% include 'membership/snippets/detail_card.html' with member=partner %}
       {% endfor %}
       {% for child in member.family.children.all %}
-        {% include 'membership/snippets/member_detail_card.html' with member=child %}
+        {% include 'membership/snippets/detail_card.html' with member=child %}
       {% endfor %}
     </div>
   {% endif %}
+
   {% if user.family == member.family %}
-    <div class="btn-group mt-4 btn-group-lg" role="group" aria-label="Add Family Members">
-      <a href="{% url 'parent_create' %}" class="btn btn-secondary">Add an adult<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
-      <a href="{% url 'scout_create' %}" class="btn btn-secondary">Nominate a cub<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
+    <div class="btn-group mt-4 btn-group-lg" role="group" aria-label="{% trans 'Add Family Members' %}">
+      <a href="{% url 'parent_create' %}" class="btn btn-secondary">{% trans 'Add an adult' %}<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
+      <a href="{% url 'scout_create' %}" class="btn btn-secondary">{% trans 'Nominate a cub' %}<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
     </div>
   {% endif %}
+
 {% endblock %}
