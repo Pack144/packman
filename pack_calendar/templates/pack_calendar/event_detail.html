@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 {% load humanize %}
 
-{% block title %}{{ event }}{% endblock title %}
+{% block title %}{{ block.super }}: {{ event }}{% endblock title %}
 
 {% block content %}
   <div class="card border-0">

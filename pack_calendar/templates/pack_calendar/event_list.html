@@ -1,20 +1,18 @@
 {% extends '_base.html' %}
 
-{% block title %}Upcoming Events{% endblock %}
+{% block title %}{{ block.super }}: Upcoming Events{% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center">
     <h1>Upcoming Events</h1>
 
-    <div class="btn-group" role="group">
-      <button id="btnGroupDrop1" type="button" class="btn btn-lg btn-danger dropdown-toggle" data-toggle="dropdown"
-              aria-haspopup="true" aria-expanded="false" title="Subscribe to this calendar">
+    <div class="dropdown">
+      <button class="btn btn-lg btn-danger dropdown-toggle" type="button" id="calendarFeedSubscribeButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <i class="fas fa-calendar-alt"></i>
       </button>
-      <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">Subscribe
-          to this calendar</a>
-        <button class="dropdown-item" id="copy">Copy link to this calendar</button>
+      <div class="dropdown-menu" aria-labelledby="calendarFeedSubscribeButton">
+        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">Subscribe to this calendar</a>
+        <button class="dropdown-item" href="{% url 'calendars:feed' user.family.uuid %}" id="ical-link">Copy link to this calendar</button>
       </div>
     </div>
   </div>
@@ -30,13 +28,8 @@
 {% endblock %}
 
 {% block js %}
+  {{ block.super }}
   <script type="text/javascript">
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
-
-  <script typ="text/javascript">
     function copy() {
       var textArea = document.createElement("textarea");
       textArea.value = "{{ request.scheme }}://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}";
@@ -56,6 +49,6 @@
       document.body.removeChild(textArea);
     }
 
-    document.querySelector("#copy").addEventListener("click", copy);
+    document.querySelector("#ical-link").addEventListener("click", copy);
   </script>
 {% endblock %}

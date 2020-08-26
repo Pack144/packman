@@ -1,7 +1,7 @@
 {% extends '_base.html' %}
 {% load crispy_forms_tags i18n static %}
 
-{% block title %}{% if page_content %}{{ page_content.title }}{% else %}Sign Up{% endif %}{% endblock %}
+{% block title %}{{ block.super }}: {% if page_content %}{{ page_content.title }}{% else %}Sign Up{% endif %}{% endblock %}
 
 {% block content %}
   <h1>{% if page_content %}{{ page_content.title }}{% else %}Sign Up {% endif %}</h1>
@@ -40,6 +40,7 @@
 {% endblock content %}
 
 {% block js %}
+  {{ block.super }}
   <script src="{% static "dynamic_formsets/jquery.formset.js" %}" type="text/javascript"></script>
   <script type="text/javascript">
     $('#{{ address_formset.prefix }}').formset({
