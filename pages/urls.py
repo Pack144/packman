@@ -35,11 +35,11 @@ urlpatterns = [
     path(
         '<slug:slug>/',
         DynamicPageView.as_view(),
-        name='dynamic_page'
+        name='detail'
     ),
     path(
         '<slug:slug>/edit',
         DynamicPageUpdateView.as_view(),
-        name='dynamic_page_update'
+        name='update'
     ),
 ]
