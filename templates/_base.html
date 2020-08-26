@@ -53,7 +53,7 @@
         <div class="navbar-nav mr-auto">
           <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'home' %} active{% endif %}" href="{% url 'pages:home' %}">Home</a>
           {% if user.is_authenticated %}
-            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'event_list' %} active{% endif %}" href="{% url 'event_list' %}">Calendar</a>
+            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.app_name == 'calendars' %} active{% endif %}" href="{% url 'calendars:list' %}">Calendar</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'member_list' %} active{% endif %}" href="{% url 'member_list' %}">Members</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'committees_list' %} active{% endif %}" href="{% url 'committees_list' %}">Committees</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'document_list' %} active{% endif %}" href="{% url 'document_list' %}">Documents</a>

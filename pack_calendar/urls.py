@@ -3,20 +3,21 @@ from django.urls import path
 from .views import EventListView, EventDetailView
 from .feeds import EventFeed
 
+app_name = 'calendars'
 urlpatterns = [
     path(
         '',
         EventListView.as_view(),
-        name='event_list'
+        name='list'
     ),
     path(
         '<uuid:pk>/',
         EventDetailView.as_view(),
-        name='event_detail'
+        name='detail'
     ),
     path(
         'feed/<uuid:family_uuid>.ics',
         EventFeed(),
-        name='event_feed'
+        name='feed'
     ),
 ]

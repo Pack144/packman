@@ -12,7 +12,7 @@ class EventListView(ActiveMemberOrContributorTest, ListView):
     """
     model = Event
     paginate_by = 10
-    context_object_name = 'event_list'
+    context_object_name = 'events'
 
     def get_queryset(self):
         """
