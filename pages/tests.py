@@ -8,7 +8,7 @@ from .views import AboutPageView, HomePageView, HistoryPageView, SignUpPageView
 class AboutPageTests(TestCase):
 
     def setUp(self):
-        url = reverse('about_page')
+        url = reverse('pages:about')
         self.response = self.client.get(url)
 
     def test_aboutpage_status_code(self):
@@ -28,7 +28,7 @@ class AboutPageTests(TestCase):
 class HomePageTests(TestCase):
 
     def setUp(self):
-        url = reverse('home_page')
+        url = reverse('pages:home')
         self.response = self.client.get(url)
 
     def test_homepage_status_code(self):
@@ -48,7 +48,7 @@ class HomePageTests(TestCase):
 class HistoryPageTests(TestCase):
 
     def setUp(self):
-        url = reverse('history_page')
+        url = reverse('pages:history')
         self.response = self.client.get(url)
 
     def test_historypage_status_code(self):
@@ -68,7 +68,7 @@ class HistoryPageTests(TestCase):
 class SignUpPageTests(TestCase):
 
     def setUp(self):
-        url = reverse('signup')
+        url = reverse('pages:signup')
         self.response = self.client.get(url)
 
     def test_signuppage_status_code(self):

@@ -5,21 +5,22 @@ from .views import (
     DynamicPageView, DynamicPageUpdateView, ContactPageView
 )
 
+app_name = 'pages'
 urlpatterns = [
     path(
         '',
         HomePageView.as_view(),
-        name='home_page',
+        name='home',
     ),
     path(
         'about/',
         AboutPageView.as_view(),
-        name='about_page'
+        name='about'
     ),
     path(
         'history/',
         HistoryPageView.as_view(),
-        name='history_page'
+        name='history'
     ),
     path(
         'signup/',
@@ -29,7 +30,7 @@ urlpatterns = [
     path(
         'contact-us/',
         ContactPageView.as_view(),
-        name='contact_page'
+        name='contact'
     ),
     path(
         '<slug:slug>/',
