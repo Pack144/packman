@@ -121,7 +121,7 @@ class Den(models.Model):
         return f"Den {self.number}"
 
     def get_absolute_url(self):
-        return reverse('den_detail', args=[int(self.number)])
+        return reverse('dens:detail', args=[int(self.number)])
 
     def active_cubs(self):
         return self.scouts.filter(
