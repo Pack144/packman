@@ -288,7 +288,7 @@ class Event(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('event_detail', args=[str(self.uuid)])
+        return reverse('calendars:detail', args=[str(self.uuid)])
 
     def get_location(self):
         if self.venue and self.location:

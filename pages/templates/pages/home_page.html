@@ -4,7 +4,7 @@
 
 {% block content %}
   <h1>{% if page_content %}{{ page_content.title }}{% else %}Home{% endif %}</h1>
-  {% if event_list %}
+  {% if events %}
     <div class="mt-5">
       <h3>Coming Up</h3>
       {% include 'pack_calendar/events_list_snippet.html' %}
