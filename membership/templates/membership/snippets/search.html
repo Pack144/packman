@@ -1,0 +1,18 @@
+  <div class="col-md-4 align-self-end mb-2">
+    <form class="form col" action="{% url 'membership:search_results' %}" method="get">
+      <div class="row">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search" value="{% if request.GET.q %}{{ request.GET.q }}{% endif %}" aria-label="Search">
+          <div class="input-group-append">
+            <button type="submit" class="btn btn-secondary"><i class="fa fa-search"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" aria-label="Checkbox for following text input" id="with_alum" name="with_alum" {% if request.GET.with_alum %} checked{% endif %}>
+          <label class="form-check-label text-muted" for="with_alum">include alumni</label>
+        </div>
+      </div>
+    </form>
+  </div>

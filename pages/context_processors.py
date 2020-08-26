@@ -1,25 +1,9 @@
-from django.conf import settings
-from django.db.models import Q
-
-from .models import DynamicPage, Content
+from .models import DynamicPage
 
 
-def navbar_items(request):
-    navbar = {
-        'pack_name': settings.PACK_NAME,
-        'pack_location': settings.PACK_LOCATION,
-        'pack_shortname': settings.PACK_SHORTNAME,
-        'pack_tagline': settings.PACK_TAGLINE,
-        'public_pages': [],
-        'private_pages': [],
-    }
+def populate_navbar(request):
+    navbar = {'navbar_links': []}
     for page in DynamicPage.objects.filter(include_in_nav=True):
-        if page.content_set.filter(
-                Q(visibility=Content.PUBLIC) |
-                Q(visibility=Content.ANONYMOUS)
-        ):
-            navbar['public_pages'].append(page)
-        else:
-            navbar['private_pages'].append(page)
-
+        if page.content_set.visible(user=request.user):
+            navbar['navbar_links'].append(page)
     return navbar
