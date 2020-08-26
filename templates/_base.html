@@ -27,7 +27,7 @@
 <body class="d-flex flex-column h-100">
 <header>
   <div class="jumbotron">
-    <a class="navbar-brand" href="{% url 'home_page' %}">
+    <a class="navbar-brand" href="{% url 'pages:home' %}">
       <div class="row align-items-center">
         <div class="col d-none d-sm-block">
           <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-inline align-top" alt="Pack Logo">
@@ -51,7 +51,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarContent">
         <div class="navbar-nav mr-auto">
-          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'home_page' %} active{% endif %}" href="{% url 'home_page' %}">Home</a>
+          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'home' %} active{% endif %}" href="{% url 'pages:home' %}">Home</a>
           {% if user.is_authenticated %}
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'event_list' %} active{% endif %}" href="{% url 'event_list' %}">Calendar</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'member_list' %} active{% endif %}" href="{% url 'member_list' %}">Members</a>
@@ -61,13 +61,13 @@
               <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
             {% endfor %}
           {% else %}
-              <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'contact_page' %} active{% endif %}" href="{% url 'contact_page' %}">Contact Us</a>
+              <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'contact' %} active{% endif %}" href="{% url 'pages:contact' %}">Contact Us</a>
           {% endif %}
           {% for item in public_pages %}
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
           {% endfor %}
-          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'about_page' %} active{% endif %}" href="{% url 'about_page' %}">About Us</a>
-          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'history_page' %} active{% endif %}" href="{% url 'history_page' %}">Our History</a>
+          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'about' %} active{% endif %}" href="{% url 'pages:about' %}">About Us</a>
+          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'history' %} active{% endif %}" href="{% url 'pages:history' %}">Our History</a>
         </div>
         <ul class="navbar-nav ml-auto">{% if user.is_authenticated %}
           <li class="nav-item dropdown">
@@ -85,7 +85,7 @@
             </div>
           </li>{% else %}
           <li class="nav-item">
-            <a class="nav-link mr-lg-3" href="{% url 'signup' %}">Join Us</a>
+            <a class="nav-link mr-lg-3" href="{% url 'pages:signup' %}">Join Us</a>
           </li>
           <li class="nav-item">
             <a class="nav-link text-success" href="{% url 'login' %}?next={{ request.path }}">Sign in</a>

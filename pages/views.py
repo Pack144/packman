@@ -67,9 +67,11 @@ class HistoryPageView(TemplateView):
 
 class ContactPageView(SuccessMessageMixin, FormView):
     form_class = ContactForm
-    success_message = _('Thank you for reaching out. Your message has been sent and we will be reviewing '
-                        'it momentarily. If you requested a response, we will get back to you at %(from_email)s.')
-    success_url = reverse_lazy('home_page')
+    success_message = _(
+        'Thank you for reaching out. Your message has been sent and we will be reviewing it momentarily. If you '
+        'have requested a response, we will get back to you at %(from_email)s.'
+    )
+    success_url = reverse_lazy('pages:home')
     template_name = 'pages/contact_page.html'
 
     def form_valid(self, form):
