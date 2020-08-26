@@ -5,12 +5,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
   <title>{% block title %}{{ settings.PACK_SHORTNAME }}{% endblock title %}</title>
   <meta name="description" content="">
   <meta name="author" content="{{ settings.PACK_NAME }}">
   <meta name="apple-mobile-web-app-title" content="{{ settings.PACK_SHORTNAME }}">
   <meta name="application-name" content="{{ settings.PACK_SHORTNAME }}">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
+  <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
+  <link rel="mask-icon" href="{% static 'icons/safari-pinned-tab.svg' %}" color="#de2d2d">
+  <link rel="shortcut icon" href="{% static 'icons/favicon.ico' %}">
+  <meta name="msapplication-TileColor" content="#5b5d8a">
+  <meta name="msapplication-config" content="{% static 'icons/browserconfig.xml' %}">
+  <meta name="theme-color" content="#5b5d8a">
+
 
   {% block css %}
     <!-- Bootstrap compiled and minified CSS --------------------------------->
