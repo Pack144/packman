@@ -3,8 +3,9 @@
 
 {% block title %}{{ block.super }}: {% if member %}{{ member }} - Update{% else %}Nominate a Cub{% endif %}{% endblock %}
 
-{% block css %}
-  <link rel="stylesheet" href="{% static 'tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.min.css' %}">{% endblock %}
+{% block css %}{{ block.super }}
+  <link rel="stylesheet" href="{% static 'tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.min.css' %}">
+{% endblock %}
 
 {% block content %}
   <div class="container row">
