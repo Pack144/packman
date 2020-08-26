@@ -37,7 +37,7 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(HomePageView, self).get_context_data(**kwargs)
-        context['event_list'] = Event.objects.filter(
+        context['events'] = Event.objects.filter(
             start__lte=timezone.now() + timezone.timedelta(weeks=1)
         ).filter(
             start__gte=timezone.now() - timezone.timedelta(hours=8)
