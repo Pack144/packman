@@ -7,9 +7,8 @@
   <h1>{% if page_content %}{{ page_content.title }}{% else %}Sign Up {% endif %}</h1>
   {% if user.is_authenticated %}
     <div class="alert alert-danger"><strong>{% trans 'Note' %}:</strong>
-    {% url 'family_update' as family_update_url %}
-      {% blocktrans %}You are already logged in as {{ user }}. If you want to submit an application for a new Cub or
-        add another family member, please visit the <a class="alert-link" href="{{ family_update_url }}">My Family</a> page.{% endblocktrans %}
+      {% blocktrans with user.get_absolute_url as family_url %}You are already logged in as {{ user }}. If you want to submit an application for a new Cub or
+        add another family member, please visit your <a class="alert-link" href="{{ family_url }}">My Family</a> page.{% endblocktrans %}
     </div>
   {% else %}
     {% include 'pages/page_content_snippet.html' %}
