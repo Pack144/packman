@@ -1,48 +1,42 @@
 {% extends '_base.html' %}
-{% load static %}
-{% load thumbnail %}
+{% load i18n %}
 
-{% block title %}Members - Parents{% endblock %}
+{% block title %}{{ block.super }}: {% trans 'Members - Adults' %}{% endblock title %}
 
 {% block content %}
-  {% include 'membership/snippets/member_search.html' %}
-  <ul class="nav nav-tabs">
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'membership:all' %}">All Members</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link active" href="{% url 'membership:parents' %}">Parents</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'membership:scouts' %}">Cubs</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'dens:list' %}">Dens</a>
-    </li>
-  </ul>
-  <div class="container" id="member-list">
-    {% if members %}
-      <div class="list-group">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-3">{% trans 'Members' %}</h1>
+    {% include 'membership/snippets/search.html' %}
+  </div>
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'membership:scouts' %}">{% trans 'Cubs' %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'membership:parents' %}">{% trans 'Adults' %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'membership:all' %}">{% trans 'All Members' %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'dens:list' %}">Dens</a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <div class="list-group list-group-flush">
         {% for member in members %}
-          <a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
-            <div class="row align-items-center">
-              <div class="col-lg-2">
-                {% include 'membership/snippets/headshot_thumbnail_snippet.html' %}
-              </div>
-              <div class="col">
-                <h4>{{ member }}</h4>
-                {% if member.adult.role == 'C' %}<p><small class="text-muted">Friend of the Pack</small></p>{% endif %}
-              </div>
-            </div>
-          </a>
+          {% include 'membership/snippets/list_entry.html' %}
+        {% empty %}
+          <p class="text-danger">The pack has no active members. It's time to invite some to <a href="{% url 'pages:signup' %}">join us</a></p>
         {% endfor %}
       </div>
-    {% else %}
-      <div class="alert alert-light" role="alert">
-        <p class="text-center">
-          The pack has no active members. It's time to invite some to
-          <a href="{% url 'pages:signup' %}" class="alert-link">join us</a>
-        </p>
+    </div>
+    {% if is_paginated %}
+      <div class="card-footer">
+        {% include 'pagination.html' %}
       </div>
     {% endif %}
   </div>

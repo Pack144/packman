@@ -21,36 +21,30 @@
       <h1>{{ den }}</h1>
       <h4 class="text-primary">{{ den.rank }}</h4>
     </div>
-  <h2 class="mt-5">Cub{{ den.active_cubs.count|pluralize }}</h2>
+  <div class="card shadow-sm mt-3">
+  <div class="card-body">
+  <h2 class="card-title">Cub{{ den.active_cubs.count|pluralize }}</h2>
   {% if den.active_cubs.count %}
-    <div class="list-group">
-      {% for scout in den.active_cubs.all %}
-          <a class="list-group-item list-group-item-action" href="{{ scout.scout.get_absolute_url }}">
-            <div class="row align-items-center">
-              <div class="col-sm-2">
-                {% include 'membership/snippets/headshot_thumbnail_snippet.html' with member=scout.scout %}
-              </div>
-              <div class="col-sm-10">{{ scout.scout }}</div>
-            </div>
-          </a>
+    <div class="list-group list-group-flush">
+      {% for cub in den.active_cubs.all %}
+        {% include 'membership/snippets/list_entry.html' with member=cub.scout %}
       {% endfor %}
     </div>
   {% else %}
     <div class="alert alert-light" role="alert">This den has no members</div>
   {% endif %}
+  </div>
+  </div>
   {% if leaders.count %}
-  <h2 class="mt-5">Leader{{ leaders.count|pluralize }}</h2>
-    <div class="list-group">
+    <div class="card shadow-sm mt-3">
+    <div class="card-body">
+  <h2 class="card-title">Leader{{ leaders.count|pluralize }}</h2>
+    <div class="list-group list-group-flush">
       {% for leader in leaders.all %}
-        <a class="list-group-item list-group-item-action" href="{{ leader.member.get_absolute_url }}">
-          <div class="row align-items-center">
-            <div class="col-sm-2">
-                {% include 'membership/snippets/headshot_thumbnail_snippet.html' with member=leader.member %}
-            </div>
-            <div class="col-sm-10">{{ leader.member }}</div>
-          </div>
-        </a>
+        {% include 'membership/snippets/list_entry.html' with member=leader.member %}
       {% endfor %}
+    </div>
+    </div>
     </div>
   {% endif %}
 {% endblock %}

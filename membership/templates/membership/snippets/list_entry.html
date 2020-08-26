@@ -1,0 +1,34 @@
+{% load i18n static thumbnail %}
+
+{% blocktrans asvar alt_text %}{{ member }}'s profile picture{% endblocktrans %}
+
+<a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
+  <div class="row align-items-center">
+    <div class="col-lg-2">
+      {% if member.photo %}
+        <img src="{{ member.photo|thumbnail_url:'80x80' }}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% elif member.scoutprofile %}
+        <img src="{% static 'img/avatar_cub_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% elif member.gender == member.MALE %}
+        <img src="{% static 'img/avatar_man_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% elif member.gender == member.FEMALE %}
+        <img src="{% static 'img/avatar_woman_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% else %}
+        <img src="{% static 'img/avatar_generic_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% endif %}
+    </div>
+    <div class="col">
+      <h4 class="card-title">{{ member }}</h4>
+      {% if member.scout.current_den %}
+        <p>
+          {% if member.scout.current_den.rank %}{{ member.scout.current_den.rank }} — {% endif %}
+          <small>{{ member.scout.current_den }}</small>
+        </p>
+      {% elif member.adult.role == member.adult.CONTRIBUTOR %}
+        <p>
+          <small class="text-muted">Friend of the Pack</small>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</a>

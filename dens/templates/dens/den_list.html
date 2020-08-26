@@ -1,30 +1,36 @@
 {% extends '_base.html' %}
+{% load i18n %}
 
-{% block title %}Dens{% endblock title %}
+{% block title %}{{ block.super }}: {% trans 'Members - Dens' %}{% endblock title %}
 
 {% block content %}
-  {% include 'membership/snippets/member_search.html' %}
-  <ul class="nav nav-tabs">
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'membership:all' %}">All Members</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'membership:parents' %}">Parents</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'membership:scouts' %}">Cubs</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link active" href="{% url 'dens:list' %}">Dens</a>
-    </li>
-  </ul>
-  <div class="container" id="member-list">
-    {% if den_list %}
-      <div class="list-group">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-3">{% trans 'Members' %}</h1>
+    {% include 'membership/snippets/search.html' %}
+  </div>
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'membership:scouts' %}">{% trans 'Cubs' %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'membership:parents' %}">{% trans 'Adults' %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'membership:all' %}">{% trans 'All Members' %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'dens:list' %}">Dens</a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <div class="list-group list-group-flush">
         {% for den in den_list %}
           <a class="list-group-item list-group-item-action" href="{{ den.get_absolute_url }}">
-            <div class="row d-flex w-100 justify-content-between align-items-center">
-              <div class="col-lg" id="den-patches">
+            <div class="row align-items-center">
+              <div class="col-lg-6" id="den-patches">
                 {% if den.patch %}
                   <img src="{{ den.patch }}" alt="Den {{ den.number }} patch" class="img-fluid h-100 rounded mr-5">
                 {% else %}
@@ -39,14 +45,21 @@
                 {% endif %}
               </div>
               <div class="col-md-1">
-                <span class="badge badge-pill badge-warning p-3"><i class="fa fa-user mr-2"></i>{{ den.active_cubs.count }}</span>
+              <span class="badge badge-pill badge-warning p-3"><i
+                  class="fa fa-user mr-2"></i>{{ den.active_cubs.count }}</span>
               </div>
             </div>
           </a>
+        {% empty %}
+          <p class="text-danger">The pack has no active Den memberships. It's time to invite some to <a
+              href="{% url 'pages:signup' %}">join us</a></p>
         {% endfor %}
       </div>
-    {% else %}
-      <div class="alert alert-light" role="alert">No dens have been defined yet</div>
+    </div>
+    {% if is_paginated %}
+      <div class="card-footer">
+        {% include 'pagination.html' %}
+      </div>
     {% endif %}
   </div>
 {% endblock %}
