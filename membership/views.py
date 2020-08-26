@@ -84,16 +84,6 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
             )
 
 
-class FamilyUpdate(LoginRequiredMixin, DetailView):
-    model = Adult
-    context_object_name = 'member'
-    template_name = 'membership/adult_detail.html'
-
-    def get_object(self):
-        # Return the currently signed on member's page
-        return Adult.objects.get(uuid=self.request.user.uuid)
-
-
 class AdultList(LoginRequiredMixin, ListView):
     model = Adult
     paginate_by = 25
