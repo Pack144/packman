@@ -10,15 +10,15 @@
   <link rel="stylesheet" href="{% static 'css/packman.css' %}">
 
   {% block css %}{% endblock %}
-  <title>Pack 144: {% block title %}{% endblock %}</title>
+  <title>{{ settings.PACK_SHORTNAME }}: {% block title %}{% endblock %}</title>
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
   <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
   <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
   <link rel="mask-icon" href="{% static 'icons/safari-pinned-tab.svg' %}" color="#de2d2d">
   <link rel="shortcut icon" href="{% static 'icons/favicon.ico' %}">
-  <meta name="apple-mobile-web-app-title" content="Pack 144">
-  <meta name="application-name" content="Pack 144">
+  <meta name="apple-mobile-web-app-title" content="{{ settings.PACK_SHORTNAME }}">
+  <meta name="application-name" content="{{ settings.PACK_SHORTNAME }}">
   <meta name="msapplication-TileColor" content="#5b5d8a">
   <meta name="msapplication-config" content="{% static 'icons/browserconfig.xml' %}">
   <meta name="theme-color" content="#5b5d8a">
@@ -36,9 +36,9 @@
           <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-inline align-top" alt="Pack Logo">
         </div>
         <div class="col d-none d-sm-block">
-          <div class="row" id="pack-name">{{ pack_name }}</div>
-          <div class="row" id="pack-location">{{ pack_location }}</div>
-          <div class="row" id="pack-tagline">{{ pack_tagline }}</div>
+          <div class="row" id="pack-name">{{ settings.PACK_NAME }}</div>
+          <div class="row" id="pack-location">{{ settings.PACK_LOCATION }}</div>
+          <div class="row" id="pack-tagline">{{ settings.PACK_TAGLINE }}</div>
         </div>
       </div>
     </a>
@@ -156,7 +156,7 @@
   <footer class="footer">
     <div class="my-3">
       <div>{% blocktrans %}A scout is <em>trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</em>{% endblocktrans %}</div>
-      <div><i class="far fa-copyright"></i> {% now "Y" %}{% if settings.SITE_NAME %} <strong>{{ settings.SITE_NAME }}</strong>{% endif %}</div>
+      <div><i class="far fa-copyright"></i> {% now "Y" %}{% if settings.PACK_NAME %} <strong>{{ settings.PACK_NAME }}</strong>{% endif %}</div>
     </div>
   </footer>
 {% endblock footer %}
