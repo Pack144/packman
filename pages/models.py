@@ -122,11 +122,11 @@ class StaticPage(Page):
 
     def get_absolute_url(self):
         if self.page == StaticPage.HOME:
-            return reverse_lazy('home_page')
+            return reverse_lazy('pages:home')
         elif self.page == StaticPage.ABOUT:
-            return reverse_lazy('about_page')
+            return reverse_lazy('pages:about')
         elif self.page == StaticPage.HISTORY:
-            return reverse_lazy('history_page')
+            return reverse_lazy('pages:history')
 
 
 class Content(models.Model):
