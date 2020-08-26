@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
@@ -532,7 +533,7 @@ class Scout(Member):
         """
         if self.started_school:
             this_year = timezone.now().year
-            if timezone.now().month < 9:  # assume school year begins September
+            if timezone.now().month < settings.PACK_YEAR_BEGIN_MONTH:  # assume school year ended in June
                 this_year -= 1
 
             calculated_grade = this_year - self.started_school

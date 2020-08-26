@@ -26,7 +26,7 @@
           let now = new Date();
           let gradeString = '';
 
-          if (now.getMonth() <= 9) {
+          if (now.getMonth() < {{ settings.PACK_YEAR_BEGIN_MONTH }}) {
               staringYear++
           };
           let grade = now.getFullYear() - staringYear;
