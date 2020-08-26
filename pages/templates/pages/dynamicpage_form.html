@@ -1,7 +1,7 @@
 {% extends '_base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ page_content.title }}{% endblock %}
+{% block title %}{{ block.super }}: {{ page_content.title }}{% endblock %}
 
 {% block content %}
   <h1>Update {{ page_content.title }}</h1>
