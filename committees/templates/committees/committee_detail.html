@@ -2,7 +2,7 @@
 {% load static %}
 {% load thumbnail %}
 
-{% block title %}{{ committee }}{% endblock %}
+{% block title %}{{ block.super }}: {{ committee }}{% endblock %}
 
 {% block content %}
   <div class="container rounded">

@@ -1,6 +1,6 @@
 {% extends '_base.html' %}
 
-{% block title %}Polls{% endblock %}
+{% block title %}{{ block.super }}: Polls{% endblock %}
 
 {% block content %}
   {% if latest_question_list %}
