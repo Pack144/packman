@@ -11,7 +11,7 @@ from .models import Adult, Family, Member, Scout
 class MemberList(LoginRequiredMixin, ListView):
     model = Member
     paginate_by = 25
-    context_object_name = 'member_list'
+    context_object_name = 'members'
     template_name = 'membership/member_list.html'
 
     def get_queryset(self):
@@ -39,7 +39,7 @@ class MemberList(LoginRequiredMixin, ListView):
 
 class MemberSearchResultsList(LoginRequiredMixin, ListView):
     model = Member
-    context_object_name = 'member_list'
+    context_object_name = 'members'
     template_name = 'membership/member_search_results.html'
 
     def get_queryset(self):
@@ -87,7 +87,7 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
 class AdultList(LoginRequiredMixin, ListView):
     model = Adult
     paginate_by = 25
-    context_object_name = 'member_list'
+    context_object_name = 'members'
     template_name = 'membership/adult_list.html'
 
     def get_queryset(self):
@@ -209,7 +209,7 @@ class AdultUpdate(LoginRequiredMixin, UpdateView):
 class ScoutList(LoginRequiredMixin, ListView):
     model = Scout
     paginate_by = 25
-    context_object_name = 'member_list'
+    context_object_name = 'members'
     template_name = 'membership/scout_list.html'
 
     def get_queryset(self):

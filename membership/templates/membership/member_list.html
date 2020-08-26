@@ -8,22 +8,22 @@
   {% include 'membership/snippets/member_search.html' %}
   <ul class="nav nav-tabs">
     <li class="nav-item">
-      <a class="nav-link active" href="{% url 'member_list' %}">All Members</a>
+      <a class="nav-link active" href="{% url 'membership:all' %}">All Members</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="{% url 'parent_list' %}">Parents</a>
+      <a class="nav-link" href="{% url 'membership:parents' %}">Parents</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="{% url 'scout_list' %}">Cubs</a>
+      <a class="nav-link" href="{% url 'membership:scouts' %}">Cubs</a>
     </li>
     <li class="nav-item">
       <a class="nav-link" href="{% url 'dens_list' %}">Dens</a>
     </li>
   </ul>
   <div class="container" id="member-list">
-    {% if member_list %}
+    {% if members %}
       <div class="list-group">
-        {% for member in member_list %}
+        {% for member in members %}
           <a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
             <div class="row align-items-center">
               <div class="col-lg-2">

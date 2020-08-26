@@ -17,9 +17,9 @@
       </a>
       {% if user.family == member.family %}
         {% if member.adult %}
-          <a href="{% url 'parent_update' member.uuid %}" class="badge badge-dark ml-3 p-2">
+          <a href="{% url 'membership:parent_update' member.uuid %}" class="badge badge-dark ml-3 p-2">
         {% else %}
-          <a href="{% url 'scout_update' member.uuid %}" class="badge badge-dark ml-3 p-2">
+          <a href="{% url 'membership:scout_update' member.uuid %}" class="badge badge-dark ml-3 p-2">
         {% endif %}
       <i class="fa fa-user-edit"></i>
       </a>

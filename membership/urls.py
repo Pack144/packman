@@ -5,17 +5,17 @@ from .views import (
     ScoutCreate, ScoutDetail, ScoutUpdate, MemberSearchResultsList
 )
 
-
+app_name = 'membership'
 urlpatterns = [
     path(
         '',
         MemberList.as_view(),
-        name='member_list',
+        name='all',
     ),
     path(
         'adults/',
         AdultList.as_view(),
-        name='parent_list',
+        name='parents',
     ),
     path(
         'adult/add/',
@@ -35,7 +35,7 @@ urlpatterns = [
     path(
         'cubs/',
         ScoutList.as_view(),
-        name='scout_list',
+        name='scouts',
     ),
     path(
         'cub/add/',
@@ -55,6 +55,6 @@ urlpatterns = [
     path(
         'search/',
         MemberSearchResultsList.as_view(),
-        name='member_search_results',
+        name='search_results',
     ),
 ]

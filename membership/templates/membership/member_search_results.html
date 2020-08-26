@@ -7,9 +7,9 @@
 {% block content %}
   {% include 'membership/snippets/member_search.html' %}
   <div class="container" id="member-list">
-    {% if member_list %}
+    {% if members %}
       <div class="list-group">
-        {% for member in member_list %}
+        {% for member in members %}
           <a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
             <div class="row align-items-center">
               <div class="col-lg-2">
