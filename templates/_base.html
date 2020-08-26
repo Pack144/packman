@@ -56,7 +56,7 @@
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.app_name == 'calendars' %} active{% endif %}" href="{% url 'calendars:list' %}">Calendar</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.app_name == 'membership' %} active{% endif %}" href="{% url 'membership:all' %}">Members</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'committees_list' %} active{% endif %}" href="{% url 'committees_list' %}">Committees</a>
-            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'document_list' %} active{% endif %}" href="{% url 'document_list' %}">Documents</a>
+            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.app_name == 'documents' %} active{% endif %}" href="{% url 'documents:list' %}">Documents</a>
             {% for item in private_pages %}
               <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'detail' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'pages:detail' item.slug %}>{{ item }}</a>
             {% endfor %}
