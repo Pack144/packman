@@ -16,7 +16,7 @@
         <div class="dropdown-menu dropdown-menu-right">
           {% for year in all_years %}
             {% if not year == current_year %}
-              <a class="dropdown-item" href="{% url 'committee_detail_by_year' slug=committee.slug year=year.year %}">{{ year }}</a>
+              <a class="dropdown-item" href="{% url 'committees:detail_by_year' slug=committee.slug year=year.year %}">{{ year }}</a>
             {% else %}
               <div class="dropdown-item active">{{ year }}</div>
             {% endif %}
