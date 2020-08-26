@@ -58,13 +58,13 @@
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'committees_list' %} active{% endif %}" href="{% url 'committees_list' %}">Committees</a>
             <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'document_list' %} active{% endif %}" href="{% url 'document_list' %}">Documents</a>
             {% for item in private_pages %}
-              <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
+              <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'detail' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'pages:detail' item.slug %}>{{ item }}</a>
             {% endfor %}
           {% else %}
               <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'contact' %} active{% endif %}" href="{% url 'pages:contact' %}">Contact Us</a>
           {% endif %}
           {% for item in public_pages %}
-            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'dynamic_page' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'dynamic_page' item.slug %}>{{ item }}</a>
+            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'detail' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'pages:detail' item.slug %}>{{ item }}</a>
           {% endfor %}
           <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'about' %} active{% endif %}" href="{% url 'pages:about' %}">About Us</a>
           <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'history' %} active{% endif %}" href="{% url 'pages:history' %}">Our History</a>

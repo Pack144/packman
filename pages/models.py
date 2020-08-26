@@ -90,7 +90,7 @@ class DynamicPage(Page):
         verbose_name_plural = _("Dynamic Pages")
 
     def get_absolute_url(self):
-        return reverse_lazy('dynamic_page', kwargs={'slug': self.slug})
+        return reverse_lazy('detail', kwargs={'slug': self.slug})
 
 
 class StaticPage(Page):
