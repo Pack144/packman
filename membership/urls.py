@@ -2,20 +2,15 @@ from django.urls import path
 
 from .views import (
     MemberList, AdultList, AdultCreate, AdultDetail, AdultUpdate, ScoutList,
-    ScoutCreate, ScoutDetail, ScoutUpdate, FamilyUpdate,
-    MemberSearchResultsList
+    ScoutCreate, ScoutDetail, ScoutUpdate, MemberSearchResultsList
 )
+
 
 urlpatterns = [
     path(
         '',
         MemberList.as_view(),
         name='member_list',
-    ),
-    path(
-        'my-family/',
-        FamilyUpdate.as_view(),
-        name='family_update',
     ),
     path(
         'adults/',
