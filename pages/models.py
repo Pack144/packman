@@ -7,6 +7,8 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
+from .managers import ContentManager
+
 
 class Category(models.Model):
     name = models.CharField(
@@ -182,6 +184,8 @@ class Content(models.Model):
         blank=True,
         null=True,
     )
+
+    objects = ContentManager()
 
     def __str__(self):
         if self.title:

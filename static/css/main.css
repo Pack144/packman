@@ -1,0 +1,69 @@
+@font-face {
+    font-family: 'Cooper';
+    src: url('/static/webfonts/CooperBlackStd.woff2') format('woff2'),
+        url('/static/webfonts/CooperBlackStd.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+h1, h2 {
+    color: #fa9428;
+    font-family: 'Cooper', serif;
+    text-shadow: 0 .125rem .25rem rgba(0, 0, 0, 0.33);
+}
+
+footer {
+    background-color: rgba(24, 24, 24, 0.66);
+    margin-top: auto;
+}
+
+.card.member-detail {
+    max-width: 322px;
+}
+
+#banner {
+    background-image: url('/static/img/jumbotron.jpg');
+    background-size: cover;
+    position: relative;
+    z-index: 1020;
+}
+
+#den-patches {
+    height: 80px;
+}
+
+#rank-patches {
+    height: 80px;
+}
+
+.navbar {
+    background-color: rgba(24, 24, 24, 0.66);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.navbar-brand {
+    color: #ecefef;
+    font-family: 'Cooper', serif;
+    line-height: 1.1;
+    text-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.66);
+}
+
+.navbar-brand #pack-name {
+    color: #fa9428;
+    font-weight: bold;
+}
+
+.navbar-brand #pack-location, #pack-tagline {
+    color: #fffafa;
+}

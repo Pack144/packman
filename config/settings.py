@@ -93,7 +93,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.settings_context',
-                'pages.context_processors.navbar_items',
+                'pages.context_processors.populate_navbar',
             ],
         },
     },

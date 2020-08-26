@@ -1,111 +1,123 @@
 {% load i18n static %}
-<!DOCTYPE html>
-<html lang="en" class="h-100">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
-  <link rel="stylesheet" href="{% static '@forevolve/bootstrap-dark/dist/css/bootstrap-dark.min.css' %}" media="screen and (prefers-color-scheme: dark)">
-  <link rel="stylesheet" href="{% static '@fortawesome/fontawesome-free/css/all.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/packman.css' %}">
 
-  {% block css %}{% endblock %}
-  <title>{{ settings.PACK_SHORTNAME }}: {% block title %}{% endblock %}</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
-  <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
-  <link rel="mask-icon" href="{% static 'icons/safari-pinned-tab.svg' %}" color="#de2d2d">
-  <link rel="shortcut icon" href="{% static 'icons/favicon.ico' %}">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>{% block title %}{{ settings.PACK_SHORTNAME }}{% endblock title %}</title>
+  <meta name="description" content="">
+  <meta name="author" content="{{ settings.PACK_NAME }}">
   <meta name="apple-mobile-web-app-title" content="{{ settings.PACK_SHORTNAME }}">
   <meta name="application-name" content="{{ settings.PACK_SHORTNAME }}">
-  <meta name="msapplication-TileColor" content="#5b5d8a">
-  <meta name="msapplication-config" content="{% static 'icons/browserconfig.xml' %}">
-  <meta name="theme-color" content="#5b5d8a">
+
+  {% block css %}
+    <!-- Bootstrap compiled and minified CSS --------------------------------->
+    <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
+    <!-- Bootstrap Dark ------------------------------------------------------>
+    <link rel="stylesheet" href="{% static '@forevolve/bootstrap-dark/dist/css/bootstrap-dark.min.css' %}" media="screen and (prefers-color-scheme: dark)">
+    <!-- Fontawesome compiled and minified CSS ------------------------------->
+    <link rel="stylesheet" href="{% static '@fortawesome/fontawesome-free/css/all.min.css' %}">
+    <!-- Our own CSS --------------------------------------------------------->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% endblock css %}
 </head>
 
-<body class="d-flex flex-column h-100">
+
+<body>
+<!-- Header Section ------------------------------------------------------>
 <header>
-  <div class="jumbotron">
-    <a class="navbar-brand" href="{% url 'pages:home' %}">
-      <div class="row align-items-center">
-        <div class="col d-none d-sm-block">
-          <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-inline align-top" alt="Pack Logo">
+
+  <!-- Banner -------------------------------------------------------------->
+  <div class="container-fluid p-0" id="banner">
+    <a href="{% url 'pages:home' %}" class="d-inline-block my-5 navbar-brand">
+      <div class="row align-items-center px-3">
+        <div class="col">
+          <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-block d-sm-none" alt="{% trans '{{ settings.PACK_NAME }} Logo' %}">
+          <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-none d-sm-block" alt="{% trans '{{ settings.PACK_NAME }} Logo' %}">
         </div>
-        <div class="col d-block d-sm-none">
-          <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-inline align-top" alt="Pack Logo">
-        </div>
         <div class="col d-none d-sm-block">
-          <div class="row" id="pack-name">{{ settings.PACK_NAME }}</div>
-          <div class="row" id="pack-location">{{ settings.PACK_LOCATION }}</div>
-          <div class="row" id="pack-tagline">{{ settings.PACK_TAGLINE }}</div>
+          {% if settings.PACK_NAME %}<div class="row" id="pack-name">{{ settings.PACK_NAME }}</div>{% endif %}
+          {% if settings.PACK_LOCATION %}<div class="row" id="pack-location">{{ settings.PACK_LOCATION }}</div>{% endif %}
+          {% if settings.PACK_TAGLINE %}<div class="row" id="pack-tagline">{{ settings.PACK_TAGLINE }}</div>{% endif %}
         </div>
       </div>
     </a>
-  </div>
-  {% block navbar %}
-    <div class="navbar sticky-top navbar-expand-lg navbar-dark" id="top-bar">
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent"
-              aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarContent">
-        <div class="navbar-nav mr-auto">
-          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'home' %} active{% endif %}" href="{% url 'pages:home' %}">Home</a>
-          {% if user.is_authenticated %}
-            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.app_name == 'calendars' %} active{% endif %}" href="{% url 'calendars:list' %}">Calendar</a>
-            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.app_name == 'membership' %} active{% endif %}" href="{% url 'membership:all' %}">Members</a>
-            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.app_name == 'committees' %} active{% endif %}" href="{% url 'committees:list' %}">Committees</a>
-            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.app_name == 'documents' %} active{% endif %}" href="{% url 'documents:list' %}">Documents</a>
-            {% for item in private_pages %}
-              <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'detail' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'pages:detail' item.slug %}>{{ item }}</a>
+
+    <!-- Navigation Bar ------------------------------------------------------>
+    {% block navbar %}
+      <nav class="navbar navbar-expand-lg navbar-dark m-0">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label={% trans 'Toggle Naviation' %}>
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav mr-auto">
+
+            {% if user.is_authenticated %}
+              <li class="nav-item{% if 'calendars' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+                <a class="nav-link" href="{% url 'calendars:list' %}">{% trans 'Calendar' %}</a>
+              </li>
+              <li class="nav-item{% if 'membership' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+                <a class="nav-link" href="{% url 'membership:scouts' %}">{% trans 'Members' %}</a>
+              </li>
+            {% else %}
+              <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'contact-us' %}  active{% endif %} mr-lg-3">
+                <a class="nav-link" href={% url 'pages:detail' 'contact-us' %}>{% trans 'Contact Us' %}</a>
+              </li>
+            {% endif %}
+
+            {% for link in navbar_links %}
+              <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == link.slug %}  active{% endif %} mr-lg-3">
+                <a class="nav-link" href={% url 'pages:detail' link.slug %}>{{ link }}</a>
+              </li>
             {% endfor %}
-          {% else %}
-              <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'contact' %} active{% endif %}" href="{% url 'pages:contact' %}">Contact Us</a>
-          {% endif %}
-          {% for item in public_pages %}
-            <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'detail' and request.resolver_match.kwargs.slug == item.slug %} active{% endif %}" href={% url 'pages:detail' item.slug %}>{{ item }}</a>
-          {% endfor %}
-          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'about' %} active{% endif %}" href="{% url 'pages:about' %}">About Us</a>
-          <a class="nav-item nav-link mr-lg-3{% if request.resolver_match.url_name == 'history' %} active{% endif %}" href="{% url 'pages:history' %}">Our History</a>
+
+            <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'about' %}  active{% endif %} mr-lg-3">
+              <a class="nav-link" href={% url 'pages:detail' 'about' %}>{% trans 'About our Pack' %}</a>
+            </li>
+            <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'history' %}  active{% endif %} mr-lg-3">
+              <a class="nav-link" href={% url 'pages:detail' 'history' %}>{% trans 'Our History' %}</a>
+            </li>
+
+
+          </ul>
+          <ul class="navbar-nav ml-auto">
+            {% if user.is_authenticated %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-warning" href="#" id="navbarMemberDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {{ user.get_short_name }} <i class="fas fa-user-circle ml-2"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarMemberDropdown">
+                  <a class="dropdown-item" href="{{ user.get_absolute_url }}">{% trans 'My Profile' %}</a>
+                  <a class="dropdown-item" href="{% url 'password_change' %}">{% trans 'Change My Password' %}</a>
+                  {% if user.is_staff %}<a class="dropdown-item" href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>{% endif %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item text-danger" href="{% url 'logout' %}">Log out</a>
+                </div>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <div class="btn-group" role="group" aria-label="{% trans 'Sign up or login' %}">
+                  <a class="btn btn-outline-success btn-sm{% if request.resolver_match.url_name == 'signup' %}  active{% endif %}" href="{% url 'pages:signup' %}">{% trans 'Join Us' %}</a>
+                  <a class="btn btn-outline-success btn-sm{% if request.resolver_match.url_name == 'login' %}  active{% endif %}" href="{% url 'login' %}?next={{ request.path }}">{% trans 'Sign In' %}</a>
+                </div>
+              </li>
+            {% endif %}
+          </ul>
         </div>
-        <ul class="navbar-nav ml-auto">{% if user.is_authenticated %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-warning" href="#" id="navbarMemberDropdown" role="button"
-               data-toggle="dropdown"
-               aria-haspopup="true" aria-expanded="false">
-              {{ user.get_short_name }}
-            </a>
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarMemberDropdown">
-              <a class="dropdown-item" href="{{ user.get_absolute_url }}">My Family</a>
-              <a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a>
-              {% if user.is_staff %}<a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a>{% endif %}
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item text-danger" href="{% url 'logout' %}">Log out</a>
-            </div>
-          </li>{% else %}
-          <li class="nav-item">
-            <a class="nav-link mr-lg-3" href="{% url 'pages:signup' %}">Join Us</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-success" href="{% url 'login' %}?next={{ request.path }}">Sign in</a>
-          </li>{% endif %}
-        </ul>
-      </div>
-    </div>
-  {% endblock navbar %}
+      </nav>
+    {% endblock navbar %}
+  </div>
 </header>
 
-<main role="main" class="flex-shrink-0">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-10">
 
+<!-- Main Content -------------------------------------------------------->
+<main role="main" class="container col-lg-8 my-5">
   {% if messages %}
   <!-- Messages section ---------------------------------------------------->
     {% for message in messages %}
       <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show">
-        {{ message }}
         <button type="button" class="close" data-dismiss="alert" aria-label={% trans 'close' %}>
           <span aria-hidden="true"><i class="fas fa-times-circle"></i></span>
         </button>
@@ -113,47 +125,17 @@
     {% endfor %}
   {% endif %}
 
-        {% block content %}<h1>Hello World!</h1>{% endblock %}
 
-        {% if is_paginated %}
-          <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-              <li class="page-item d-block">
-                <a href="?page={{ page_obj.previous_page_number }}" class="page-link"><i class="far fa-arrow-alt-circle-left"><span class="sr-only">Next</span></i></a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <a class="page-link" href="#" aria-disabled="true"><i class="far fa-arrow-alt-circle-left"></i></a></li>
-            {% endif %}
-            {% for page in paginator.page_range %}
-              {% if page_obj.number == page %}
-                <li class="page-item active">
-                  <a class="page-link" href="#" aria-disabled="true">{{ page }} <span class="sr-only">(current)</span>
-                    <span class="d-lg-none"> of {{ paginator.num_pages }}</span>
-                  </a></li>
-              {% else %}
-                <li class="page-item d-none d-lg-block"><a href="?page={{ page }}" class="page-link">{{ page }}</a></li>
-              {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-              <li class="page-item">
-                <a href="?page={{ page_obj.next_page_number }}" class="page-link"><i class="far fa-arrow-alt-circle-right"><span class="sr-only">Next</span></i></a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <a class="page-link" href="#" aria-disabled="true"><i class="far fa-arrow-alt-circle-right"></i></a>
-              </li>
-            {% endif %}
-          </ul>
-        {% endif %}
-      </div>
-    </div>
-  </div>
+  {% block content %}
+    <h1>{% trans 'Hello World!' %}</h1>
+    {% lorem 6 p %}
+  {% endblock content %}
 </main>
+
 
 {% block footer %}
   <!-- Footer Section ------------------------------------------------------>
-  <footer class="footer">
+  <footer class="footer text-center text-light small">
     <div class="my-3">
       <div>{% blocktrans %}A scout is <em>trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</em>{% endblocktrans %}</div>
       <div><i class="far fa-copyright"></i> {% now "Y" %}{% if settings.PACK_NAME %} <strong>{{ settings.PACK_NAME }}</strong>{% endif %}</div>
@@ -161,9 +143,14 @@
   </footer>
 {% endblock footer %}
 
-<script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-<script src="{% static 'popper.js/dist/umd/popper.js' %}"></script>
-<script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
-{% block js %}{% endblock %}
+
+{% block js %}
+  <!-- Bootstrap javascript and its dependencies --------------------------->
+  <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'popper.js/dist/umd/popper.js' %}"></script>
+  <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
+{% endblock js %}
+
+
 </body>
 </html>

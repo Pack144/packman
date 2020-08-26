@@ -1,34 +1,26 @@
 {% extends '_base.html' %}
-{% load static %}
-{% load thumbnail %}
+{% load i18n %}
 
-{% block title %}Search Results{% endblock %}
+{% block title %}{{ block.super }}: {% trans 'Members - Search' %}{% endblock title %}
 
 {% block content %}
-  {% include 'membership/snippets/member_search.html' %}
-  <div class="container" id="member-list">
-    {% if members %}
-      <div class="list-group">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-3">{% trans 'Members' %}</h1>
+    {% include 'membership/snippets/search.html' %}
+  </div>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="list-group list-group-flush">
         {% for member in members %}
-          <a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
-            <div class="row align-items-center">
-              <div class="col-lg-2">
-                {% include 'membership/snippets/headshot_thumbnail_snippet.html' %}
-              </div>
-              <div class="col">
-                <h4>{{ member }}</h4>
-                {% if member.adult.role == 'C' %}<p><small class="text-muted">Friend of the Pack</small></p>{% endif %}
-                {% if member.scout.current_den %}<p>
-                  {% if member.scout.current_den.rank %}{{ member.scout.current_den.rank }} — {% endif %}<small>{{ member.scout.current_den }}</small>
-                </p>{% endif %}
-              </div>
-            </div>
-          </a>
+          {% include 'membership/snippets/list_entry.html' %}
+        {% empty %}
+          <p class="text-danger">{% trans 'We could not find any members matching your search.' %}</p>
         {% endfor %}
       </div>
-    {% else %}
-      <div class="alert alert-light" role="alert">
-        <p class="text-center">We could not find any members matching your search.</p>
+    </div>
+    {% if is_paginated %}
+      <div class="card-footer">
+        {% include 'pagination.html' %}
       </div>
     {% endif %}
   </div>
