@@ -61,6 +61,9 @@
               <li class="nav-item{% if 'membership' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href="{% url 'membership:scouts' %}">{% trans 'Members' %}</a>
               </li>
+              <li class="nav-item{% if 'documents' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+                <a class="nav-link" href="{% url 'documents:list' %}">{% trans 'Documents' %}</a>
+              </li>
             {% else %}
               <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'contact-us' %}  active{% endif %} mr-lg-3">
                 <a class="nav-link" href={% url 'pages:detail' 'contact-us' %}>{% trans 'Contact Us' %}</a>
