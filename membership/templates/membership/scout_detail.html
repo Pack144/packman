@@ -27,8 +27,8 @@
 
   {% if user.family == member.family %}
     <div class="btn-group mt-4 btn-group-lg" role="group" aria-label="{% trans 'Add Family Members' %}">
-      <a href="{% url 'parent_create' %}" class="btn btn-secondary">{% trans 'Add an adult' %}<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
-      <a href="{% url 'scout_create' %}" class="btn btn-secondary">{% trans 'Nominate a cub' %}<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
+      <a href="{% url 'membership:parent_create' %}" class="btn btn-secondary">{% trans 'Add an adult' %}<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
+      <a href="{% url 'membership:scout_create' %}" class="btn btn-secondary">{% trans 'Nominate a cub' %}<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
     </div>
   {% endif %}
 

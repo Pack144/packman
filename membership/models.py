@@ -183,9 +183,9 @@ class Member(models.Model):
 
     def get_absolute_url(self):
         if hasattr(self, 'adult'):
-            return reverse('parent_detail', kwargs={'slug': self.slug})
+            return reverse('membership:parent_detail', kwargs={'slug': self.slug})
         elif hasattr(self, 'scout'):
-            return reverse('scout_detail', kwargs={'slug': self.slug})
+            return reverse('membership:scout_detail', kwargs={'slug': self.slug})
         else:
             return None
 
