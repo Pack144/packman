@@ -37,7 +37,7 @@
                     <div class="list-group list-group-flush">
 
                       {% for assignment in year.list %}
-                        <a href="{% url 'committee_detail_by_year' slug=assignment.committee.slug year=assignment.year_served.year %}" class="list-group-item list-group-item-action border-bottom-0">
+                        <a href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year_served.year %}" class="list-group-item list-group-item-action border-bottom-0">
                           <strong>{{ assignment.committee }}</strong>
                           <small class="ml-1">
                             {% if assignment.den %}

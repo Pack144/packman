@@ -59,7 +59,7 @@ class Committee(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse_lazy('committee_detail', args=[self.slug])
+        return reverse_lazy('committees:detail', args=[self.slug])
 
 
 class Membership(models.Model):
