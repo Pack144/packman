@@ -3,7 +3,7 @@
     <h1>Members</h1>
   </div>
   <div class="col-md-4 mb-3 align-self-end">
-    <form class="form col" action="{% url 'member_search_results' %}" method="get">
+    <form class="form col" action="{% url 'membership:search_results' %}" method="get">
       <div class="row">
         <div class="input-group">
           <input name="q" type="text" class="form-control" placeholder="Search" value="{{ request.GET.q }}" aria-label="Search" required>
