@@ -64,7 +64,7 @@
   </div>
 
   {% if member.family.children.count or member.family.adults.count > 1 %}
-    <h2>{% trans 'Family' %}</h2>
+    <h2>{% blocktrans with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktrans %}</h2>
     <div class="card-group" id="family-card-group">
       {% for partner in member.get_partners %}
         {% include 'membership/snippets/detail_card.html' with member=partner %}

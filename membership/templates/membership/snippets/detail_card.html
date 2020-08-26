@@ -109,11 +109,11 @@
 
   {% if user.family == member.family %}
     {% if member.adult %}
-      <a href="{% url 'membership:parent_update' member.uuid %}" class="badge badge-dark p-2" title="Update {{ member.get_short_name }}'s profile">
+      <a href="{% url 'membership:parent_update' member.uuid %}" class="btn btn-sm btn-dark" title="Update {{ member.get_short_name }}'s profile">
     {% else %}
-      <a href="{% url 'membership:scout_update' member.uuid %}" class="badge badge-dark p-2" title="Update {{ member.get_short_name }}'s profile">
+      <a href="{% url 'membership:scout_update' member.uuid %}" class="btn btn-sm btn-dark" title="Update {{ member.get_short_name }}'s profile">
     {% endif %}
-  <i class="fa fa-user-edit"></i>
+  <i class="fas fa-user-edit"></i>
   </a>
   {% endif %}
 
