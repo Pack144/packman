@@ -4,22 +4,21 @@
 {% block title %}{{ block.super }}: {{ event }}{% endblock title %}
 
 {% block content %}
-  <div class="card border-0">
+  <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       <div class="row">
-        <div class="d-none d-xl-block col-xl-2">
+        <div class="d-none d-lg-inline col-lg-3">
           <div class="card text-center">
             <div class="card-header text-white bg-danger py-2">
-              <h3 class="text-white m-0">{{ event.start|date:'M' }}</h3>
+              <h3 class="text-white">{{ event.start|date:'M' }}</h3>
             </div>
             <div class="card-body border-success bg-white py-2">
-              <h1 class="display-4 text-dark m-0">{{ event.start|date:'j' }}</h1>
+              <h1 class="display-4 text-dark py-4">{{ event.start|date:'j' }}</h1>
             </div>
           </div>
         </div>
         <div class="col">
-          <h1>{% if event.status == event.CANCELLED %}
-            <del>{{ event.name }}</del>{% else %}{{ event.name }}{% endif %}</h1>
+          <h1>{% if event.status == event.CANCELLED %}<del>{{ event.name }}</del>{% else %}{{ event.name }}{% endif %}</h1>
           <ul class="list-inline text-muted" id="datetime-details-list">
             {% if event.end and event.end.date != event.start.date %}
               <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
@@ -34,15 +33,18 @@
               <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
               <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}</li>
             {% endif %}
+
             {% if event.venue.address %}
               <li class="list-inline-item"><i class="fas fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}</li>
             {% elif event.get_location %}
               <li class="list-inline-item"><i class="fas fa-map-marker" aria-label="location"></i> {{ event.get_location }}</li>
             {% endif %}
           </ul>
+
           {% if event.description %}
             <p>{{ event.description|safe }}</p>
           {% endif %}
+
           {% if event.attachments.count %}
             <ul class="list-group">
               {% for attachment in event.attachments.all %}
@@ -52,6 +54,7 @@
               {% endfor %}
             </ul>
           {% endif %}
+
         </div>
       </div>
     </div>
