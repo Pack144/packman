@@ -71,6 +71,9 @@
               <li class="nav-item{% if 'membership' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href="{% url 'membership:scouts' %}">{% trans 'Members' %}</a>
               </li>
+              <li class="nav-item{% if 'committees' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+                <a class="nav-link" href="{% url 'committees:list' %}">{% trans 'Committees' %}</a>
+              </li>
               <li class="nav-item{% if 'documents' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href="{% url 'documents:list' %}">{% trans 'Documents' %}</a>
               </li>
