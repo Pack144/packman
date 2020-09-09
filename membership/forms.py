@@ -152,7 +152,6 @@ class AdultForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_id = 'parent_update'
         self.helper.form_tag = False
-        self.helper.form_show_labels = False
         self.render_required_fields = True
         self.helper.layout = Layout(
             Row(
@@ -218,7 +217,6 @@ class ScoutForm(forms.ModelForm):
                 field.widget.attrs['placeholder'] = field.label
         self.helper = FormHelper(self)
         self.helper.form_id = 'scout_update'
-        self.helper.form_show_labels = True
         self.helper.render_required_fields = True
         self.helper.layout = Layout(
             Row(
