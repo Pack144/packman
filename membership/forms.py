@@ -59,7 +59,10 @@ class AdultCreation(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super(AdultCreation, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
-            if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
+            if field.widget.__class__ in [
+                forms.widgets.TextInput,
+                forms.widgets.EmailInput,
+            ]:
                 field.widget.attrs['placeholder'] = field.label
         self.fields['password1'].required = False
         self.fields['password2'].required = False
@@ -138,7 +141,10 @@ class AdultForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AdultForm, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
-            if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
+            if field.widget.__class__ in [
+                forms.widgets.TextInput,
+                forms.widgets.EmailInput,
+            ]:
                 field.widget.attrs['placeholder'] = field.label
         self.fields['role'].choices = (
             (Adult.PARENT, _("Parent")),
@@ -328,7 +334,10 @@ class SignupForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super(SignupForm, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
-            if field.widget.__class__ == forms.widgets.TextInput or field.widget.__class__ == forms.widgets.EmailInput:
+            if field.widget.__class__ in [
+                forms.widgets.TextInput,
+                forms.widgets.EmailInput,
+            ]:
                 field.widget.attrs['placeholder'] = field.label
         self.fields['role'].choices = (
             (Adult.PARENT, _('Parent')),
