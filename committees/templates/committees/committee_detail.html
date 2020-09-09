@@ -35,7 +35,7 @@
           <a class="list-group-item list-group-item-action" href="{{ member.member.get_absolute_url }}">
             <div class="row align-items-center">
               <div class="col-sm-3 col-lg-2">
-                {% include 'membership/snippets/headshot_thumbnail_snippet.html' with member=member.member %}
+                {% include 'membership/snippets/headshot.html' with member=member.member %}
               </div>
               <div class="col">
                 <strong>{{ member.member }}</strong><br>
@@ -60,7 +60,7 @@
           <a class="list-group-item list-group-item-action" href="{{ member.member.get_absolute_url }}">
             <div class="row align-items-center">
               <div class="col-sm-3 col-lg-2">
-                {% include 'membership/snippets/headshot_thumbnail_snippet.html' with member=member.member %}
+                {% include 'membership/snippets/headshot.html' with member=member.member %}
               </div>
               <div class="col">
                 <strong>{{ member.member }}</strong><br>
