@@ -9,7 +9,6 @@ from django.views.generic import (
 from membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from membership.models import Family
 from pack_calendar.models import Event
-
 from .forms import ContactForm
 from .models import DynamicPage, StaticPage
 
