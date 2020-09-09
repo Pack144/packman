@@ -7,12 +7,11 @@ verify_ssl = true
 pylint = "*"
 mysql-connector = "*"
 blowfish = "*"
-upisort = "*"
+isort = "*"
 
 [packages]
 argon2-cffi = "*"
 django = "~=2.2"
-django-ckeditor = "*"
 django-crispy-forms = "*"
 django-debug-toolbar = "*"
 django-extensions = "*"
@@ -28,7 +27,6 @@ docutils = "*"
 django-dynamic-formsets = "*"
 django-ical = "*"
 django-phonenumber-field = "*"
-bs4 = "*"
 django-tinymce = "*"
 
 [requires]
