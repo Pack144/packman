@@ -13,7 +13,7 @@
       {% include 'membership/snippets/headshot.html' with scout="True" %}
     </div>
     <div class="col-md-9" id="profile">
-      <h1>{% if member %}Update{% else %}Nominate a Cub{% endif %}</h1>
+      <h1>{% if member %}Update {{ member }}'s Details{% else %}Nominate a Cub{% endif %}</h1>
       {% crispy form %}
     </div>
   </div>
