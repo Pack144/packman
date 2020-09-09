@@ -1,7 +1,7 @@
 from django import forms
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Field
+from crispy_forms.layout import Column, Field, Layout, Row
 from localflavor.us.models import STATE_CHOICES
 
 from .models import Address, PhoneNumber

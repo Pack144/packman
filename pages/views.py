@@ -4,16 +4,15 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import (
-    DetailView, TemplateView, UpdateView, CreateView, FormView
+    CreateView, DetailView, FormView, TemplateView, UpdateView,
 )
 
-from membership.forms import SignupForm, AddressFormSet, PhoneNumberFormSet
+from membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from membership.models import Family
-
 from pack_calendar.models import Event
 
 from .forms import ContactForm
-from .models import StaticPage, DynamicPage
+from .models import DynamicPage, StaticPage
 
 
 class AboutPageView(TemplateView):

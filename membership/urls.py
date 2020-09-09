@@ -1,8 +1,8 @@
 from django.urls import path
 
 from .views import (
-    MemberList, AdultList, AdultCreate, AdultDetail, AdultUpdate, ScoutList,
-    ScoutCreate, ScoutDetail, ScoutUpdate, MemberSearchResultsList
+    AdultCreate, AdultDetail, AdultList, AdultUpdate, MemberList,
+    MemberSearchResultsList, ScoutCreate, ScoutDetail, ScoutList, ScoutUpdate,
 )
 
 app_name = 'membership'

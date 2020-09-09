@@ -6,19 +6,16 @@ from django.db.models import Count
 from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.html import mark_safe
-from django.utils.translation import gettext_lazy as _
-from django.utils.translation import ngettext
+from django.utils.translation import gettext_lazy as _, ngettext
 
 from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
 
-from address_book.models import Address, PhoneNumber
 from address_book.forms import AddressForm, PhoneNumberForm
-from dens.models import Rank, Membership
-from pack_calendar.models import PackYear
-
+from address_book.models import Address, PhoneNumber
 from committees.models import Membership as CommitteeMembership
-from dens.models import Membership as DenMembership
+from dens.models import Membership as DenMembership, Rank
+from pack_calendar.models import PackYear
 
 from . import forms, models
 

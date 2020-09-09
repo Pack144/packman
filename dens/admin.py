@@ -4,7 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 from committees import models
 from pack_calendar.models import PackYear
-from .models import Den, Rank, Membership
+
+from .models import Den, Membership, Rank
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
