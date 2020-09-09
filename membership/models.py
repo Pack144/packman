@@ -15,7 +15,6 @@ from easy_thumbnails.signals import saved_file
 
 from dens.models import Den
 from pack_calendar.models import PackYear
-
 from .managers import MemberManager, ScoutManager
 
 

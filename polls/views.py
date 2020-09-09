@@ -5,7 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, ListView, RedirectView
 
 from membership.mixins import ActiveMemberOrContributorTest
-
 from .models import Choice, Question, Vote
 
 
