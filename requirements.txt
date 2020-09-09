@@ -1,23 +1,23 @@
 -i https://pypi.org/simple
 argon2-cffi==20.1.0
-cffi==1.14.1
+cffi==1.14.2
 django-crispy-forms==1.9.2
 django-debug-toolbar==2.2
 django-dynamic-formsets==0.0.8
-django-extensions==3.0.5
+django-extensions==3.0.8
 django-ical==1.7.1
 django-localflavor==3.0.1
-django-phonenumber-field==4.0.0
+django-phonenumber-field==5.0.0
 django-recurrence==1.10.3
 django-tempus-dominus==5.1.2.13
 django-tinymce==3.0.2
-django==2.2.15
+django==2.2.16
 docutils==0.16
 easy-thumbnails==2.7
-icalendar==4.0.6; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-phonenumbers==8.12.7
+icalendar==4.0.7; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+phonenumbers==8.12.9
 pillow==7.2.0
-psycopg2-binary==2.8.5
+psycopg2-binary==2.8.6
 pycparser==2.20; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-dateutil==2.8.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-memcached==1.59
