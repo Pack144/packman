@@ -17,7 +17,7 @@ body {
 }
 
 h1, h2 {
-    color: #fa9428;
+    color: #ffa24d;
     font-family: 'Cooper', serif;
     text-shadow: 0 .125rem .25rem rgba(0, 0, 0, 0.33);
 }
@@ -60,7 +60,7 @@ footer {
 }
 
 .navbar-brand #pack-name {
-    color: #fa9428;
+    color: #ffa24d;
     font-weight: bold;
 }
 
