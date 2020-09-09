@@ -1,5 +1,6 @@
 # Packman
 ![Django CI](https://github.com/Pack144/packman/workflows/Django%20CI/badge.svg)
+
 A Cub Scout pack management web application, written in Python and Django
 
 ## Features
