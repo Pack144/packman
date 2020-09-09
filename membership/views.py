@@ -44,7 +44,7 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         query = self.request.GET.get('q')
-        if self.request.GET.get('alum') == 'on':
+        if self.request.GET.get('alum') == 'included':
             results = Member.objects.filter(
                 Q(adult__family__children__status__gte=Scout.ACTIVE) |
                 Q(scout__status__gte=Scout.ACTIVE)
