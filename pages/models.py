@@ -1,4 +1,5 @@
 import uuid
+
 from django.db import models
 from django.urls import reverse_lazy
 from django.utils import timezone

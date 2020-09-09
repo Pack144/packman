@@ -1,8 +1,8 @@
 from django.urls import path
 
 from .views import (
-    HomePageView, AboutPageView, HistoryPageView, SignUpPageView,
-    DynamicPageView, DynamicPageUpdateView, ContactPageView
+    AboutPageView, ContactPageView, DynamicPageUpdateView, DynamicPageView,
+    HistoryPageView, HomePageView, SignUpPageView,
 )
 
 app_name = 'pages'

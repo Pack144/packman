@@ -1,5 +1,5 @@
 from django.utils import timezone
-from django.views.generic import ListView, DetailView
+from django.views.generic import DetailView, ListView
 
 from membership.mixins import ActiveMemberOrContributorTest
 
