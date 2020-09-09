@@ -20,6 +20,8 @@ class ContributorTest(UserPassesTestMixin):
 class ActiveMemberOrContributorTest(UserPassesTestMixin):
     """ Parents with active cubs should be allowed to view this page """
     def test_func(self):
-        if self.request.user.is_authenticated:
-            if self.request.user.active() or self.request.user.role == Adult.CONTRIBUTOR:
-                return True
+        if self.request.user.is_authenticated and (
+            self.request.user.active()
+            or self.request.user.role == Adult.CONTRIBUTOR
+        ):
+            return True
