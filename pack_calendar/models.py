@@ -315,8 +315,7 @@ class Event(models.Model):
 
     @property
     def pack_year(self):
-        year = PackYear.get_pack_year(self.start.date)
-        return year
+        return PackYear.get_pack_year(self.start.date)
 
     @property
     def duration(self):
@@ -329,7 +328,7 @@ class Event(models.Model):
         return python_html.unescape(html.strip_tags(self.description))
 
     def get_attendee_list(self):
-        attendee_list = list()
+        attendee_list = []
         if self.attendees.count():
             for attendee in self.attendees_set:
                 attendee_list.append(attendee)
