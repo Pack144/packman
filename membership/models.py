@@ -142,7 +142,7 @@ class Member(models.Model):
     def __str__(self):
         return self.get_full_name()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):  # sourcery skip: hoist-if-from-if
         if not self.slug:
             candidates = [self.get_full_name()]
             if self.middle_name and self.suffix:
@@ -377,13 +377,10 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
             return self.family.adults.exclude(uuid=self.uuid)
 
     def is_staff(self):
-        if self._is_staff or self.committees.filter(
+        return bool(self._is_staff or self.committees.filter(
                 committee__is_staff=True).filter(
             year_served=PackYear.get_current_pack_year()
-        ):
-            return True
-        else:
-            return False
+        ))
 
     is_staff.boolean = True
     is_staff.short_description = _("Staff")
@@ -393,10 +390,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
         If member has scouts who are currently active, then they should also be
         considered to be active in the Pack.
         """
-        if self.get_active_scouts():
-            return True
-        else:
-            return False
+        return bool(self.get_active_scouts())
 
     active.boolean = True
     active.short_description = _("Active")
