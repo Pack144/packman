@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import EventListView, EventDetailView
 from .feeds import EventFeed
+from .views import EventDetailView, EventListView
 
 app_name = 'calendars'
 urlpatterns = [

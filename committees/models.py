@@ -1,4 +1,5 @@
 import uuid
+
 from django.contrib.auth.models import Group
 from django.db import models
 from django.urls import reverse_lazy

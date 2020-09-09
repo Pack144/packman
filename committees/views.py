@@ -3,6 +3,7 @@ from django.views import generic
 
 from membership.mixins import ActiveMemberOrContributorTest
 from pack_calendar.models import PackYear
+
 from . import models
 
 

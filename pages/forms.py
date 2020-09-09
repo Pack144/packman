@@ -4,7 +4,6 @@ from django import forms
 from django.core.mail import send_mail
 from django.utils.translation import gettext as _
 
-
 logger = logging.getLogger(__name__)
 
 
