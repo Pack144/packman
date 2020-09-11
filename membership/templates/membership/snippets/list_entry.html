@@ -7,7 +7,7 @@
     <div class="col-lg-2">
       {% if member.photo %}
         <img src="{{ member.photo|thumbnail_url:'80x80' }}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
-      {% elif member.scoutprofile %}
+      {% elif member.scout %}
         <img src="{% static 'img/avatar_cub_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
       {% elif member.gender == member.MALE %}
         <img src="{% static 'img/avatar_man_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
@@ -19,10 +19,10 @@
     </div>
     <div class="col">
       <h4 class="card-title">{{ member }}</h4>
-      {% if member.scout.current_den %}
+      {% if member.scout %}
         <p>
           {% if member.scout.current_den.rank %}{{ member.scout.current_den.rank }} — {% endif %}
-          <small>{{ member.scout.current_den }}</small>
+          {% if member.scout.current_den %}<small>{{ member.scout.current_den }}</small>{% endif %}
         </p>
       {% elif member.adult.role == member.adult.CONTRIBUTOR %}
         <p>
