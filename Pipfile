@@ -28,6 +28,7 @@ django-dynamic-formsets = "*"
 django-ical = "*"
 django-phonenumber-field = "*"
 django-tinymce = "*"
+django-environ = "*"
 
 [requires]
 python_version = "3.7"
