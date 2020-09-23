@@ -29,6 +29,8 @@ urlpatterns = [
     path('members/', include('django.contrib.auth.urls')),
     path('.well-known/change-password/', RedirectView.as_view(pattern_name='password_change')),
 
+    # Third party apps
+    path('t/', include('tinymce.urls')),
 
     # Local Apps
     path('committees/', include('committees.urls')),
