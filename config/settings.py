@@ -283,7 +283,6 @@ LOGGING = {
 # -----------------------------------------------------------------------------
 AUTH_USER_MODEL = 'membership.Adult'
 
-
 # django-tinymce
 # https://django-tinymce.readthedocs.io/en/latest/installation.html#configuration
 # -----------------------------------------------------------------------------
@@ -296,14 +295,21 @@ AUTH_USER_MODEL = 'membership.Adult'
 #
 # }
 TINYMCE_INCLUDE_JQUERY = False
-
+TINYMCE_JS_URL = os.path.join(STATIC_URL, 'tinymce/tinymce.min.js')
+TINYMCE_DEFAULT_CONFIG = {
+    "theme": "silver",
+    "height": 600,
+    "menubar": False,
+    "plugins": "preview paste importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons",
+    "toolbar": "undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | charmap emoticons | fullscreen  preview save print | insertfile image media template link anchor codesample code",
+    "imgagetools_cors_hosts": ALLOWED_HOSTS,
+}
 
 # django-tempus-dominus
 # https://tempusdominus.github.io/bootstrap-4/
 # https://github.com/FlipperPA/django-tempus-dominus
 # -----------------------------------------------------------------------------
 TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
-
 
 # When does the site start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank.
@@ -314,7 +320,6 @@ PACK_NAME = 'Cub Scouts Pack 144'
 PACK_SHORTNAME = 'Pack 144'
 PACK_TAGLINE = 'Since 1929'
 PACK_LOCATION = 'Seattle, Washington'
-
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository
