@@ -2,11 +2,12 @@
 argon2-cffi==20.1.0
 astroid==2.4.2; python_version >= '3.5'
 blowfish==0.6.1
-cffi==1.14.2
+cffi==1.14.3
 django-crispy-forms==1.9.2
-django-debug-toolbar==2.2
+django-debug-toolbar==3.1.1
 django-dynamic-formsets==0.0.8
-django-extensions==3.0.8
+django-environ==0.4.5
+django-extensions==3.0.9
 django-ical==1.7.1
 django-localflavor==3.0.1
 django-phonenumber-field==5.0.0
@@ -17,11 +18,11 @@ django==2.2.16
 docutils==0.16
 easy-thumbnails==2.7
 icalendar==4.0.7; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-isort==5.5.1
+isort==5.5.4
 lazy-object-proxy==1.4.3; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 mccabe==0.6.1
 mysql-connector==2.2.9
-phonenumbers==8.12.9
+phonenumbers==8.12.10
 pillow==7.2.0
 psycopg2-binary==2.8.6
 pycparser==2.20; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
