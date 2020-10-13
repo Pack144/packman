@@ -1,11 +1,13 @@
-  {% for content in page_content.content_set.all %}
-    {% if content.visibility == 'S' and request.user.active or content.visibility == 'P' or content.visibility == 'A' and not request.user.is_authenticated %}
-    <div class="mt-5">
-      {% if content.title %}<h3>{{ content.title }}</h3>{% endif %}
-    {{ content.body|safe }}
+{% for content in page_content.content_set.all %}
+  <section class="card shadow-sm mb-3">
+    <div class="container py-5">
+      {% if content.title %}<h2>{{ content.title }}</h2>{% endif %}
+      {{ content.body|safe }}
     </div>
-    {% endif %}
-  {% empty %}
-    <div class="alert alert-warning" role="alert">This page has no content yet. Here is some sample text to give you a feel for what this page will look like with content</div>
-    {% lorem 5 p %}
-  {% endfor %}
+  </section>
+{% empty %}
+  <div class="alert alert-warning" role="alert">This page has no content yet. Here is some sample text to give you a
+    feel for what this page will look like with content
+  </div>
+  {% lorem 5 p %}
+{% endfor %}
