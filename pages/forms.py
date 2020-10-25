@@ -2,22 +2,46 @@ import logging
 
 from django import forms
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage, send_mail
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
 
 class ContactForm(forms.Form):
-    from_email = forms.EmailField(label=_('Your E-mail Address'), required=True)
-    subject = forms.CharField(label=_('Subject'), max_length=998, required=True)
-    message = forms.CharField(label=_('Message'), widget=forms.Textarea, required=True)
+    from_name = forms.CharField(
+        label=_('Your Name'),
+        max_length=254,
+        widget=forms.TextInput(attrs={'autocomplete': 'name', 'placeholder': 'Mary Smith'}),
+        required=True,
+    )
+    from_email = forms.EmailField(
+        label=_('Your E-mail'),
+        max_length=254,
+        widget=forms.EmailInput(attrs={'autocomplete': 'email', 'placeholder': 'email@example.com'}),
+        required=True,
+    )
+    subject = forms.CharField(
+        label=_('Subject'),
+        max_length=998,
+        widget=forms.TextInput(attrs={'placeholder': 'Message subject'}),
+        required=True,
+    )
+    message = forms.CharField(
+        label=_('Message'),
+        widget=forms.Textarea(attrs={'placeholder': 'Your message'}),
+        required=True
+    )
 
     def send_mail(self):
-        subject = f"[{settings.PACK_SHORTNAME}] {self.cleaned_data['subject']}"
-        from_email = self.cleaned_data['from_email']
-        message = f"We have received the following message from {from_email}:" \
-                  f"\n\n{self.cleaned_data['message']}"
-
-        logger.info(f'Sending email from {from_email} with subject {subject}')
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, ['webmaster@pack144.org'])
+        from_address = f"{self.cleaned_data['from_name']} <{self.cleaned_data['from_email']}>"
+        email = EmailMessage(
+            subject=f"{settings.EMAIL_SUBJECT_PREFIX}{self.cleaned_data['subject']}",
+            body=f"We have received the following message from "
+                 f"{from_address}:"
+                 f"\n\n{self.cleaned_data['message']}",
+            to=settings.MANAGERS,
+            reply_to=[from_address],
+        )
+        logger.info(f"Sending email from {email.reply_to} with the subject '{email.subject}' to '{email.to}'")
+        email.send()

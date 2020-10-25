@@ -316,10 +316,14 @@ TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
 # -----------------------------------------------------------------------------
 PACK_YEAR_BEGIN_MONTH = 9  # September
 PACK_YEAR_BEGIN_DAY = 1  # 1st
+PACK_DOMAIN_NAME = "example.com"
 PACK_NAME = "One Awesome Cub Scouts Pack"
 PACK_SHORTNAME = "Cub Pack"
 PACK_TAGLINE = "We're Awesome"
 PACK_LOCATION = "United States"
+
+EMAIL_SUBJECT_PREFIX = f"[{PACK_SHORTNAME}] "
+DEFAULT_FROM_EMAIL = f"{PACK_NAME} <noreply@{PACK_DOMAIN_NAME}>"
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository
