@@ -12,7 +12,7 @@ class ContactForm(forms.Form):
     from_name = forms.CharField(
         label=_('Your Name'),
         max_length=254,
-        widget=forms.TextInput(attrs={'autocomplete': 'name', 'placeholder': 'Mary Smith'}),
+        widget=forms.TextInput(attrs={'autocomplete': 'name', 'placeholder': 'Your Name'}),
         required=True,
     )
     from_email = forms.EmailField(
@@ -40,7 +40,7 @@ class ContactForm(forms.Form):
             body=f"We have received the following message from "
                  f"{from_address}:"
                  f"\n\n{self.cleaned_data['message']}",
-            to=settings.MANAGERS,
+            to=[f"{a[0]} <{a[1]}>" for a in settings.MANAGERS],
             reply_to=[from_address],
         )
         logger.info(f"Sending email from {email.reply_to} with the subject '{email.subject}' to '{email.to}'")
