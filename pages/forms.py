@@ -1,6 +1,7 @@
 import logging
 
 from django import forms
+from django.conf import settings
 from django.core.mail import send_mail
 from django.utils.translation import gettext as _
 
@@ -13,9 +14,10 @@ class ContactForm(forms.Form):
     message = forms.CharField(label=_('Message'), widget=forms.Textarea, required=True)
 
     def send_mail(self):
-        subject = self.cleaned_data['subject']
+        subject = f"[{settings.PACK_SHORTNAME}] {self.cleaned_data['subject']}"
         from_email = self.cleaned_data['from_email']
-        message = self.cleaned_data['message']
+        message = f"We have received the following message from {from_email}:" \
+                  f"\n\n{self.cleaned_data['message']}"
 
         logger.info(f'Sending email from {from_email} with subject {subject}')
-        send_mail(subject, message, from_email, ['webmaster@pack144.org'])
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, ['webmaster@pack144.org'])
