@@ -17,7 +17,7 @@ class PackYear(models.Model):
     Stores the start and end date of a pack year in the database. Used by
     committee assignments, den assignments, and events to keep things sorted.
     """
-    year = models.PositiveSmallIntegerField(
+    year = models.IntegerField(
         primary_key=True,
     )
 
