@@ -1,4 +1,4 @@
-{% for content in page_content.content_set.all %}
+{% for content in page_content.content_blocks.all %}
   {% if content.visibility == 'S' and request.user.active or content.visibility == 'P' or content.visibility == 'A' and not request.user.is_authenticated %}
     <section class="card shadow-sm mb-3">
       <div class="container py-5">

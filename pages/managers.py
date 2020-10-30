@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class ContentQuerySet(models.QuerySet):
+class ContentBlockQuerySet(models.QuerySet):
     def anonymous(self):
         return self.filter(
             visibility__exact=self.model.ANONYMOUS,
@@ -23,9 +23,9 @@ class ContentQuerySet(models.QuerySet):
         )
 
 
-class ContentManager(models.Manager):
+class ContentBlockManager(models.Manager):
     def get_queryset(self):
-        return ContentQuerySet(self.model, using=self._db)
+        return ContentBlockQuerySet(self.model, using=self._db)
 
     def visible(self, user):
         if user.is_anonymous:
