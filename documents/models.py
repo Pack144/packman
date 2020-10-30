@@ -27,13 +27,13 @@ class Category(models.Model):
         auto_now=True,
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         ordering = ['name']
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
+
+    def __str__(self):
+        return self.name
 
 
 class Document(models.Model):
@@ -77,13 +77,13 @@ class Document(models.Model):
         auto_now=True,
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         ordering = ['category', 'name', ]
         verbose_name = _("Document")
         verbose_name_plural = _("Documents")
+
+    def __str__(self):
+        return self.name
 
     def get_file_type(self):
         extension = self.file.file.split('.')[-1]

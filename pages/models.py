@@ -188,14 +188,14 @@ class Content(models.Model):
 
     objects = ContentManager()
 
-    def __str__(self):
-        if self.title:
-            return self.title
-        else:
-            return f"{strip_tags(self.body)[:25]}…"
-
     class Meta:
         indexes = [models.Index(fields=['title', 'published_on'])]
         ordering = ['-published_on']
         verbose_name = _("Content")
         verbose_name_plural = _("Content")
+
+    def __str__(self):
+        if self.title:
+            return self.title
+        else:
+            return f"{strip_tags(self.body)[:25]}..."
