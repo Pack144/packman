@@ -18,8 +18,8 @@ class Committee(models.Model):
         max_length=64,
     )
     description = models.TextField(
-        null=True,
         blank=True,
+        default="",
     )
     members = models.ManyToManyField(
         'membership.Adult',
