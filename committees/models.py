@@ -92,7 +92,7 @@ class Membership(models.Model):
         Committee,
         on_delete=models.CASCADE,
     )
-    position = models.PositiveSmallIntegerField(
+    position = models.IntegerField(
         choices=POSITION_CHOICES,
         default=MEMBER,
     )
