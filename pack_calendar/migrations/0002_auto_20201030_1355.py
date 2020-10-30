@@ -3,6 +3,26 @@
 from django.db import migrations, models
 
 
+def event_migration_prep(apps, schema_editor):
+    Event = apps.get_model("pack_calendar", "Event")
+    fields = ("location", )
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Event.objects.filter(**filter_param).update(**update_param)
+
+
+def category_migration_prep(apps, schema_editor):
+    Category = apps.get_model("pack_calendar", "Category")
+    fields = ("color", "description", "icon")
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Category.objects.filter(**filter_param).update(**update_param)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,24 +30,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='category',
-            name='color',
-            field=models.CharField(blank=True, choices=[('primary', 'Blue'), ('success', 'Green'), ('danger', 'Red'), ('warning', 'Yellow'), ('info', 'Teal'), ('secondary', 'Grey/Muted'), ('transparent', 'Transparent')], default='', help_text='Optionally choose a color to display these event in.', max_length=16),
-        ),
-        migrations.AlterField(
-            model_name='category',
-            name='description',
-            field=models.CharField(blank=True, default='', help_text='Give a little more detail about the kinds of events in this category', max_length=256),
-        ),
-        migrations.AlterField(
-            model_name='category',
-            name='icon',
-            field=models.CharField(blank=True, choices=[('<i class="fas fa-award"></i>', 'Award'), ('<i class="fas fa-bell"></i>', 'Bell'), ('<i class="fas fa-calendar-alt"></i>', 'Calendar'), ('<i class="fas fa-campground"></i>', 'Campground'), ('<i class="fas fa-times-circle"></i>', "Circled 'X'"), ('<i class="fas fa-donate"></i>', 'Donate'), ('<i class="fas fa-exclamation-triangle"></i>', 'Exclamation'), ('<i class="fas fa-gift"></i>', 'Gift box'), ('<i class="fas fa-users"></i>', 'Group (large)'), ('<i class="fas fa-user-friends"></i>', 'Group (small)'), ('<i class="fas fa-hands-helping"></i>', 'Hands Helping'), ('<i class="fas fa-handshake"></i>', 'Hands Shaking'), ('<i class="fas fa-heart"></i>', 'Heart'), ('<i class="fas fa-medal"></i>', 'Medal'), ('<i class="fas fa-ribbon"></i>', 'Ribbon'), ('<i class="fas fa-seedling"></i>', 'Seedling'), ('<i class="fas fa-star"></i>', 'Star')], default='', help_text='Optionally choose an icon to display with these events', max_length=64),
-        ),
-        migrations.AlterField(
-            model_name='event',
-            name='location',
-            field=models.CharField(blank=True, default='', max_length=128),
-        ),
+        migrations.RunPython(event_migration_prep, migrations.RunPython.noop),
+        migrations.RunPython(category_migration_prep, migrations.RunPython.noop),
     ]

@@ -3,6 +3,21 @@
 from django.db import migrations, models
 
 
+def postgres_migration_prep(apps, schema_editor):
+    Address = apps.get_model("address_book", "Address")
+    PhoneNumber = apps.get_model("address_book", "PhoneNumber")
+    Venue = apps.get_model("address_book", "Venue")
+    fields = ("street2", "type")
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Address.objects.filter(**filter_param).update(**update_param)
+
+    PhoneNumber.objects.filter(type__isnull=True, ).update(type="")
+    Venue.objects.filter(url__isnull=True, ).update(url="")
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,24 +25,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='address',
-            name='street2',
-            field=models.CharField(blank=True, default='', max_length=128, verbose_name='Unit / Apartment / Suite'),
-        ),
-        migrations.AlterField(
-            model_name='address',
-            name='type',
-            field=models.CharField(blank=True, choices=[('H', 'Home'), ('W', 'Work'), ('O', 'Other'), (None, 'Type')], default='', max_length=1),
-        ),
-        migrations.AlterField(
-            model_name='phonenumber',
-            name='type',
-            field=models.CharField(blank=True, choices=[('H', 'Home'), ('M', 'Mobile'), ('W', 'Work'), ('O', 'Other'), (None, 'Type')], default='', max_length=1),
-        ),
-        migrations.AlterField(
-            model_name='venue',
-            name='url',
-            field=models.URLField(blank=True, default='', verbose_name='Website'),
-        ),
+        migrations.RunPython(postgres_migration_prep, migrations.RunPython.noop)
     ]
