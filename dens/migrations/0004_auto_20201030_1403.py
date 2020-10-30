@@ -11,13 +11,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='den',
-            name='number',
-            field=models.IntegerField(help_text='The Den number', primary_key=True, serialize=False),
-        ),
-        migrations.AlterField(
             model_name='rank',
-            name='rank',
-            field=models.IntegerField(choices=[(1, 'Bobcat'), (2, 'Tiger'), (3, 'Wolf'), (4, 'Bear'), (5, 'Jr. Webelo'), (6, 'Sr. Webelo'), (7, 'Webelo'), (8, 'Arrow of Light')], unique=True),
+            name='description',
+            field=models.CharField(blank=True, default='', max_length=128),
         ),
     ]
