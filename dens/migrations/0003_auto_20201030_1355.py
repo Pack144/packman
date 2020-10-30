@@ -3,6 +3,16 @@
 from django.db import migrations, models
 
 
+def postgres_migration_prep(apps, schema_editor):
+    Rank = apps.get_model("dens", "Rank")
+    fields = ("description", )
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Rank.objects.filter(**filter_param).update(**update_param)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,9 +20,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='rank',
-            name='description',
-            field=models.CharField(blank=True, default='', max_length=128),
-        ),
+        migrations.RunPython(postgres_migration_prep, migrations.RunPython.noop)
     ]

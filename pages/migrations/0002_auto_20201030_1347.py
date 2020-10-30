@@ -3,6 +3,16 @@
 from django.db import migrations, models
 
 
+def postgres_migration_prep(apps, schema_editor):
+    Content = apps.get_model("pages", "Content")
+    fields = ("title", )
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Content.objects.filter(**filter_param).update(**update_param)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,9 +20,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='content',
-            name='title',
-            field=models.CharField(blank=True, default='', max_length=256),
-        ),
+        migrations.RunPython(postgres_migration_prep, migrations.RunPython.noop)
     ]

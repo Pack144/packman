@@ -3,6 +3,16 @@
 from django.db import migrations, models
 
 
+def postgres_migration_prep(apps, schema_editor):
+    Document = apps.get_model("documents", "document")
+    fields = ("description", )
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Document.objects.filter(**filter_param).update(**update_param)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,9 +20,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='document',
-            name='description',
-            field=models.TextField(blank=True, default='', help_text='Brief description of what the document is.'),
-        ),
+        migrations.RunPython(postgres_migration_prep, migrations.RunPython.noop)
     ]
