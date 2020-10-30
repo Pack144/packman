@@ -11,8 +11,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='membership',
-            name='position',
-            field=models.IntegerField(choices=[(1, 'Chair'), (2, 'Member'), (3, 'Apprentice'), (4, 'Den Leader'), (5, 'Akela'), (6, 'Assistant Akela')], default=2),
+            model_name='committee',
+            name='description',
+            field=models.TextField(blank=True, default=''),
         ),
     ]

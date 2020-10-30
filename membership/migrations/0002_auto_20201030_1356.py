@@ -3,6 +3,36 @@
 from django.db import migrations, models
 
 
+def family_migration_prep(apps, schema_editor):
+    Family = apps.get_model("membership", "Family")
+    fields = ("name", "pack_comments")
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Family.objects.filter(**filter_param).update(**update_param)
+
+
+def member_migration_prep(apps, schema_editor):
+    Member = apps.get_model("membership", "Member")
+    fields = ("gender", "middle_name", "nickname", "pack_comments", "slug", "suffix")
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Member.objects.filter(**filter_param).update(**update_param)
+
+
+def scout_migration_prep(apps, schema_editor):
+    Scout = apps.get_model("membership", "Scout")
+    fields = ("member_comments", "reference")
+
+    for field in fields:
+        filter_param = {"{}__isnull".format(field): True}
+        update_param = {field: ""}
+        Scout.objects.filter(**filter_param).update(**update_param)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,54 +40,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='family',
-            name='name',
-            field=models.CharField(blank=True, default='', max_length=64),
-        ),
-        migrations.AlterField(
-            model_name='family',
-            name='pack_comments',
-            field=models.TextField(blank=True, default='', help_text='Used by pack leadership to keep notes about a specific family. This information is not generally disclosed to members unless they are granted access to Membership.', verbose_name='Pack Comments'),
-        ),
-        migrations.AlterField(
-            model_name='member',
-            name='gender',
-            field=models.CharField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Prefer not to say')], default='', max_length=1, verbose_name='Gender'),
-        ),
-        migrations.AlterField(
-            model_name='member',
-            name='middle_name',
-            field=models.CharField(blank=True, default='', max_length=32, verbose_name='Middle Name'),
-        ),
-        migrations.AlterField(
-            model_name='member',
-            name='nickname',
-            field=models.CharField(blank=True, default='', help_text='If there is another name you prefer to be called, tell us and we will use it any time we refer to you on the website.', max_length=32, verbose_name='Nickname'),
-        ),
-        migrations.AlterField(
-            model_name='member',
-            name='pack_comments',
-            field=models.TextField(blank=True, default='', help_text='Used by pack leadership to keep notes about a specific member. This information is not generally disclosed to the member unless they are granted access to Membership.', verbose_name='Pack Comments'),
-        ),
-        migrations.AlterField(
-            model_name='member',
-            name='slug',
-            field=models.SlugField(blank=True, default='', unique=True),
-        ),
-        migrations.AlterField(
-            model_name='member',
-            name='suffix',
-            field=models.CharField(blank=True, default='', max_length=8, verbose_name='Suffix'),
-        ),
-        migrations.AlterField(
-            model_name='scout',
-            name='member_comments',
-            field=models.TextField(blank=True, default='', help_text='What other information should we consider when reviewing your application?', verbose_name='Comments'),
-        ),
-        migrations.AlterField(
-            model_name='scout',
-            name='reference',
-            field=models.CharField(blank=True, default='', help_text='If you know someone who is already in the pack, you can tell us their name so we can credit them for referring you.', max_length=128, verbose_name='Referral(s)'),
-        ),
+        migrations.RunPython(family_migration_prep, migrations.RunPython.noop),
+        migrations.RunPython(member_migration_prep, migrations.RunPython.noop),
+        migrations.RunPython(scout_migration_prep, migrations.RunPython.noop),
     ]
