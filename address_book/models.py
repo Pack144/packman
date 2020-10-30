@@ -54,7 +54,7 @@ class Venue(models.Model):
     url = models.URLField(
         _("Website"),
         blank=True,
-        null=True
+        default="",
     )
 
     uuid = models.UUIDField(
@@ -103,7 +103,7 @@ class Address(models.Model):
         _("Unit / Apartment / Suite"),
         max_length=128,
         blank=True,
-        null=True,
+        default="",
     )
     city = models.CharField(
         _("City"),
@@ -119,7 +119,7 @@ class Address(models.Model):
         max_length=1,
         choices=TYPE_CHOICES,
         blank=True,
-        null=True,
+        default="",
     )
     published = models.BooleanField(
         default=True,
@@ -206,7 +206,7 @@ class PhoneNumber(models.Model):
         max_length=1,
         choices=TYPE_CHOICES,
         blank=True,
-        null=True,
+        default="",
     )
     published = models.BooleanField(
         default=True,

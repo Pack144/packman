@@ -39,7 +39,7 @@ class Rank(models.Model):
     description = models.CharField(
         max_length=128,
         blank=True,
-        null=True,
+        default="",
     )
 
     uuid = models.UUIDField(
