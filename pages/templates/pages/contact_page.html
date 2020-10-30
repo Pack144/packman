@@ -5,7 +5,7 @@
 
 {% block content %}
   <h1>Contact Us</h1>
-  <form method="post">
+  <form method="post" id="contact-form">
     {% csrf_token %}
     {{ form|crispy }}
     <input class="btn btn-outline-success" type="submit" value="Send Message">
