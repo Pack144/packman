@@ -246,7 +246,7 @@ class Family(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
-    legacy_id = models.PositiveSmallIntegerField(
+    legacy_id = models.IntegerField(
         unique=True,
         blank=True,
         null=True,
@@ -455,7 +455,7 @@ class Scout(Member):
         blank=True,
         null=True,
     )
-    status = models.PositiveSmallIntegerField(
+    status = models.IntegerField(
         _("Status"),
         choices=STATUS_CHOICES,
         default=APPLIED,
@@ -475,7 +475,7 @@ class Scout(Member):
     )
 
     # Important dates
-    started_school = models.PositiveSmallIntegerField(
+    started_school = models.IntegerField(
         _("Kindergarten Year"),
         null=True,
         help_text=_(

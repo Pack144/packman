@@ -32,7 +32,7 @@ class Rank(models.Model):
         (ARROW, _("Arrow of Light")),
     )
 
-    rank = models.PositiveSmallIntegerField(
+    rank = models.IntegerField(
         choices=RANK_CHOICES,
         unique=True,
     )
@@ -94,7 +94,7 @@ class Rank(models.Model):
 class Den(models.Model):
     """ Each active cub should be a member of 1 den each Pack Year """
 
-    number = models.PositiveSmallIntegerField(
+    number = models.IntegerField(
         primary_key=True,
         help_text=_("The Den number"),
     )
