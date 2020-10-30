@@ -1,25 +1,20 @@
 from django.contrib import admin
-from django.utils.translation import gettext_lazy as _
 
-from .models import Category, Content, DynamicPage, StaticPage
+from .models import Category, ContentBlocks, DynamicPage, StaticPage
 
 
 class CategoryInline(admin.TabularInline):
     model = DynamicPage.categories.through
     extra = 0
-    verbose_name = _("Category")
-    verbose_name_plural = _("Categories")
 
 
-class ContentInline(admin.StackedInline):
-    model = Content
+class ContentBlockInline(admin.StackedInline):
+    model = ContentBlocks
     extra = 0
-    verbose_name = _("Content Section")
-    verbose_name_plural = _("Content")
 
 
-@admin.register(Content)
-class ContentAdmin(admin.ModelAdmin):
+@admin.register(ContentBlocks)
+class ContentBlockAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'page')
     list_display_links = ('__str__', )
     list_filter = ('page',)
@@ -29,7 +24,7 @@ class ContentAdmin(admin.ModelAdmin):
 @admin.register(DynamicPage)
 class DynamicPageAdmin(admin.ModelAdmin):
     exclude = ['categories', ]
-    inlines = [CategoryInline, ContentInline]
+    inlines = [CategoryInline, ContentBlockInline]
     list_display = ('title', 'last_updated', )
     list_filter = ('categories', )
     prepopulated_fields = {'slug': ('title', )}
@@ -40,7 +35,7 @@ class DynamicPageAdmin(admin.ModelAdmin):
 class StaticPageAdmin(admin.ModelAdmin):
     list_display = ('page', 'title', 'last_updated')
     list_display_links = ('page', 'title')
-    inlines = [ContentInline]
+    inlines = [ContentBlockInline]
 
 
 admin.site.register(Category)

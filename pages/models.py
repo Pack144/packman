@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
-from .managers import ContentManager
+from .managers import ContentBlockManager
 
 
 class Category(models.Model):
@@ -132,7 +132,7 @@ class StaticPage(Page):
             return reverse_lazy('pages:history')
 
 
-class Content(models.Model):
+class ContentBlocks(models.Model):
     """
     Pages can contain any number of content blocks. Each block has its own
     visibility, allowing for different content to be displayed based on whether
@@ -166,6 +166,7 @@ class Content(models.Model):
     page = models.ForeignKey(
         Page,
         on_delete=models.CASCADE,
+        related_name='content_blocks',
     )
 
     uuid = models.UUIDField(
@@ -186,13 +187,13 @@ class Content(models.Model):
         null=True,
     )
 
-    objects = ContentManager()
+    objects = ContentBlockManager()
 
     class Meta:
         indexes = [models.Index(fields=['title', 'published_on'])]
         ordering = ['-published_on']
-        verbose_name = _("Content")
-        verbose_name_plural = _("Content")
+        verbose_name = _("Content Block")
+        verbose_name_plural = _("Content Blocks")
 
     def __str__(self):
         if self.title:
