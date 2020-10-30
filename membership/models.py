@@ -56,7 +56,7 @@ class Member(models.Model):
         _("Middle Name"),
         max_length=32,
         blank=True,
-        null=True
+        default="",
     )
     last_name = models.CharField(
         _("Last Name"),
@@ -66,13 +66,13 @@ class Member(models.Model):
         _("Suffix"),
         max_length=8,
         blank=True,
-        null=True
+        default="",
     )
     nickname = models.CharField(
         _("Nickname"),
         max_length=32,
         blank=True,
-        null=True,
+        default="",
         help_text=_(
             "If there is another name you prefer to be called, tell us and we "
             "will use it any time we refer to you on the website.")
@@ -81,8 +81,7 @@ class Member(models.Model):
         _("Gender"),
         max_length=1,
         choices=GENDER_CHOICES,
-        default=None,
-        null=True
+        default='',
     )
     photo = ThumbnailerImageField(
         _("Headshot Photo"),
@@ -103,12 +102,12 @@ class Member(models.Model):
     slug = models.SlugField(
         unique=True,
         blank=True,
-        null=True
+        default="",
     )
     pack_comments = models.TextField(
         _("Pack Comments"),
         blank=True,
-        null=True,
+        default="",
         help_text=_(
             "Used by pack leadership to keep notes about a specific member. "
             "This information is not generally disclosed to the member unless "
@@ -229,13 +228,13 @@ class Family(models.Model):
     name = models.CharField(
         max_length=64,
         blank=True,
-        null=True,
+        default="",
     )
 
     pack_comments = models.TextField(
         _("Pack Comments"),
         blank=True,
-        null=True,
+        default="",
         help_text=_(
             "Used by pack leadership to keep notes about a specific family. "
             "This information is not generally disclosed to members unless "
@@ -434,7 +433,7 @@ class Scout(Member):
         _("Referral(s)"),
         max_length=128,
         blank=True,
-        null=True,
+        default="",
         help_text=_(
             "If you know someone who is already in the pack, you can tell us "
             "their name so we can credit them for referring you."),
@@ -442,7 +441,7 @@ class Scout(Member):
     member_comments = models.TextField(
         _("Comments"),
         blank=True,
-        null=True,
+        default="",
         help_text=_(
             "What other information should we consider when reviewing your "
             "application?"),

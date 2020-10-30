@@ -156,7 +156,7 @@ class Category(models.Model):
     description = models.CharField(
         max_length=256,
         blank=True,
-        null=True,
+        default="",
         help_text=_(
             "Give a little more detail about the kinds of events in this "
             "category"),
@@ -165,14 +165,14 @@ class Category(models.Model):
         max_length=64,
         choices=ICON_CHOICES,
         blank=True,
-        null=True,
+        default="",
         help_text=_("Optionally choose an icon to display with these events"),
     )
     color = models.CharField(
         max_length=16,
         choices=COLOR_CHOICES,
         blank=True,
-        null=True,
+        default="",
         help_text=_("Optionally choose a color to display these event in."),
     )
 
@@ -223,7 +223,7 @@ class Event(models.Model):
     location = models.CharField(
         max_length=128,
         blank=True,
-        null=True,
+        default="",
     )
 
     start = models.DateTimeField()

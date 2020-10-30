@@ -42,7 +42,7 @@ class Document(models.Model):
     )
     description = models.TextField(
         blank=True,
-        null=True,
+        default="",
         help_text=_("Brief description of what the document is."),
     )
     file = models.FileField(
