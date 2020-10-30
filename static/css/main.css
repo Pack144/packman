@@ -1,7 +1,7 @@
 @font-face {
     font-family: 'Cooper';
     src: url('/static/webfonts/CooperBlackStd.woff2') format('woff2'),
-        url('/static/webfonts/CooperBlackStd.woff') format('woff');
+    url('/static/webfonts/CooperBlackStd.woff') format('woff');
     font-weight: 900;
     font-style: normal;
 }
@@ -44,6 +44,10 @@ footer {
 
 #rank-patches {
     height: 80px;
+}
+
+#contact-form #div_id_url {
+    display: none;
 }
 
 .navbar {
