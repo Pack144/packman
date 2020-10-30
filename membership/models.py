@@ -82,7 +82,6 @@ class Member(models.Model):
         max_length=1,
         choices=GENDER_CHOICES,
         default=None,
-        blank=False,
         null=True
     )
     photo = ThumbnailerImageField(
