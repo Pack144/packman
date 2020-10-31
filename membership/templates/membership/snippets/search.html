@@ -2,7 +2,7 @@
     <form class="form col" action="{% url 'membership:search_results' %}" method="get">
       <div class="row">
         <div class="input-group">
-          <input name="q" type="text" class="form-control" placeholder="Search" value="{% if request.GET.q %}{{ request.GET.q }}{% endif %}" aria-label="Search">
+          <input name="q" type="search" class="form-control" placeholder="Search" value="{% if request.GET.q %}{{ request.GET.q }}{% endif %}" aria-label="Search">
           <div class="input-group-append">
             <button type="submit" class="btn btn-secondary"><i class="fa fa-search"></i></button>
           </div>
