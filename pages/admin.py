@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, ContentBlocks, DynamicPage, StaticPage
+from .models import Category, ContentBlock, DynamicPage, StaticPage
 
 
 class CategoryInline(admin.TabularInline):
@@ -9,11 +9,11 @@ class CategoryInline(admin.TabularInline):
 
 
 class ContentBlockInline(admin.StackedInline):
-    model = ContentBlocks
+    model = ContentBlock
     extra = 0
 
 
-@admin.register(ContentBlocks)
+@admin.register(ContentBlock)
 class ContentBlockAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'page')
     list_display_links = ('__str__', )
