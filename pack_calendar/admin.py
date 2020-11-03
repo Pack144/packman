@@ -23,7 +23,6 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     actions = [mark_events_cancelled, mark_events_confirmed, mark_events_tentative]
-    autocomplete_fields = ('attendees', 'attendee_groups')
     list_display = ('name', 'get_location', 'start', 'end', 'category', 'status')
     list_filter = ('category', )
     search_fields = ('name', 'start', 'end', 'location', 'venue__name')

@@ -241,14 +241,6 @@ class Event(models.Model):
         on_delete=models.CASCADE,
         related_name='events',
     )
-    attendees = models.ManyToManyField(
-        'membership.Adult',
-        blank=True,
-    )
-    attendee_groups = models.ManyToManyField(
-        'post_office.GroupMailbox',
-        blank=True,
-    )
     attachments = models.ManyToManyField(
         'documents.Document',
         related_name='events',
@@ -326,13 +318,3 @@ class Event(models.Model):
     @property
     def plain_text_description(self):
         return python_html.unescape(html.strip_tags(self.description))
-
-    def get_attendee_list(self):
-        attendee_list = []
-        if self.attendees.count():
-            for attendee in self.attendees_set:
-                attendee_list.append(attendee)
-        if self.attendee_groups.count():
-            for attendee in self.attendee_groups.all():
-                attendee_list.append(attendee)
-        return attendee_list
