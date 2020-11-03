@@ -12,17 +12,17 @@ django-phonenumber-field==5.0.0
 django-recurrence==1.10.3
 django-tempus-dominus==5.1.2.13
 django-tinymce==3.1.0
-django==2.2.16
+django==2.2.17
 docutils==0.16
 easy-thumbnails==2.7
 icalendar==4.0.7; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-phonenumbers==8.12.11
+phonenumbers==8.12.12
 pillow==8.0.1
 psycopg2-binary==2.8.6
 pycparser==2.20; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-dateutil==2.8.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-memcached==1.59
 python-stdnum==1.14
-pytz==2020.1
+pytz==2020.4
 six==1.15.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 sqlparse==0.4.1; python_version >= '3.5'
