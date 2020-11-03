@@ -63,7 +63,6 @@ INSTALLED_APPS = [
     'pack_calendar.apps.PackCalendarConfig',
     'pages.apps.PagesConfig',
     'polls.apps.PollsConfig',
-    'post_office.apps.PostOfficeConfig',
 ]
 
 MIDDLEWARE = [
