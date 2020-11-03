@@ -11,40 +11,41 @@ from tinymce.models import HTMLField
 from .managers import ContentBlockManager
 
 
-class Category(models.Model):
-    name = models.CharField(
-        max_length=32,
-    )
-
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-        blank=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
-    )
-
-    class Meta:
-        indexes = [models.Index(fields=['name'])]
-        ordering = ['name']
-        verbose_name = _("Category")
-        verbose_name_plural = _("Categories")
-
-    def __str__(self):
-        return self.name
-
-
 class Page(models.Model):
     """
     Base model used to define a web page. Used by Dynamic and Static pages.
     """
+    HOME = 'HOME'
+    ABOUT = 'ABOUT'
+    HISTORY = 'HISTORY'
+    SIGNUP = 'SIGNUP'
+    PAGE_CHOICES = (
+        (HOME, _("Home")),
+        (ABOUT, _("About Us")),
+        (HISTORY, _("History")),
+        (SIGNUP, _("Join Us")),
+    )
+    page = models.CharField(
+        max_length=8,
+        choices=PAGE_CHOICES,
+        unique=True,
+        blank=True,
+        null=True,
+    )
     title = models.CharField(
         max_length=64,
+    )
+
+    include_in_nav = models.BooleanField(
+        _("Include in navigation"),
+        default=False,
+        help_text=_(
+            "Checking this option will add this page to the site's menu bar."),
+    )
+    slug = models.SlugField(
+        unique=True,
+        blank=True,
+        null=True,
     )
 
     uuid = models.UUIDField(
@@ -67,69 +68,17 @@ class Page(models.Model):
     def __str__(self):
         return self.title
 
-
-class DynamicPage(Page):
-    """
-    Model that can be used for any arbitrary page on the website.
-    """
-    categories = models.ManyToManyField(
-        Category,
-        related_name='dynamic_page',
-        blank=True,
-    )
-    include_in_nav = models.BooleanField(
-        _("Include in navigation"),
-        default=False,
-        help_text=_(
-            "Checking this option will add this page to the site's menu bar."),
-    )
-    slug = models.SlugField(
-        unique=True
-    )
-
-    class Meta:
-        indexes = [models.Index(fields=['include_in_nav', 'slug'])]
-        verbose_name = _("Dynamic Page")
-        verbose_name_plural = _("Dynamic Pages")
-
     def get_absolute_url(self):
-        return reverse_lazy('pages:detail', kwargs={'slug': self.slug})
-
-
-class StaticPage(Page):
-    """
-    Model used by the standard pages every site should contain.
-    """
-    HOME = 'HOME'
-    ABOUT = 'ABOUT'
-    HISTORY = 'HISTORY'
-    SIGNUP = 'SIGNUP'
-    PAGE_CHOICES = (
-        (HOME, _("Home")),
-        (ABOUT, _("About Us")),
-        (HISTORY, _("History")),
-        (SIGNUP, _("Join Us")),
-    )
-    page = models.CharField(
-        max_length=8,
-        choices=PAGE_CHOICES,
-        unique=True,
-    )
-
-    class Meta:
-        verbose_name = _("Static Page")
-        verbose_name_plural = _("Static Pages")
-
-    def __str__(self):
-        return self.get_page_display()
-
-    def get_absolute_url(self):
-        if self.page == StaticPage.HOME:
+        if self.page == self._meta.model.HOME:
             return reverse_lazy('pages:home')
-        elif self.page == StaticPage.ABOUT:
+        elif self.page == self._meta.model.ABOUT:
             return reverse_lazy('pages:about')
-        elif self.page == StaticPage.HISTORY:
+        elif self.page == self._meta.model.HISTORY:
             return reverse_lazy('pages:history')
+        elif self.page == self._meta.model.SIGNUP:
+            return reverse_lazy('pages:signup')
+        else:
+            return reverse_lazy('pages:detail', kwargs={'slug': self.slug})
 
 
 class ContentBlock(models.Model):
