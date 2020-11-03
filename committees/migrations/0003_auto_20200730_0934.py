@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('pack_calendar', '0001_initial'),
+        ('pack_calendar', '0001_squashed_0005_auto_20201103_1356'),
         ('committees', '0002_membership_den'),
     ]
 
