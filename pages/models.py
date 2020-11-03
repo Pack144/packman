@@ -132,7 +132,7 @@ class StaticPage(Page):
             return reverse_lazy('pages:history')
 
 
-class ContentBlocks(models.Model):
+class ContentBlock(models.Model):
     """
     Pages can contain any number of content blocks. Each block has its own
     visibility, allowing for different content to be displayed based on whether
