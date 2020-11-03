@@ -10,7 +10,7 @@ from membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from membership.models import Family
 from pack_calendar.models import Event
 from .forms import ContactForm
-from .models import DynamicPage, StaticPage
+from .models import Page
 
 
 class AboutPageView(TemplateView):
@@ -20,10 +20,10 @@ class AboutPageView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         try:
-            context['page_content'] = StaticPage.objects.get(
-                page=StaticPage.ABOUT
+            context['page_content'] = Page.objects.get(
+                page=Page.ABOUT
             )
-        except StaticPage.DoesNotExist:
+        except Page.DoesNotExist:
             context['page_content'] = None
 
         return context
@@ -40,10 +40,10 @@ class HomePageView(TemplateView):
             start__gte=timezone.now() - timezone.timedelta(hours=8)
         ).order_by('start')
         try:
-            context['page_content'] = StaticPage.objects.get(
-                page=StaticPage.HOME
+            context['page_content'] = Page.objects.get(
+                page=Page.HOME
             )
-        except StaticPage.DoesNotExist:
+        except Page.DoesNotExist:
             context['page_content'] = None
         return context
 
@@ -54,10 +54,10 @@ class HistoryPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            context['page_content'] = StaticPage.objects.get(
-                page=StaticPage.HISTORY
+            context['page_content'] = Page.objects.get(
+                page=Page.HISTORY
             )
-        except StaticPage.DoesNotExist:
+        except Page.DoesNotExist:
             context['page_content'] = None
         return context
 
@@ -94,10 +94,10 @@ class SignUpPageView(CreateView):
             context['address_formset'] = AddressFormSet()
             context['phonenumber_formset'] = PhoneNumberFormSet()
         try:
-            context['page_content'] = StaticPage.objects.get(
-                page=StaticPage.SIGNUP
+            context['page_content'] = Page.objects.get(
+                page=Page.SIGNUP
             )
-        except StaticPage.DoesNotExist:
+        except Page.DoesNotExist:
             context['page_content'] = None
         return context
 
@@ -118,11 +118,11 @@ class SignUpPageView(CreateView):
 
 
 class DynamicPageView(DetailView):
-    model = DynamicPage
+    model = Page
     context_object_name = 'page_content'
 
 
 class DynamicPageUpdateView(UpdateView):
-    model = DynamicPage
+    model = Page
     context_object_name = 'page_content'
     fields = '__all__'
