@@ -1,14 +1,18 @@
+import logging
 import uuid
 
 from django.db import models
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.html import strip_tags
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
 from .managers import ContentBlockManager
+
+logger = logging.getLogger(__name__)
 
 
 class Page(models.Model):
@@ -25,6 +29,10 @@ class Page(models.Model):
         (HISTORY, _("History")),
         (SIGNUP, _("Join Us")),
     )
+    title = models.CharField(
+        max_length=64,
+    )
+
     page = models.CharField(
         max_length=8,
         choices=PAGE_CHOICES,
@@ -32,20 +40,18 @@ class Page(models.Model):
         blank=True,
         null=True,
     )
-    title = models.CharField(
-        max_length=64,
-    )
-
-    include_in_nav = models.BooleanField(
-        _("Include in navigation"),
-        default=False,
-        help_text=_(
-            "Checking this option will add this page to the site's menu bar."),
-    )
     slug = models.SlugField(
         unique=True,
         blank=True,
         null=True,
+    )
+    include_in_nav = models.BooleanField(
+        _("Include in navigation"),
+        default=False,
+        help_text=_(
+            "Checking this option will add this page to the site's menu bar. "
+            "Not used for standard pages (e.g. Home, About, Sign-up, etc.)"
+        ),
     )
 
     uuid = models.UUIDField(
@@ -79,6 +85,16 @@ class Page(models.Model):
             return reverse_lazy('pages:signup')
         else:
             return reverse_lazy('pages:detail', kwargs={'slug': self.slug})
+
+    def clean(self):
+        super().clean()
+        if self.page and self.include_in_nav:
+            self.include_in_nav = False
+            logger.warn(_("Default pages will always appear in navbar. Setting is redundant"))
+        if not self.page and not self.slug:
+            self.slug = slugify(self.title)
+            logger.warn(
+                _("%(page)s does not include a slug. Setting slug to %(slug)s") % {"page": self, "slug": self.slug})
 
 
 class ContentBlock(models.Model):
