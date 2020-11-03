@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('post_office', '0001_initial'),
+        # ('post_office', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('address_book', '0001_initial'),
         ('documents', '0001_initial'),
