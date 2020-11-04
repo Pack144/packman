@@ -11,5 +11,10 @@
   <div class="alert alert-warning" role="alert">This page has no content yet. Here is some sample text to give you a
     feel for what this page will look like with content
   </div>
-  {% lorem 5 p %}
+  <section class="card shadow-sm mb-3">
+    <div class="container py-5">
+      <h2>{% lorem 3 w %}</h2>
+      {% lorem 5 p %}
+    </div>
+  </section>
 {% endfor %}
