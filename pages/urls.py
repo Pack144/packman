@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (
-    AboutPageView, ContactPageView, DynamicPageUpdateView, DynamicPageView,
+    AboutPageView, ContactPageView, PageUpdateView, PageDetailView,
     HistoryPageView, HomePageView, SignUpPageView,
 )
 
@@ -34,12 +34,12 @@ urlpatterns = [
     ),
     path(
         '<slug:slug>/',
-        DynamicPageView.as_view(),
+        PageDetailView.as_view(),
         name='detail'
     ),
     path(
         '<slug:slug>/edit',
-        DynamicPageUpdateView.as_view(),
+        PageUpdateView.as_view(),
         name='update'
     ),
 ]

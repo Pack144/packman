@@ -1,4 +1,7 @@
+import logging
+
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import PermissionDenied
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -13,24 +16,51 @@ from .forms import ContactForm
 from .models import Page
 
 
-class AboutPageView(TemplateView):
+logger = logging.getLogger(__name__)
+
+
+class PageDetailView(DetailView):
+    model = Page
+    context_object_name = 'page_content'
+
+    def get_object(self, **kwargs):
+        obj = super().get_object(**kwargs)
+        if obj.content_blocks.count():
+            return obj
+        else:
+            raise PermissionDenied
+
+    def get_queryset(self):
+        qs = super().get_queryset().get_visible_content(self.request.user)
+        return qs
+
+
+class PageUpdateView(UpdateView):
+    model = Page
+    context_object_name = 'page_content'
+    fields = '__all__'
+
+
+class AboutPageView(PageDetailView):
     template_name = 'pages/about_page.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        try:
-            context['page_content'] = Page.objects.get(
-                page=Page.ABOUT
-            )
-        except Page.DoesNotExist:
-            context['page_content'] = None
-
-        return context
+    def get_object(self):
+        obj, created = self.get_queryset().get_or_create(page=Page.ABOUT)
+        if created:
+            logger.info = _("About page was requested but none was found in the database.")
+            obj.title = _("About Us")
+            obj.save()
+        return obj
 
 
-class HomePageView(TemplateView):
+class HomePageView(PageDetailView):
     template_name = 'pages/home_page.html'
+
+    def get_object(self):
+        obj, created = self.get_queryset().get_or_create(page=Page.HOME)
+        if created:
+            logger.info = _("Home page was requested but none was found in the database.")
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super(HomePageView, self).get_context_data(**kwargs)
@@ -39,27 +69,19 @@ class HomePageView(TemplateView):
         ).filter(
             start__gte=timezone.now() - timezone.timedelta(hours=8)
         ).order_by('start')
-        try:
-            context['page_content'] = Page.objects.get(
-                page=Page.HOME
-            )
-        except Page.DoesNotExist:
-            context['page_content'] = None
         return context
 
 
-class HistoryPageView(TemplateView):
+class HistoryPageView(PageDetailView):
     template_name = 'pages/history_page.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        try:
-            context['page_content'] = Page.objects.get(
-                page=Page.HISTORY
-            )
-        except Page.DoesNotExist:
-            context['page_content'] = None
-        return context
+    def get_object(self):
+        obj, created = self.get_queryset().get_or_create(page=Page.HISTORY)
+        if created:
+            logger.info = _("History page was requested but none was found in the database.")
+            obj.title = _("Our History")
+            obj.save()
+        return obj
 
 
 class ContactPageView(SuccessMessageMixin, FormView):
@@ -94,7 +116,7 @@ class SignUpPageView(CreateView):
             context['address_formset'] = AddressFormSet()
             context['phonenumber_formset'] = PhoneNumberFormSet()
         try:
-            context['page_content'] = Page.objects.get(
+            context['page_content'] = Page.objects.get_visible_content(user=self.request.user).get(
                 page=Page.SIGNUP
             )
         except Page.DoesNotExist:
@@ -115,14 +137,3 @@ class SignUpPageView(CreateView):
         else:
             return super().form_invalid(form)
         return super().form_valid(form)
-
-
-class DynamicPageView(DetailView):
-    model = Page
-    context_object_name = 'page_content'
-
-
-class DynamicPageUpdateView(UpdateView):
-    model = Page
-    context_object_name = 'page_content'
-    fields = '__all__'
