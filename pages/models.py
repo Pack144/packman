@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
-from .managers import ContentBlockManager
+from .managers import ContentBlockManager, PageManager
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +65,8 @@ class Page(models.Model):
     last_updated = models.DateTimeField(
         auto_now=True,
     )
+
+    objects = PageManager()
 
     class Meta:
         indexes = [models.Index(fields=['title'])]
