@@ -26,3 +26,19 @@ class ContentBlockManager(models.Manager):
             return self.get_queryset().private()
         else:
             return self.get_queryset().authenticated()
+
+
+class PageQuerySet(models.QuerySet):
+    def get_visible_content(self, user):
+        return self.prefetch_related(models.Prefetch(
+            "content_blocks",
+            queryset=self.model.content_blocks.field.model.objects.get_visible(user=user)
+        ))
+
+
+class PageManager(models.Manager):
+    def get_queryset(self):
+        return PageQuerySet(self.model, using=self._db)
+
+    def get_visible_content(self, user):
+        return self.get_queryset().get_visible_content(user=user)
