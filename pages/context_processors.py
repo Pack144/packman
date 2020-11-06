@@ -3,7 +3,7 @@ from .models import Page
 
 def populate_navbar(request):
     navbar = {'navbar_links': []}
-    for page in Page.objects.filter(include_in_nav=True):
-        if page.content_blocks.get_visible(user=request.user):
+    for page in Page.objects.get_visible_content(user=request.user).filter(include_in_nav=True):
+        if page.content_blocks.count():
             navbar['navbar_links'].append(page)
     return navbar
