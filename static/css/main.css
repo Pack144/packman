@@ -71,3 +71,13 @@ footer {
 .navbar-brand #pack-location, #pack-tagline {
     color: #fffafa;
 }
+
+#memberSearchForm #memberSearch {
+    border-top-left-radius: 10rem;
+    border-bottom-left-radius: 10rem;
+}
+
+#memberSearchForm button {
+    border-top-right-radius: 10rem;
+    border-bottom-right-radius: 10rem;
+}
