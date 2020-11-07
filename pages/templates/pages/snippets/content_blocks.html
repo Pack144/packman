@@ -1,8 +1,8 @@
 {% load i18n %}
-{% for content in page_content.content_blocks.all %}
+{% for content in page.content_blocks.all %}
     <section class="card shadow-sm mb-3">
       <div class="container p-5">
-        {% if content.title %}<h2>{{ content.title }}</h2>{% endif %}
+        {% if content.heading %}<h2>{{ content.heading }}</h2>{% endif %}
         {{ content.body|safe }}
       </div>
     </section>
