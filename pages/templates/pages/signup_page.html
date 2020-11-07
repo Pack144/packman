@@ -1,10 +1,10 @@
 {% extends '_base.html' %}
 {% load crispy_forms_tags i18n static %}
 
-{% block title %}{{ block.super }}: {% if page_content %}{{ page_content.title }}{% else %}Sign Up{% endif %}{% endblock %}
+{% block title %}{{ block.super }}: {% if page %}{{ page.title }}{% else %}Sign Up{% endif %}{% endblock %}
 
 {% block content %}
-  <h1>{% if page_content %}{{ page_content.title }}{% else %}Sign Up {% endif %}</h1>
+  <h1>{% if page %}{{ page.title }}{% else %}Sign Up {% endif %}</h1>
   {% if user.is_authenticated %}
     <div class="alert alert-danger"><strong>{% trans 'Note' %}:</strong>
       {% blocktrans with user.get_absolute_url as family_url %}You are already logged in as {{ user }}. If you want to submit an application for a new Cub or
