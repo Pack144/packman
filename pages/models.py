@@ -114,7 +114,7 @@ class ContentBlock(models.Model):
         (ANONYMOUS, _("Anonymous"))
     ]
 
-    title = models.CharField(
+    heading = models.CharField(
         max_length=256,
         blank=True,
         default="",
@@ -157,13 +157,13 @@ class ContentBlock(models.Model):
     objects = ContentBlockManager()
 
     class Meta:
-        indexes = [models.Index(fields=['title', 'published_on'])]
+        indexes = [models.Index(fields=['heading', 'published_on'])]
         ordering = ['-published_on']
         verbose_name = _("Content Block")
         verbose_name_plural = _("Content Blocks")
 
     def __str__(self):
-        if self.title:
-            return self.title
+        if self.heading:
+            return self.heading
         else:
             return f"{strip_tags(self.body)[:25]}..."
