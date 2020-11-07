@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class PageDetailView(DetailView):
     model = Page
-    context_object_name = 'page_content'
+    context_object_name = 'page'
 
     def get_object(self, **kwargs):
         obj = super().get_object(**kwargs)
@@ -116,11 +116,11 @@ class SignUpPageView(CreateView):
             context['address_formset'] = AddressFormSet()
             context['phonenumber_formset'] = PhoneNumberFormSet()
         try:
-            context['page_content'] = Page.objects.get_visible_content(user=self.request.user).get(
+            context['page'] = Page.objects.get_visible_content(user=self.request.user).get(
                 page=Page.SIGNUP
             )
         except Page.DoesNotExist:
-            context['page_content'] = None
+            context['page'] = None
         return context
 
     def form_valid(self, form):

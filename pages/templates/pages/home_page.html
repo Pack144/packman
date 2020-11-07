@@ -1,9 +1,9 @@
 {% extends '_base.html' %}
 
-{% block title %}{{ block.super }}: {% if page_content %}{{ page_content.title }}{% else %}Home{% endif %}{% endblock %}
+{% block title %}{{ block.super }}: {% if page %}{{ page.title }}{% else %}Home{% endif %}{% endblock %}
 
 {% block content %}
-  <h1>{% if page_content %}{{ page_content.title }}{% else %}Home{% endif %}</h1>
+  <h1>{% if page %}{{ page.title }}{% else %}Home{% endif %}</h1>
   {% if events %}
     <div class="mb-5">
       <h3>Coming Up</h3>
