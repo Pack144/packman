@@ -3,8 +3,11 @@ import logging
 from django import forms
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMessage
 from django.utils.translation import gettext as _
+
+from .models import ContentBlock, Page
+
 
 logger = logging.getLogger(__name__)
 
@@ -65,3 +68,25 @@ class ContactForm(forms.Form):
         )
         logger.info(f"Sending email from {email.reply_to} with the subject '{email.subject}' to '{email.to}'")
         email.send()
+
+
+class ContentBlockForm(forms.ModelForm):
+    class Meta:
+        model = ContentBlock
+        fields = ("heading", "visibility", "body")
+
+
+ContentBlockFormSet = forms.inlineformset_factory(
+    Page,
+    ContentBlock,
+    form=ContentBlockForm,
+    can_delete=True,
+    extra=0,
+    min_num=1,
+)
+
+
+class PageForm(forms.ModelForm):
+    class Meta:
+        model = Page
+        fields = ("title", "slug", "include_in_nav")
