@@ -17,16 +17,26 @@ import environ
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+env = environ.Env()
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
+if READ_DOT_ENV_FILE:
+    # OS environment variables take precedence over variables from .env
+    env.read_env(os.path.join(BASE_DIR, ".env"))
 
+
+# GENERAL
+# ------------------------------------------------------------------------------
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'w98b46*7+i8+6$_3n(jfa6(7*j3%v*^u#at2$qknbgt4_eu_vg'
+# https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default='w98b46*7+i8+6$_3n(jfa6(7*j3%v*^u#at2$qknbgt4_eu_vg',
+)
+# https://docs.djangoproject.com/en/dev/ref/settings/#debug
+DEBUG = env.bool("DJANGO_DEBUG", False)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
 # Application definition
 # -----------------------------------------------------------------------------
@@ -108,10 +118,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 # -----------------------------------------------------------------------------
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    "default": env.db("DATABASE_URL", default="sqlite:///db.sqlite3")
+}
+
+# CACHES
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#caches
+CACHES = {
+    "default": env.cache("CACHE_URL", default="locmemcache://"),
 }
 
 # Password validation
@@ -161,19 +175,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'node_modules'),
     os.path.join(BASE_DIR, 'static'),
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_files')
+STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=os.path.join(BASE_DIR, 'static_files'))
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=os.path.join(BASE_DIR, 'media'))
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'pages:home'
 LOGOUT_REDIRECT_URL = 'pages:home'
-
-# Email settings for development environment
-# https://docs.djangoproject.com/en/3.0/topics/email/#console-backend
-# Override for production
-# -----------------------------------------------------------------------------
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Used by apps such as debug_toolbar to determine from what IP addresses requests to display
 # -----------------------------------------------------------------------------
@@ -225,15 +233,32 @@ PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'
 # SECURITY
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/3.0/ref/settings/#session-cookie-httponly
-SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = env.bool("DJANGO_SESSION_COOKIE_HTTPONLY", default=True)
 # https://docs.djangoproject.com/en/3.0/ref/settings/#csrf-cookie-httponly
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = env.bool("CSRF_COOKIE_HTTPONLY", default=True)
 # https://docs.djangoproject.com/en/3.0/ref/settings/#secure-browser-xss-filter
-SECURE_BROWSER_XSS_FILTER = True
+SECURE_BROWSER_XSS_FILTER = env.bool("SECURE_BROWSER_XSS_FILTER", default=True)
 # https://docs.djangoproject.com/en/3.0/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = 'DENY'
 # https://docs.djangoproject.com/en/3.0/ref/middleware/#x-content-type-options-nosniff
-SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
+    "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True
+)
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-seconds
+# TODO: set this to 60 seconds first and then to 518400 once you prove the former works
+SECURE_HSTS_SECONDS = env.int("DJANGO_SECURE_HSTS_SECONDS", default=60)
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-include-subdomains
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
+    "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True
+)
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-preload
+SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=True)
+# https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-secure
+SESSION_COOKIE_SECURE = env.bool("DJANGO_SESSION_COOKIE_SECURE", default=True)
+# https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-secure
+CSRF_COOKIE_SECURE = env.bool("DJANGO_CSRF_COOKIE_SECURE", default=True)
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-ssl-redirect
+SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -313,16 +338,37 @@ TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
 # When does the site start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank.
 # -----------------------------------------------------------------------------
-PACK_YEAR_BEGIN_MONTH = 9  # September
-PACK_YEAR_BEGIN_DAY = 1  # 1st
-PACK_DOMAIN_NAME = "example.com"
-PACK_NAME = "One Awesome Cub Scouts Pack"
-PACK_SHORTNAME = "Cub Pack"
-PACK_TAGLINE = "We're Awesome"
-PACK_LOCATION = "United States"
+PACK_YEAR_BEGIN_MONTH = env.int("PACK_YEAR_BEGIN_MONTH", default=9)  # September
+PACK_YEAR_BEGIN_DAY = env.int("PACK_YEAR_BEGIN_DAY", default=1)  # 1st
+PACK_DOMAIN_NAME = env("PACK_DOMAIN_NAME", default="example.com")
+PACK_NAME = env("PACK_NAME", default="One Awesome Cub Scouts Pack")
+PACK_SHORTNAME = env("PACK_SHORTNAME", default="Cub Pack")
+PACK_TAGLINE = env("PACK_TAGLINE", default="We're Awesome")
+PACK_LOCATION = env("PACK_LOCATION", default="United States of America")
 
-EMAIL_SUBJECT_PREFIX = f"[{PACK_SHORTNAME}] "
-DEFAULT_FROM_EMAIL = f"{PACK_NAME} <noreply@{PACK_DOMAIN_NAME}>"
+
+# EMAIL
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+# https://django-environ.readthedocs.io/en/latest/#email-settings
+EMAIL_CONFIG = env.email_url(
+    'DJANGO_EMAIL_URL', default='consolemail://'
+)
+vars().update(EMAIL_CONFIG)
+
+# https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
+DEFAULT_FROM_EMAIL = env(
+    "DJANGO_DEFAULT_FROM_EMAIL", default=f"{PACK_NAME} <noreply@{PACK_DOMAIN_NAME}>"
+)
+# https://docs.djangoproject.com/en/dev/ref/settings/#server-email
+SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
+EMAIL_SUBJECT_PREFIX = env(
+    "DJANGO_EMAIL_SUBJECT_PREFIX", default=f"[{PACK_SHORTNAME}] "
+)
+# https://django-environ.readthedocs.io/en/latest/#nested-lists
+ADMINS = ADMINS = [x.split(':') for x in env.list('DJANGO_ADMINS', default=[])]
+MANAGER = ADMINS
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository
