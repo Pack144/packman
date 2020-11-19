@@ -2,7 +2,7 @@ import logging
 
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
-from django.db.models import Count
+from django.db.models import Case, Count, When, CharField
 from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.html import mark_safe
@@ -194,7 +194,20 @@ class ScoutAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.annotate(
-            _name=Coalesce('nickname', 'first_name')
+            _name=Coalesce(
+                Case(
+                    When(nickname__exact="", then=None),
+                    When(nickname__isnull=False, then="nickname"),
+                    default=None,
+                    output_field=CharField(),
+                ),
+                Case(
+                    When(first_name__exact="", then=None),
+                    When(first_name__isnull=False, then="first_name"),
+                    default=None,
+                    output_field=CharField(),
+                ),
+            )
         )
         return qs
 
@@ -354,7 +367,20 @@ class AdultAdmin(UserAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.annotate(
-            _name=Coalesce('nickname', 'first_name')
+            _name=Coalesce(
+                Case(
+                    When(nickname__exact="", then=None),
+                    When(nickname__isnull=False, then="nickname"),
+                    default=None,
+                    output_field=CharField(),
+                ),
+                Case(
+                    When(first_name__exact="", then=None),
+                    When(first_name__isnull=False, then="first_name"),
+                    default=None,
+                    output_field=CharField(),
+                ),
+            )
         )
         return qs
 
