@@ -255,7 +255,7 @@ class ScoutAdmin(admin.ModelAdmin):
         if n:
             for obj in queryset:
                 if obj.current_den:
-                    m, c = Membership.objects.get_or_create(den=obj.current_den, scout=obj, year_assigned=next_year)
+                    m, c = DenMembership.objects.get_or_create(den=obj.current_den, scout=obj, year_assigned=next_year)
                     if not c:
                         self.message_user(request, _(
                             f'{obj} is already assigned to Den {obj.current_den} for the {next_year} Pack Year.'
