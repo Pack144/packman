@@ -201,7 +201,7 @@ class Member(models.Model):
 
     def get_short_name(self):
         """ Return either the first_name or nickname for the member. """
-        return self.nickname if self.nickname else self.first_name
+        return self.nickname or self.first_name
 
     def choose_slug(self, candidates):
         for candidate in candidates:

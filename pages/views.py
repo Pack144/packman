@@ -31,8 +31,7 @@ class PageDetailView(DetailView):
             raise PermissionDenied
 
     def get_queryset(self):
-        qs = super().get_queryset().get_visible_content(self.request.user)
-        return qs
+        return super().get_queryset().get_visible_content(self.request.user)
 
 
 class PageUpdateView(UpdateView):
