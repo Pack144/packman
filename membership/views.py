@@ -195,15 +195,15 @@ class AdultUpdate(LoginRequiredMixin, UpdateView):
         context = self.get_context_data(form=form)
         address_formset = context['address_formset']
         phonenumber_formset = context['phonenumber_formset']
-        if address_formset.is_valid() and phonenumber_formset.is_valid():
-            response = super().form_valid(form)
-            address_formset.instance = self.object
-            address_formset.save()
-            phonenumber_formset.instance = self.object
-            phonenumber_formset.save()
-            return response
-        else:
+        if not address_formset.is_valid() or not phonenumber_formset.is_valid():
             return super().form_invalid(form)
+
+        response = super().form_valid(form)
+        address_formset.instance = self.object
+        address_formset.save()
+        phonenumber_formset.instance = self.object
+        phonenumber_formset.save()
+        return response
 
 
 class ScoutList(LoginRequiredMixin, ListView):

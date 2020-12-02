@@ -57,10 +57,7 @@ class Question(models.Model):
         return self.choice_set.count()
 
     def count_total_votes(self):
-        result = 0
-        for choice in self.choice_set.all():
-            result += choice.count_votes()
-        return result
+        return sum(choice.count_votes() for choice in self.choice_set.all())
 
     def was_published_recently(self):
         now = timezone.now()
