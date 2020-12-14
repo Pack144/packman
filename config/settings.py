@@ -368,7 +368,7 @@ EMAIL_SUBJECT_PREFIX = env(
 )
 # https://django-environ.readthedocs.io/en/latest/#nested-lists
 ADMINS = ADMINS = [x.split(':') for x in env.list('DJANGO_ADMINS', default=[])]
-MANAGER = ADMINS
+MANAGERS = ADMINS
 
 # Allow for a private local_settings.py file to override anything in this settings.py
 # local_settings.py is not included in the project and will not be part of the git repository
