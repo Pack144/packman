@@ -3,7 +3,7 @@ from django.db.models import Count, Q
 from django.utils.translation import gettext_lazy as _
 
 from committees import models
-from pack_calendar.models import PackYear
+from calendars.models import PackYear
 from .models import Den, Membership, Rank
 
 
