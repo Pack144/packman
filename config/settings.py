@@ -63,8 +63,6 @@ INSTALLED_APPS = [
     'tempus_dominus',
     'tinymce',
 
-    'django_rename_app',
-
     # Local apps
     'address_book.apps.AddressBookConfig',
     'committees.apps.CommitteesConfig',
