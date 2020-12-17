@@ -40,7 +40,7 @@ class VenueType(models.Model):
 
 class Venue(models.Model):
     """
-    Venues are locations where the pack may meet in the pack_calendar app and
+    Venues are locations where the pack may meet in the calendars app and
     by Scouts to record the school they attend.
     """
     name = models.CharField(

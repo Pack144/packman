@@ -2,7 +2,7 @@ from django.contrib.auth.models import UserManager
 from django.db import models
 
 from dens.models import Rank
-from pack_calendar.models import PackYear
+from calendars.models import PackYear
 
 
 class MemberManager(UserManager):
