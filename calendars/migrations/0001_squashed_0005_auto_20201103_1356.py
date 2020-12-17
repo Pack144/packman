@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='event',
             name='category',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='events', to='pack_calendar.Category'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='events', to='calendars.Category'),
         ),
         migrations.AddField(
             model_name='event',

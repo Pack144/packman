@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 
 from membership.mixins import ActiveMemberOrContributorTest
-from pack_calendar.models import PackYear
+from calendars.models import PackYear
 from . import models
 
 

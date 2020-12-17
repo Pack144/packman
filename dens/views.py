@@ -2,7 +2,7 @@ from django.views.generic import DetailView, ListView
 
 from committees.models import Membership
 from membership.mixins import ActiveMemberOrContributorTest
-from pack_calendar.models import PackYear
+from calendars.models import PackYear
 from .models import Den
 
 

@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import pack_calendar.models
+import calendars.models
 
 
 class Migration(migrations.Migration):
@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('pack_calendar', '0001_squashed_0005_auto_20201103_1356'),
+        ('calendars', '0001_squashed_0005_auto_20201103_1356'),
         ('committees', '0002_membership_den'),
     ]
 
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='membership',
             name='year_served',
-            field=models.ForeignKey(default=pack_calendar.models.PackYear.get_current_pack_year_year, on_delete=django.db.models.deletion.CASCADE, related_name='committee_memberships', to='pack_calendar.PackYear'),
+            field=models.ForeignKey(default=calendars.models.PackYear.get_current_pack_year_year, on_delete=django.db.models.deletion.CASCADE, related_name='committee_memberships', to='calendars.PackYear'),
         ),
         migrations.AddField(
             model_name='committee',
