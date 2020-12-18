@@ -1,14 +1,13 @@
-import uuid
-
 from django.contrib.auth.models import Group
 from django.db import models
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from calendars.models import PackYear
+from core.models import TimeStampedUUIDModel
 
 
-class Committee(models.Model):
+class Committee(TimeStampedUUIDModel):
     """
     A well run pack relies on its members stepping up to provide support.
     Define a list of ongoing committees on which Adults can offer their
@@ -39,18 +38,6 @@ class Committee(models.Model):
         unique=True,
     )
 
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
-    )
-
     class Meta:
         ordering = ['-leadership', 'name']
         verbose_name = _("Committee")
@@ -63,7 +50,7 @@ class Committee(models.Model):
         return reverse_lazy('committees:detail', args=[self.slug])
 
 
-class Membership(models.Model):
+class Membership(TimeStampedUUIDModel):
     """
     Tracks members who have signed up for a committee, the year of their
     service, and their position on the committee.
@@ -113,18 +100,6 @@ class Membership(models.Model):
         related_name='committee_memberships',
     )
 
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
-    )
-
     class Meta:
         ordering = ['year_served', 'den', 'position', 'member']
         verbose_name = _("Member")
@@ -137,4 +112,4 @@ class Membership(models.Model):
         group, created = Group.objects.get_or_create(name=self.committee.name)
         if group not in self.member.groups.all():
             self.member.groups.add(group)
-        super(Membership, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
