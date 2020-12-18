@@ -1,8 +1,8 @@
-import uuid
-
 from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+
+from core.models import TimeStampedUUIDModel
 
 
 def document_upload_path(instance, filename):
@@ -10,21 +10,9 @@ def document_upload_path(instance, filename):
     return f"documents/{slugify(instance.category)}/{filename}"
 
 
-class Category(models.Model):
+class Category(TimeStampedUUIDModel):
     name = models.CharField(
         max_length=32,
-    )
-
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:
@@ -36,7 +24,7 @@ class Category(models.Model):
         return self.name
 
 
-class Document(models.Model):
+class Document(TimeStampedUUIDModel):
     name = models.CharField(
         max_length=128,
     )
@@ -63,18 +51,6 @@ class Document(models.Model):
     display_in_repository = models.BooleanField(
         default=True,
         help_text=_("Make this document visible in the Document Repository"),
-    )
-
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:
