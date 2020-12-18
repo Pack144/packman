@@ -1,5 +1,4 @@
 import logging
-import uuid
 
 from django.db import models
 from django.urls import reverse_lazy
@@ -10,12 +9,14 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
+from core.models import TimeStampedUUIDModel
+
 from .managers import ContentBlockManager, PageManager
 
 logger = logging.getLogger(__name__)
 
 
-class Page(models.Model):
+class Page(TimeStampedUUIDModel):
     """
     Base model used to define a web page. Used by Dynamic and Static pages.
     """
@@ -99,7 +100,7 @@ class Page(models.Model):
                 _("%(page)s does not include a slug. Setting slug to %(slug)s") % {"page": self, "slug": self.slug})
 
 
-class ContentBlock(models.Model):
+class ContentBlock(TimeStampedUUIDModel):
     """
     Pages can contain any number of content blocks. Each block has its own
     visibility, allowing for different content to be displayed based on whether
@@ -136,18 +137,6 @@ class ContentBlock(models.Model):
         related_name='content_blocks',
     )
 
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-        blank=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
-    )
     published_on = models.DateTimeField(
         default=timezone.now,
         blank=True,
