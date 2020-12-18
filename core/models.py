@@ -14,6 +14,7 @@ class UUIDModel(models.Model):
         default=uuid.uuid4,
         editable=False,
         primary_key=True,
+        unique=True,
     )
 
     class Meta:
