@@ -6,8 +6,10 @@ from django.utils.translation import gettext_lazy as _
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
+from core.models import TimeStampedUUIDModel
 
-class VenueType(models.Model):
+
+class VenueType(TimeStampedUUIDModel):
     """
     Specifying a VenueType allows for sorting and filtering venues. Used by the
     cub sign-up view to provide a list of schools the pack is aware of.
@@ -15,18 +17,6 @@ class VenueType(models.Model):
     type = models.CharField(
         max_length=32,
         help_text=_("e.g. School, Campground, Park, etc.")
-    )
-
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
-    date_added = models.DateField(
-        auto_now_add=True
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True
     )
 
     class Meta:
@@ -38,7 +28,7 @@ class VenueType(models.Model):
         return self.type
 
 
-class Venue(models.Model):
+class Venue(TimeStampedUUIDModel):
     """
     Venues are locations where the pack may meet in the calendars app and
     by Scouts to record the school they attend.
@@ -57,18 +47,6 @@ class Venue(models.Model):
         default="",
     )
 
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
-    date_added = models.DateField(
-        auto_now_add=True
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True
-    )
-
     class Meta:
         ordering = ['name']
         verbose_name = _("Venue")
@@ -78,7 +56,7 @@ class Venue(models.Model):
         return self.name
 
 
-class Address(models.Model):
+class Address(TimeStampedUUIDModel):
     """
     Address object to store physical address information. Used by Adult members
     and Venues. When associated with a member, the published option controls
@@ -142,18 +120,6 @@ class Address(models.Model):
         blank=True,
     )
 
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
-    )
-
     class Meta:
         ordering = ['street']
         verbose_name = _("Address")
@@ -179,7 +145,7 @@ class Address(models.Model):
                    f"{self.zip_code}"
 
 
-class PhoneNumber(models.Model):
+class PhoneNumber(TimeStampedUUIDModel):
     """
     Phone number object to store phone contact details. Used by Adult members
     and Venues. When associated with a member, the published option controls
@@ -225,18 +191,6 @@ class PhoneNumber(models.Model):
         related_name='phone_numbers',
         blank=True,
         null=True,
-    )
-
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:
