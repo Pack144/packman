@@ -5,12 +5,14 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
+from core.models import TimeStampedModel, TimeStampedUUIDModel
+
 
 def two_weeks_hence(when=timezone.now()):
     return when + timezone.timedelta(weeks=2)
 
 
-class Question(models.Model):
+class Question(TimeStampedUUIDModel):
     question_text = models.CharField(
         max_length=200,
     )
@@ -68,7 +70,7 @@ class Question(models.Model):
     was_published_recently.short_description = _("Recently published?")
 
 
-class Choice(models.Model):
+class Choice(TimeStampedModel):
     question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
@@ -84,7 +86,7 @@ class Choice(models.Model):
         return self.vote_set.count()
 
 
-class Vote(models.Model):
+class Vote(TimeStampedUUIDModel):
     family = models.ForeignKey(
         'membership.Family',
         on_delete=models.CASCADE,
@@ -96,13 +98,6 @@ class Vote(models.Model):
     choice = models.ForeignKey(
         Choice,
         on_delete=models.CASCADE,
-    )
-
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     def __str__(self):
