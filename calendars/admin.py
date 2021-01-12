@@ -1,18 +1,8 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.utils.translation import ngettext
+from django.utils.translation import gettext_lazy as _
 
 from .models import Category, Event, PackYear
-
-
-def mark_events_cancelled(modeladmin, request, queryset):
-    queryset.update(status=Event.CANCELLED)
-
-
-def mark_events_confirmed(modeladmin, request, queryset):
-    queryset.update(status=Event.CONFIRMED)
-
-
-def mark_events_tentative(modeladmin, request, queryset):
-    queryset.update(status=Event.TENTATIVE)
 
 
 @admin.register(Category)
@@ -22,12 +12,60 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    actions = [mark_events_cancelled, mark_events_confirmed, mark_events_tentative]
+    actions = ["mark_cancelled", "mark_confirmed", "mark_tentative"]
     date_hierarchy = "start"
     list_display = ('name', 'get_location', 'start', 'end', 'category', 'status')
     list_filter = ('category', )
     search_fields = ('name', 'start', 'end', 'location', 'venue__name')
     readonly_fields = ('duration', )
+
+    def mark_cancelled(self, request, queryset):
+        updates = queryset.update(status=Event.CANCELLED)
+        self.message_user(
+            request,
+            ngettext(
+                "%d event was successfully cancelled.",
+                "%d events were successfully cancelled.",
+                updates,
+            )
+            % updates,
+            messages.WARNING,
+        )
+
+    mark_cancelled.short_description = _("Cancel selected events")
+    mark_cancelled.allowed_permissions = ("change",)
+
+    def mark_confirmed(self, request, queryset):
+        updates = queryset.update(status=Event.CONFIRMED)
+        self.message_user(
+            request,
+            ngettext(
+                "%d event was successfully confirmed.",
+                "%d events were successfully confirmed.",
+                updates,
+            )
+            % updates,
+            messages.SUCCESS,
+        )
+
+    mark_confirmed.short_description = _("Confirm selected events")
+    mark_confirmed.allowed_permissions = ("change",)
+
+    def mark_tentative(self, request, queryset):
+        updates = queryset.update(status=Event.TENTATIVE)
+        self.message_user(
+            request,
+            ngettext(
+                "%d event was successfully marked as tentative.",
+                "%d events were successfully marked as tentative.",
+                updates,
+            )
+            % updates,
+            messages.INFO,
+        )
+
+    mark_tentative.short_description = _("Mark selected events as tentative")
+    mark_tentative.allowed_permissions = ("change",)
 
 
 @admin.register(PackYear)
