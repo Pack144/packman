@@ -11,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
+from .managers import PackYearManager
+
 
 class PackYear(models.Model):
     """
@@ -18,21 +20,61 @@ class PackYear(models.Model):
     committee assignments, den assignments, and events to keep things sorted.
     """
     year = models.IntegerField(
+        _("year"),
         primary_key=True,
     )
+    start_date = models.DateField(
+        _("start date"),
+        blank=True,
+        null=True,
+    )
+    end_date = models.DateField(
+        _("end date"),
+        blank=True,
+        null=True,
+    )
+
+    objects = PackYearManager()
 
     class Meta:
         indexes = [models.Index(fields=['year'])]
         ordering = ('-year',)
-        verbose_name = _("Pack Year")
-        verbose_name_plural = _("Pack Years")
+        verbose_name = _("pack year")
+        verbose_name_plural = _("pack years")
 
     def __str__(self):
         if self.start_date.year == self.end_date.year:
-            return self.start_date.year
+            return str(self.year)
         else:
-            return f"{self.start_date.year} - {self.end_date.year}"
+            return f"{self.start_date.year}-{self.end_date.year}"
 
+    def save(self, *args, **kwargs):
+        """Ensure that each Pack Year has a start and end date when saved"""
+        if not self.start_date:
+            self.start_date = self._get_start_date(year=self.year)
+        if not self.end_date:
+            self.end_date = self._get_end_date(year=self.year)
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def pack_year_is_not_calendar_year():
+        return not settings.PACK_YEAR_BEGIN_MONTH == settings.PACK_YEAR_BEGIN_DAY == 1
+
+    @classmethod
+    def _get_start_date(cls, year):
+        return timezone.make_aware(
+            timezone.datetime(
+                month=settings.PACK_YEAR_BEGIN_MONTH,
+                day=settings.PACK_YEAR_BEGIN_DAY,
+                year=year - cls.pack_year_is_not_calendar_year(),
+            )
+        )
+
+    @classmethod
+    def _get_end_date(cls, year):
+        return cls._get_start_date(year + 1) - timezone.timedelta(days=1)
+
+    # Legacy methods starting here
     @staticmethod
     def get_pack_year(date_to_test=timezone.now()):
         """
@@ -72,16 +114,6 @@ class PackYear(models.Model):
     def get_current_pack_year_year():
         year_obj = PackYear.get_current_pack_year()
         return year_obj.end_date.year
-
-    @property
-    def start_date(self):
-        # Calculate the start date of the pack year
-        return self.get_pack_year(self.year)['start_date']
-
-    @property
-    def end_date(self):
-        # Calculate the end date of the pack year
-        return self.get_pack_year(self.year)['end_date']
 
 
 class Category(models.Model):
@@ -304,10 +336,6 @@ class Event(models.Model):
         """ Verify that end datetime is not before the start datetime. """
         if self.end and self.end <= self.start:
             raise ValidationError(_("Event cannot end before it starts."))
-
-    @property
-    def pack_year(self):
-        return PackYear.get_pack_year(self.start.date)
 
     @property
     def duration(self):
