@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('membership', '0001_initial'),
         ('dens', '0001_initial'),
-        ('calendars', '0001_squashed_0005_auto_20201103_1356'),
+        ('calendars', '0003_auto_20210111_2314'),
     ]
 
     operations = [
