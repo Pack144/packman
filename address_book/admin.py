@@ -34,12 +34,13 @@ class DistributionListAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "email",
-        "is_all",
         "get_den_list",
         "get_committee_list",
+        "is_all",
         "contact_us",
     )
     list_filter = ["contact_us"]
+    readonly_fields = ["get_member_list"]
 
     def get_den_list(self, obj):
         return ", ".join(str(den.number) for den in obj.dens.all())
@@ -51,5 +52,9 @@ class DistributionListAdmin(admin.ModelAdmin):
 
     get_committee_list.short_description = _("committees")
 
+    def get_member_list(self, obj):
+        return ", ".join(f"{n} <{a}>" for n, a in obj.email_addresses)
+
+    get_member_list.short_description = _("members")
 
 admin.site.register(Category)
