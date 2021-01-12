@@ -13,23 +13,23 @@ from committees.models import Committee
 from dens.models import Den
 
 
-class VenueType(TimeStampedUUIDModel):
+class Category(TimeStampedUUIDModel):
     """
-    Specifying a VenueType allows for sorting and filtering venues. Used by the
+    Specifying a Category allows for sorting and filtering venues. Used by the
     cub sign-up view to provide a list of schools the pack is aware of.
     """
-    type = models.CharField(
-        max_length=32,
+    name = models.CharField(
+        max_length=64,
         help_text=_("e.g. School, Campground, Park, etc.")
     )
 
     class Meta:
-        ordering = ['type']
-        verbose_name = _("Venue Type")
-        verbose_name_plural = _("Venue Types")
+        ordering = ['name']
+        verbose_name = _("category")
+        verbose_name_plural = _("categories")
 
     def __str__(self):
-        return self.type
+        return self.name
 
 
 class Venue(TimeStampedUUIDModel):
@@ -41,8 +41,8 @@ class Venue(TimeStampedUUIDModel):
         max_length=128,
         unique=True
     )
-    type = models.ManyToManyField(
-        VenueType,
+    categories = models.ManyToManyField(
+        Category,
         related_name='venues'
     )
     url = models.URLField(
@@ -228,7 +228,7 @@ class DistributionList(TimeStampedUUIDModel):
 
     def get_email_addresses(self):
         return [
-            (" ".join((n or f, l)), e) for f, n, l, e in Adult.objects.filter(id__in=self.get_members().values_list("first_name", "nickname", "last_name", "email"))
+            (" ".join((n or f, l)), e) for f, n, l, e in self.get_members().values_list("first_name", "nickname", "last_name", "email")
         ]
 
     def get_members(self):
