@@ -245,12 +245,12 @@ class DistributionList(TimeStampedUUIDModel):
                 | Q(
                     family__in=Family.objects.active(),
                     committee_memberships__committee__in=self.committees.all(),
-                    committee_memberships__year_assigned=PackYear.objects.current(),
+                    committee_memberships__year_served=PackYear.objects.current(),
                 )
-            )
+            ).distinct()
 
     @cached_property
-    def email_address(self):
+    def email_addresses(self):
         return self.get_email_addresses()
 
     @cached_property
