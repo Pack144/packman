@@ -41,9 +41,9 @@ class AnimalRankListFilter(admin.SimpleListFilter):
             return queryset
         else:
             return queryset.filter(
-                den__den__rank__rank__exact=self.value()
+                den_memberships__den__rank__rank__exact=self.value()
             ).filter(
-                den__year_assigned=PackYear.get_current_pack_year()
+                den_memberships__year_assigned=PackYear.get_current_pack_year()
             ).distinct()
 
 
@@ -143,7 +143,7 @@ class ScoutAdmin(admin.ModelAdmin):
         'date_added',
     )
     list_display_links = ('name', 'last_name')
-    list_filter = ('status', AnimalRankListFilter, 'den__den')
+    list_filter = ('status', AnimalRankListFilter, 'den_memberships__den')
     readonly_fields = (
         'date_added',
         'last_updated',
