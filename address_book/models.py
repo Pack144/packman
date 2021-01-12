@@ -1,10 +1,19 @@
 from django.db import models
+from django.db.models import Q
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from core.models import TimeStampedUUIDModel
+from membership.models import Adult, Family
+from calendars.models import PackYear
+from committees.models import Committee
+from dens.models import Den
+
+
+CurrentYear = PackYear.get_current_pack_year()
 
 
 class VenueType(TimeStampedUUIDModel):
@@ -104,7 +113,7 @@ class Address(TimeStampedUUIDModel):
 
     # Related models
     member = models.ForeignKey(
-        'membership.Adult',
+        Adult,
         on_delete=models.SET_NULL,
         related_name='addresses',
         blank=True,
@@ -177,7 +186,7 @@ class PhoneNumber(TimeStampedUUIDModel):
         help_text=_("Display this phone number to other members of the pack."),
     )
     member = models.ForeignKey(
-        'membership.Adult',
+        Adult,
         on_delete=models.SET_NULL,
         related_name='phone_numbers',
         blank=True,
@@ -198,3 +207,55 @@ class PhoneNumber(TimeStampedUUIDModel):
 
     def __str__(self):
         return self.number.as_national
+
+
+class DistributionList(TimeStampedUUIDModel):
+    name = models.CharField(_("name"), max_length=128)
+    email = models.EmailField(_("email address"), unique=True)
+
+    is_all = models.BooleanField(_("all active members"), default=False)
+    committees = models.ManyToManyField(Committee, related_name="distribution_lists", blank=True)
+    dens = models.ManyToManyField(Den, related_name="distribution_lists", blank=True)
+
+    contact_us = models.BooleanField(
+        _("listed on contact us page"),
+        default=False,
+    )
+
+    class Meta:
+        verbose_name = _("distribution list")
+        verbose_name_plural = _("distribution lists")
+
+    def __str__(self):
+        return self.name
+
+    def get_email_addresses(self):
+        return [
+            (" ".join((n or f, l)), e) for f, n, l, e in Adult.objects.filter(id__in=self.get_members().values_list("first_name", "nickname", "last_name", "email"))
+        ]
+
+    def get_members(self):
+        if self.is_all:
+            return Adult.objects.filter(family__in=Family.objects.active())
+        else:
+            return Adult.objects.filter(
+                Q(
+                    family__in=Family.objects.active().filter(
+                        children__den_memberships__den__in=self.dens.all(),
+                        children__den_memberships__year_assigned=CurrentYear,
+                    )
+                )
+                | Q(
+                    family__in=Family.objects.active(),
+                    committee_memberships__committee__in=self.committees.all(),
+                    committee_memberships__year_assigned=CurrentYear,
+                )
+            )
+
+    @cached_property
+    def email_address(self):
+        return self.get_email_addresses()
+
+    @cached_property
+    def members(self):
+        return self.get_members()
