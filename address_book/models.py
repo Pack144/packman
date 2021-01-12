@@ -13,9 +13,6 @@ from committees.models import Committee
 from dens.models import Den
 
 
-CurrentYear = PackYear.get_current_pack_year()
-
-
 class VenueType(TimeStampedUUIDModel):
     """
     Specifying a VenueType allows for sorting and filtering venues. Used by the
@@ -242,13 +239,13 @@ class DistributionList(TimeStampedUUIDModel):
                 Q(
                     family__in=Family.objects.active().filter(
                         children__den_memberships__den__in=self.dens.all(),
-                        children__den_memberships__year_assigned=CurrentYear,
+                        children__den_memberships__year_assigned=PackYear.objects.current(),
                     )
                 )
                 | Q(
                     family__in=Family.objects.active(),
                     committee_memberships__committee__in=self.committees.all(),
-                    committee_memberships__year_assigned=CurrentYear,
+                    committee_memberships__year_assigned=PackYear.objects.current(),
                 )
             )
 
