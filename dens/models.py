@@ -164,7 +164,7 @@ class Membership(models.Model):
     scout = models.ForeignKey(
         'membership.Scout',
         on_delete=models.CASCADE,
-        related_name='den',
+        related_name='den_memberships',
     )
     den = models.ForeignKey(
         Den,
