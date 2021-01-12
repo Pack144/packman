@@ -9,7 +9,7 @@ import uuid
 
 class Migration(migrations.Migration):
 
-    replaces = [('calendars', '0001_squashed_0005_auto_20201103_1356'), ('calendars', '0002_auto_20201217_1542')]
+    replaces = [('calendars', '0001_squashed_0005_auto_20201103_1356'), ('calendars', '0002_auto_20201217_1542'), ('calendars', '0003_auto_20210111_2314')]
 
     initial = True
 
