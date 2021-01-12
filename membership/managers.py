@@ -5,6 +5,35 @@ from dens.models import Rank
 from calendars.models import PackYear
 
 
+CurrentYear = PackYear.get_current_pack_year()
+
+
+class FamilyQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(
+            children__den__year_assigned=CurrentYear,
+            children__status=self.model.children.rel.related_model.ACTIVE,
+        )
+
+    def in_den(self, den):
+        return self.active().filter(
+            children__den__year_assigned=CurrentYear,
+            children__den__den__number=den,
+        )
+
+
+class FamilyManager(models.Manager):
+    def get_queryset(self):
+        qs = FamilyQuerySet(self.model, using=self._db)
+        return qs.prefetch_related("adults", "children")
+
+    def active(self):
+        return self.get_queryset().active()
+
+    def in_den(self, den):
+        return self.get_queryset().in_den(den=den)
+
+
 class MemberManager(UserManager):
 
     def _create_user(self, email, password, **extra_fields):

@@ -15,7 +15,7 @@ from easy_thumbnails.signals import saved_file
 
 from dens.models import Den
 from calendars.models import PackYear
-from .managers import MemberManager, ScoutManager
+from .managers import FamilyManager, MemberManager, ScoutManager
 
 
 def get_photo_path(instance, filename):
@@ -257,6 +257,8 @@ class Family(models.Model):
     last_updated = models.DateTimeField(
         auto_now=True,
     )
+
+    objects = FamilyManager()
 
     class Meta:
         indexes = [models.Index(fields=['name'])]
