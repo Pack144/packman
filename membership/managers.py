@@ -8,14 +8,14 @@ from calendars.models import PackYear
 class FamilyQuerySet(models.QuerySet):
     def active(self):
         return self.filter(
-            children__den__year_assigned=PackYear.objects.current(),
+            children__den_memberships__year_assigned=PackYear.objects.current(),
             children__status=self.model.children.rel.related_model.ACTIVE,
         )
 
     def in_den(self, den):
         return self.active().filter(
-            children__den__year_assigned=PackYear.objects.current(),
-            children__den__den__number=den,
+            children__den_memberships__year_assigned=PackYear.objects.current(),
+            children__den_memberships__den__number=den,
         )
 
 
@@ -69,53 +69,53 @@ class MemberManager(UserManager):
 class ScoutQuerySet(models.QuerySet):
     def active(self):
         return self.filter(
-            den__year_assigned=PackYear.get_current_pack_year(),
+            den_memberships__year_assigned=PackYear.get_current_pack_year(),
             status=4,  # Scout.ACTIVE
         )
 
     def bobcats(self):
         return self.active().filter(
-            den__den__rank__rank=Rank.BOBCAT
+            den_memberships__den__rank__rank=Rank.BOBCAT
         )
 
     def tigers(self):
         return self.active().filter(
-            den__den__rank__rank=Rank.TIGER
+            den_memberships__den__rank__rank=Rank.TIGER
         )
 
     def wolves(self):
         return self.active().filter(
-            den__den__rank__rank=Rank.WOLF
+            den_memberships__den__rank__rank=Rank.WOLF
         )
 
     def bears(self):
         return self.active().filter(
-            den__den__rank__rank=Rank.BEAR
+            den_memberships__den__rank__rank=Rank.BEAR
         )
 
     def jr_webes(self):
         return self.active().filter(
-            den__den__rank__rank=Rank.JR_WEBE
+            den_memberships__den__rank__rank=Rank.JR_WEBE
         )
 
     def sr_webes(self):
         return self.active().filter(
-            den__den__rank__rank=Rank.SR_WEBE
+            den_memberships__den__rank__rank=Rank.SR_WEBE
         )
 
     def arrows_of_light(self):
         return self.active().filter(
-            den__den__rank__rank=Rank.ARROW
+            den_memberships__den__rank__rank=Rank.ARROW
         )
 
     def animal_ranks(self):
         return self.active().filter(
-            den__den__rank__rank__lte=Rank.BEAR
+            den_memberships__den__rank__rank__lte=Rank.BEAR
         )
 
     def webelo_ranks(self):
         return self.active().filter(
-            den__den__rank__rank__gte=Rank.JR_WEBE
+            den_memberships__den__rank__rank__gte=Rank.JR_WEBE
         )
 
 
