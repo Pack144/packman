@@ -5,19 +5,16 @@ from dens.models import Rank
 from calendars.models import PackYear
 
 
-CurrentYear = PackYear.get_current_pack_year()
-
-
 class FamilyQuerySet(models.QuerySet):
     def active(self):
         return self.filter(
-            children__den__year_assigned=CurrentYear,
+            children__den__year_assigned=PackYear.objects.current(),
             children__status=self.model.children.rel.related_model.ACTIVE,
         )
 
     def in_den(self, den):
         return self.active().filter(
-            children__den__year_assigned=CurrentYear,
+            children__den__year_assigned=PackYear.objects.current(),
             children__den__den__number=den,
         )
 
