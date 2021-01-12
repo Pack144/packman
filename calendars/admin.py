@@ -30,4 +30,6 @@ class EventAdmin(admin.ModelAdmin):
     readonly_fields = ('duration', )
 
 
-admin.site.register(PackYear)
+@admin.register(PackYear)
+class PackYearManager(admin.ModelAdmin):
+    list_display = ("year", "start_date", "end_date")
