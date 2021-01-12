@@ -73,7 +73,7 @@ class Membership(TimeStampedUUIDModel):
     member = models.ForeignKey(
         'membership.Adult',
         on_delete=models.CASCADE,
-        related_name='committees',
+        related_name='committee_memberships',
     )
     committee = models.ForeignKey(
         Committee,
