@@ -32,6 +32,11 @@ class VenueAdmin(admin.ModelAdmin):
 
 @admin.register(DistributionList)
 class DistributionListAdmin(admin.ModelAdmin):
+    fieldsets = [
+        (None, {"fields": (("name", "email"), ("is_all", "contact_us"))}),
+        (_("Members"), {"fields": ("get_member_list", )}),
+        (_("Selections"), {"fields": ("dens", "committees"), "classes": ("collapse", )}),
+    ]
     filter_horizontal = ("committees", "dens")
     list_display = (
         "name",
