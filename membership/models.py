@@ -376,7 +376,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
             return self.family.adults.exclude(uuid=self.uuid)
 
     def is_staff(self):
-        return bool(self._is_staff or self.committees.filter(
+        return bool(self._is_staff or self.committee_memberships.filter(
                 committee__is_staff=True).filter(
             year_served=PackYear.get_current_pack_year()
         ))
