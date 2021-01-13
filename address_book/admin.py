@@ -53,8 +53,9 @@ class DistributionListAdmin(admin.ModelAdmin):
     get_committee_list.short_description = _("committees")
 
     def get_member_list(self, obj):
-        return ", ".join(f"{n} <{a}>" for n, a in obj.email_addresses)
+        return "\n".join(f"{n} <{a}>" for n, a in obj.email_addresses)
 
     get_member_list.short_description = _("members")
+
 
 admin.site.register(Category)
