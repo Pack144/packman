@@ -3,5 +3,5 @@ from django.utils.translation import gettext_lazy as _
 
 
 class DocumentsConfig(AppConfig):
-    name = 'documents'
+    name = 'packman.documents'
     verbose_name = _('Documents')

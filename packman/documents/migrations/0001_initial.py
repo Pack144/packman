@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import documents.models
+import packman.documents.models
 import uuid
 
 
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('name', models.CharField(max_length=128)),
                 ('description', models.TextField(blank=True, help_text='Brief description of what the document is.', null=True)),
-                ('file', models.FileField(upload_to=documents.models.document_upload_path)),
+                ('file', models.FileField(upload_to=packman.documents.models.document_upload_path)),
                 ('display_in_repository', models.BooleanField(default=True, help_text='Make this document visible in the Document Repository')),
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('date_added', models.DateField(auto_now_add=True)),
