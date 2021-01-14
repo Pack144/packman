@@ -71,7 +71,7 @@ INSTALLED_APPS = [
     'packman.core.apps.CoreConfig',
     'dens.apps.DensConfig',
     'packman.documents.apps.DocumentsConfig',
-    'membership.apps.MembershipConfig',
+    'packman.membership.apps.MembershipConfig',
     'packman.pages.apps.PagesConfig',
 ]
 
