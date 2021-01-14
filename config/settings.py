@@ -72,7 +72,7 @@ INSTALLED_APPS = [
     'dens.apps.DensConfig',
     'packman.documents.apps.DocumentsConfig',
     'membership.apps.MembershipConfig',
-    'pages.apps.PagesConfig',
+    'packman.pages.apps.PagesConfig',
 ]
 
 MIDDLEWARE = [
@@ -102,7 +102,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'pages.context_processors.populate_navbar',
+                'packman.pages.context_processors.populate_navbar',
             ],
         },
     },
