@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.views.generic import DetailView, ListView
 
-from membership.mixins import ActiveMemberOrContributorTest
+from packman.membership.mixins import ActiveMemberOrContributorTest
 from .models import Event
 
 

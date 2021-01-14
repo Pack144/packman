@@ -9,8 +9,8 @@ from django.views.generic import (
     CreateView, DetailView, FormView, TemplateView, UpdateView,
 )
 
-from membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
-from membership.models import Family
+from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
+from packman.membership.models import Family
 from packman.calendars.models import Event
 from .forms import ContactForm
 from .models import Page
