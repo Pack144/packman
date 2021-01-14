@@ -35,7 +35,7 @@ urlpatterns = [
     # Local Apps
     path('committees/', include('committees.urls')),
     path('dens/', include('dens.urls')),
-    path('documents/', include('documents.urls')),
+    path('documents/', include('packman.documents.urls')),
     path('calendar/', include('packman.calendars.urls')),
     path('members/', include('membership.urls')),
     path('polls/', include('polls.urls')),
