@@ -3,5 +3,5 @@ from django.utils.translation import gettext_lazy as _
 
 
 class PackCalendarConfig(AppConfig):
-    name = 'calendars'
+    name = 'packman.calendars'
     verbose_name = _('Calendar')
