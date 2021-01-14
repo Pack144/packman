@@ -73,7 +73,6 @@ INSTALLED_APPS = [
     'packman.documents.apps.DocumentsConfig',
     'membership.apps.MembershipConfig',
     'pages.apps.PagesConfig',
-    'polls.apps.PollsConfig',
 ]
 
 MIDDLEWARE = [
