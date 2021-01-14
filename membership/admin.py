@@ -15,7 +15,7 @@ from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
 from committees.models import Membership as CommitteeMembership
 from dens.models import Membership as DenMembership, Rank
-from calendars.models import PackYear
+from packman.calendars.models import PackYear
 from . import forms, models
 
 logger = logging.getLogger(__name__)
