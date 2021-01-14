@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
-from core.models import TimeStampedUUIDModel
+from packman.core.models import TimeStampedUUIDModel
 from membership.models import Adult, Family
 from calendars.models import PackYear
 from committees.models import Committee

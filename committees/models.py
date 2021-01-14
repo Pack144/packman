@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from calendars.models import PackYear
-from core.models import TimeStampedUUIDModel
+from packman.core.models import TimeStampedUUIDModel
 
 
 class Committee(TimeStampedUUIDModel):
