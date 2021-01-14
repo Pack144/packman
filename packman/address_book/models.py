@@ -8,7 +8,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from packman.core.models import TimeStampedUUIDModel
 from membership.models import Adult, Family
-from calendars.models import PackYear
+from packman.calendars.models import PackYear
 from committees.models import Committee
 from dens.models import Den
 

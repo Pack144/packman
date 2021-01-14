@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import calendars.models
+import packman.calendars.models
 
 
 class Migration(migrations.Migration):
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='membership',
             name='year_served',
-            field=models.ForeignKey(default=calendars.models.PackYear.get_current_pack_year_year, on_delete=django.db.models.deletion.CASCADE, related_name='committee_memberships', to='calendars.PackYear'),
+            field=models.ForeignKey(default=packman.calendars.models.PackYear.get_current_pack_year_year, on_delete=django.db.models.deletion.CASCADE, related_name='committee_memberships', to='calendars.PackYear'),
         ),
         migrations.AddField(
             model_name='committee',

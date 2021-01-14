@@ -2,7 +2,7 @@ from django.contrib.auth.models import UserManager
 from django.db import models
 
 from dens.models import Rank
-from calendars.models import PackYear
+from packman.calendars.models import PackYear
 
 
 class FamilyQuerySet(models.QuerySet):
