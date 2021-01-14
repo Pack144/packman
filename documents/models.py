@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from core.models import TimeStampedUUIDModel
+from packman.core.models import TimeStampedUUIDModel
 
 
 def document_upload_path(instance, filename):
