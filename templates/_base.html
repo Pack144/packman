@@ -5,11 +5,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>{% block title %}{{ settings.PACK_SHORTNAME }}{% endblock title %}</title>
+  <title>{% block title %}{{ pack.shortname }}{% endblock title %}</title>
   <meta name="description" content="">
-  <meta name="author" content="{{ settings.PACK_NAME }}">
-  <meta name="apple-mobile-web-app-title" content="{{ settings.PACK_SHORTNAME }}">
-  <meta name="application-name" content="{{ settings.PACK_SHORTNAME }}">
+  <meta name="author" content="{{ pack.name }}">
+  <meta name="apple-mobile-web-app-title" content="{{ pack.shortname }}">
+  <meta name="application-name" content="{{ pack.shortname }}">
 
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
@@ -44,13 +44,14 @@
     <a href="{% url 'pages:home' %}" class="d-inline-block my-5 navbar-brand">
       <div class="row align-items-center px-3">
         <div class="col">
-          <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-block d-sm-none" alt="{% trans '{{ settings.PACK_NAME }} Logo' %}">
-          <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-none d-sm-block" alt="{% trans '{{ settings.PACK_NAME }} Logo' %}">
+          {% blocktranslate with name=pack.name asvar alt_text %}{{ name }} Logo{% endblocktranslate %}
+          <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-block d-sm-none" alt="{{ alt_text }}">
+          <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-none d-sm-block" alt="{{ alt_text }}">
         </div>
         <div class="col d-none d-sm-block">
-          {% if settings.PACK_NAME %}<div class="row" id="pack-name">{{ settings.PACK_NAME }}</div>{% endif %}
-          {% if settings.PACK_LOCATION %}<div class="row" id="pack-location">{{ settings.PACK_LOCATION }}</div>{% endif %}
-          {% if settings.PACK_TAGLINE %}<div class="row" id="pack-tagline">{{ settings.PACK_TAGLINE }}</div>{% endif %}
+          <div class="row" id="pack-name">{{ pack.name }}</div>
+          <div class="row" id="pack-location">{{ pack.location }}</div>
+          <div class="row" id="pack-tagline">{{ pack.tagline }}</div>
         </div>
       </div>
     </a>
@@ -155,7 +156,7 @@
   <footer class="footer text-center text-light small">
     <div class="my-3">
       <div>{% blocktrans %}A scout is <em>trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</em>{% endblocktrans %}</div>
-      <div><i class="far fa-copyright"></i> {% now "Y" %}{% if settings.PACK_NAME %} <strong>{{ settings.PACK_NAME }}</strong>{% endif %}</div>
+      <div><i class="far fa-copyright"></i> {% now "Y" %}{% if pack.name %} <strong>{{ pack.name }}</strong>{% endif %}</div>
     </div>
   </footer>
 {% endblock footer %}
