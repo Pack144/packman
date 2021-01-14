@@ -11,8 +11,8 @@ from django.utils.translation import gettext_lazy as _, ngettext
 from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
 
-from address_book.forms import AddressForm, PhoneNumberForm
-from address_book.models import Address, PhoneNumber
+from packman.address_book.forms import AddressForm, PhoneNumberForm
+from packman.address_book.models import Address, PhoneNumber
 from committees.models import Membership as CommitteeMembership
 from dens.models import Membership as DenMembership, Rank
 from calendars.models import PackYear
