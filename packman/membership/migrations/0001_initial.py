@@ -3,8 +3,8 @@
 from django.db import migrations, models
 import django.db.models.deletion
 import easy_thumbnails.fields
-import membership.managers
-import membership.models
+import packman.membership.managers
+import packman.membership.models
 import uuid
 
 
@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                 ('suffix', models.CharField(blank=True, max_length=8, null=True, verbose_name='Suffix')),
                 ('nickname', models.CharField(blank=True, help_text='If there is another name you prefer to be called, tell us and we will use it any time we refer to you on the website.', max_length=32, null=True, verbose_name='Nickname')),
                 ('gender', models.CharField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Prefer not to say')], default=None, max_length=1, null=True, verbose_name='Gender')),
-                ('photo', easy_thumbnails.fields.ThumbnailerImageField(blank=True, help_text='We use member photos on the website to help match names with faces.', null=True, upload_to=membership.models.get_photo_path, verbose_name='Headshot Photo')),
+                ('photo', easy_thumbnails.fields.ThumbnailerImageField(blank=True, help_text='We use member photos on the website to help match names with faces.', null=True, upload_to=packman.membership.models.get_photo_path, verbose_name='Headshot Photo')),
                 ('date_of_birth', models.DateField(blank=True, null=True, verbose_name='Birthday')),
                 ('slug', models.SlugField(blank=True, null=True, unique=True)),
                 ('pack_comments', models.TextField(blank=True, help_text='Used by pack leadership to keep notes about a specific member. This information is not generally disclosed to the member unless they are granted access to Membership.', null=True, verbose_name='Pack Comments')),
@@ -76,7 +76,7 @@ class Migration(migrations.Migration):
             },
             bases=('membership.member', models.Model),
             managers=[
-                ('objects', membership.managers.MemberManager()),
+                ('objects', packman.membership.managers.MemberManager()),
             ],
         ),
         migrations.CreateModel(
