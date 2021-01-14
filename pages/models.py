@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
-from core.models import TimeStampedUUIDModel
+from packman.core.models import TimeStampedUUIDModel
 
 from .managers import ContentBlockManager, PageManager
 

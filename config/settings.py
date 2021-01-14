@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     # Local apps
     'address_book.apps.AddressBookConfig',
     'committees.apps.CommitteesConfig',
-    'core.apps.CoreConfig',
+    'packman.core.apps.CoreConfig',
     'dens.apps.DensConfig',
     'documents.apps.DocumentsConfig',
     'membership.apps.MembershipConfig',
@@ -102,7 +102,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'core.context_processors.settings_context',
                 'pages.context_processors.populate_navbar',
             ],
         },

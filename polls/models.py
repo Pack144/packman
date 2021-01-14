@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
-from core.models import TimeStampedModel, TimeStampedUUIDModel
+from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
 
 
 def two_weeks_hence(when=timezone.now()):

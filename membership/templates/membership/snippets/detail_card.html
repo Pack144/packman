@@ -23,7 +23,7 @@
           <abbr title="{% trans 'E-mail address' %}"><i class="fas fa-envelope fa-fw"></i></abbr>
         </div>
         <div class="col card-text text-truncate">
-          <a href="mailto:{{ email }}?subject=[{{ settings.PACK_SHORTNAME|urlencode }}]%20" class="card-link">{{ member_email }}</a>
+          <a href="mailto:{{ email }}?subject=[{{ pack.shortname|urlencode }}]%20" class="card-link">{{ member_email }}</a>
         </div>
       </div>
     {% endif %}
