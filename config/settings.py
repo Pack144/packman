@@ -70,7 +70,7 @@ INSTALLED_APPS = [
     'committees.apps.CommitteesConfig',
     'packman.core.apps.CoreConfig',
     'dens.apps.DensConfig',
-    'documents.apps.DocumentsConfig',
+    'packman.documents.apps.DocumentsConfig',
     'membership.apps.MembershipConfig',
     'pages.apps.PagesConfig',
     'polls.apps.PollsConfig',
