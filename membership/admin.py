@@ -217,13 +217,19 @@ class ScoutAdmin(admin.ModelAdmin):
     name.admin_order_field = '_name'
 
     def get_adults(self, obj):
-        display_text = ", ".join([
+        display_text = ", ".join(
             "<a href={}>{}</a>".format(
-                reverse('admin:{}_{}_change'.format(adult._meta.app_label, adult._meta.model_name),
-                        args=(adult.pk,)),
-                adult.get_full_name())
+                reverse(
+                    'admin:{}_{}_change'.format(
+                        adult._meta.app_label, adult._meta.model_name
+                    ),
+                    args=(adult.pk,),
+                ),
+                adult.get_full_name(),
+            )
             for adult in obj.family.adults.all()
-        ])
+        )
+
         if display_text:
             return mark_safe(display_text)
         else:
@@ -306,6 +312,7 @@ class AdultAdmin(UserAdmin):
     )
     list_display_links = ('name', 'last_name', 'email')
     list_filter = ('_is_staff', 'is_superuser', AdultsBasedOnCubStatusFilter)
+    list_select_related = ("family", )
     ordering = ('last_name', 'nickname', 'first_name')
     readonly_fields = ('date_added', 'last_updated', 'last_login', 'get_children')
     autocomplete_fields = ['family']
@@ -390,13 +397,19 @@ class AdultAdmin(UserAdmin):
     name.admin_order_field = '_name'
 
     def get_children(self, obj):
-        display_text = ", ".join([
+        display_text = ", ".join(
             "<a href={}>{}</a>".format(
-                reverse('admin:{}_{}_change'.format(child._meta.app_label, child._meta.model_name),
-                        args=(child.pk,)),
-                child.get_short_name())
+                reverse(
+                    'admin:{}_{}_change'.format(
+                        child._meta.app_label, child._meta.model_name
+                    ),
+                    args=(child.pk,),
+                ),
+                child.get_short_name(),
+            )
             for child in obj.family.children.all()
-        ])
+        )
+
         if display_text:
             return mark_safe(display_text)
         else:
