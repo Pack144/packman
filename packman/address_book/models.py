@@ -7,7 +7,7 @@ from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from packman.core.models import TimeStampedUUIDModel
-from membership.models import Adult, Family
+from packman.membership.models import Adult, Family
 from packman.calendars.models import PackYear
 from committees.models import Committee
 from dens.models import Den

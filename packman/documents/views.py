@@ -1,7 +1,7 @@
 from django.db.models import Prefetch
 from django.views.generic import ListView
 
-from membership.mixins import ActiveMemberOrContributorTest
+from packman.membership.mixins import ActiveMemberOrContributorTest
 from .models import Category, Document
 
 
