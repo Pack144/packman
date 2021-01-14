@@ -424,7 +424,7 @@ class Scout(Member):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        limit_choices_to={'type__type__icontains': 'School'},
+        limit_choices_to={'categories__name__icontains': 'school'},
         help_text=_(
             "Tell us what school your child attends. If your school isn't "
             "listed, tell us in the comments section."),
