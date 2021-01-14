@@ -64,7 +64,7 @@ INSTALLED_APPS = [
     'tinymce',
 
     # Local apps
-    'address_book.apps.AddressBookConfig',
+    'packman.address_book.apps.AddressBookConfig',
     'committees.apps.CommitteesConfig',
     'packman.core.apps.CoreConfig',
     'dens.apps.DensConfig',
