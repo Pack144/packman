@@ -16,6 +16,7 @@ import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+APPS_DIR = os.path.join(BASE_DIR, "packman")
 
 env = environ.Env()
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
@@ -93,7 +94,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(APPS_DIR, 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -172,7 +173,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'node_modules'),
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(APPS_DIR, 'static'),
 ]
 STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=os.path.join(BASE_DIR, 'static_files'))
 MEDIA_URL = '/media/'
