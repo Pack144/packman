@@ -23,14 +23,6 @@ def get_photo_path(instance, filename):
     return f"headshots/{instance.slug}/{filename}"
 
 
-def get_two_years_ago():
-    """
-    Calculate the year two years before the current year.
-    Used by the Scout model to provide a default for when they start school.
-    """
-    return timezone.now().year - 2
-
-
 class Member(models.Model):
     """
     A class implementing the details we would want to capture for any person.
@@ -75,7 +67,8 @@ class Member(models.Model):
         default="",
         help_text=_(
             "If there is another name you prefer to be called, tell us and we "
-            "will use it any time we refer to you on the website.")
+            "will use it any time we refer to you on the website."
+        ),
     )
     gender = models.CharField(
         _("Gender"),
@@ -89,8 +82,11 @@ class Member(models.Model):
         blank=True,
         null=True,
         help_text=_(
-            "We use member photos on the website to help match names with "
-            "faces.")
+            "We use profile photos in the Pack Directory to help members match "
+            "names with faces. A good photo is taken from the shoulders up and "
+            "with the face clearly visible. Photos are available only for Pack "
+            "members and are not shared."
+        ),
     )
     date_of_birth = models.DateField(
         _("Birthday"),
@@ -509,51 +505,58 @@ class Scout(Member):
         if self.family:
             return self.family.children.exclude(uuid=self.uuid)
 
-    @property
-    def current_den(self):
+    def get_current_den(self):
+        """Return the Den assignment for the current Pack Year"""
         try:
             den = Den.objects.get(
                 scouts__scout=self,
-                scouts__year_assigned=PackYear.get_current_pack_year()
+                scouts__year_assigned=PackYear.objects.current()
             )
         except Den.DoesNotExist:
             den = None
         return den
 
-    @property
-    def grade(self):
+    def get_grade(self):
         """
         Based on when this cub started school, what grade should they be in
         now?
         """
         if self.started_school:
             this_year = timezone.now().year
-            if timezone.now().month < settings.PACK_YEAR_BEGIN_MONTH:  # assume school year ended in June
+            if timezone.now().month < 7:  # assume school year ended in June
                 this_year -= 1
 
-            calculated_grade = this_year - self.started_school
-            if calculated_grade < 0:
-                # this Scout hasn't started Kindergarten yet
-                return None
-            elif calculated_grade == 0:
-                # this Scout is a kindergartner
-                return 'K'
-            elif calculated_grade <= 12:
-                return calculated_grade
+            grade = this_year - self.started_school
+            if grade < 0:
+                return _("preschool")
+            elif grade == 0:
+                return _("kindergarten")
+            elif grade == 1:
+                return _("1st grade")
+            elif grade == 2:
+                return _("2nd grade")
+            elif grade == 3:
+                return _("3rd grade")
+            elif grade <= 12:
+                return _("%(grade)dth grade") % {"grade": grade}
             else:
-                # this Scout isn't in grade school anymore
-                return None
+                return _("graduated high school")
 
-    def get_grade(self):
-        return self.grade
+    get_grade.admin_order_field = 'started_school'
+    get_grade.short_description = _("school grade")
 
     @property
     def rank(self):
-        """ A cub's rank is derived from the den they are a member of. """
-        return self.den.rank
+        """A cub's rank is derived from the den they are a member of."""
+        return self.get_current_den().rank
 
-    get_grade.admin_order_field = 'started_school'
-    get_grade.short_description = _("School Grade")
+    @property
+    def current_den(self):
+        return self.get_current_den()
+
+    @property
+    def grade(self):
+        return self.get_grade()
 
 
 saved_file.connect(generate_aliases)
