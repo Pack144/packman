@@ -11,7 +11,7 @@ from django.views.generic import (
 
 from membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from membership.models import Family
-from calendars.models import Event
+from packman.calendars.models import Event
 from .forms import ContactForm
 from .models import Page
 

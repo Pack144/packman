@@ -66,12 +66,12 @@ INSTALLED_APPS = [
 
     # Local apps
     'packman.address_book.apps.AddressBookConfig',
+    'packman.calendars.apps.PackCalendarConfig',
     'committees.apps.CommitteesConfig',
     'packman.core.apps.CoreConfig',
     'dens.apps.DensConfig',
     'documents.apps.DocumentsConfig',
     'membership.apps.MembershipConfig',
-    'calendars.apps.PackCalendarConfig',
     'pages.apps.PagesConfig',
     'polls.apps.PollsConfig',
 ]

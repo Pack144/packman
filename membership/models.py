@@ -14,7 +14,7 @@ from easy_thumbnails.signal_handlers import generate_aliases
 from easy_thumbnails.signals import saved_file
 
 from dens.models import Den
-from calendars.models import PackYear
+from packman.calendars.models import PackYear
 from .managers import FamilyManager, MemberManager, ScoutManager
 
 

@@ -36,7 +36,7 @@ urlpatterns = [
     path('committees/', include('committees.urls')),
     path('dens/', include('dens.urls')),
     path('documents/', include('documents.urls')),
-    path('calendar/', include('calendars.urls')),
+    path('calendar/', include('packman.calendars.urls')),
     path('members/', include('membership.urls')),
     path('polls/', include('polls.urls')),
     path('', include('pages.urls')),
