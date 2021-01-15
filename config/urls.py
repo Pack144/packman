@@ -33,7 +33,7 @@ urlpatterns = [
     path('t/', include('tinymce.urls')),
 
     # Local Apps
-    path('committees/', include('committees.urls')),
+    path('committees/', include('packman.committees.urls')),
     path('dens/', include('dens.urls')),
     path('documents/', include('packman.documents.urls')),
     path('calendar/', include('packman.calendars.urls')),
