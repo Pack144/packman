@@ -11,11 +11,11 @@
   <div class="card-group mb-5">
     {% include 'membership/snippets/detail_card.html' with member_email=email member_addresses=addresses member_phone_numbers=phone_numbers %}
 
-    {% if member.committees.count %}
-      {% regroup member.committees.all by year_served as assignments_by_year %}
+    {% if member.committee_memberships.exists %}
+      {% regroup member.committee_memberships.all by year_served as assignments_by_year %}
       <div class="card">
         <div class="card-body">
-          <h3 class="card-title">{% blocktrans count assignments=member.committees.count %}
+          <h3 class="card-title">{% blocktrans count assignments=member.committee_memberships.count %}
             Committee Served
             {% plural %}
             Committees Served
