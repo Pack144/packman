@@ -1,7 +1,7 @@
 from django.contrib.auth.models import UserManager
 from django.db import models
 
-from dens.models import Rank
+from packman.dens.models import Rank
 from packman.calendars.models import PackYear
 
 

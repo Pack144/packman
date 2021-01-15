@@ -13,7 +13,7 @@ from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.signal_handlers import generate_aliases
 from easy_thumbnails.signals import saved_file
 
-from dens.models import Den
+from packman.dens.models import Den
 from packman.calendars.models import PackYear
 from .managers import FamilyManager, MemberManager, ScoutManager
 
