@@ -69,7 +69,7 @@ INSTALLED_APPS = [
     'packman.calendars.apps.PackCalendarConfig',
     'packman.committees.apps.CommitteesConfig',
     'packman.core.apps.CoreConfig',
-    'dens.apps.DensConfig',
+    'packman.dens.apps.DensConfig',
     'packman.documents.apps.DocumentsConfig',
     'packman.membership.apps.MembershipConfig',
     'packman.pages.apps.PagesConfig',
