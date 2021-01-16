@@ -1,0 +1,14 @@
+{% load i18n static thumbnail %}
+
+      {% blocktrans asvar alt_text %}{{ member }}'s profile picture{% endblocktrans %}
+      {% if member.photo %}
+        <img src="{{ member.photo|thumbnail_url:'80x80' }}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% elif member.scout %}
+        <img src="{% static 'img/avatar_cub_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% elif member.gender == member.MALE %}
+        <img src="{% static 'img/avatar_man_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% elif member.gender == member.FEMALE %}
+        <img src="{% static 'img/avatar_woman_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% else %}
+        <img src="{% static 'img/avatar_generic_80x80.png' %}" class="img-fluid rounded" id="{{ member.slug }}_thumbnail" alt="{{ alt_text }}">
+      {% endif %}
