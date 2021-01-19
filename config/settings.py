@@ -31,7 +31,7 @@ if READ_DOT_ENV_FILE:
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
-    default='w98b46*7+i8+6$_3n(jfa6(7*j3%v*^u#at2$qknbgt4_eu_vg',
+    default="w98b46*7+i8+6$_3n(jfa6(7*j3%v*^u#at2$qknbgt4_eu_vg",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool("DJANGO_DEBUG", False)
@@ -43,66 +43,64 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 # -----------------------------------------------------------------------------
 INSTALLED_APPS = [
     # Built-in Django apps
-    'django.contrib.admin',
-    'django.contrib.admindocs',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.humanize',
-
+    "django.contrib.admin",
+    "django.contrib.admindocs",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.humanize",
     # Third party packages
-    'crispy_forms',
-    'debug_toolbar',
-    'django_extensions',
-    'django_ical',
-    'dynamic_formsets',
-    'easy_thumbnails',
-    'localflavor',
-    'phonenumber_field',
-    'tempus_dominus',
-    'tinymce',
-
+    "crispy_forms",
+    "debug_toolbar",
+    "django_extensions",
+    "django_ical",
+    "dynamic_formsets",
+    "easy_thumbnails",
+    "localflavor",
+    "phonenumber_field",
+    "tempus_dominus",
+    "tinymce",
     # Local apps
-    'packman.address_book.apps.AddressBookConfig',
-    'packman.calendars.apps.CalendarsConfig',
-    'packman.committees.apps.CommitteesConfig',
-    'packman.core.apps.CoreConfig',
-    'packman.dens.apps.DensConfig',
-    'packman.documents.apps.DocumentsConfig',
-    'packman.membership.apps.MembershipConfig',
-    'packman.pages.apps.PagesConfig',
+    "packman.address_book.apps.AddressBookConfig",
+    "packman.calendars.apps.CalendarsConfig",
+    "packman.committees.apps.CommitteesConfig",
+    "packman.core.apps.CoreConfig",
+    "packman.dens.apps.DensConfig",
+    "packman.documents.apps.DocumentsConfig",
+    "packman.membership.apps.MembershipConfig",
+    "packman.pages.apps.PagesConfig",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.admindocs.middleware.XViewMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.admindocs.middleware.XViewMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(APPS_DIR, 'templates'),
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [
+            os.path.join(APPS_DIR, "templates"),
         ],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'packman.pages.context_processors.populate_navbar',
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "packman.pages.context_processors.populate_navbar",
             ],
         },
     },
@@ -111,14 +109,12 @@ TEMPLATES = [
 # WSGI
 # https://docs.djangoproject.com/en/3.0/howto/deployment/wsgi/
 # -----------------------------------------------------------------------------
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 # -----------------------------------------------------------------------------
-DATABASES = {
-    "default": env.db("DATABASE_URL", default="sqlite:///db.sqlite3")
-}
+DATABASES = {"default": env.db("DATABASE_URL", default="sqlite:///db.sqlite3")}
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -140,25 +136,25 @@ PASSWORD_HASHERS = [
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 # -----------------------------------------------------------------------------
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'America/Los_Angeles'
+TIME_ZONE = "America/Los_Angeles"
 
 USE_I18N = True
 
@@ -169,65 +165,65 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 # -----------------------------------------------------------------------------
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'node_modules'),
-    os.path.join(APPS_DIR, 'static'),
+    os.path.join(BASE_DIR, "node_modules"),
+    os.path.join(APPS_DIR, "static"),
 ]
-STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=os.path.join(BASE_DIR, 'static_files'))
-MEDIA_URL = '/media/'
-MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=os.path.join(BASE_DIR, 'media'))
+STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=os.path.join(BASE_DIR, "static_files"))
+MEDIA_URL = "/media/"
+MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=os.path.join(BASE_DIR, "media"))
 
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'pages:home'
-LOGOUT_REDIRECT_URL = 'pages:home'
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "pages:home"
+LOGOUT_REDIRECT_URL = "pages:home"
 
 # Used by apps such as debug_toolbar to determine from what IP addresses requests to display
 # -----------------------------------------------------------------------------
 INTERNAL_IPS = [
-    '127.0.0.1',
+    "127.0.0.1",
 ]
 
 # Easy Thumbnails
 # https://easy-thumbnails.readthedocs.io/en/latest/usage/#thumbnail-aliases
 # -----------------------------------------------------------------------------
 THUMBNAIL_ALIASES = {
-    '': {
-        '80x80': {
-            'size': (80, 80),
-            'crop': 'smart',
+    "": {
+        "80x80": {
+            "size": (80, 80),
+            "crop": "smart",
         },
-        '320x320': {
-            'size': (320, 320),
-            'crop': 'smart',
-        }
+        "320x320": {
+            "size": (320, 320),
+            "crop": "smart",
+        },
     },
-    'membership': {
-        'thumbnail': {
-            'size': (80, 80),
-            'crop': 'smart',
-            'quality': 90,
+    "membership": {
+        "thumbnail": {
+            "size": (80, 80),
+            "crop": "smart",
+            "quality": 90,
         },
-        'card': {
-            'size': (320, 320),
-            'crop': 'smart',
-            'quality': 90,
-        }
+        "card": {
+            "size": (320, 320),
+            "crop": "smart",
+            "quality": 90,
+        },
     },
 }
-THUMBNAIL_SUBDIR = 'thumbs'
+THUMBNAIL_SUBDIR = "thumbs"
 
 # django-crispy-forms
 # http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
 # -----------------------------------------------------------------------------
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 # django-phonenumber-field
 # https://github.com/stefanfoulis/django-phonenumber-field
 # -----------------------------------------------------------------------------
-PHONENUMBER_DEFAULT_REGION = 'US'
-PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'
+PHONENUMBER_DEFAULT_REGION = "US"
+PHONENUMBER_DEFAULT_FORMAT = "NATIONAL"
 
 # SECURITY
 # ------------------------------------------------------------------------------
@@ -238,7 +234,7 @@ CSRF_COOKIE_HTTPONLY = env.bool("CSRF_COOKIE_HTTPONLY", default=True)
 # https://docs.djangoproject.com/en/3.0/ref/settings/#secure-browser-xss-filter
 SECURE_BROWSER_XSS_FILTER = env.bool("SECURE_BROWSER_XSS_FILTER", default=True)
 # https://docs.djangoproject.com/en/3.0/ref/settings/#x-frame-options
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = "DENY"
 # https://docs.djangoproject.com/en/3.0/ref/middleware/#x-content-type-options-nosniff
 SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
     "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True
@@ -270,8 +266,7 @@ LOGGING = {
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
     "formatters": {
         "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s "
-                      "%(process)d %(thread)d %(message)s"
+            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s"
         }
     },
     "handlers": {
@@ -304,7 +299,7 @@ LOGGING = {
 # Custom User Model
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#auth-custom-user
 # -----------------------------------------------------------------------------
-AUTH_USER_MODEL = 'membership.Adult'
+AUTH_USER_MODEL = "membership.Adult"
 
 # django-tinymce
 # https://django-tinymce.readthedocs.io/en/latest/installation.html#configuration
@@ -318,7 +313,7 @@ AUTH_USER_MODEL = 'membership.Adult'
 #
 # }
 TINYMCE_INCLUDE_JQUERY = False
-TINYMCE_JS_URL = os.path.join(STATIC_URL, 'tinymce/tinymce.min.js')
+TINYMCE_JS_URL = os.path.join(STATIC_URL, "tinymce/tinymce.min.js")
 TINYMCE_DEFAULT_CONFIG = {
     "theme": "silver",
     "height": 600,
@@ -350,9 +345,7 @@ PACK_LOCATION = env("PACK_LOCATION", default="United States of America")
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 # https://django-environ.readthedocs.io/en/latest/#email-settings
-EMAIL_CONFIG = env.email_url(
-    'DJANGO_EMAIL_URL', default='consolemail://'
-)
+EMAIL_CONFIG = env.email_url("DJANGO_EMAIL_URL", default="consolemail://")
 vars().update(EMAIL_CONFIG)
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
@@ -366,7 +359,7 @@ EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX", default=f"[{PACK_SHORTNAME}] "
 )
 # https://django-environ.readthedocs.io/en/latest/#nested-lists
-ADMINS = ADMINS = [x.split(':') for x in env.list('DJANGO_ADMINS', default=[])]
+ADMINS = [x.split(":") for x in env.list("DJANGO_ADMINS", default=[])]
 MANAGERS = ADMINS
 
 # Allow for a private local_settings.py file to override anything in this settings.py
