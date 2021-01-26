@@ -218,6 +218,10 @@ class Member(models.Model):
 
     age.admin_order_field = 'date_of_birth'
 
+    @property
+    def short_name(self):
+        return self.get_short_name()
+
 
 class Family(models.Model):
     """ Track the relationship between members """
