@@ -20,7 +20,7 @@
         <div class="col">
           <h1>{% if event.status == event.CANCELLED %}<del>{{ event.name }}</del>{% else %}{{ event.name }}{% endif %}</h1>
           <ul class="list-inline text-muted" id="datetime-details-list">
-            {% if event.end and event.end.date != event.start.date %}
+            {% if event.end and event.end|date != event.start|date %}
               <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
               <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}</li>
               <li class="list-inline-item">&ndash;</li>
