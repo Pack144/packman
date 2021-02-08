@@ -15,7 +15,7 @@ class EventAdmin(admin.ModelAdmin):
     actions = ["mark_cancelled", "mark_confirmed", "mark_tentative"]
     date_hierarchy = "start"
     list_display = ('name', 'get_location', 'start', 'end', 'category', 'status')
-    list_filter = ('category', )
+    list_filter = ('category', 'status', 'start')
     search_fields = ('name', 'start', 'end', 'location', 'venue__name')
     readonly_fields = ('duration', )
 
