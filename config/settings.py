@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.sites",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     # Third party packages
@@ -148,6 +149,11 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+# Sites Framework
+# https://docs.djangoproject.com/en/3.1/ref/contrib/sites/#enabling-the-sites-framework
+# -----------------------------------------------------------------------------
+SITE_ID = 1
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
