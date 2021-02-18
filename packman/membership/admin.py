@@ -5,17 +5,16 @@ from django.contrib.auth.admin import UserAdmin
 from django.db.models import Case, Count, When, CharField
 from django.db.models.functions import Coalesce
 from django.urls import reverse
-from django.utils.html import mark_safe
+from django.utils.html import format_html_join, format_html
 from django.utils.translation import gettext_lazy as _, ngettext
-
 from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
 
 from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
+from packman.calendars.models import PackYear
 from packman.committees.models import Membership as CommitteeMembership
 from packman.dens.models import Membership as DenMembership, Rank
-from packman.calendars.models import PackYear
 from . import forms, models
 
 logger = logging.getLogger(__name__)
@@ -217,23 +216,12 @@ class ScoutAdmin(admin.ModelAdmin):
     name.admin_order_field = '_name'
 
     def get_adults(self, obj):
-        display_text = ", ".join(
-            "<a href={}>{}</a>".format(
-                reverse(
-                    'admin:{}_{}_change'.format(
-                        adult._meta.app_label, adult._meta.model_name
-                    ),
-                    args=(adult.pk,),
-                ),
-                adult.get_full_name(),
-            )
-            for adult in obj.family.adults.all()
-        )
+        adult_links = format_html_join(
+            "",
+            "<li><a href={}>{}</a></li>",
+            ((reverse(f'admin:{adult._meta.app_label}_{adult._meta.model_name}_change', args=(adult.pk, )), adult.get_short_name()) for adult in obj.family.adults.all()))
+        return format_html("<ul>{}</ul>", adult_links) if adult_links else "-"
 
-        if display_text:
-            return mark_safe(display_text)
-        else:
-            return '-'
     get_adults.short_description = _('adults')
 
     def make_active(self, request, queryset):
@@ -293,7 +281,8 @@ class ScoutAdmin(admin.ModelAdmin):
     make_approved.short_description = _("Approve selected Cubs for membership")
     make_inactive.short_description = _("Mark selected Cubs as inactive")
     make_graduated.short_description = _("Graduate selected Cubs")
-    continue_in_same_den_one_more_year.short_description = _('Assign selected Cubs to the same den for the next Pack Year')
+    continue_in_same_den_one_more_year.short_description = _(
+        'Assign selected Cubs to the same den for the next Pack Year')
 
 
 @admin.register(models.Adult)
@@ -312,7 +301,7 @@ class AdultAdmin(UserAdmin):
     )
     list_display_links = ('name', 'last_name', 'email')
     list_filter = ('_is_staff', 'is_superuser', AdultsBasedOnCubStatusFilter)
-    list_select_related = ("family", )
+    list_select_related = ("family",)
     ordering = ('last_name', 'nickname', 'first_name')
     readonly_fields = ('date_added', 'last_updated', 'last_login', 'get_children')
     autocomplete_fields = ['family']
@@ -397,23 +386,12 @@ class AdultAdmin(UserAdmin):
     name.admin_order_field = '_name'
 
     def get_children(self, obj):
-        display_text = ", ".join(
-            "<a href={}>{}</a>".format(
-                reverse(
-                    'admin:{}_{}_change'.format(
-                        child._meta.app_label, child._meta.model_name
-                    ),
-                    args=(child.pk,),
-                ),
-                child.get_short_name(),
-            )
-            for child in obj.family.children.all()
-        )
+        children_links = format_html_join(
+            "",
+            "<li><a href={}>{}</a></li>",
+            ((reverse(f'admin:{child._meta.app_label}_{child._meta.model_name}_change', args=(child.pk, )), child.get_short_name()) for child in obj.family.children.all()))
+        return format_html("<ul>{}</ul>", children_links) if children_links else "-"
 
-        if display_text:
-            return mark_safe(display_text)
-        else:
-            return '-'
     get_children.short_description = _('children')
 
 
