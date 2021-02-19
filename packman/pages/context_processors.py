@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
 
 from .models import Page
 
@@ -12,6 +13,7 @@ def populate_navbar(request):
             "location": settings.PACK_LOCATION,
             "tagline": settings.PACK_TAGLINE,
         },
+        "site": get_current_site(request),
     }
     for page in Page.objects.get_visible_content(user=request.user).filter(include_in_nav=True):
         if page.content_blocks.count():
