@@ -81,10 +81,10 @@ class Page(TimeStampedUUIDModel):
         super().clean()
         if self.page and self.include_in_nav:
             self.include_in_nav = False
-            logger.warn(_("Default pages will always appear in navbar. Setting is redundant"))
+            logger.warning(_("Default pages will always appear in navbar. Setting is redundant"))
         if not self.page and not self.slug:
             self.slug = slugify(self.title)
-            logger.warn(
+            logger.warning(
                 _("%(page)s does not include a slug. Setting slug to %(slug)s") % {"page": self, "slug": self.slug})
 
 
