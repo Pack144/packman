@@ -65,10 +65,7 @@ class EventFeed(ICalFeed):
         return item.status
 
     def item_transparency(self, item):
-        if item.status == 'CANCELED':
-            return 'TRANSPARENT'
-        else:
-            return 'OPAQUE'
+        return "TRANSPARENT" if item.status == Event.CANCELED else "OPAQUE"
 
     def item_categories(self, item):
         return (item.category,)
