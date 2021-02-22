@@ -159,6 +159,7 @@ class Category(models.Model):
     HELPING_HANDS = '<i class="fas fa-hands-helping"></i>'
     HEART = '<i class="fas fa-heart"></i>'
     RIBBON = '<i class="fas fa-ribbon"></i>'
+    SCREEN = '<i class="fas fa-desktop"></i>'
     SEEDLING = '<i class="fas fa-seedling"></i>'
     STAR = '<i class="fas fa-star"></i>'
     ICON_CHOICES = (
@@ -177,6 +178,7 @@ class Category(models.Model):
         (HEART, _("Heart")),
         (MEDAL, _("Medal")),
         (RIBBON, _("Ribbon")),
+        (SCREEN, _("Computer Screen")),
         (SEEDLING, _("Seedling")),
         (STAR, _("Star")),
     )
