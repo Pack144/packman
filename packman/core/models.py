@@ -28,7 +28,7 @@ class TimeStampedModel(models.Model):
     """
     date_added = models.DateTimeField(
         _('date added'),
-        auto_now=True,
+        auto_now_add=True,
     )
     last_updated = models.DateTimeField(
         _('last updated'),
