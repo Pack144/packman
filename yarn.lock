@@ -5,14 +5,14 @@ __metadata:
   version: 4
   cacheKey: 7
 
-"@forevolve/bootstrap-dark@npm:^1.0.0-alpha.1091":
-  version: 1.0.0-alpha.1091
-  resolution: "@forevolve/bootstrap-dark@npm:1.0.0-alpha.1091"
+"@forevolve/bootstrap-dark@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@forevolve/bootstrap-dark@npm:1.0.0"
   dependencies:
-    bootstrap: ^4.5.0
+    bootstrap: ^4.6.0
     jquery: ^3.5.1
     popper.js: ^1.16.1
-  checksum: db4255cdc9c694683c23b7eb6684843ce13f849896d7ba7ac4c022a3f5dd30d8cb6e595dc7f7f49b0db65b6e95d22406647b391caf3104cb3f6f8ab7cab59a0f
+  checksum: 5ce5b43be1ee17738c5f30704ed4235cfcf462e96c24131ac4620a6b045b96135761b6fd50df4dd302324fc78d43f45cbfcb04ccfeaed2627cc006108ced7677
   languageName: node
   linkType: hard
 
@@ -20,16 +20,6 @@ __metadata:
   version: 5.15.2
   resolution: "@fortawesome/fontawesome-free@npm:5.15.2"
   checksum: 4f189f7474f28122a4173a344cb9c527b38dc8ecabcfe2eab2af60187679782426e37937afa282cc0d29dd0bd75e0b117d303d8f3491e41b828046f9648b93f5
-  languageName: node
-  linkType: hard
-
-"bootstrap@npm:^4.5.0, bootstrap@npm:^4.6.0":
-  version: 4.6.0
-  resolution: "bootstrap@npm:4.6.0"
-  peerDependencies:
-    jquery: 1.9.1 - 3
-    popper.js: ^1.16.1
-  checksum: 66019b6969b997eb3bcec7276010263df643b2607db00dbbd13f451d6f6d57fa5b563cd9712a4814024e5489faf5e2d73c553a1ebea1b61d0e1ab766e4805229
   languageName: node
   linkType: hard
 
@@ -43,6 +33,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bootstrap@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "bootstrap@npm:4.6.0"
+  peerDependencies:
+    jquery: 1.9.1 - 3
+    popper.js: ^1.16.1
+  checksum: 66019b6969b997eb3bcec7276010263df643b2607db00dbbd13f451d6f6d57fa5b563cd9712a4814024e5489faf5e2d73c553a1ebea1b61d0e1ab766e4805229
+  languageName: node
+  linkType: hard
+
 "bs-custom-file-input@npm:^1.3.4":
   version: 1.3.4
   resolution: "bs-custom-file-input@npm:1.3.4"
@@ -50,10 +50,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jquery@npm:^3.5.0, jquery@npm:^3.6.0":
+  version: 3.6.0
+  resolution: "jquery@npm:3.6.0"
+  checksum: a0a819022a1bdff5efa79bbd9d4d7352de5bd32dabe42108e6ec0797238dba36c09c108e0eea2724f5d03acc1b30ee87d76bec80e15b9510106532292ebe6ba4
+  languageName: node
+  linkType: hard
+
 "jquery@npm:^3.5.1":
   version: 3.5.1
   resolution: "jquery@npm:3.5.1"
   checksum: c50818c84837902a60938c85786feb612f346a9918f7285409d605449460790b3815ad8aaf5806f19e89f1a79b27d327802b421ab354fe213f3fd1801e3562e6
+  languageName: node
+  linkType: hard
+
+"moment-timezone@npm:^0.5.28":
+  version: 0.5.33
+  resolution: "moment-timezone@npm:0.5.33"
+  dependencies:
+    moment: ">= 2.9.0"
+  checksum: d4e72a3514a2885ab26b1cbc640e2f4785c997f9de28bb48bf3994ef137b0a560ca8f07eb07f11121e1223eef0c3bce4bc647b911111481a6a066bbc61285f99
   languageName: node
   linkType: hard
 
@@ -73,17 +89,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moment@npm:~2.24.0":
+  version: 2.24.0
+  resolution: "moment@npm:2.24.0"
+  checksum: 983617bc51c8121a88d9530671fb9e5dc2c71d67ba5bf1b16ebef25b51bd3d1291f17735ac33e8604f4984a275561dfe0fb883664eceacf8f67291ffd26acee9
+  languageName: node
+  linkType: hard
+
 "packman@workspace:.":
   version: 0.0.0-use.local
   resolution: "packman@workspace:."
   dependencies:
-    "@forevolve/bootstrap-dark": ^1.0.0-alpha.1091
+    "@forevolve/bootstrap-dark": ^1.0.0
     "@fortawesome/fontawesome-free": ^5.15.2
     bootstrap: ^4.6.0
     bs-custom-file-input: ^1.3.4
-    jquery: ^3.5.1
+    jquery: ^3.6.0
     popper.js: ^1.16.1
     tempusdominus-bootstrap-4: ^5.39.0
+    tempusdominus-core: ^5.19.0
   languageName: unknown
   linkType: soft
 
@@ -111,5 +135,20 @@ __metadata:
     popper.js: ^1.16.1
     tempusdominus-core: 5.19.0
   checksum: 8a3308bb77214bb7e869998c0079f00b38c5a17a6f1c8fe5d63a52061bc70e6a06099dac42ad593e710a64e69d8deae61e3899dc98bcf609f422a7ac896a6401
+  languageName: node
+  linkType: hard
+
+"tempusdominus-core@npm:^5.19.0":
+  version: 5.19.0
+  resolution: "tempusdominus-core@npm:5.19.0"
+  dependencies:
+    jquery: ^3.5.0
+    moment: ~2.24.0
+    moment-timezone: ^0.5.28
+  peerDependencies:
+    jquery: ^3.0
+    moment: ^2.10
+    moment-timezone: ^0.5.0
+  checksum: a992b0d4baf8c4a3f90ae5f1c93d82b98d9947304a9cb71aecebdfd26fd6f9322f92a0618280341aa57b7659b04c8a63ea580560be506dc0e54fd51f8da13591
   languageName: node
   linkType: hard
