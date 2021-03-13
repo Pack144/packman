@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (
-    AdultCreate, AdultDetail, AdultList, AdultUpdate, MemberList,
+    AdultCreate, AdultDetail, AdultList, AdultUpdate, MemberList, MyFamilyDetail,
     MemberSearchResultsList, ScoutCreate, ScoutDetail, ScoutList, ScoutUpdate,
 )
 
@@ -57,4 +57,5 @@ urlpatterns = [
         MemberSearchResultsList.as_view(),
         name='search_results',
     ),
+    path("my-family/", MyFamilyDetail.as_view(), name="my-family"),
 ]
