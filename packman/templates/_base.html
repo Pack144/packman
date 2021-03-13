@@ -106,7 +106,7 @@
                   {{ user.get_short_name }} <i class="fas fa-user-circle ml-2"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarMemberDropdown">
-                  <a class="dropdown-item" href="{{ user.get_absolute_url }}">{% trans 'My Family' %}</a>
+                  <a class="dropdown-item" href="{% url 'membership:my-family' %}">{% trans 'My Family' %}</a>
                   <a class="dropdown-item" href="{% url 'password_change' %}">{% trans 'Change My Password' %}</a>
                   {% if user.is_staff %}<a class="dropdown-item" href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>{% endif %}
                   <div class="dropdown-divider"></div>
