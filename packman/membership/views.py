@@ -264,3 +264,13 @@ class ScoutUpdate(LoginRequiredMixin, UpdateView):
     form_class = ScoutForm
     context_object_name = 'member'
     template_name = 'membership/scout_form.html'
+
+
+class MyFamilyDetail(AdultDetail):
+    """
+    An extension of the AdultDetail page that displays the currently
+    logged in user's details.
+    """
+
+    def get_object(self, queryset=None):
+        return self.request.user
