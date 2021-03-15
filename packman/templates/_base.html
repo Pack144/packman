@@ -138,7 +138,7 @@
         <button type="button" class="close" data-dismiss="alert" aria-label={% trans 'close' %}>
           <span aria-hidden="true"><i class="fas fa-times-circle"></i></span>
         </button>
-        {{ message }}
+        {{ message|safe }}
       </div>
     {% endfor %}
   {% endif %}

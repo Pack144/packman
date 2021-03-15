@@ -1,8 +1,9 @@
 import logging
 
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import (
@@ -59,6 +60,24 @@ class HomePageView(PageDetailView):
         obj, created = self.get_queryset().get_or_create(page=Page.HOME)
         if created:
             logger.info = _("Home page was requested but none was found in the database.")
+
+        if self.request.user.is_authenticated and (
+            (
+                not self.request.user.family
+                or not self.request.user.family.children.exists()
+            )
+        ):
+            messages.add_message(
+                self.request,
+                messages.INFO,
+                _(
+                    "<strong>It's awfully lonely in here.</strong> You should visit your "
+                    "<a class='alert-link' href='%(my-family)s'>My Family</a> page to "
+                    "<a class='alert-link' href='%(add-cub)s'>nominate your Cub</a> for "
+                    "membership and add more family members."
+                ) % {"my-family": reverse("membership:my-family"), "add-cub": reverse("membership:scout_create")},
+            )
+
         return obj
 
     def get_context_data(self, **kwargs):
