@@ -29,3 +29,19 @@ class EventDetailView(ActiveMemberOrContributorTest, DetailView):
     Display the details of a specific event
     """
     model = Event
+
+
+class EventArchiveView(ActiveMemberOrContributorTest, ListView):
+    """
+    Display a list of past events
+    """
+    model = Event
+    paginate_by = 10
+    context_object_name = 'events'
+    template_name = "calendars/event_archive.html"
+
+    def get_queryset(self):
+        """
+        Return a queryset containing all events for the next 6 months
+        """
+        return Event.objects.filter(start__lt=timezone.now())
