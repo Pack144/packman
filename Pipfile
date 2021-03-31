@@ -9,6 +9,7 @@ mysql-connector = "*"
 blowfish = "*"
 isort = "*"
 django-rename-app = "*"
+curlylint = "*"
 
 [packages]
 argon2-cffi = "*"
