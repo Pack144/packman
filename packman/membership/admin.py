@@ -142,14 +142,14 @@ class ScoutAdmin(admin.ModelAdmin):
         'date_added',
     )
     list_display_links = ('name', 'last_name')
-    list_filter = ('status', AnimalRankListFilter, 'den_memberships__den')
+    list_filter = ('status', AnimalRankListFilter, 'den_memberships__den', "date_added")
     readonly_fields = (
         'date_added',
         'last_updated',
         'reference',
         'member_comments',
         'grade',
-        'get_adults'
+        'get_adults',
     )
     autocomplete_fields = ['family', 'school']
     inlines = [DenMembershipInline]
@@ -294,13 +294,13 @@ class AdultAdmin(UserAdmin):
         'last_name',
         'email',
         'active',
-        'role',
         'is_staff',
         'is_superuser',
-        'last_login'
+        'last_login',
+        "date_added",
     )
     list_display_links = ('name', 'last_name', 'email')
-    list_filter = ('_is_staff', 'is_superuser', AdultsBasedOnCubStatusFilter)
+    list_filter = ('_is_staff', 'is_superuser', AdultsBasedOnCubStatusFilter, "role", "date_added")
     list_select_related = ("family",)
     ordering = ('last_name', 'nickname', 'first_name')
     readonly_fields = ('date_added', 'last_updated', 'last_login', 'get_children')
