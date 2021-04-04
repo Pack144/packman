@@ -4,15 +4,49 @@
 {% block title %}{{ block.super }}: {% if page %}{{ page.title }}{% else %}Sign Up{% endif %}{% endblock %}
 
 {% block content %}
-  <h1>{% if page %}{{ page.title }}{% else %}Sign Up {% endif %}</h1>
+  <div class="row">
+    <div class="col">
+      <h1>{% if page %}{{ page.title }}{% else %}Sign Up {% endif %}</h1>
+
+    </div>
+    <div class="col text-right">
+      <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#instructionsModal" title="{% translate 'Show form instructions' %}">
+        <i class="fas fa-question-circle"></i>
+      </button>
+
+    </div>
+  </div>
+
   {% if user.is_authenticated %}
     <div class="alert alert-danger"><strong>{% trans 'Note' %}:</strong>
       {% blocktrans with user.get_absolute_url as family_url %}You are already logged in as {{ user }}. If you want to submit an application for a new Cub or
-        add another family member, please visit your <a class="alert-link" href="{{ family_url }}">My Family</a> page.{% endblocktrans %}
+        add another family member, please visit your
+        <a class="alert-link" href="{{ family_url }}">My Family</a> page.{% endblocktrans %}
     </div>
   {% else %}
-    {% include 'pages/snippets/content_blocks.html' %}
+    <div class="modal" id="instructionsModal" tabindex="-1">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          {% for content in page.content_blocks.all %}
+            <div class="modal-header">
+              <h2>{{ content.heading }}</h2>
+              <button type="button" class="close" data-dismiss="modal" aria-label="{% translate 'Close' %}">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              {{ content.body|safe }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
     <form method="post" enctype="multipart/form-data">
+      {% blocktranslate %}
+        <p class="lead">Start off by telling us a little bit about yourself and creating an account. Once you have successfully created
+          your account and logged in to the website, you can add more family members and submit an application for your Cub Scout.</p>
+      {% endblocktranslate %}
+
       {% csrf_token %}
       <fieldset class="mt-3" id="personal-details">
         {% crispy form %}
@@ -41,6 +75,17 @@
 
 {% block js %}
   {{ block.super }}
+
+  <script type="text/javascript">
+    $(window).on('load', function () {
+      $('#instructionsModal').modal('show');
+    });
+
+    $(function () {
+      $('[data-toggle="modal"]').tooltip()
+    })
+  </script>
+
   <script src="{% static "dynamic_formsets/jquery.formset.js" %}" type="text/javascript"></script>
   <script type="text/javascript">
     $('#{{ address_formset.prefix }}').formset({
