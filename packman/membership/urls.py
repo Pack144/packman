@@ -1,61 +1,70 @@
 from django.urls import path
 
 from .views import (
-    AdultCreate, AdultDetail, AdultList, AdultUpdate, MemberList, MyFamilyDetail,
-    MemberSearchResultsList, ScoutCreate, ScoutDetail, ScoutList, ScoutUpdate,
+    AdultCreate,
+    AdultDetail,
+    AdultList,
+    AdultUpdate,
+    MemberList,
+    MyFamilyDetail,
+    MemberSearchResultsList,
+    ScoutCreate,
+    ScoutDetail,
+    ScoutList,
+    ScoutUpdate,
 )
 
-app_name = 'membership'
+app_name = "membership"
 urlpatterns = [
     path(
-        '',
+        "",
         MemberList.as_view(),
-        name='all',
+        name="all",
     ),
     path(
-        'adults/',
+        "adults/",
         AdultList.as_view(),
-        name='parents',
+        name="parents",
     ),
     path(
-        'adult/add/',
+        "adult/add/",
         AdultCreate.as_view(),
-        name='parent_create',
+        name="parent_create",
     ),
     path(
-        'adults/<slug:slug>/',
+        "adults/<slug:slug>/",
         AdultDetail.as_view(),
-        name='parent_detail',
+        name="parent_detail",
     ),
     path(
-        'adult/<uuid:pk>/update/',
+        "adult/<uuid:pk>/update/",
         AdultUpdate.as_view(),
-        name='parent_update',
+        name="parent_update",
     ),
     path(
-        'cubs/',
+        "cubs/",
         ScoutList.as_view(),
-        name='scouts',
+        name="scouts",
     ),
     path(
-        'cub/add/',
+        "cub/add/",
         ScoutCreate.as_view(),
-        name='scout_create',
+        name="scout_create",
     ),
     path(
-        'cubs/<slug:slug>/',
+        "cubs/<slug:slug>/",
         ScoutDetail.as_view(),
-        name='scout_detail',
+        name="scout_detail",
     ),
     path(
-        'cub/<uuid:pk>/update/',
+        "cub/<uuid:pk>/update/",
         ScoutUpdate.as_view(),
-        name='scout_update',
+        name="scout_update",
     ),
     path(
-        'search/',
+        "search/",
         MemberSearchResultsList.as_view(),
-        name='search_results',
+        name="search_results",
     ),
     path("my-family/", MyFamilyDetail.as_view(), name="my-family"),
 ]

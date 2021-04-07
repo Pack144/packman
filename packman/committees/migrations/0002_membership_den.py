@@ -9,14 +9,21 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('dens', '0001_initial'),
-        ('committees', '0001_initial'),
+        ("dens", "0001_initial"),
+        ("committees", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='membership',
-            name='den',
-            field=models.ForeignKey(blank=True, help_text='If the member is a Den Leader, which Den # are they supporting?', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='leadership', to='dens.Den'),
+            model_name="membership",
+            name="den",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="If the member is a Den Leader, which Den # are they supporting?",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="leadership",
+                to="dens.Den",
+            ),
         ),
     ]

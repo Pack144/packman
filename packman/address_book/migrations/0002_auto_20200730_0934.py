@@ -11,28 +11,52 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('address_book', '0001_initial'),
+        ("address_book", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='phonenumber',
-            name='member',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='phone_numbers', to=settings.AUTH_USER_MODEL),
+            model_name="phonenumber",
+            name="member",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="phone_numbers",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='phonenumber',
-            name='venue',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='phone_numbers', to='address_book.Venue'),
+            model_name="phonenumber",
+            name="venue",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="phone_numbers",
+                to="address_book.Venue",
+            ),
         ),
         migrations.AddField(
-            model_name='address',
-            name='member',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='addresses', to=settings.AUTH_USER_MODEL),
+            model_name="address",
+            name="member",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="addresses",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='address',
-            name='venue',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='address', to='address_book.Venue'),
+            model_name="address",
+            name="venue",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="address",
+                to="address_book.Venue",
+            ),
         ),
     ]

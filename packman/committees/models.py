@@ -13,6 +13,7 @@ class Committee(TimeStampedUUIDModel):
     Define a list of ongoing committees on which Adults can offer their
     services to assist with pack operations.
     """
+
     name = models.CharField(
         max_length=64,
     )
@@ -21,8 +22,8 @@ class Committee(TimeStampedUUIDModel):
         default="",
     )
     members = models.ManyToManyField(
-        'membership.Adult',
-        through='Membership',
+        "membership.Adult",
+        through="Membership",
     )
     leadership = models.BooleanField(
         _("Pack Leadership"),
@@ -32,14 +33,14 @@ class Committee(TimeStampedUUIDModel):
     is_staff = models.BooleanField(
         _("Staff"),
         default=False,
-        help_text=_("Designates whether members can log into this admin site.")
+        help_text=_("Designates whether members can log into this admin site."),
     )
     slug = models.SlugField(
         unique=True,
     )
 
     class Meta:
-        ordering = ['-leadership', 'name']
+        ordering = ["-leadership", "name"]
         verbose_name = _("Committee")
         verbose_name_plural = _("Committees")
 
@@ -47,7 +48,7 @@ class Committee(TimeStampedUUIDModel):
         return self.name
 
     def get_absolute_url(self):
-        return reverse_lazy('committees:detail', args=[self.slug])
+        return reverse_lazy("committees:detail", args=[self.slug])
 
 
 class Membership(TimeStampedUUIDModel):
@@ -55,6 +56,7 @@ class Membership(TimeStampedUUIDModel):
     Tracks members who have signed up for a committee, the year of their
     service, and their position on the committee.
     """
+
     CHAIR = 1
     MEMBER = 2
     APPRENTICE = 3
@@ -71,9 +73,9 @@ class Membership(TimeStampedUUIDModel):
     ]
 
     member = models.ForeignKey(
-        'membership.Adult',
+        "membership.Adult",
         on_delete=models.CASCADE,
-        related_name='committee_memberships',
+        related_name="committee_memberships",
     )
     committee = models.ForeignKey(
         Committee,
@@ -84,24 +86,22 @@ class Membership(TimeStampedUUIDModel):
         default=MEMBER,
     )
     den = models.ForeignKey(
-        'dens.Den',
+        "dens.Den",
         on_delete=models.CASCADE,
-        related_name='leadership',
+        related_name="leadership",
         blank=True,
         null=True,
-        help_text=_(
-            "If the member is a Den Leader, which Den # are they supporting?"
-        ),
+        help_text=_("If the member is a Den Leader, which Den # are they supporting?"),
     )
     year_served = models.ForeignKey(
         PackYear,
         on_delete=models.CASCADE,
         default=PackYear.get_current_pack_year_year,
-        related_name='committee_memberships',
+        related_name="committee_memberships",
     )
 
     class Meta:
-        ordering = ['year_served', 'den', 'position', 'member']
+        ordering = ["year_served", "den", "position", "member"]
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
 
