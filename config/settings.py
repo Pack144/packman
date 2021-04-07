@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 from pathlib import Path
-from builtins import ImportError
 
 import environ
 
@@ -366,11 +365,3 @@ EMAIL_SUBJECT_PREFIX = env(
 # https://django-environ.readthedocs.io/en/latest/#nested-lists
 ADMINS = [x.split(":") for x in env.list("DJANGO_ADMINS", default=[])]
 MANAGERS = ADMINS
-
-# Allow for a private local_settings.py file to override anything in this settings.py
-# local_settings.py is not included in the project and will not be part of the git repository
-# use it to store your production settings such as SECRET_KEY, DEBUG, DATABASES, EMAIL_BACKEND, etc.
-try:
-    from .local_settings import *
-except ImportError:
-    pass
