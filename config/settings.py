@@ -9,20 +9,19 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-import os
+from pathlib import Path
 from builtins import ImportError
 
 import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-APPS_DIR = os.path.join(BASE_DIR, "packman")
+BASE_DIR = Path(__file__).resolve().parent.parent
+APPS_DIR = BASE_DIR / "packman"
 
 env = environ.Env()
-READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
-if READ_DOT_ENV_FILE:
-    # OS environment variables take precedence over variables from .env
-    env.read_env(os.path.join(BASE_DIR, ".env"))
+env_file = BASE_DIR / ".env"
+if env_file.is_file():
+    env.read_env(str(env_file))
 
 
 # GENERAL
@@ -92,7 +91,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(APPS_DIR, "templates"),
+            APPS_DIR / "templates",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -173,12 +172,12 @@ USE_TZ = True
 # -----------------------------------------------------------------------------
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "node_modules"),
-    os.path.join(APPS_DIR, "static"),
+    BASE_DIR / "node_modules",
+    APPS_DIR / "static",
 ]
-STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=os.path.join(BASE_DIR, "static_files"))
+STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=BASE_DIR / "static_files")
 MEDIA_URL = "/media/"
-MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=os.path.join(BASE_DIR, "media"))
+MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=BASE_DIR / "media")
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "pages:home"
@@ -319,7 +318,7 @@ AUTH_USER_MODEL = "membership.Adult"
 #
 # }
 TINYMCE_INCLUDE_JQUERY = False
-TINYMCE_JS_URL = os.path.join(STATIC_URL, "tinymce/tinymce.min.js")
+TINYMCE_JS_URL = f"{STATIC_URL}tinymce/tinymce.min.js"
 TINYMCE_DEFAULT_CONFIG = {
     "theme": "silver",
     "height": 600,
