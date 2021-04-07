@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 def postgres_migration_prep(apps, schema_editor):
     Document = apps.get_model("documents", "document")
-    fields = ("description", )
+    fields = ("description",)
 
     for field in fields:
         filter_param = {"{}__isnull".format(field): True}
@@ -16,7 +16,7 @@ def postgres_migration_prep(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('documents', '0001_initial'),
+        ("documents", "0001_initial"),
     ]
 
     operations = [

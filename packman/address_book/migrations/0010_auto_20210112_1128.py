@@ -6,17 +6,21 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('address_book', '0009_auto_20210112_1124'),
+        ("address_book", "0009_auto_20210112_1124"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='category',
-            options={'ordering': ['name'], 'verbose_name': 'category', 'verbose_name_plural': 'categories'},
+            name="category",
+            options={
+                "ordering": ["name"],
+                "verbose_name": "category",
+                "verbose_name_plural": "categories",
+            },
         ),
         migrations.RenameField(
-            model_name='category',
-            old_name='type',
-            new_name='name',
+            model_name="category",
+            old_name="type",
+            new_name="name",
         ),
     ]

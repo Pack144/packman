@@ -7,38 +7,52 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('documents', '0003_auto_20201030_1552'),
+        ("documents", "0003_auto_20201030_1552"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='category',
-            name='date_added',
-            field=models.DateTimeField(auto_now=True, verbose_name='date added'),
+            model_name="category",
+            name="date_added",
+            field=models.DateTimeField(auto_now=True, verbose_name="date added"),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='last_updated',
-            field=models.DateTimeField(auto_now=True, verbose_name='last updated'),
+            model_name="category",
+            name="last_updated",
+            field=models.DateTimeField(auto_now=True, verbose_name="last updated"),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='uuid',
-            field=models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True, verbose_name='UUID'),
+            model_name="category",
+            name="uuid",
+            field=models.UUIDField(
+                default=uuid.uuid4,
+                editable=False,
+                primary_key=True,
+                serialize=False,
+                unique=True,
+                verbose_name="UUID",
+            ),
         ),
         migrations.AlterField(
-            model_name='document',
-            name='date_added',
-            field=models.DateTimeField(auto_now=True, verbose_name='date added'),
+            model_name="document",
+            name="date_added",
+            field=models.DateTimeField(auto_now=True, verbose_name="date added"),
         ),
         migrations.AlterField(
-            model_name='document',
-            name='last_updated',
-            field=models.DateTimeField(auto_now=True, verbose_name='last updated'),
+            model_name="document",
+            name="last_updated",
+            field=models.DateTimeField(auto_now=True, verbose_name="last updated"),
         ),
         migrations.AlterField(
-            model_name='document',
-            name='uuid',
-            field=models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True, verbose_name='UUID'),
+            model_name="document",
+            name="uuid",
+            field=models.UUIDField(
+                default=uuid.uuid4,
+                editable=False,
+                primary_key=True,
+                serialize=False,
+                unique=True,
+                verbose_name="UUID",
+            ),
         ),
     ]

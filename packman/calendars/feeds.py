@@ -28,7 +28,7 @@ class EventFeed(ICalFeed):
 
     def file_name(self, obj):
         """ Generate a unique calendar file per family """
-        return f'{obj.uuid}.ics'
+        return f"{obj.uuid}.ics"
 
     def items(self, obj):
         """

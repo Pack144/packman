@@ -12,24 +12,35 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('calendars', '0001_initial'),
-        ('committees', '0002_membership_den'),
+        ("calendars", "0001_initial"),
+        ("committees", "0002_membership_den"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='membership',
-            name='member',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='committees', to=settings.AUTH_USER_MODEL),
+            model_name="membership",
+            name="member",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="committees",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='membership',
-            name='year_served',
-            field=models.ForeignKey(default=packman.calendars.models.PackYear.get_current_pack_year_year, on_delete=django.db.models.deletion.CASCADE, related_name='committee_memberships', to='calendars.PackYear'),
+            model_name="membership",
+            name="year_served",
+            field=models.ForeignKey(
+                default=packman.calendars.models.PackYear.get_current_pack_year_year,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="committee_memberships",
+                to="calendars.PackYear",
+            ),
         ),
         migrations.AddField(
-            model_name='committee',
-            name='members',
-            field=models.ManyToManyField(through='committees.Membership', to=settings.AUTH_USER_MODEL),
+            model_name="committee",
+            name="members",
+            field=models.ManyToManyField(
+                through="committees.Membership", to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]
