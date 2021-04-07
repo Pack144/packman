@@ -32,3 +32,6 @@ known_first_party = "packman"
 no_lines_before = "LOCALFOLDER"
 sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 skip = "migrations"
+
+[tool.black]
+extend-exclude = 'migrations'
