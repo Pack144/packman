@@ -11,7 +11,10 @@ class ContentBlockInline(admin.StackedInline):
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     inlines = [ContentBlockInline]
-    list_display = ('title', 'page', 'last_updated')
-    list_display_links = ('title', 'page')
-    prepopulated_fields = {'slug': ('title', )}
-    search_fields = ['title', 'published_on', ]
+    list_display = ("title", "page", "last_updated")
+    list_display_links = ("title", "page")
+    prepopulated_fields = {"slug": ("title",)}
+    search_fields = [
+        "title",
+        "published_on",
+    ]

@@ -6,26 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pages', '0009_auto_20201103_1255'),
+        ("pages", "0009_auto_20201103_1255"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='DynamicPage',
+            name="DynamicPage",
         ),
         migrations.AddField(
-            model_name='page',
-            name='categories',
-            field=models.ManyToManyField(blank=True, related_name='pages', to='pages.Category'),
+            model_name="page",
+            name="categories",
+            field=models.ManyToManyField(
+                blank=True, related_name="pages", to="pages.Category"
+            ),
         ),
         migrations.AddField(
-            model_name='page',
-            name='include_in_nav',
-            field=models.BooleanField(default=False, help_text="Checking this option will add this page to the site's menu bar.", verbose_name='Include in navigation'),
+            model_name="page",
+            name="include_in_nav",
+            field=models.BooleanField(
+                default=False,
+                help_text="Checking this option will add this page to the site's menu bar.",
+                verbose_name="Include in navigation",
+            ),
         ),
         migrations.AddField(
-            model_name='page',
-            name='slug',
+            model_name="page",
+            name="slug",
             field=models.SlugField(blank=True, null=True, unique=True),
         ),
     ]

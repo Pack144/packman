@@ -20,10 +20,11 @@ class Page(TimeStampedUUIDModel):
     """
     Base model used to define a web page. Used by Dynamic and Static pages.
     """
-    HOME = 'HOME'
-    ABOUT = 'ABOUT'
-    HISTORY = 'HISTORY'
-    SIGNUP = 'SIGNUP'
+
+    HOME = "HOME"
+    ABOUT = "ABOUT"
+    HISTORY = "HISTORY"
+    SIGNUP = "SIGNUP"
     PAGE_CHOICES = (
         (HOME, _("Home")),
         (ABOUT, _("About Us")),
@@ -58,7 +59,7 @@ class Page(TimeStampedUUIDModel):
     objects = PageManager()
 
     class Meta:
-        indexes = [models.Index(fields=['title'])]
+        indexes = [models.Index(fields=["title"])]
         verbose_name = _("Page")
         verbose_name_plural = _("Pages")
 
@@ -67,25 +68,29 @@ class Page(TimeStampedUUIDModel):
 
     def get_absolute_url(self):
         if self.page == self._meta.model.HOME:
-            return reverse_lazy('pages:home')
+            return reverse_lazy("pages:home")
         elif self.page == self._meta.model.ABOUT:
-            return reverse_lazy('pages:about')
+            return reverse_lazy("pages:about")
         elif self.page == self._meta.model.HISTORY:
-            return reverse_lazy('pages:history')
+            return reverse_lazy("pages:history")
         elif self.page == self._meta.model.SIGNUP:
-            return reverse_lazy('pages:signup')
+            return reverse_lazy("pages:signup")
         else:
-            return reverse_lazy('pages:detail', kwargs={'slug': self.slug})
+            return reverse_lazy("pages:detail", kwargs={"slug": self.slug})
 
     def clean(self):
         super().clean()
         if self.page and self.include_in_nav:
             self.include_in_nav = False
-            logger.warning(_("Default pages will always appear in navbar. Setting is redundant"))
+            logger.warning(
+                _("Default pages will always appear in navbar. Setting is redundant")
+            )
         if not self.page and not self.slug:
             self.slug = slugify(self.title)
             logger.warning(
-                _("%(page)s does not include a slug. Setting slug to %(slug)s") % {"page": self, "slug": self.slug})
+                _("%(page)s does not include a slug. Setting slug to %(slug)s")
+                % {"page": self, "slug": self.slug}
+            )
 
 
 class ContentBlock(TimeStampedUUIDModel):
@@ -94,13 +99,14 @@ class ContentBlock(TimeStampedUUIDModel):
     visibility, allowing for different content to be displayed based on whether
     a user is logged in and has permission.
     """
-    PUBLIC = 'P'
-    PRIVATE = 'S'
-    ANONYMOUS = 'A'
+
+    PUBLIC = "P"
+    PRIVATE = "S"
+    ANONYMOUS = "A"
     VISIBILITY_CHOICES = [
         (PUBLIC, _("Public")),
         (PRIVATE, _("Private")),
-        (ANONYMOUS, _("Anonymous"))
+        (ANONYMOUS, _("Anonymous")),
     ]
 
     heading = models.CharField(
@@ -116,13 +122,14 @@ class ContentBlock(TimeStampedUUIDModel):
             "Private content will only be viewable to active members or "
             "contributors. Public content is viewable by anyone on the "
             "website, including applicants, alumni, and anonymous visitors. "
-            "Anonymous content will be displayed if no user is logged-in."),
+            "Anonymous content will be displayed if no user is logged-in."
+        ),
     )
     body = HTMLField()
     page = models.ForeignKey(
         Page,
         on_delete=models.CASCADE,
-        related_name='content_blocks',
+        related_name="content_blocks",
     )
 
     published_on = models.DateTimeField(
@@ -134,8 +141,8 @@ class ContentBlock(TimeStampedUUIDModel):
     objects = ContentBlockManager()
 
     class Meta:
-        indexes = [models.Index(fields=['heading', 'published_on'])]
-        ordering = ['-published_on']
+        indexes = [models.Index(fields=["heading", "published_on"])]
+        ordering = ["-published_on"]
         verbose_name = _("Content Block")
         verbose_name_plural = _("Content Blocks")
 

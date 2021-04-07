@@ -6,13 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pages', '0005_auto_20201030_1415'),
+        ("pages", "0005_auto_20201030_1415"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='contentblocks',
-            options={'ordering': ['-published_on'], 'verbose_name': 'Content Block',
-                     'verbose_name_plural': 'Content Blocks'},
+            name="contentblocks",
+            options={
+                "ordering": ["-published_on"],
+                "verbose_name": "Content Block",
+                "verbose_name_plural": "Content Blocks",
+            },
         ),
     ]
