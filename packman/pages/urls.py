@@ -1,26 +1,15 @@
 from django.urls import path
 
-from .views import (
-    AboutPageView,
-    ContactPageView,
-    PageUpdateView,
-    PageDetailView,
-    HistoryPageView,
-    HomePageView,
-    SignUpPageView,
-)
+from . import views
+
 
 app_name = "pages"
 urlpatterns = [
-    path(
-        "",
-        HomePageView.as_view(),
-        name="home",
-    ),
-    path("about/", AboutPageView.as_view(), name="about"),
-    path("history/", HistoryPageView.as_view(), name="history"),
-    path("signup/", SignUpPageView.as_view(), name="signup"),
-    path("contact-us/", ContactPageView.as_view(), name="contact"),
-    path("<slug:slug>/", PageDetailView.as_view(), name="detail"),
-    path("<slug:slug>/edit", PageUpdateView.as_view(), name="update"),
+    path("", views.HomePageView.as_view(), name="home",),
+    path("about/", views.AboutPageView.as_view(), name="about"),
+    path("history/", views.HistoryPageView.as_view(), name="history"),
+    path("signup/", views.SignUpPageView.as_view(), name="signup"),
+    path("contact-us/", views.ContactPageView.as_view(), name="contact"),
+    path("<slug:slug>/", views.PageDetailView.as_view(), name="detail"),
+    path("<slug:slug>/edit", views.PageUpdateView.as_view(), name="update"),
 ]
