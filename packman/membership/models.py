@@ -30,30 +30,24 @@ class Member(models.Model):
     """
 
     # Define static options for gender
-    MALE = 'M'
-    FEMALE = 'F'
-    OTHER = 'O'
+    MALE = "M"
+    FEMALE = "F"
+    OTHER = "O"
     GENDER_CHOICES = (
         (MALE, _("Male")),
         (FEMALE, _("Female")),
-        (OTHER, _("Prefer not to say"))
+        (OTHER, _("Prefer not to say")),
     )
 
     # Personal information
-    first_name = models.CharField(
-        _("First Name"),
-        max_length=30
-    )
+    first_name = models.CharField(_("First Name"), max_length=30)
     middle_name = models.CharField(
         _("Middle Name"),
         max_length=32,
         blank=True,
         default="",
     )
-    last_name = models.CharField(
-        _("Last Name"),
-        max_length=150
-    )
+    last_name = models.CharField(_("Last Name"), max_length=150)
     suffix = models.CharField(
         _("Suffix"),
         max_length=8,
@@ -74,7 +68,7 @@ class Member(models.Model):
         _("Gender"),
         max_length=1,
         choices=GENDER_CHOICES,
-        default='',
+        default="",
     )
     photo = ThumbnailerImageField(
         _("Headshot Photo"),
@@ -88,11 +82,7 @@ class Member(models.Model):
             "members and are not shared."
         ),
     )
-    date_of_birth = models.DateField(
-        _("Birthday"),
-        blank=True,
-        null=True
-    )
+    date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
 
     # Administrative
     slug = models.SlugField(
@@ -107,14 +97,11 @@ class Member(models.Model):
         help_text=_(
             "Used by pack leadership to keep notes about a specific member. "
             "This information is not generally disclosed to the member unless "
-            "they are granted access to Membership.")
+            "they are granted access to Membership."
+        ),
     )
 
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(
         auto_now_add=True,
     )
@@ -123,14 +110,12 @@ class Member(models.Model):
     )
 
     class Meta:
-        indexes = [models.Index(fields=[
-            'first_name',
-            'middle_name',
-            'nickname',
-            'last_name',
-            'gender'
-        ])]
-        ordering = ['last_name', 'nickname', 'first_name']
+        indexes = [
+            models.Index(
+                fields=["first_name", "middle_name", "nickname", "last_name", "gender"]
+            )
+        ]
+        ordering = ["last_name", "nickname", "first_name"]
 
     def __str__(self):
         return self.get_full_name()
@@ -153,35 +138,28 @@ class Member(models.Model):
                 )
             elif self.suffix:
                 candidates.append(
-                    f"{self.first_name} "
-                    f"{self.last_name} "
-                    f"{self.suffix}"
+                    f"{self.first_name} " f"{self.last_name} " f"{self.suffix}"
                 )
             elif self.middle_name:
                 candidates.append(
-                    f"{self.first_name} "
-                    f"{self.middle_name[0]} "
-                    f"{self.last_name}"
+                    f"{self.first_name} " f"{self.middle_name[0]} " f"{self.last_name}"
                 )
                 candidates.append(
-                    f"{self.first_name} "
-                    f"{self.middle_name} "
-                    f"{self.last_name}"
+                    f"{self.first_name} " f"{self.middle_name} " f"{self.last_name}"
                 )
             self.choose_slug(candidates=candidates)
             if not self.slug:
                 # None of the normal candidates seem to have worked or we would
                 # have a slug now. Start adding digits to the end of their name
-                candidates = [f"{self.get_full_name()} {i}" for i in
-                              range(1, 100)]
+                candidates = [f"{self.get_full_name()} {i}" for i in range(1, 100)]
                 self.choose_slug(candidates=candidates)
         return super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        if hasattr(self, 'adult'):
-            return reverse('membership:parent_detail', kwargs={'slug': self.slug})
-        elif hasattr(self, 'scout'):
-            return reverse('membership:scout_detail', kwargs={'slug': self.slug})
+        if hasattr(self, "adult"):
+            return reverse("membership:parent_detail", kwargs={"slug": self.slug})
+        elif hasattr(self, "scout"):
+            return reverse("membership:scout_detail", kwargs={"slug": self.slug})
         else:
             return None
 
@@ -210,13 +188,17 @@ class Member(models.Model):
         """ If we have a birthday, calculate the current age of the member. """
         if self.date_of_birth:
             today = timezone.now()
-            return today.year - self.date_of_birth.year - (
-                # This will calculate a 1 if the date hasn't come yet this year
-                (today.month, today.day) <
-                (self.date_of_birth.month, self.date_of_birth.day)
+            return (
+                today.year
+                - self.date_of_birth.year
+                - (
+                    # This will calculate a 1 if the date hasn't come yet this year
+                    (today.month, today.day)
+                    < (self.date_of_birth.month, self.date_of_birth.day)
+                )
             )
 
-    age.admin_order_field = 'date_of_birth'
+    age.admin_order_field = "date_of_birth"
 
     @property
     def short_name(self):
@@ -225,6 +207,7 @@ class Member(models.Model):
 
 class Family(models.Model):
     """ Track the relationship between members """
+
     name = models.CharField(
         max_length=64,
         blank=True,
@@ -238,7 +221,8 @@ class Family(models.Model):
         help_text=_(
             "Used by pack leadership to keep notes about a specific family. "
             "This information is not generally disclosed to members unless "
-            "they are granted access to Membership."),
+            "they are granted access to Membership."
+        ),
     )
 
     uuid = models.UUIDField(
@@ -261,8 +245,8 @@ class Family(models.Model):
     objects = FamilyManager()
 
     class Meta:
-        indexes = [models.Index(fields=['name'])]
-        ordering = ['date_added']
+        indexes = [models.Index(fields=["name"])]
+        ordering = ["date_added"]
         verbose_name = _("Family")
         verbose_name_plural = _("Families")
 
@@ -287,27 +271,24 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
     """
 
     # Define the various roles an adult member can have within the Pack
-    PARENT = 'P'
-    GUARDIAN = 'G'
-    CONTRIBUTOR = 'C'
+    PARENT = "P"
+    GUARDIAN = "G"
+    CONTRIBUTOR = "C"
     ROLE_CHOICES = (
         (PARENT, _("Parent")),
         (GUARDIAN, _("Guardian")),
         (CONTRIBUTOR, _("Friend of the Pack")),
     )
 
-    email = models.EmailField(
-        _('Email Address'),
-        unique=True
-    )
+    email = models.EmailField(_("Email Address"), unique=True)
     is_published = models.BooleanField(
-        _('Published'),
+        _("Published"),
         default=True,
         help_text=_("Display this address to other members of the pack."),
     )
 
     role = models.CharField(
-        _('Role'),
+        _("Role"),
         max_length=1,
         choices=ROLE_CHOICES,
         default=PARENT,
@@ -315,7 +296,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
     family = models.ForeignKey(
         Family,
         on_delete=models.CASCADE,
-        related_name='adults',
+        related_name="adults",
         blank=True,
         null=True,
     )
@@ -324,9 +305,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
     _is_staff = models.BooleanField(
         _("Staff"),
         default=False,
-        help_text=_(
-            "Designates whether the user can log into this admin site."
-        ),
+        help_text=_("Designates whether the user can log into this admin site."),
     )
     is_active = models.BooleanField(
         _("Active"),
@@ -337,13 +316,13 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
         ),
     )
 
-    USERNAME_FIELD = 'email'
-    EMAIL_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    USERNAME_FIELD = "email"
+    EMAIL_FIELD = "email"
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     class Meta:
-        indexes = [models.Index(fields=['role', 'email', 'family'])]
-        ordering = ['last_name', 'nickname', 'first_name']
+        indexes = [models.Index(fields=["role", "email", "family"])]
+        ordering = ["last_name", "nickname", "first_name"]
         verbose_name = _("Adult")
         verbose_name_plural = _("Adults")
 
@@ -376,10 +355,12 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
             return self.family.adults.exclude(uuid=self.uuid)
 
     def is_staff(self):
-        return bool(self._is_staff or self.committee_memberships.filter(
-                committee__is_staff=True).filter(
-            year_served=PackYear.get_current_pack_year()
-        ))
+        return bool(
+            self._is_staff
+            or self.committee_memberships.filter(committee__is_staff=True).filter(
+                year_served=PackYear.get_current_pack_year()
+            )
+        )
 
     is_staff.boolean = True
     is_staff.short_description = _("Staff")
@@ -420,14 +401,15 @@ class Scout(Member):
     )
 
     school = models.ForeignKey(
-        'address_book.Venue',
+        "address_book.Venue",
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        limit_choices_to={'categories__name__icontains': 'school'},
+        limit_choices_to={"categories__name__icontains": "school"},
         help_text=_(
             "Tell us what school your child attends. If your school isn't "
-            "listed, tell us in the comments section."),
+            "listed, tell us in the comments section."
+        ),
     )
 
     # Give parents an opportunity to add more detail to their application
@@ -438,7 +420,8 @@ class Scout(Member):
         default="",
         help_text=_(
             "If you know someone who is already in the pack, you can tell us "
-            "their name so we can credit them for referring you."),
+            "their name so we can credit them for referring you."
+        ),
     )
     member_comments = models.TextField(
         _("Comments"),
@@ -446,14 +429,15 @@ class Scout(Member):
         default="",
         help_text=_(
             "What other information should we consider when reviewing your "
-            "application?"),
+            "application?"
+        ),
     )
 
     # These fields should be managed by the person(s) in charge of membership
     family = models.ForeignKey(
         Family,
         on_delete=models.CASCADE,
-        related_name='children',
+        related_name="children",
         blank=True,
         null=True,
     )
@@ -468,12 +452,13 @@ class Scout(Member):
             "Cub is no longer active in the pack, either through graduation "
             "or attrition, note that change' here. Any adult member connected "
             "to this Cub will get access only once the Cub's status is "
-            "'Active' or 'Approved'."),
+            "'Active' or 'Approved'."
+        ),
     )
     dens = models.ManyToManyField(
-        'dens.Den',
+        "dens.Den",
         blank=True,
-        through='dens.Membership',
+        through="dens.Membership",
     )
 
     # Important dates
@@ -483,14 +468,14 @@ class Scout(Member):
         help_text=_(
             "What year did your child start kindergarten? We use this to "
             "calculate their grade year in school and assign your child to an "
-            "appropriate den."),
+            "appropriate den."
+        ),
     )
     started_pack = models.DateField(
         _("Date Started"),
         blank=True,
         null=True,
-        help_text=_(
-            "When does this cub join their first activity with the pack?"),
+        help_text=_("When does this cub join their first activity with the pack?"),
     )
 
     # Custom managers to simplify the selection of cubs based on their rank
@@ -498,9 +483,9 @@ class Scout(Member):
     objects = ScoutManager()
 
     class Meta:
-        indexes = [models.Index(
-            fields=['school', 'family', 'status', 'started_school']
-        )]
+        indexes = [
+            models.Index(fields=["school", "family", "status", "started_school"])
+        ]
         verbose_name = _("Cub")
         verbose_name_plural = _("Cubs")
 
@@ -513,8 +498,7 @@ class Scout(Member):
         """Return the Den assignment for the current Pack Year"""
         try:
             den = Den.objects.get(
-                scouts__scout=self,
-                scouts__year_assigned=PackYear.objects.current()
+                scouts__scout=self, scouts__year_assigned=PackYear.objects.current()
             )
         except Den.DoesNotExist:
             den = None
@@ -546,7 +530,7 @@ class Scout(Member):
             else:
                 return _("graduated high school")
 
-    get_grade.admin_order_field = 'started_school'
+    get_grade.admin_order_field = "started_school"
     get_grade.short_description = _("school grade")
 
     @property

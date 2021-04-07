@@ -11,103 +11,186 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('name', models.CharField(max_length=32)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateTimeField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=32)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateTimeField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Category',
-                'verbose_name_plural': 'Categories',
-                'ordering': ['name'],
+                "verbose_name": "Category",
+                "verbose_name_plural": "Categories",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='Content',
+            name="Content",
             fields=[
-                ('title', models.CharField(blank=True, max_length=256, null=True)),
-                ('visibility', models.CharField(choices=[('P', 'Public'), ('S', 'Private'), ('A', 'Anonymous')], default='S', help_text='Private content will only be viewable to active members or contributors. Public content is viewable by anyone on the website, including applicants, alumni, and anonymous visitors. Anonymous content will be displayed if no user is logged-in.', max_length=1)),
-                ('body', tinymce.models.HTMLField()),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateTimeField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
-                ('published_on', models.DateTimeField(blank=True, default=django.utils.timezone.now, null=True)),
+                ("title", models.CharField(blank=True, max_length=256, null=True)),
+                (
+                    "visibility",
+                    models.CharField(
+                        choices=[("P", "Public"), ("S", "Private"), ("A", "Anonymous")],
+                        default="S",
+                        help_text="Private content will only be viewable to active members or contributors. Public content is viewable by anyone on the website, including applicants, alumni, and anonymous visitors. Anonymous content will be displayed if no user is logged-in.",
+                        max_length=1,
+                    ),
+                ),
+                ("body", tinymce.models.HTMLField()),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateTimeField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
+                (
+                    "published_on",
+                    models.DateTimeField(
+                        blank=True, default=django.utils.timezone.now, null=True
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Content',
-                'verbose_name_plural': 'Content',
-                'ordering': ['-published_on'],
+                "verbose_name": "Content",
+                "verbose_name_plural": "Content",
+                "ordering": ["-published_on"],
             },
         ),
         migrations.CreateModel(
-            name='Page',
+            name="Page",
             fields=[
-                ('title', models.CharField(max_length=64)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=64)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_on", models.DateTimeField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Page',
-                'verbose_name_plural': 'Pages',
+                "verbose_name": "Page",
+                "verbose_name_plural": "Pages",
             },
         ),
         migrations.CreateModel(
-            name='DynamicPage',
+            name="DynamicPage",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='pages.Page')),
-                ('include_in_nav', models.BooleanField(default=False, help_text="Checking this option will add this page to the site's menu bar.", verbose_name='Include in navigation')),
-                ('slug', models.SlugField(unique=True)),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="pages.Page",
+                    ),
+                ),
+                (
+                    "include_in_nav",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Checking this option will add this page to the site's menu bar.",
+                        verbose_name="Include in navigation",
+                    ),
+                ),
+                ("slug", models.SlugField(unique=True)),
             ],
             options={
-                'verbose_name': 'Dynamic Page',
-                'verbose_name_plural': 'Dynamic Pages',
+                "verbose_name": "Dynamic Page",
+                "verbose_name_plural": "Dynamic Pages",
             },
-            bases=('pages.page',),
+            bases=("pages.page",),
         ),
         migrations.CreateModel(
-            name='StaticPage',
+            name="StaticPage",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='pages.Page')),
-                ('page', models.CharField(choices=[('HOME', 'Home'), ('ABOUT', 'About Us'), ('HISTORY', 'History'), ('SIGNUP', 'Join Us')], max_length=8, unique=True)),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="pages.Page",
+                    ),
+                ),
+                (
+                    "page",
+                    models.CharField(
+                        choices=[
+                            ("HOME", "Home"),
+                            ("ABOUT", "About Us"),
+                            ("HISTORY", "History"),
+                            ("SIGNUP", "Join Us"),
+                        ],
+                        max_length=8,
+                        unique=True,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Static Page',
-                'verbose_name_plural': 'Static Pages',
+                "verbose_name": "Static Page",
+                "verbose_name_plural": "Static Pages",
             },
-            bases=('pages.page',),
+            bases=("pages.page",),
         ),
         migrations.AddIndex(
-            model_name='page',
-            index=models.Index(fields=['title'], name='pages_page_title_59ce35_idx'),
+            model_name="page",
+            index=models.Index(fields=["title"], name="pages_page_title_59ce35_idx"),
         ),
         migrations.AddField(
-            model_name='content',
-            name='page',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='pages.Page'),
+            model_name="content",
+            name="page",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="pages.Page"
+            ),
         ),
         migrations.AddIndex(
-            model_name='category',
-            index=models.Index(fields=['name'], name='pages_categ_name_520373_idx'),
+            model_name="category",
+            index=models.Index(fields=["name"], name="pages_categ_name_520373_idx"),
         ),
         migrations.AddField(
-            model_name='dynamicpage',
-            name='categories',
-            field=models.ManyToManyField(blank=True, related_name='dynamic_page', to='pages.Category'),
+            model_name="dynamicpage",
+            name="categories",
+            field=models.ManyToManyField(
+                blank=True, related_name="dynamic_page", to="pages.Category"
+            ),
         ),
         migrations.AddIndex(
-            model_name='content',
-            index=models.Index(fields=['title', 'published_on'], name='pages_conte_title_2e151e_idx'),
+            model_name="content",
+            index=models.Index(
+                fields=["title", "published_on"], name="pages_conte_title_2e151e_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='dynamicpage',
-            index=models.Index(fields=['include_in_nav', 'slug'], name='pages_dynam_include_bdfac3_idx'),
+            model_name="dynamicpage",
+            index=models.Index(
+                fields=["include_in_nav", "slug"], name="pages_dynam_include_bdfac3_idx"
+            ),
         ),
     ]

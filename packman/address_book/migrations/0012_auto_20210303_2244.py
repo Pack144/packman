@@ -6,33 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('address_book', '0011_auto_20210112_1129'),
+        ("address_book", "0011_auto_20210112_1129"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='address',
-            name='date_added',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='date added'),
+            model_name="address",
+            name="date_added",
+            field=models.DateTimeField(auto_now_add=True, verbose_name="date added"),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='date_added',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='date added'),
+            model_name="category",
+            name="date_added",
+            field=models.DateTimeField(auto_now_add=True, verbose_name="date added"),
         ),
         migrations.AlterField(
-            model_name='distributionlist',
-            name='date_added',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='date added'),
+            model_name="distributionlist",
+            name="date_added",
+            field=models.DateTimeField(auto_now_add=True, verbose_name="date added"),
         ),
         migrations.AlterField(
-            model_name='phonenumber',
-            name='date_added',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='date added'),
+            model_name="phonenumber",
+            name="date_added",
+            field=models.DateTimeField(auto_now_add=True, verbose_name="date added"),
         ),
         migrations.AlterField(
-            model_name='venue',
-            name='date_added',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='date added'),
+            model_name="venue",
+            name="date_added",
+            field=models.DateTimeField(auto_now_add=True, verbose_name="date added"),
         ),
     ]

@@ -8,7 +8,6 @@ from .models import Address, PhoneNumber
 
 
 class AddressFormHelper(FormHelper):
-
     def __init__(self, *args, **kwargs):
         super(AddressFormHelper, self).__init__(*args, **kwargs)
         self.disable_csrf = True
@@ -18,40 +17,30 @@ class AddressFormHelper(FormHelper):
         self.layout = Layout(
             Row(
                 Column(
-                    Field('street'),
-                    Field('street2'),
+                    Field("street"),
+                    Field("street2"),
                     Row(
+                        Column(Field("city"), css_class="col-md-6"),
                         Column(
-                            Field('city'), css_class='col-md-6'
+                            Field("state", css_class="custom-select"),
+                            css_class="col-md-3",
                         ),
-                        Column(
-                            Field('state', css_class='custom-select'),
-                            css_class='col-md-3'
-                        ),
-                        Column(
-                            Field('zip_code'), css_class='col-md-3'
-                        ),
-                        css_class='mb-0'
+                        Column(Field("zip_code"), css_class="col-md-3"),
+                        css_class="mb-0",
                     ),
                     Row(
-                        Column(
-                            Field('type', css_class='custom-select')
-                        ),
+                        Column(Field("type", css_class="custom-select")),
                         Column(
                             Field(
-                                'published',
-                                css_class='custom-control custom-checkbox'
+                                "published", css_class="custom-control custom-checkbox"
                             )
                         ),
                     ),
-                    Field('uuid', type='hidden'),
-                    Field('member', type='hidden'),
+                    Field("uuid", type="hidden"),
+                    Field("member", type="hidden"),
                 ),
-                Column(
-                    Field('DELETE'),
-                    css_class='col-0'
-                ),
-                css_class="address-dynamic-form mb-5"
+                Column(Field("DELETE"), css_class="col-0"),
+                css_class="address-dynamic-form mb-5",
             )
         )
         self.render_required_fields = True
@@ -60,21 +49,20 @@ class AddressFormHelper(FormHelper):
 class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
-        exclude = ('member', 'venue', 'date_added')
+        exclude = ("member", "venue", "date_added")
 
     def __init__(self, *args, **kwargs):
         super(AddressForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             if visible.field.widget.__class__ == forms.widgets.TextInput:
-                visible.field.widget.attrs['placeholder'] = visible.label
+                visible.field.widget.attrs["placeholder"] = visible.label
         self.helper = AddressFormHelper(self)
-        self.fields['state'].choices = STATE_CHOICES + (
-            (None, self.fields['state'].label),
+        self.fields["state"].choices = STATE_CHOICES + (
+            (None, self.fields["state"].label),
         )
 
 
 class PhoneNumberFormHelper(FormHelper):
-
     def __init__(self, *args, **kwargs):
         super(PhoneNumberFormHelper, self).__init__(*args, **kwargs)
 
@@ -86,25 +74,17 @@ class PhoneNumberFormHelper(FormHelper):
                 Column(
                     Row(
                         Column(
-                            Field('type', css_class='custom-select'),
-                            css_class='col-md-3'
+                            Field("type", css_class="custom-select"),
+                            css_class="col-md-3",
                         ),
-                        Column(
-                            Field('number')
-                        ),
+                        Column(Field("number")),
                     ),
-                    Field(
-                        'published',
-                        css_class='custom-control custom-checkbox'
-                    ),
-                    Field('uuid', type='hidden'),
-                    Field('member', type='hidden'),
+                    Field("published", css_class="custom-control custom-checkbox"),
+                    Field("uuid", type="hidden"),
+                    Field("member", type="hidden"),
                 ),
-                Column(
-                    Field('DELETE'),
-                    css_class='col-0'
-                ),
-                css_class="phonenumber-dynamic-form mb-3"
+                Column(Field("DELETE"), css_class="col-0"),
+                css_class="phonenumber-dynamic-form mb-3",
             ),
         )
 
@@ -112,11 +92,11 @@ class PhoneNumberFormHelper(FormHelper):
 class PhoneNumberForm(forms.ModelForm):
     class Meta:
         model = PhoneNumber
-        exclude = ('member', 'venue', 'date_added')
+        exclude = ("member", "venue", "date_added")
 
     def __init__(self, *args, **kwargs):
         super(PhoneNumberForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             if visible.field.widget.__class__ == forms.widgets.TextInput:
-                visible.field.widget.attrs['placeholder'] = visible.label
+                visible.field.widget.attrs["placeholder"] = visible.label
         self.helper = PhoneNumberFormHelper(self)
