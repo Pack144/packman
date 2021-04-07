@@ -7,19 +7,20 @@
     <h1>Committees</h1>
   </div>
   <div class="container" id="committee-list">
-  {% if committee_list %}
-    <div class="list-group">
-      {% for committee in committee_list %}
+    {% if committee_list %}
+      <div class="list-group">
+        {% for committee in committee_list %}
           <a class="list-group-item list-group-item-action" href="{{ committee.get_absolute_url }}">
-            <div class="row">
-              <div class="col-md-3 font-weight-bold ">{% if committee.leadership %}<i class="fas fa-star text-warning"></i> {% endif %}{{ committee }}</div>
-              {% if committee.description %}<div class="col text-truncate"><small class="text-muted ml-3">{{ committee.description }}</small></div>{% endif %}
+            <div class="d-flex w-100 justify-content-between">
+              <h2>{{ committee }}</h2>
+              {% if committee.leadership %}<span class="text-warning"><i class="fas fa-star fa-2x"></i></span>{% endif %}
             </div>
+            {% if committee.description %}<p>{{ committee.description }}</p>{% endif %}
           </a>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="alert alert-light" role="alert">No committees have been defined yet</div>
-  {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-light" role="alert">No committees have been defined yet</div>
+    {% endif %}
   </div>
 {% endblock %}
