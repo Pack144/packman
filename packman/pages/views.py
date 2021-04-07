@@ -7,7 +7,11 @@ from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import (
-    CreateView, DetailView, FormView, TemplateView, UpdateView,
+    CreateView,
+    DetailView,
+    FormView,
+    TemplateView,
+    UpdateView,
 )
 
 from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
@@ -22,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class PageDetailView(DetailView):
     model = Page
-    context_object_name = 'page'
+    context_object_name = "page"
 
     def get_object(self, **kwargs):
         obj = super().get_object(**kwargs)
@@ -37,29 +41,33 @@ class PageDetailView(DetailView):
 
 class PageUpdateView(UpdateView):
     model = Page
-    context_object_name = 'page_content'
-    fields = '__all__'
+    context_object_name = "page_content"
+    fields = "__all__"
 
 
 class AboutPageView(PageDetailView):
-    template_name = 'pages/about_page.html'
+    template_name = "pages/about_page.html"
 
     def get_object(self):
         obj, created = self.get_queryset().get_or_create(page=Page.ABOUT)
         if created:
-            logger.info = _("About page was requested but none was found in the database.")
+            logger.info = _(
+                "About page was requested but none was found in the database."
+            )
             obj.title = _("About Us")
             obj.save()
         return obj
 
 
 class HomePageView(PageDetailView):
-    template_name = 'pages/home_page.html'
+    template_name = "pages/home_page.html"
 
     def get_object(self):
         obj, created = self.get_queryset().get_or_create(page=Page.HOME)
         if created:
-            logger.info = _("Home page was requested but none was found in the database.")
+            logger.info = _(
+                "Home page was requested but none was found in the database."
+            )
 
         if self.request.user.is_authenticated and (
             (
@@ -75,28 +83,36 @@ class HomePageView(PageDetailView):
                     "<a class='alert-link' href='%(my-family)s'>My Family</a> page to "
                     "<a class='alert-link' href='%(add-cub)s'>nominate your Cub</a> for "
                     "membership and add more family members."
-                ) % {"my-family": reverse("membership:my-family"), "add-cub": reverse("membership:scout_create")},
+                )
+                % {
+                    "my-family": reverse("membership:my-family"),
+                    "add-cub": reverse("membership:scout_create"),
+                },
             )
 
         return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['events'] = Event.objects.filter(
-            start__lte=timezone.now() + timezone.timedelta(weeks=1)
-        ).filter(
-            start__gte=timezone.now() - timezone.timedelta(hours=8)
-        ).order_by('start')
+        context["events"] = (
+            Event.objects.filter(
+                start__lte=timezone.now() + timezone.timedelta(weeks=1)
+            )
+            .filter(start__gte=timezone.now() - timezone.timedelta(hours=8))
+            .order_by("start")
+        )
         return context
 
 
 class HistoryPageView(PageDetailView):
-    template_name = 'pages/history_page.html'
+    template_name = "pages/history_page.html"
 
     def get_object(self):
         obj, created = self.get_queryset().get_or_create(page=Page.HISTORY)
         if created:
-            logger.info = _("History page was requested but none was found in the database.")
+            logger.info = _(
+                "History page was requested but none was found in the database."
+            )
             obj.title = _("Our History")
             obj.save()
         return obj
@@ -105,11 +121,11 @@ class HistoryPageView(PageDetailView):
 class ContactPageView(SuccessMessageMixin, FormView):
     form_class = ContactForm
     success_message = _(
-        'Thank you for reaching out. Your message has been sent and we will be reviewing it momentarily. If you '
-        'have requested a response, we will get back to you at %(from_email)s.'
+        "Thank you for reaching out. Your message has been sent and we will be reviewing it momentarily. If you "
+        "have requested a response, we will get back to you at %(from_email)s."
     )
-    success_url = reverse_lazy('pages:home')
-    template_name = 'pages/contact_page.html'
+    success_url = reverse_lazy("pages:home")
+    template_name = "pages/contact_page.html"
 
     def form_valid(self, form):
         form.send_mail()
@@ -118,33 +134,29 @@ class ContactPageView(SuccessMessageMixin, FormView):
 
 class SignUpPageView(CreateView):
     form_class = SignupForm
-    success_url = reverse_lazy('login')
-    template_name = 'pages/signup_page.html'
+    success_url = reverse_lazy("login")
+    template_name = "pages/signup_page.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
-            context['address_formset'] = AddressFormSet(
-                self.request.POST
-            )
-            context['phonenumber_formset'] = PhoneNumberFormSet(
-                self.request.POST
-            )
+            context["address_formset"] = AddressFormSet(self.request.POST)
+            context["phonenumber_formset"] = PhoneNumberFormSet(self.request.POST)
         else:
-            context['address_formset'] = AddressFormSet()
-            context['phonenumber_formset'] = PhoneNumberFormSet()
+            context["address_formset"] = AddressFormSet()
+            context["phonenumber_formset"] = PhoneNumberFormSet()
         try:
-            context['page'] = Page.objects.get_visible_content(user=self.request.user).get(
-                page=Page.SIGNUP
-            )
+            context["page"] = Page.objects.get_visible_content(
+                user=self.request.user
+            ).get(page=Page.SIGNUP)
         except Page.DoesNotExist:
-            context['page'] = None
+            context["page"] = None
         return context
 
     def form_valid(self, form):
         context = self.get_context_data(form=form)
-        address_formset = context['address_formset']
-        phonenumber_formset = context['phonenumber_formset']
+        address_formset = context["address_formset"]
+        phonenumber_formset = context["phonenumber_formset"]
         if address_formset.is_valid() and phonenumber_formset.is_valid():
             self.object = form.save()
             form.instance.family = Family.objects.create()

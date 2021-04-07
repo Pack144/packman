@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 def postgres_migration_prep(apps, schema_editor):
     Rank = apps.get_model("dens", "Rank")
-    fields = ("description", )
+    fields = ("description",)
 
     for field in fields:
         filter_param = {"{}__isnull".format(field): True}
@@ -16,7 +16,7 @@ def postgres_migration_prep(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dens', '0002_auto_20200730_0934'),
+        ("dens", "0002_auto_20200730_0934"),
     ]
 
     operations = [

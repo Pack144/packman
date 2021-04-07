@@ -16,7 +16,7 @@ class Category(TimeStampedUUIDModel):
     )
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
 
@@ -39,12 +39,12 @@ class Document(TimeStampedUUIDModel):
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
-        related_name='documents',
+        related_name="documents",
     )
     committee = models.ForeignKey(
-        'committees.Committee',
+        "committees.Committee",
         on_delete=models.SET_NULL,
-        related_name='documents',
+        related_name="documents",
         blank=True,
         null=True,
     )
@@ -54,7 +54,10 @@ class Document(TimeStampedUUIDModel):
     )
 
     class Meta:
-        ordering = ['category', 'name', ]
+        ordering = [
+            "category",
+            "name",
+        ]
         verbose_name = _("Document")
         verbose_name_plural = _("Documents")
 
@@ -62,22 +65,22 @@ class Document(TimeStampedUUIDModel):
         return self.name
 
     def get_file_type(self):
-        extension = self.file.file.split('.')[-1]
-        if extension in ('txt', 'rtf'):
+        extension = self.file.file.split(".")[-1]
+        if extension in ("txt", "rtf"):
             return _("Text Document")
-        elif extension in ('pdf', ):
+        elif extension in ("pdf",):
             return _("PDF")
-        elif extension in ('doc', 'docx'):
+        elif extension in ("doc", "docx"):
             return _("Microsoft Word Document")
-        elif extension in ('xls', 'xlsx'):
+        elif extension in ("xls", "xlsx"):
             return _("Microsoft Excel Spreadsheet")
-        elif extension in ('ppt', 'pptx', 'pps', 'ppsx'):
+        elif extension in ("ppt", "pptx", "pps", "ppsx"):
             return _("Microsoft Powerpoint Presentation")
-        elif extension in ('jpg', 'jpeg', 'gif', 'png', 'tiff', 'bmp'):
+        elif extension in ("jpg", "jpeg", "gif", "png", "tiff", "bmp"):
             return _("Image")
-        elif extension in ('mp4', 'm4v', 'ogv', 'webm', 'mov'):
+        elif extension in ("mp4", "m4v", "ogv", "webm", "mov"):
             return _("Video")
-        elif extension in ('wav', 'wave', 'mp3', 'ogg', 'oga', 'ogm', 'spx', 'opus'):
+        elif extension in ("wav", "wave", "mp3", "ogg", "oga", "ogm", "spx", "opus"):
             return _("Audio")
-        elif extension in ('zip', ):
+        elif extension in ("zip",):
             return _("Compressed Archive")

@@ -10,74 +10,177 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Address',
+            name="Address",
             fields=[
-                ('street', models.CharField(max_length=128, verbose_name='Address')),
-                ('street2', models.CharField(blank=True, max_length=128, null=True, verbose_name='Unit / Apartment / Suite')),
-                ('city', models.CharField(max_length=64, verbose_name='City')),
-                ('state', localflavor.us.models.USStateField(max_length=2, verbose_name='State')),
-                ('zip_code', localflavor.us.models.USZipCodeField(max_length=10, verbose_name='ZIP Code')),
-                ('type', models.CharField(blank=True, choices=[('H', 'Home'), ('W', 'Work'), ('O', 'Other'), (None, 'Type')], max_length=1, null=True)),
-                ('published', models.BooleanField(default=True, help_text='Display this address to other members of the pack.')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
+                ("street", models.CharField(max_length=128, verbose_name="Address")),
+                (
+                    "street2",
+                    models.CharField(
+                        blank=True,
+                        max_length=128,
+                        null=True,
+                        verbose_name="Unit / Apartment / Suite",
+                    ),
+                ),
+                ("city", models.CharField(max_length=64, verbose_name="City")),
+                (
+                    "state",
+                    localflavor.us.models.USStateField(
+                        max_length=2, verbose_name="State"
+                    ),
+                ),
+                (
+                    "zip_code",
+                    localflavor.us.models.USZipCodeField(
+                        max_length=10, verbose_name="ZIP Code"
+                    ),
+                ),
+                (
+                    "type",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("H", "Home"),
+                            ("W", "Work"),
+                            ("O", "Other"),
+                            (None, "Type"),
+                        ],
+                        max_length=1,
+                        null=True,
+                    ),
+                ),
+                (
+                    "published",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Display this address to other members of the pack.",
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Address',
-                'verbose_name_plural': 'Addresses',
-                'ordering': ['street'],
+                "verbose_name": "Address",
+                "verbose_name_plural": "Addresses",
+                "ordering": ["street"],
             },
         ),
         migrations.CreateModel(
-            name='PhoneNumber',
+            name="PhoneNumber",
             fields=[
-                ('number', phonenumber_field.modelfields.PhoneNumberField(max_length=128, region='US', verbose_name='Phone Number')),
-                ('type', models.CharField(blank=True, choices=[('H', 'Home'), ('M', 'Mobile'), ('W', 'Work'), ('O', 'Other'), (None, 'Type')], max_length=1, null=True)),
-                ('published', models.BooleanField(default=True, help_text='Display this phone number to other members of the pack.')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
+                (
+                    "number",
+                    phonenumber_field.modelfields.PhoneNumberField(
+                        max_length=128, region="US", verbose_name="Phone Number"
+                    ),
+                ),
+                (
+                    "type",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("H", "Home"),
+                            ("M", "Mobile"),
+                            ("W", "Work"),
+                            ("O", "Other"),
+                            (None, "Type"),
+                        ],
+                        max_length=1,
+                        null=True,
+                    ),
+                ),
+                (
+                    "published",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Display this phone number to other members of the pack.",
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Phone Number',
-                'verbose_name_plural': 'Phone Numbers',
-                'ordering': ['number'],
+                "verbose_name": "Phone Number",
+                "verbose_name_plural": "Phone Numbers",
+                "ordering": ["number"],
             },
         ),
         migrations.CreateModel(
-            name='VenueType',
+            name="VenueType",
             fields=[
-                ('type', models.CharField(help_text='e.g. School, Campground, Park, etc.', max_length=32)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
+                (
+                    "type",
+                    models.CharField(
+                        help_text="e.g. School, Campground, Park, etc.", max_length=32
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Venue Type',
-                'verbose_name_plural': 'Venue Types',
-                'ordering': ['type'],
+                "verbose_name": "Venue Type",
+                "verbose_name_plural": "Venue Types",
+                "ordering": ["type"],
             },
         ),
         migrations.CreateModel(
-            name='Venue',
+            name="Venue",
             fields=[
-                ('name', models.CharField(max_length=128, unique=True)),
-                ('url', models.URLField(blank=True, null=True, verbose_name='Website')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
-                ('type', models.ManyToManyField(related_name='venues', to='address_book.VenueType')),
+                ("name", models.CharField(max_length=128, unique=True)),
+                ("url", models.URLField(blank=True, null=True, verbose_name="Website")),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
+                (
+                    "type",
+                    models.ManyToManyField(
+                        related_name="venues", to="address_book.VenueType"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Venue',
-                'verbose_name_plural': 'Venues',
-                'ordering': ['name'],
+                "verbose_name": "Venue",
+                "verbose_name_plural": "Venues",
+                "ordering": ["name"],
             },
         ),
     ]

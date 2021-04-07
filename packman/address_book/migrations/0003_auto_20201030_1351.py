@@ -14,14 +14,18 @@ def postgres_migration_prep(apps, schema_editor):
         update_param = {field: ""}
         Address.objects.filter(**filter_param).update(**update_param)
 
-    PhoneNumber.objects.filter(type__isnull=True, ).update(type="")
-    Venue.objects.filter(url__isnull=True, ).update(url="")
+    PhoneNumber.objects.filter(
+        type__isnull=True,
+    ).update(type="")
+    Venue.objects.filter(
+        url__isnull=True,
+    ).update(url="")
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('address_book', '0002_auto_20200730_0934'),
+        ("address_book", "0002_auto_20200730_0934"),
     ]
 
     operations = [
