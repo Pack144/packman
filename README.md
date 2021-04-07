@@ -1,5 +1,7 @@
 # Packman
-![Django CI](https://github.com/Pack144/packman/workflows/Django%20CI/badge.svg)
+[![Django CI](https://github.com/Pack144/packman/actions/workflows/django.yml/badge.svg)](https://github.com/Pack144/packman/actions/workflows/django.yml)
+[![CodeQL](https://github.com/Pack144/packman/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Pack144/packman/actions/workflows/codeql-analysis.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A Cub Scout pack management web application, written in Python and Django
 
@@ -26,11 +28,11 @@ that what we do doesn't work for your pack.  We built this for ourselves, but we
 sure that there's use for other packs out there too.
 
 Being a pack headquartered in a tech-heavy community in the Pacific Northwest, naturally
-we wanted to have a website that we could adapt for our own specific needs.  
-At the same time, not all of our pack members are tech savvy and we need to ensure that 
-the frameworks we put in place with our web app are accessible to everyone in the pack. 
+we wanted to have a website that we could adapt for our own specific needs.
+At the same time, not all of our pack members are tech savvy and we need to ensure that
+the frameworks we put in place with our web app are accessible to everyone in the pack.
 We chose the Django framework because it is highly flexible, maintainable, and most
-importantly understandable.  That means that even members who do not live web development 
+importantly understandable.  That means that even members who do not live web development
 day to day should be able to pick it up and continue to maintain the site.
 
 ## How do I get started?
@@ -53,9 +55,9 @@ pipenv install
 ```
 
 Once you have the project downloaded and a virtual environment running you can set
-up Packman for your own needs. Many of the project settings are available in 
-`_project/settings.py`. Adjust them there or, to have your own settings that are
-not overridden by source updates, create a separate `_project/local_settings.py`
+up Packman for your own needs. Many of the project settings are available in
+`config/settings.py`. Adjust them there or, to have your own settings that are
+not overridden by source updates, create a separate `.env`
 file and put your custom settings there. Anything made in this file will overwrite
 the project settings file. Use this to configure your own database, secret key,
 email, etc.
@@ -65,7 +67,6 @@ the database and run Django.
 ```
 pipenv shell
 
-python manage.py makemigrations
 python manage.py migrate
 
 python manage.py runserver
@@ -74,9 +75,9 @@ python manage.py runserver
 
 
 ## Requirements
-Review the included requirements.txt for detailed package requirements.  Our 
+Review the included requirements.txt for detailed package requirements.  Our
 application is using:
 
-* [Python 3](https://python.org)
-* [Django 2.2](https://djangoproject.com)
+* [Python 3.6](https://python.org)
+* [Django 3.2](https://djangoproject.com)
 * [Yarn](https://yarnpkg.com/)
