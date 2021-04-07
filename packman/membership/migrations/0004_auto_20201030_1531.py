@@ -6,29 +6,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('membership', '0003_auto_20201030_1403'),
+        ("membership", "0003_auto_20201030_1403"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='family',
-            name='legacy_id',
+            model_name="family",
+            name="legacy_id",
             field=models.IntegerField(blank=True, null=True, unique=True),
         ),
         migrations.AlterField(
-            model_name='scout',
-            name='started_school',
+            model_name="scout",
+            name="started_school",
             field=models.IntegerField(
-                help_text='What year did your child start kindergarten? We use this to calculate their grade year in school and assign your child to an appropriate den.',
-                null=True, verbose_name='Kindergarten Year'),
+                help_text="What year did your child start kindergarten? We use this to calculate their grade year in school and assign your child to an appropriate den.",
+                null=True,
+                verbose_name="Kindergarten Year",
+            ),
         ),
         migrations.AlterField(
-            model_name='scout',
-            name='status',
+            model_name="scout",
+            name="status",
             field=models.IntegerField(
-                choices=[(0, 'Application Withdrawn'), (1, 'Applied'), (2, 'Denied'), (3, 'Approved'), (4, 'Active'),
-                         (5, 'Inactive'), (6, 'Graduated')], default=1,
+                choices=[
+                    (0, "Application Withdrawn"),
+                    (1, "Applied"),
+                    (2, "Denied"),
+                    (3, "Approved"),
+                    (4, "Active"),
+                    (5, "Inactive"),
+                    (6, "Graduated"),
+                ],
+                default=1,
                 help_text="What is the Cub's current status? A new cub who has not been reviewed will start as 'Applied'. Membership can choose then to approve or decline the application, or make them active. Once a Cub is no longer active in the pack, either through graduation or attrition, note that change' here. Any adult member connected to this Cub will get access only once the Cub's status is 'Active' or 'Approved'.",
-                verbose_name='Status'),
+                verbose_name="Status",
+            ),
         ),
     ]

@@ -19,6 +19,7 @@ class PackYear(models.Model):
     Stores the start and end date of a pack year in the database. Used by
     committee assignments, den assignments, and events to keep things sorted.
     """
+
     year = models.IntegerField(
         _("year"),
         primary_key=True,
@@ -37,8 +38,8 @@ class PackYear(models.Model):
     objects = PackYearManager()
 
     class Meta:
-        indexes = [models.Index(fields=['year'])]
-        ordering = ('-year',)
+        indexes = [models.Index(fields=["year"])]
+        ordering = ("-year",)
         verbose_name = _("pack year")
         verbose_name_plural = _("pack years")
 
@@ -88,25 +89,25 @@ class PackYear(models.Model):
         pack_year_begins = datetime(
             date_to_test.year,
             settings.PACK_YEAR_BEGIN_MONTH,
-            settings.PACK_YEAR_BEGIN_DAY
+            settings.PACK_YEAR_BEGIN_DAY,
         )
 
-        if not pack_year_begins <= date_to_test < pack_year_begins.replace(
-                year=pack_year_begins.year + 1
+        if (
+            not pack_year_begins
+            <= date_to_test
+            < pack_year_begins.replace(year=pack_year_begins.year + 1)
         ):
-            pack_year_begins = pack_year_begins.replace(
-                year=pack_year_begins.year - 1
-            )
+            pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
 
         pack_year_ends = pack_year_begins.replace(
             year=pack_year_begins.year + 1
         ) - timezone.timedelta(seconds=1)
-        return {'start_date': pack_year_begins, 'end_date': pack_year_ends}
+        return {"start_date": pack_year_begins, "end_date": pack_year_ends}
 
     @staticmethod
     def get_current_pack_year():
         year, created = PackYear.objects.get_or_create(
-            year=PackYear.get_pack_year()['end_date'].year
+            year=PackYear.get_pack_year()["end_date"].year
         )
         return year
 
@@ -120,18 +121,19 @@ class Category(models.Model):
     """
     Events should be tagged with a category for filtering and display
     """
+
     # Define available colors for the category, mapped to Bootstrap text-colors
     # (https://getbootstrap.com/docs/4.4/utilities/colors/)
-    BLUE = 'primary'
-    GREEN = 'success'
-    RED = 'danger'
-    YELLOW = 'warning'
-    TEAL = 'info'
-    GREY = 'secondary'
-    TRANSPARENT = 'transparent'
-    LIGHT = 'light'
-    DARK = 'dark'
-    WHITE = 'white'
+    BLUE = "primary"
+    GREEN = "success"
+    RED = "danger"
+    YELLOW = "warning"
+    TEAL = "info"
+    GREY = "secondary"
+    TRANSPARENT = "transparent"
+    LIGHT = "light"
+    DARK = "dark"
+    WHITE = "white"
     COLOR_CHOICES = (
         (BLUE, _("Blue")),
         (GREEN, _("Green")),
@@ -139,7 +141,7 @@ class Category(models.Model):
         (YELLOW, _("Yellow")),
         (TEAL, _("Teal")),
         (GREY, _("Grey/Muted")),
-        (TRANSPARENT, _("Transparent"))
+        (TRANSPARENT, _("Transparent")),
     )
 
     # Define available FontAwesome icons for the category
@@ -192,8 +194,8 @@ class Category(models.Model):
         blank=True,
         default="",
         help_text=_(
-            "Give a little more detail about the kinds of events in this "
-            "category"),
+            "Give a little more detail about the kinds of events in this " "category"
+        ),
     )
     icon = models.CharField(
         max_length=64,
@@ -223,8 +225,8 @@ class Category(models.Model):
     )
 
     class Meta:
-        indexes = [models.Index(fields=['name'])]
-        ordering = ('name',)
+        indexes = [models.Index(fields=["name"])]
+        ordering = ("name",)
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
 
@@ -235,9 +237,9 @@ class Category(models.Model):
 class Event(models.Model):
     """ Store information about events """
 
-    TENTATIVE = 'TENTATIVE'
-    CONFIRMED = 'CONFIRMED'
-    CANCELLED = 'CANCELLED'
+    TENTATIVE = "TENTATIVE"
+    CONFIRMED = "CONFIRMED"
+    CANCELLED = "CANCELLED"
     STATUS_CHOICES = (
         (TENTATIVE, _("Tentative")),
         (CONFIRMED, _("Confirmed")),
@@ -248,9 +250,9 @@ class Event(models.Model):
         max_length=64,
     )
     venue = models.ForeignKey(
-        'address_book.Venue',
+        "address_book.Venue",
         on_delete=models.CASCADE,
-        related_name='events',
+        related_name="events",
         blank=True,
         null=True,
     )
@@ -273,12 +275,10 @@ class Event(models.Model):
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
-        related_name='events',
+        related_name="events",
     )
     attachments = models.ManyToManyField(
-        'documents.Document',
-        related_name='events',
-        blank=True
+        "documents.Document", related_name="events", blank=True
     )
     published = models.BooleanField(
         _("Show on iCal"),
@@ -303,10 +303,12 @@ class Event(models.Model):
     )
 
     class Meta:
-        indexes = [models.Index(
-            fields=['name', 'venue', 'location', 'start', 'end', 'category']
-        )]
-        ordering = ['-start']
+        indexes = [
+            models.Index(
+                fields=["name", "venue", "location", "start", "end", "category"]
+            )
+        ]
+        ordering = ["-start"]
         verbose_name = _("Event")
         verbose_name_plural = _("Events")
 
@@ -314,7 +316,7 @@ class Event(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('calendars:detail', args=[str(self.uuid)])
+        return reverse("calendars:detail", args=[str(self.uuid)])
 
     def get_location(self):
         if self.venue and self.location:
@@ -327,7 +329,7 @@ class Event(models.Model):
             return ""
 
     def get_location_with_address(self):
-        if hasattr(self.venue, 'address'):
+        if hasattr(self.venue, "address"):
             return f"{self.get_location()}\n{self.venue.address}"
         else:
             return self.get_location()

@@ -11,41 +11,91 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('committees', '0001_initial'),
+        ("committees", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('name', models.CharField(max_length=32)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=32)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Category',
-                'verbose_name_plural': 'Categories',
-                'ordering': ['name'],
+                "verbose_name": "Category",
+                "verbose_name_plural": "Categories",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='Document',
+            name="Document",
             fields=[
-                ('name', models.CharField(max_length=128)),
-                ('description', models.TextField(blank=True, help_text='Brief description of what the document is.', null=True)),
-                ('file', models.FileField(upload_to=packman.documents.models.document_upload_path)),
-                ('display_in_repository', models.BooleanField(default=True, help_text='Make this document visible in the Document Repository')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='documents.Category')),
-                ('committee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='documents', to='committees.Committee')),
+                ("name", models.CharField(max_length=128)),
+                (
+                    "description",
+                    models.TextField(
+                        blank=True,
+                        help_text="Brief description of what the document is.",
+                        null=True,
+                    ),
+                ),
+                (
+                    "file",
+                    models.FileField(
+                        upload_to=packman.documents.models.document_upload_path
+                    ),
+                ),
+                (
+                    "display_in_repository",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Make this document visible in the Document Repository",
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="documents",
+                        to="documents.Category",
+                    ),
+                ),
+                (
+                    "committee",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="documents",
+                        to="committees.Committee",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Document',
-                'verbose_name_plural': 'Documents',
-                'ordering': ['category', 'name'],
+                "verbose_name": "Document",
+                "verbose_name_plural": "Documents",
+                "ordering": ["category", "name"],
             },
         ),
     ]

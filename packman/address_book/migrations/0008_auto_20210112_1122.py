@@ -8,16 +8,20 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('address_book', '0007_auto_20210111_1720'),
+        ("address_book", "0007_auto_20210111_1720"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='VenueType',
-            new_name='Category',
+            old_name="VenueType",
+            new_name="Category",
         ),
         migrations.AlterModelOptions(
-            name='category',
-            options={'ordering': ['type'], 'verbose_name': 'category', 'verbose_name_plural': 'categories'},
+            name="category",
+            options={
+                "ordering": ["type"],
+                "verbose_name": "category",
+                "verbose_name_plural": "categories",
+            },
         ),
     ]

@@ -7,14 +7,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pages', '0003_auto_20201030_1410'),
+        ("pages", "0003_auto_20201030_1410"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='content',
-            name='page',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='content_blocks',
-                                    to='pages.Page'),
+            model_name="content",
+            name="page",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="content_blocks",
+                to="pages.Page",
+            ),
         ),
     ]

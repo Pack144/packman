@@ -6,22 +6,22 @@ from .models import Address, PhoneNumber, Venue, Category, DistributionList
 
 
 class PhoneNumberInline(admin.TabularInline):
-    exclude = ['member', 'date_added', 'published', 'type']
+    exclude = ["member", "date_added", "published", "type"]
     extra = 0
     model = PhoneNumber
 
 
 class AddressInline(admin.StackedInline):
-    exclude = ['member', 'date_added', 'published', 'type']
+    exclude = ["member", "date_added", "published", "type"]
     model = Address
 
 
 @admin.register(Venue)
 class VenueAdmin(admin.ModelAdmin):
     inlines = [AddressInline, PhoneNumberInline]
-    list_filter = ('categories',)
-    list_display = ('name', "get_category_list")
-    search_fields = ('name',)
+    list_filter = ("categories",)
+    list_display = ("name", "get_category_list")
+    search_fields = ("name",)
 
     def get_category_list(self, obj):
         return ", ".join(category.name for category in obj.categories.all())
@@ -59,8 +59,11 @@ class DistributionListAdmin(admin.ModelAdmin):
     get_committee_list.short_description = _("committees")
 
     def get_member_list(self, obj):
-        members = format_html_join("", "<li><strong>{}</strong> <em>&lt;{}&gt;</em></li>",
-                                   ((n, a) for n, a in obj.email_addresses))
+        members = format_html_join(
+            "",
+            "<li><strong>{}</strong> <em>&lt;{}&gt;</em></li>",
+            ((n, a) for n, a in obj.email_addresses),
+        )
         return format_html("<ul>{}</ul>", members) if members else ""
 
     get_member_list.short_description = _("members")
