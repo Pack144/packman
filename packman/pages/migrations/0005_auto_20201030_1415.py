@@ -6,20 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pages', '0004_auto_20201030_1411'),
+        ("pages", "0004_auto_20201030_1411"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='Content',
-            new_name='ContentBlocks',
+            old_name="Content",
+            new_name="ContentBlocks",
         ),
         migrations.RemoveIndex(
-            model_name='contentblocks',
-            name='pages_conte_title_2e151e_idx',
+            model_name="contentblocks",
+            name="pages_conte_title_2e151e_idx",
         ),
         migrations.AddIndex(
-            model_name='contentblocks',
-            index=models.Index(fields=['title', 'published_on'], name='pages_conte_title_43e30f_idx'),
+            model_name="contentblocks",
+            index=models.Index(
+                fields=["title", "published_on"], name="pages_conte_title_43e30f_idx"
+            ),
         ),
     ]

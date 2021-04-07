@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pages', '0008_auto_20201103_1242'),
+        ("pages", "0008_auto_20201103_1242"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dynamicpage',
-            name='categories',
-            field=models.ManyToManyField(blank=True, related_name='pages', to='pages.Category'),
+            model_name="dynamicpage",
+            name="categories",
+            field=models.ManyToManyField(
+                blank=True, related_name="pages", to="pages.Category"
+            ),
         ),
     ]

@@ -15,7 +15,7 @@ def postgres_migration_prep(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('committees', '0003_auto_20200730_0934'),
+        ("committees", "0003_auto_20200730_0934"),
     ]
 
     operations = [

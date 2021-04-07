@@ -13,6 +13,7 @@ class Rank(models.Model):
     All of the Cub Scout ranks are defined. Packs can specify which ranks they
     support.
     """
+
     BOBCAT = 1
     TIGER = 2
     WOLF = 3
@@ -55,7 +56,7 @@ class Rank(models.Model):
     )
 
     class Meta:
-        ordering = ['rank']
+        ordering = ["rank"]
         verbose_name = _("Rank")
         verbose_name_plural = _("Ranks")
 
@@ -101,7 +102,7 @@ class Den(models.Model):
     rank = models.ForeignKey(
         Rank,
         on_delete=models.CASCADE,
-        related_name='dens',
+        related_name="dens",
         blank=True,
         null=True,
     )
@@ -114,7 +115,7 @@ class Den(models.Model):
     )
 
     class Meta:
-        ordering = ['number']
+        ordering = ["number"]
         verbose_name = _("Den")
         verbose_name_plural = _("Dens")
 
@@ -122,12 +123,10 @@ class Den(models.Model):
         return f"Den {self.number}"
 
     def get_absolute_url(self):
-        return reverse('dens:detail', args=[int(self.number)])
+        return reverse("dens:detail", args=[int(self.number)])
 
     def active_cubs(self):
-        return self.scouts.filter(
-            year_assigned=PackYear.get_current_pack_year()
-        )
+        return self.scouts.filter(year_assigned=PackYear.get_current_pack_year())
 
     def count_current_members(self):
         return self.active_cubs().count()
@@ -153,7 +152,7 @@ class Den(models.Model):
         return self.rank.rank >= Rank.JR_WEBE
 
     count_current_members.short_description = _("# of Cubs")
-    get_rank_category.admin_order_field = 'rank'
+    get_rank_category.admin_order_field = "rank"
     get_rank_category.short_description = _("Rank Category")
 
 
@@ -161,21 +160,22 @@ class Membership(models.Model):
     """
     Tracks the year(s) a cub is assigned to a Den
     """
+
     scout = models.ForeignKey(
-        'membership.Scout',
+        "membership.Scout",
         on_delete=models.CASCADE,
-        related_name='den_memberships',
+        related_name="den_memberships",
     )
     den = models.ForeignKey(
         Den,
         on_delete=models.CASCADE,
-        related_name='scouts',
+        related_name="scouts",
     )
     year_assigned = models.ForeignKey(
         PackYear,
         on_delete=models.CASCADE,
         default=PackYear.get_current_pack_year_year,
-        related_name='den_memberships',
+        related_name="den_memberships",
     )
 
     uuid = models.UUIDField(
@@ -191,7 +191,7 @@ class Membership(models.Model):
     )
 
     class Meta:
-        ordering = ['year_assigned', 'den', 'scout']
+        ordering = ["year_assigned", "den", "scout"]
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
 

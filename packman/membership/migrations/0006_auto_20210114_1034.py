@@ -8,13 +8,19 @@ import packman.membership.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('membership', '0005_auto_20210114_1005'),
+        ("membership", "0005_auto_20210114_1005"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='member',
-            name='photo',
-            field=easy_thumbnails.fields.ThumbnailerImageField(blank=True, help_text='We use profile photos in the Pack Directory to help members match names with faces. A good photo is taken from the shoulders up and with the face clearly visible. Photos are available only for Pack members and are not shared.', null=True, upload_to=packman.membership.models.get_photo_path, verbose_name='Headshot Photo'),
+            model_name="member",
+            name="photo",
+            field=easy_thumbnails.fields.ThumbnailerImageField(
+                blank=True,
+                help_text="We use profile photos in the Pack Directory to help members match names with faces. A good photo is taken from the shoulders up and with the face clearly visible. Photos are available only for Pack members and are not shared.",
+                null=True,
+                upload_to=packman.membership.models.get_photo_path,
+                verbose_name="Headshot Photo",
+            ),
         ),
     ]

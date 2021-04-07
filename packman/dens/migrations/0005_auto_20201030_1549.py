@@ -6,20 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dens', '0004_auto_20201030_1403'),
+        ("dens", "0004_auto_20201030_1403"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='den',
-            name='number',
-            field=models.IntegerField(help_text='The Den number', primary_key=True, serialize=False),
+            model_name="den",
+            name="number",
+            field=models.IntegerField(
+                help_text="The Den number", primary_key=True, serialize=False
+            ),
         ),
         migrations.AlterField(
-            model_name='rank',
-            name='rank',
+            model_name="rank",
+            name="rank",
             field=models.IntegerField(
-                choices=[(1, 'Bobcat'), (2, 'Tiger'), (3, 'Wolf'), (4, 'Bear'), (5, 'Jr. Webelo'), (6, 'Sr. Webelo'),
-                         (7, 'Webelo'), (8, 'Arrow of Light')], unique=True),
+                choices=[
+                    (1, "Bobcat"),
+                    (2, "Tiger"),
+                    (3, "Wolf"),
+                    (4, "Bear"),
+                    (5, "Jr. Webelo"),
+                    (6, "Sr. Webelo"),
+                    (7, "Webelo"),
+                    (8, "Arrow of Light"),
+                ],
+                unique=True,
+            ),
         ),
     ]

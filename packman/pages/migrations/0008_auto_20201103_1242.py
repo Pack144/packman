@@ -6,16 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pages', '0007_auto_20201102_1624'),
+        ("pages", "0007_auto_20201102_1624"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='StaticPage',
+            name="StaticPage",
         ),
         migrations.AddField(
-            model_name='page',
-            name='page',
-            field=models.CharField(blank=True, choices=[('HOME', 'Home'), ('ABOUT', 'About Us'), ('HISTORY', 'History'), ('SIGNUP', 'Join Us')], max_length=8, null=True, unique=True),
+            model_name="page",
+            name="page",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("HOME", "Home"),
+                    ("ABOUT", "About Us"),
+                    ("HISTORY", "History"),
+                    ("SIGNUP", "Join Us"),
+                ],
+                max_length=8,
+                null=True,
+                unique=True,
+            ),
         ),
     ]

@@ -7,17 +7,21 @@ from .models import Category, Event, PackYear
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color', 'icon', )
+    list_display = (
+        "name",
+        "color",
+        "icon",
+    )
 
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     actions = ["mark_cancelled", "mark_confirmed", "mark_tentative"]
     date_hierarchy = "start"
-    list_display = ('name', 'get_location', 'start', 'end', 'category', 'status')
-    list_filter = ('category', 'status', 'start')
-    search_fields = ('name', 'start', 'end', 'location', 'venue__name')
-    readonly_fields = ('duration', )
+    list_display = ("name", "get_location", "start", "end", "category", "status")
+    list_filter = ("category", "status", "start")
+    search_fields = ("name", "start", "end", "location", "venue__name")
+    readonly_fields = ("duration",)
 
     def mark_cancelled(self, request, queryset):
         updates = queryset.update(status=Event.CANCELLED)
