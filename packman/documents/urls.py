@@ -1,8 +1,8 @@
 from django.urls import path
 
-from .views import DocumentListView
+from . import views
 
 app_name = "documents"
 urlpatterns = [
-    path("", DocumentListView.as_view(), name="list"),
+    path("", views.DocumentListView.as_view(), name="list"),
 ]

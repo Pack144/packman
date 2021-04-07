@@ -1,9 +1,9 @@
 from django.urls import path
 
-from .views import DenDetailView, DensListView
+from . import views
 
 app_name = "dens"
 urlpatterns = [
-    path("", DensListView.as_view(), name="list"),
-    path("<int:pk>/", DenDetailView.as_view(), name="detail"),
+    path("", views.DensListView.as_view(), name="list"),
+    path("<int:pk>/", views.DenDetailView.as_view(), name="detail"),
 ]
