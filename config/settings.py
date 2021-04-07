@@ -62,14 +62,14 @@ INSTALLED_APPS = [
     "tempus_dominus",
     "tinymce",
     # Local apps
-    "packman.address_book.apps.AddressBookConfig",
-    "packman.calendars.apps.CalendarsConfig",
-    "packman.committees.apps.CommitteesConfig",
-    "packman.core.apps.CoreConfig",
-    "packman.dens.apps.DensConfig",
-    "packman.documents.apps.DocumentsConfig",
-    "packman.membership.apps.MembershipConfig",
-    "packman.pages.apps.PagesConfig",
+    "packman.address_book",
+    "packman.calendars",
+    "packman.committees",
+    "packman.core",
+    "packman.dens",
+    "packman.documents",
+    "packman.membership",
+    "packman.pages",
 ]
 
 MIDDLEWARE = [
