@@ -32,7 +32,6 @@ class FamilyManager(models.Manager):
 
 
 class MemberManager(UserManager):
-
     def _create_user(self, email, password, **extra_fields):
         """
         Custom user model manager where email is the unique identifiers for
@@ -41,7 +40,7 @@ class MemberManager(UserManager):
         https://github.com/django/django/blob/master/django/contrib/auth/models.py
         """
         if not email:
-            raise ValueError('Users must have an email address')
+            raise ValueError("Users must have an email address")
 
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
@@ -50,18 +49,18 @@ class MemberManager(UserManager):
         return user
 
     def create_user(self, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('_is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault("_is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('_is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault("_is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
-        if extra_fields.get('_is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get("_is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(email, password, **extra_fields)
 
@@ -74,49 +73,31 @@ class ScoutQuerySet(models.QuerySet):
         )
 
     def bobcats(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank=Rank.BOBCAT
-        )
+        return self.active().filter(den_memberships__den__rank__rank=Rank.BOBCAT)
 
     def tigers(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank=Rank.TIGER
-        )
+        return self.active().filter(den_memberships__den__rank__rank=Rank.TIGER)
 
     def wolves(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank=Rank.WOLF
-        )
+        return self.active().filter(den_memberships__den__rank__rank=Rank.WOLF)
 
     def bears(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank=Rank.BEAR
-        )
+        return self.active().filter(den_memberships__den__rank__rank=Rank.BEAR)
 
     def jr_webes(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank=Rank.JR_WEBE
-        )
+        return self.active().filter(den_memberships__den__rank__rank=Rank.JR_WEBE)
 
     def sr_webes(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank=Rank.SR_WEBE
-        )
+        return self.active().filter(den_memberships__den__rank__rank=Rank.SR_WEBE)
 
     def arrows_of_light(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank=Rank.ARROW
-        )
+        return self.active().filter(den_memberships__den__rank__rank=Rank.ARROW)
 
     def animal_ranks(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank__lte=Rank.BEAR
-        )
+        return self.active().filter(den_memberships__den__rank__rank__lte=Rank.BEAR)
 
     def webelo_ranks(self):
-        return self.active().filter(
-            den_memberships__den__rank__rank__gte=Rank.JR_WEBE
-        )
+        return self.active().filter(den_memberships__den__rank__rank__gte=Rank.JR_WEBE)
 
 
 class ScoutManager(models.Manager):

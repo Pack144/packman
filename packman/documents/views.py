@@ -9,8 +9,9 @@ class DocumentListView(ActiveMemberOrContributorTest, ListView):
     """
     Display a listing of all the documents published to the repository
     """
+
     model = Document
-    template_name = 'documents/document_list.html'
+    template_name = "documents/document_list.html"
 
     def get_queryset(self):
         """
@@ -19,7 +20,7 @@ class DocumentListView(ActiveMemberOrContributorTest, ListView):
         """
         return Category.objects.prefetch_related(
             Prefetch(
-                'documents',
-                queryset=Document.objects.filter(display_in_repository=True)
+                "documents",
+                queryset=Document.objects.filter(display_in_repository=True),
             )
         )

@@ -10,25 +10,40 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('membership', '0001_initial'),
-        ('dens', '0001_initial'),
-        ('calendars', '0001_initial'),
+        ("membership", "0001_initial"),
+        ("dens", "0001_initial"),
+        ("calendars", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='membership',
-            name='scout',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='den', to='membership.Scout'),
+            model_name="membership",
+            name="scout",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="den",
+                to="membership.Scout",
+            ),
         ),
         migrations.AddField(
-            model_name='membership',
-            name='year_assigned',
-            field=models.ForeignKey(default=packman.calendars.models.PackYear.get_current_pack_year_year, on_delete=django.db.models.deletion.CASCADE, related_name='den_memberships', to='calendars.PackYear'),
+            model_name="membership",
+            name="year_assigned",
+            field=models.ForeignKey(
+                default=packman.calendars.models.PackYear.get_current_pack_year_year,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="den_memberships",
+                to="calendars.PackYear",
+            ),
         ),
         migrations.AddField(
-            model_name='den',
-            name='rank',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='dens', to='dens.Rank'),
+            model_name="den",
+            name="rank",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="dens",
+                to="dens.Rank",
+            ),
         ),
     ]

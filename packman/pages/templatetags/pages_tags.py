@@ -16,7 +16,7 @@ def query_transform(context, **kwargs):
 
     A RequestContext is required for access to the current querystring.
     """
-    query = context['request'].GET.copy()
+    query = context["request"].GET.copy()
     for k, v in kwargs.items():
         if v:
             query[k] = v

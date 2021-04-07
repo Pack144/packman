@@ -36,7 +36,7 @@ def scout_migration_prep(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('membership', '0001_initial'),
+        ("membership", "0001_initial"),
     ]
 
     operations = [

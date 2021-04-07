@@ -9,41 +9,89 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Committee',
+            name="Committee",
             fields=[
-                ('name', models.CharField(max_length=64)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('leadership', models.BooleanField(default=False, help_text='e.g. Akela, Assistant Akela, Den Leader', verbose_name='Pack Leadership')),
-                ('is_staff', models.BooleanField(default=False, help_text='Designates whether members can log into this admin site.', verbose_name='Staff')),
-                ('slug', models.SlugField(unique=True)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateTimeField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=64)),
+                ("description", models.TextField(blank=True, null=True)),
+                (
+                    "leadership",
+                    models.BooleanField(
+                        default=False,
+                        help_text="e.g. Akela, Assistant Akela, Den Leader",
+                        verbose_name="Pack Leadership",
+                    ),
+                ),
+                (
+                    "is_staff",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether members can log into this admin site.",
+                        verbose_name="Staff",
+                    ),
+                ),
+                ("slug", models.SlugField(unique=True)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateTimeField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Committee',
-                'verbose_name_plural': 'Committees',
-                'ordering': ['-leadership', 'name'],
+                "verbose_name": "Committee",
+                "verbose_name_plural": "Committees",
+                "ordering": ["-leadership", "name"],
             },
         ),
         migrations.CreateModel(
-            name='Membership',
+            name="Membership",
             fields=[
-                ('position', models.PositiveSmallIntegerField(choices=[(1, 'Chair'), (2, 'Member'), (3, 'Apprentice'), (4, 'Den Leader'), (5, 'Akela'), (6, 'Assistant Akela')], default=2)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date_added', models.DateTimeField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
-                ('committee', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='committees.Committee')),
+                (
+                    "position",
+                    models.PositiveSmallIntegerField(
+                        choices=[
+                            (1, "Chair"),
+                            (2, "Member"),
+                            (3, "Apprentice"),
+                            (4, "Den Leader"),
+                            (5, "Akela"),
+                            (6, "Assistant Akela"),
+                        ],
+                        default=2,
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date_added", models.DateTimeField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
+                (
+                    "committee",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="committees.Committee",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Member',
-                'verbose_name_plural': 'Members',
-                'ordering': ['year_served', 'den', 'position', 'member'],
+                "verbose_name": "Member",
+                "verbose_name_plural": "Members",
+                "ordering": ["year_served", "den", "position", "member"],
             },
         ),
     ]
