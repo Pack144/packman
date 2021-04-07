@@ -15,7 +15,7 @@
               <h2>{{ committee }}</h2>
               {% if committee.leadership %}<span class="text-warning"><i class="fas fa-star fa-2x"></i></span>{% endif %}
             </div>
-            {% if committee.description %}<p>{{ committee.description|linebreaks }}</p>{% endif %}
+            {% if committee.description %}{{ committee.description|linebreaks }}{% endif %}
           </a>
         {% endfor %}
       </div>
