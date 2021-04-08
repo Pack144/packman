@@ -3,25 +3,27 @@ import logging
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import (
-    CreateView,
-    DetailView,
-    FormView,
-    TemplateView,
-    UpdateView,
-)
+from django.views.generic import CreateView, DetailView, FormView, UpdateView
 
 from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from packman.membership.models import Family
 from packman.calendars.models import Event
+
 from .forms import ContactForm
 from .models import Page
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_link_list(request):
+    pages = Page.objects.get_visible_content(user=request.user)
+    link_list = [{"title": page.title, "value": page.get_absolute_url()} for page in pages]
+    return JsonResponse(link_list, safe=False)
 
 
 class PageDetailView(DetailView):
