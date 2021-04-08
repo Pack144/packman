@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.core.mail import EmailMessage
 from django.utils.translation import gettext as _
+from tinymce.widgets import TinyMCE
 
 from .models import ContentBlock, Page
 
@@ -86,6 +87,10 @@ class ContentBlockForm(forms.ModelForm):
     class Meta:
         model = ContentBlock
         fields = ("heading", "visibility", "body")
+        widgets = {
+            "body": TinyMCE(mce_attrs={"link_list": "/api/v1/pages/link_list/"}),
+            "visibility": forms.RadioSelect,
+        }
 
 
 ContentBlockFormSet = forms.inlineformset_factory(
