@@ -1,7 +1,7 @@
 import logging
 
 from django.db import models
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.text import slugify
@@ -68,15 +68,15 @@ class Page(TimeStampedUUIDModel):
 
     def get_absolute_url(self):
         if self.page == self._meta.model.HOME:
-            return reverse_lazy("pages:home")
+            return reverse("pages:home")
         elif self.page == self._meta.model.ABOUT:
-            return reverse_lazy("pages:about")
+            return reverse("pages:about")
         elif self.page == self._meta.model.HISTORY:
-            return reverse_lazy("pages:history")
+            return reverse("pages:history")
         elif self.page == self._meta.model.SIGNUP:
-            return reverse_lazy("pages:signup")
+            return reverse("pages:signup")
         else:
-            return reverse_lazy("pages:detail", kwargs={"slug": self.slug})
+            return reverse("pages:detail", kwargs={"slug": self.slug})
 
     def clean(self):
         super().clean()
