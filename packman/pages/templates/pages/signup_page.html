@@ -4,17 +4,24 @@
 {% block title %}{{ block.super }}: {% if page %}{{ page.title }}{% else %}Sign Up{% endif %}{% endblock %}
 
 {% block content %}
-  <div class="row">
-    <div class="col">
-      <h1>{% if page %}{{ page.title }}{% else %}Sign Up {% endif %}</h1>
-
-    </div>
-    <div class="col text-right">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1>{% if page %}{{ page.title }}{% else %}{% translate 'Sign Up' %}{% endif %}</h1>
+    {% if perms.pages %}
+      <div class="btn-group btn-group-sm">
+        {% if perms.pages.add_page %}
+          <a href="{% url 'pages:create' %}" class="btn btn-outline-secondary" data-toggle="tooltip" title="{% translate 'Add a new webpage' %}"><i class="far fa-plus-square"></i></a>
+        {% endif %}
+        {% if perms.pages.change_page %}
+          <a href="{% url 'pages:update' page.pk %}" class="btn btn-outline-secondary" data-toggle="tooltip" title="{% translate 'Edit this page' %}"><i class="far fa-edit"></i></a>
+        {% endif %}
+        {% if perms.pages.delete_page and not page.page %}
+          <a href="{% url 'pages:delete' page.pk %}" class="btn btn-outline-danger" data-toggle="tooltip" title="{% translate 'Delete this webpage' %}"><i class="far fa-minus-square"></i></a>
+        {% endif %}
+      </div>
+    {% endif %}
       <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#instructionsModal" title="{% translate 'Show form instructions' %}">
         <i class="fas fa-question-circle"></i>
       </button>
-
-    </div>
   </div>
 
   {% if user.is_authenticated %}
@@ -109,4 +116,11 @@
       },
     });
   </script>
+
+  <script>
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
 {% endblock js %}
