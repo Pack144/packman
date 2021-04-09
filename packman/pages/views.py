@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
@@ -7,13 +8,13 @@ from django.http import JsonResponse
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, DetailView, FormView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, FormView, UpdateView
 
 from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from packman.membership.models import Family
 from packman.calendars.models import Event
 
-from .forms import ContactForm
+from .forms import ContactForm, ContentBlockFormSet, PageForm
 from .models import Page
 
 
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_link_list(request):
+    """Retrieves a list of pages available for the current user to link to."""
     pages = Page.objects.get_visible_content(user=request.user)
     link_list = [{"title": page.title, "value": page.get_absolute_url()} for page in pages]
     return JsonResponse(link_list, safe=False)
@@ -41,10 +43,72 @@ class PageDetailView(DetailView):
         return super().get_queryset().get_visible_content(self.request.user)
 
 
-class PageUpdateView(UpdateView):
+class PageCreateView(PermissionRequiredMixin, SuccessMessageMixin, CreateView):
     model = Page
-    context_object_name = "page_content"
-    fields = "__all__"
+    form_class = PageForm
+    permission_required = "pages.add_page"
+    success_message = _(
+        "The page: '%(title)s' has been successfully created."
+    )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context["contentblock_formset"] = ContentBlockFormSet(self.request.POST)
+        else:
+            context["contentblock_formset"] = ContentBlockFormSet()
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data(form=form)
+        contentblock_formset = context["contentblock_formset"]
+        if contentblock_formset.is_valid():
+            self.object = form.save()
+            contentblock_formset.instance = self.object
+            contentblock_formset.save()
+        else:
+            return super().form_invalid(form)
+        return super().form_valid(form)
+
+
+class PageDeleteView(PermissionRequiredMixin, SuccessMessageMixin, DeleteView):
+    model = Page
+    permission_required = "pages.delete_page"
+    success_url = reverse_lazy("pages:home")
+
+    def delete(self, request, *args, **kwargs):
+        success_message = _(
+            "The page: '%(page)s' has been successfully deleted."
+        ) % {"page": self.get_object()}
+        messages.success(request, success_message, "danger")
+        return super().delete(request, *args, **kwargs)
+
+
+class PageUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Page
+    form_class = PageForm
+    permission_required = "pages.change_page"
+    success_message = _(
+        "The page: '%(title)s' has been successfully updated."
+    )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context["contentblock_formset"] = ContentBlockFormSet(self.request.POST, instance=self.object)
+        else:
+            context["contentblock_formset"] = ContentBlockFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data(form=form)
+        contentblock_formset = context["contentblock_formset"]
+        if contentblock_formset.is_valid():
+            contentblock_formset.instance = self.object
+            contentblock_formset.save()
+        else:
+            return super().form_invalid(form)
+        return super().form_valid(form)
 
 
 class AboutPageView(PageDetailView):

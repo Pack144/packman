@@ -1,0 +1,21 @@
+{% extends '_base.html' %}
+
+{% load i18n %}
+
+{% block title %}{{ block.super }}: {% translate 'Confirm Delete' %}{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <div class="alert alert-danger" role="alert">
+      <h1 class="alert-heading">{% translate 'Are you absolutely certain?' %}</h1>
+      {% blocktranslate %}
+        <p>You are about to delete the <strong>{{ page }}</strong> webpage. This action cannot be undone.</p>
+        <p>To permanently remove this page from the database click the delete button below.</p>
+      {% endblocktranslate %}
+        <hr>
+        <a href="{{ page.get_absolute_url }}" class="btn btn-primary">{% translate 'Wait! Take me back' %}</a>
+        <button type="submit" class="btn btn-danger">{% translate 'Yes, delete this page' %}</button>
+    </div>
+    {% csrf_token %}
+  </form>
+{% endblock content %}

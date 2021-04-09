@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.core.mail import EmailMessage
 from django.utils.translation import gettext as _
+
 from tinymce.widgets import TinyMCE
 
 from .models import ContentBlock, Page

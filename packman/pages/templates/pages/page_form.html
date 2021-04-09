@@ -1,15 +1,56 @@
 {% extends '_base.html' %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags i18n static %}
 
-{% block title %}{{ block.super }}: {{ page_content.title }}{% endblock %}
+{% block title %}{{ block.super }}: {% if page.pk %}{{ page_content.title }}{% else %}{% translate 'New Page' %}{% endif %}{% endblock %}
 
 {% block content %}
-  <h1>Update {{ page_content.title }}</h1>
+  <h1>
+    {% if page.title %}{% blocktranslate %}Update {{ page }}{% endblocktranslate %}{% else %}{% translate 'Add a page' %}{% endif %}</h1>
   <form method="post" enctype="multipart/form-data" class="form">
+    <fieldset>
+      {{ form|crispy }}
+    </fieldset>
+    <fieldset id="{{ contentblock_formset.prefix }}">
+      {{ contentblock_formset.management_form }}
+      {% for contentblock_form in contentblock_formset %}
+        <div class="card mb-5 contentblock-dynamic-form">
+          <div class="card-body">
+          {{ contentblock_form|crispy }}
+          </div>
+        </div>
+      {% endfor %}
+    </fieldset>
     {% csrf_token %}
-    {{ form.media }}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-success">Update</button>
-    <a class="btn btn-primary" href="{% url 'pages:update' page_content.slug %}">Cancel</a>
+    <div class="text-right">
+    {% if page.pk %}
+      <a class="btn btn-secondary" href="{{ page.get_absolute_url }}">{% translate 'Cancel' %}</a>
+      <button type="submit" class="btn btn-success">{% blocktranslate %}Update {{ page }}{% endblocktranslate %}</button>
+    {% else %}
+      <button type="submit" class="btn btn-success">{% translate 'Create' %}</button>
+    {% endif %}
+    </div>
   </form>
-{% endblock %}
+{% endblock content %}
+
+{% block js %}
+  {{ block.super }}
+  {{ contentblock_formset.media }}
+  <script src="{% static 'dynamic_formsets/jquery.formset.js' %}"></script>
+  <script>
+    $('#{{ contentblock_formset.prefix }}').formset({
+      addCssClass: "btn btn-primary",
+      deleteCssClass: "btn btn-danger",
+      formCssClass: "contentblock_dynamic_form",
+      prefix: "{{ contentblock_formset.prefix }}",
+      uiText: {
+        addPrompt: "<i class='fas fa-plus-circle mr-1'></i> {% translate 'section' %}",
+        removePrompt: "<i class='fas fa-trash-alt'></i>"
+      }
+    })
+  </script>
+  <script src="/static/admin/js/jquery.init.js"></script>
+  <script src="/static/admin/js/urlify.js"></script>
+  <script src="/static/admin/js/prepopulate.js"></script>
+  <script id="django-admin-prepopulated-fields-constants" src="{% static 'admin/js/prepopulate_init.js' %}" data-prepopulated-fields="[{&quot;id&quot;: &quot;#id_slug&quot;, &quot;name&quot;: &quot;slug&quot;, &quot;dependency_ids&quot;: [&quot;#id_title&quot;], &quot;dependency_list&quot;: [&quot;title&quot;], &quot;maxLength&quot;: 50, &quot;allowUnicode&quot;: false}]">
+</script>
+{% endblock js %}
