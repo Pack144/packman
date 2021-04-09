@@ -1,5 +1,7 @@
 {% extends '_base.html' %}
 
+{% load i18n %}
+
 {% block title %}{{ block.super }}: Upcoming Events{% endblock %}
 
 {% block content %}
@@ -11,11 +13,15 @@
       <button class="btn btn-lg btn-danger dropdown-toggle" type="button" id="calendarFeedSubscribeButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <i class="fas fa-calendar-alt"></i>
       </button>
-      <div class="dropdown-menu" aria-labelledby="calendarFeedSubscribeButton">
-        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">Subscribe to this calendar</a>
-        <button class="dropdown-item" href="{% url 'calendars:feed' user.family.uuid %}" id="ical-link">Copy link to this calendar</button>
+      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="calendarFeedSubscribeButton">
+        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}"><i class="far fa-calendar fa-fw"></i> {% translate 'Subscribe to this calendar' %}</a>
+        <button class="dropdown-item" href="{% url 'calendars:feed' user.family.uuid %}" id="ical-link"><i class="far fa-copy fa-fw"></i> {% translate 'Copy link to this calendar' %}</button>
         <div class="dropdown-divider"></div>
-        <a href="{% url 'calendars:archive' %}" class="dropdown-item">Show past events</a>
+        <a href="{% url 'calendars:archive' %}" class="dropdown-item"><i class="far fa-calendar-check fa-fw"></i> {% translate 'Show past events' %}</a>
+        {% if perms.calendars.add_event %}
+          <div class="dropdown-divider"></div>
+            <a href="{% url 'calendars:create' %}" class="dropdown-item"><i class="far fa-calendar-plus fa-fw"></i> {% translate 'Add a new event' %}</a>
+          {% endif %}
       </div>
     </div>
 
@@ -29,8 +35,8 @@
       {% include 'pagination.html' %}
     {% endif %}
   {% else %}
-    <div class="alert alert-secondary" role="alert">
-      <p>The pack has no scheduled events in the next 6 months</p>
+    <div class="alert alert-warning" role="alert">
+      {% translate 'The pack has no scheduled events in the next 6 months' %}
     </div>
   {% endif %}
 {% endblock %}
@@ -44,6 +50,14 @@
 
 {% block js %}
   {{ block.super }}
+
+  <script>
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+
   <script type="text/javascript">
     function copy() {
       var textArea = document.createElement("textarea");
