@@ -1,11 +1,26 @@
 {% extends "_base.html" %}
-{% load humanize %}
+{% load humanize i18n %}
 
 {% block title %}{{ block.super }}: {{ event }}{% endblock title %}
 
 {% block content %}
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
+    {% if perms.calendars %}
+      <div class="row justify-content-end">
+        <div class="btn-group">
+          {% if perms.calendars.add_event %}
+            <a href="#" class="btn btn-secondary btn-sm" data-toggle="tooltip" title="{% translate 'Create a new event' %}"><i class="fas fa-calendar-plus"></i></a>
+          {% endif %}
+          {% if perms.calendars.change_event %}
+            <a href="{% url 'calendars:update' event.pk %}" class="btn btn-secondary btn-sm" data-toggle="tooltip" title="{% translate 'Make changes to this event' %}"><i class="fas fa-calendar-check"></i></a>
+          {% endif %}
+          {% if perms.calendars.delete_event %}
+            <a href="{% url 'calendars:delete' event.pk %}" class="btn btn-secondary btn-sm" data-toggle="tooltip" title="{% translate 'Delete this event' %}"><i class="fas fa-calendar-minus"></i></a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
       <div class="row">
         <div class="d-none d-lg-inline col-lg-3">
           <div class="card text-center">
@@ -18,26 +33,34 @@
           </div>
         </div>
         <div class="col">
-          <h1>{% if event.status == event.CANCELLED %}<del>{{ event.name }}</del>{% else %}{{ event.name }}{% endif %}</h1>
+          <h1>{% if event.status == event.CANCELLED %}
+            <del>{{ event.name }}</del>{% else %}{{ event.name }}{% endif %}</h1>
           <ul class="list-inline text-muted" id="datetime-details-list">
             {% if event.end and event.end|date != event.start|date %}
-              <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
+              <li class="list-inline-item">
+                <i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
               <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}</li>
               <li class="list-inline-item">&ndash;</li>
-              <li class="list-inline-item"><i class="fas fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}</li>
+              <li class="list-inline-item">
+                <i class="fas fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}</li>
               <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.end|time }}</li>
             {% elif event.end %}
-              <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
-              <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}</li>
+              <li class="list-inline-item">
+                <i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
+              <li class="list-inline-item">
+                <i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}</li>
             {% else %}
-              <li class="list-inline-item"><i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
+              <li class="list-inline-item">
+                <i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}</li>
               <li class="list-inline-item"><i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}</li>
             {% endif %}
 
             {% if event.venue.address %}
-              <li class="list-inline-item"><i class="fas fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}</li>
+              <li class="list-inline-item">
+                <i class="fas fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}</li>
             {% elif event.get_location %}
-              <li class="list-inline-item"><i class="fas fa-map-marker" aria-label="location"></i> {{ event.get_location }}</li>
+              <li class="list-inline-item">
+                <i class="fas fa-map-marker" aria-label="location"></i> {{ event.get_location }}</li>
             {% endif %}
           </ul>
 
@@ -59,4 +82,13 @@
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
 {% endblock %}
