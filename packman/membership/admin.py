@@ -1,9 +1,12 @@
+import csv
 import logging
+
 
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.db.models import Case, Count, When, CharField
 from django.db.models.functions import Coalesce
+from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html_join, format_html
 from django.utils.translation import gettext_lazy as _, ngettext
@@ -135,6 +138,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "make_inactive",
         "make_graduated",
         "continue_in_same_den_one_more_year",
+        "export_as_csv",
     ]
     list_display = (
         "name",
@@ -340,6 +344,27 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
+    def export_as_csv(self, request, queryset):
+        # Export the selected Cubs for use in GrandPrix Race Manager
+        meta = self.model._meta
+        field_names = [
+            "last_name",
+            "short_name",
+            "rank",
+            "current_den",
+            "photo",
+        ]
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename={}.csv".format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field, callable(field)) for field in field_names])
+
+        return response
+
     make_active.short_description = _("Mark selected Cubs as active")
     make_approved.short_description = _("Approve selected Cubs for membership")
     make_inactive.short_description = _("Mark selected Cubs as inactive")
@@ -347,6 +372,7 @@ class ScoutAdmin(admin.ModelAdmin):
     continue_in_same_den_one_more_year.short_description = _(
         "Assign selected Cubs to the same den for the next Pack Year"
     )
+    export_as_csv.short_description = _("Export selected Cubs to CSV file")
 
 
 @admin.register(models.Adult)
