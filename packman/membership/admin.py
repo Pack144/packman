@@ -1,6 +1,8 @@
 import csv
 import logging
 
+from io import StringIO
+from zipfile import ZipFile
 
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
@@ -348,20 +350,45 @@ class ScoutAdmin(admin.ModelAdmin):
         # Export the selected Cubs for use in GrandPrix Race Manager
         meta = self.model._meta
         field_names = [
-            "last_name",
-            "short_name",
-            "rank",
-            "current_den",
-            "photo",
+            "LastName",
+            "FirstName",
+            "Group",
+            "Subgroup",
+            "VehicleNumber",
+            "VehicleName",
+            "Passed",
+            "Image",
+            "Exclude",
+            "Printed",
         ]
 
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = "attachment; filename={}.csv".format(meta)
-        writer = csv.writer(response)
+        response = HttpResponse(content_type="application/zip")
+        response["Content-Disposition"] = "attachment; filename={}.zip".format(meta)
+
+        csv_file = StringIO()
+        writer = csv.writer(csv_file)
 
         writer.writerow(field_names)
-        for obj in queryset:
-            row = writer.writerow([getattr(obj, field, callable(field)) for field in field_names])
+        with ZipFile(response, "w") as zip_obj:
+            for obj in queryset:
+                fields = {
+                    "LastName": obj.last_name,
+                    "FirstName": obj.get_short_name(),
+                    "Group": obj.rank,
+                    "Subgroup": obj.current_den,
+                    "VehicleNumber": "",
+                    "VehicleName": "",
+                    "Passed": "No",
+                    "Image": "",
+                    "Exclude": "No",
+                    "Printed": "No",
+                }
+                if obj.photo:
+                    fields['Image'] = f"{fields['FirstName']}{fields['LastName']}.jpg"
+                    zip_obj.write(obj.photo["320x320"].path, fields['Image'])
+                writer.writerow([fields[field] for field in fields])
+
+            zip_obj.writestr("roster.csv", csv_file.getvalue())
 
         return response
 
