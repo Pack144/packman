@@ -13,5 +13,6 @@ urlpatterns = [
     path("page/add/", views.PageCreateView.as_view(), name="create"),
     path("page/<uuid:pk>/delete/", views.PageDeleteView.as_view(), name="delete"),
     path("page/<uuid:pk>/edit/", views.PageUpdateView.as_view(), name="update"),
+    path("api/v1/pages/image_list/", views.get_image_list, name="image_list"),
     path("api/v1/pages/link_list/", views.get_link_list, name="link_list"),
 ]
