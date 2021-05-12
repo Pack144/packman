@@ -4,7 +4,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views import generic
 
 from packman.membership.mixins import ActiveMemberOrContributorTest
 
@@ -12,7 +12,7 @@ from .forms import EventForm
 from .models import Event
 
 
-class EventListView(ActiveMemberOrContributorTest, ListView):
+class EventListView(ActiveMemberOrContributorTest, generic.ListView):
     """
     Display a listing of all the events coming up
     """
@@ -34,7 +34,7 @@ class EventListView(ActiveMemberOrContributorTest, ListView):
         )
 
 
-class EventArchiveView(ActiveMemberOrContributorTest, ListView):
+class EventArchiveView(ActiveMemberOrContributorTest, generic.ListView):
     """
     Display a list of past events
     """
@@ -51,7 +51,7 @@ class EventArchiveView(ActiveMemberOrContributorTest, ListView):
         return Event.objects.filter(start__lt=timezone.now())
 
 
-class EventDetailView(ActiveMemberOrContributorTest, DetailView):
+class EventDetailView(ActiveMemberOrContributorTest, generic.DetailView):
     """
     Display the details of a specific event
     """
@@ -59,21 +59,21 @@ class EventDetailView(ActiveMemberOrContributorTest, DetailView):
     model = Event
 
 
-class EventCreateView(PermissionRequiredMixin, SuccessMessageMixin, CreateView):
+class EventCreateView(PermissionRequiredMixin, SuccessMessageMixin, generic.CreateView):
     form_class = EventForm
     model = Event
     permission_required = "calendars.add_event"
     success_message = _("The event %(name)s has been successfully created")
 
 
-class EventUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
+class EventUpdateView(PermissionRequiredMixin, SuccessMessageMixin, generic.UpdateView):
     form_class = EventForm
     model = Event
     permission_required = "calendars.change_event"
     success_message = _("The event %(name)s has been successfully updated")
 
 
-class EventDeleteView(PermissionRequiredMixin, DeleteView):
+class EventDeleteView(PermissionRequiredMixin, generic.DeleteView):
     model = Event
     permission_required = "calendars.delete_event"
     success_url = reverse_lazy("calendars:list")
