@@ -413,6 +413,7 @@ class ScoutAdmin(admin.ModelAdmin):
 
 @admin.register(models.Adult)
 class AdultAdmin(UserAdmin):
+    actions = ["export_as_csv"]
     add_form = forms.AdminAdultCreation
     form = forms.AdminAdultChange
     list_display = (
@@ -552,6 +553,23 @@ class AdultAdmin(UserAdmin):
         return format_html("<ul>{}</ul>", children_links) if children_links else "-"
 
     get_children.short_description = _("children")
+
+    def export_as_csv(self, request, queryset):
+
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_as_csv.short_description = _("Export selected Adults")
 
 
 @admin.register(models.Family)
