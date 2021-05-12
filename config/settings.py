@@ -308,25 +308,19 @@ AUTH_USER_MODEL = "membership.Adult"
 # django-tinymce
 # https://django-tinymce.readthedocs.io/en/latest/installation.html#configuration
 # -----------------------------------------------------------------------------
-# TINYMCE_DEFAULT_CONFIG = {
-#     'branding': False,
-#     'height': 500,
-#     'menubar': False,
-#     'skin': 'oxide-dark',
-#     'content_css': 'dark',
-#
-# }
 TINYMCE_INCLUDE_JQUERY = False
-TINYMCE_JS_URL = f"{STATIC_URL}tinymce/tinymce.min.js"
 TINYMCE_DEFAULT_CONFIG = {
     "convert_urls": False,
-    "height": 500,
-    "menubar": False,
-    "link_quicklink": True,
-    "plugins": "preview paste importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons",
-    "toolbar": "undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | charmap emoticons | insertfile image media template link anchor codesample code",
+    "default_link_target": "_blank",
     "imgagetools_cors_hosts": ALLOWED_HOSTS,
+    "link_quicklink": True,
+    "link_title": False,
+    "menubar": False,
+    "plugins": "autoresize emoticons hr link lists table image",
+    "statusbar": False,
+    "toolbar": "undo redo | bold italic underline strikethrough bullist numlist link | image table hr | alignleft aligncenter alignright alignjustify | emoticons removeformat",
 }
+
 
 # django-tempus-dominus
 # https://tempusdominus.github.io/bootstrap-4/
