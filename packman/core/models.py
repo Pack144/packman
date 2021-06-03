@@ -1,21 +1,21 @@
 import uuid
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
 class UUIDModel(models.Model):
     """
     Abstract base model that relies on UUID rather than sequential numbers
-    as the primary key
+    as the primary key.
     """
 
     uuid = models.UUIDField(
         _("UUID"),
-        default=uuid.uuid4,
-        editable=False,
         primary_key=True,
-        unique=True,
+        editable=False,
+        default=uuid.uuid4,
     )
 
     class Meta:
@@ -25,16 +25,18 @@ class UUIDModel(models.Model):
 class TimeStampedModel(models.Model):
     """
     Abstract base model that provides timestamps for created and updated as
-    standard
+    standard.
     """
 
     date_added = models.DateTimeField(
-        _("date added"),
-        auto_now_add=True,
+        _("created"),
+        default=timezone.now,
+        help_text=_("Date and time this entry was first added to the database.")
     )
     last_updated = models.DateTimeField(
-        _("last updated"),
+        _("modified"),
         auto_now=True,
+        help_text=_("Date and time this entry was last changed in the database.")
     )
 
     class Meta:
@@ -45,7 +47,7 @@ class TimeStampedUUIDModel(TimeStampedModel, UUIDModel):
     """
     Abstract base model that provides timestamps for created and updated as
     standard and also relies on UUID rather than sequential numbers as the
-    primary key
+    primary key.
     """
 
     class Meta:
