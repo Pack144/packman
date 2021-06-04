@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
-from django.utils.translation import ngettext
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 from .models import Category, Event, PackYear
 

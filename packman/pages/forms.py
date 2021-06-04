@@ -10,7 +10,6 @@ from tinymce.widgets import TinyMCE
 
 from .models import ContentBlock, Page
 
-
 logger = logging.getLogger(__name__)
 
 
