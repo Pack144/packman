@@ -131,9 +131,9 @@ class Address(TimeStampedUUIDModel):
 
     def single_line_display(self):
         if self.street2:
-            return f"{self.street} " f"{self.street2}, " f"{self.city}, " f"{self.state} " f"{self.zip_code}"
+            return f"{self.street} {self.street2}, {self.city}, {self.state}, {self.zip_code}"
         else:
-            return f"{self.street}, " f"{self.city}, " f"{self.state} " f"{self.zip_code}"
+            return f"{self.street}, {self.city}, {self.state}, {self.zip_code}"
 
 
 class PhoneNumber(TimeStampedUUIDModel):
