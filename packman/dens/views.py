@@ -1,8 +1,9 @@
 from django.views.generic import DetailView, ListView
 
+from packman.calendars.models import PackYear
 from packman.committees.models import Membership as CommitteeMembership
 from packman.membership.mixins import ActiveMemberOrContributorTest
-from packman.calendars.models import PackYear
+
 from .models import Den
 
 
