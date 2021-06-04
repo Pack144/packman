@@ -1,14 +1,13 @@
-import uuid
-
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
+from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
 
 
-class Rank(models.Model):
+class Rank(TimeStampedUUIDModel):
     """
     All of the Cub Scout ranks are defined. Packs can specify which ranks they
     support.
@@ -41,18 +40,6 @@ class Rank(models.Model):
         max_length=128,
         blank=True,
         default="",
-    )
-
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:
@@ -92,7 +79,7 @@ class Rank(models.Model):
             return f"{settings.STATIC_URL}img/arrowoflight.png"
 
 
-class Den(models.Model):
+class Den(TimeStampedModel):
     """ Each active cub should be a member of 1 den each Pack Year """
 
     number = models.IntegerField(
@@ -105,13 +92,6 @@ class Den(models.Model):
         related_name="dens",
         blank=True,
         null=True,
-    )
-
-    date_added = models.DateField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:
@@ -156,7 +136,7 @@ class Den(models.Model):
     get_rank_category.short_description = _("Rank Category")
 
 
-class Membership(models.Model):
+class Membership(TimeStampedUUIDModel):
     """
     Tracks the year(s) a cub is assigned to a Den
     """
@@ -176,18 +156,6 @@ class Membership(models.Model):
         on_delete=models.CASCADE,
         default=PackYear.get_current_pack_year_year,
         related_name="den_memberships",
-    )
-
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:
