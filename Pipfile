@@ -10,6 +10,7 @@ blowfish = "*"
 isort = "*"
 django-rename-app = "*"
 curlylint = "*"
+black = "*"
 
 [packages]
 argon2-cffi = "*"
@@ -34,3 +35,6 @@ phonenumberslite = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

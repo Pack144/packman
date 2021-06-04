@@ -9,46 +9,56 @@
 # requirements. To emit only development requirements, pass "--dev-only".
 
 -i https://pypi.org/simple
+appdirs==1.4.4
 argon2-cffi==20.1.0
 asgiref==3.3.4; python_version >= '3.6'
-astroid==2.5.6; python_version ~= '3.6'
-attrs==20.3.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+astroid==2.5.7; python_version ~= '3.6'
+attrs==21.2.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+black==21.5b2
 blowfish==0.6.1
 cffi==1.14.5
-click==7.1.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+click==8.0.1; python_version >= '3.6'
+cssselect2==0.4.1; python_version >= '3.6'
 curlylint==0.13.0
 django-crispy-forms==1.11.2
 django-debug-toolbar==3.2.1
 django-dynamic-formsets==0.0.8
 django-environ==0.4.5
 django-extensions==3.1.3
-django-ical==1.7.1
-django-localflavor==3.0.1
-django-phonenumber-field==5.1.0
+django-ical==1.8.0
+django-localflavor==3.1
+django-phonenumber-field==5.2.0
 django-recurrence==1.10.3
 django-rename-app==0.1.3
-django-tempus-dominus==5.1.2.13
+django-tempus-dominus==5.1.2.14
 django-tinymce==3.3.0
-django==3.2
+django==3.2.4
 docutils==0.17.1
-easy-thumbnails==2.7.1
+easy-thumbnails==2.8rc0
 icalendar==4.0.7; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 isort==5.8.0
 lazy-object-proxy==1.6.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
+lxml==4.6.3; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 mccabe==0.6.1
+mypy-extensions==0.4.3
 mysql-connector==2.2.9
 parsy==1.1.0
 pathspec==0.8.1
-phonenumberslite==8.12.21
+phonenumberslite==8.12.24
 pillow==8.2.0
 psycopg2-binary==2.8.6
 pycparser==2.20; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-pylint==2.8.2
+pylint==3.0.0a3
 python-dateutil==2.8.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-memcached==1.59
 python-stdnum==1.16
 pytz==2021.1
-six==1.15.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+regex==2021.4.4
+reportlab==3.5.67; python_version >= '2.7' and python_version < '4'
+six==1.16.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 sqlparse==0.4.1; python_version >= '3.5'
+svglib==1.1.0; python_version >= '3'
+tinycss2==1.1.0; python_version >= '3.6'
 toml==0.10.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
+webencodings==0.5.1
 wrapt==1.12.1
