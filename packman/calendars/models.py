@@ -93,23 +93,15 @@ class PackYear(models.Model):
             settings.PACK_YEAR_BEGIN_DAY,
         )
 
-        if (
-            not pack_year_begins
-            <= date_to_test
-            < pack_year_begins.replace(year=pack_year_begins.year + 1)
-        ):
+        if not pack_year_begins <= date_to_test < pack_year_begins.replace(year=pack_year_begins.year + 1):
             pack_year_begins = pack_year_begins.replace(year=pack_year_begins.year - 1)
 
-        pack_year_ends = pack_year_begins.replace(
-            year=pack_year_begins.year + 1
-        ) - timezone.timedelta(seconds=1)
+        pack_year_ends = pack_year_begins.replace(year=pack_year_begins.year + 1) - timezone.timedelta(seconds=1)
         return {"start_date": pack_year_begins, "end_date": pack_year_ends}
 
     @staticmethod
     def get_current_pack_year():
-        year, created = PackYear.objects.get_or_create(
-            year=PackYear.get_pack_year()["end_date"].year
-        )
+        year, created = PackYear.objects.get_or_create(year=PackYear.get_pack_year()["end_date"].year)
         return year
 
     @staticmethod
@@ -194,9 +186,7 @@ class Category(TimeStampedUUIDModel):
         max_length=256,
         blank=True,
         default="",
-        help_text=_(
-            "Give a little more detail about the kinds of events in this " "category"
-        ),
+        help_text=_("Give a little more detail about the kinds of events in this " "category"),
     )
     icon = models.CharField(
         max_length=64,
@@ -224,7 +214,7 @@ class Category(TimeStampedUUIDModel):
 
 
 class Event(TimeStampedUUIDModel):
-    """ Store information about events """
+    """Store information about events"""
 
     TENTATIVE = "TENTATIVE"
     CONFIRMED = "CONFIRMED"
@@ -266,9 +256,7 @@ class Event(TimeStampedUUIDModel):
         on_delete=models.CASCADE,
         related_name="events",
     )
-    attachments = models.ManyToManyField(
-        "documents.Document", related_name="events", blank=True
-    )
+    attachments = models.ManyToManyField("documents.Document", related_name="events", blank=True)
     published = models.BooleanField(
         _("Show on iCal"),
         default=True,
@@ -280,11 +268,7 @@ class Event(TimeStampedUUIDModel):
     )
 
     class Meta:
-        indexes = [
-            models.Index(
-                fields=["name", "venue", "location", "start", "end", "category"]
-            )
-        ]
+        indexes = [models.Index(fields=["name", "venue", "location", "start", "end", "category"])]
         ordering = ["-start"]
         verbose_name = _("Event")
         verbose_name_plural = _("Events")
@@ -314,13 +298,13 @@ class Event(TimeStampedUUIDModel):
     get_location.short_description = _("Location")
 
     def clean(self):
-        """ Verify that end datetime is not before the start datetime. """
+        """Verify that end datetime is not before the start datetime."""
         if self.end and self.end <= self.start:
             raise ValidationError(_("Event cannot end before it starts."))
 
     @property
     def duration(self):
-        """ Calculate how long the event is scheduled for """
+        """Calculate how long the event is scheduled for"""
         if self.start and self.end:
             return self.end - self.start
 

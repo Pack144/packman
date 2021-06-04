@@ -20,6 +20,7 @@ class Image(TimeStampedModel):
     """
     Basic image model used to store image files that can be attached to a webpage
     """
+
     image = models.ImageField(_("image"), upload_to="pages")
 
     class Meta:
@@ -51,7 +52,9 @@ class Page(TimeStampedUUIDModel):
     title = models.CharField(
         _("title"),
         max_length=64,
-        help_text=_("The title of this webpage. Will be shown as the top level header and, if added to the site navigation bar, as the link name.")
+        help_text=_(
+            "The title of this webpage. Will be shown as the top level header and, if added to the site navigation bar, as the link name."
+        ),
     )
 
     page = models.CharField(
@@ -60,14 +63,16 @@ class Page(TimeStampedUUIDModel):
         unique=True,
         blank=True,
         null=True,
-        help_text=_("If this is going to be one of the standard pages, specify which one here.")
+        help_text=_("If this is going to be one of the standard pages, specify which one here."),
     )
     slug = models.SlugField(
         _("slug"),
         unique=True,
         blank=True,
         null=True,
-        help_text=_("A slug is the part of a URL which identifies a particular page on a website in an easy to read form. In other words, it’s the part of the URL that explains the page’s content. For this article, for example, the URL is https://example.com/slug, and the slug simply is ‘slug’.")
+        help_text=_(
+            "A slug is the part of a URL which identifies a particular page on a website in an easy to read form. In other words, it’s the part of the URL that explains the page’s content. For this article, for example, the URL is https://example.com/slug, and the slug simply is ‘slug’."
+        ),
     )
     include_in_nav = models.BooleanField(
         _("Include in navigation"),
@@ -104,14 +109,11 @@ class Page(TimeStampedUUIDModel):
         super().clean()
         if self.page and self.include_in_nav:
             self.include_in_nav = False
-            logger.warning(
-                _("Default pages will always appear in navbar. Setting is redundant")
-            )
+            logger.warning(_("Default pages will always appear in navbar. Setting is redundant"))
         if not self.page and not self.slug:
             self.slug = slugify(self.title)
             logger.warning(
-                _("%(page)s does not include a slug. Setting slug to %(slug)s")
-                % {"page": self, "slug": self.slug}
+                _("%(page)s does not include a slug. Setting slug to %(slug)s") % {"page": self, "slug": self.slug}
             )
 
 

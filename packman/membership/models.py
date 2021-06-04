@@ -101,11 +101,7 @@ class Member(TimeStampedUUIDModel):
     )
 
     class Meta:
-        indexes = [
-            models.Index(
-                fields=["first_name", "middle_name", "nickname", "last_name", "gender"]
-            )
-        ]
+        indexes = [models.Index(fields=["first_name", "middle_name", "nickname", "last_name", "gender"])]
         ordering = ["last_name", "nickname", "first_name"]
 
     def __str__(self):
@@ -116,28 +112,14 @@ class Member(TimeStampedUUIDModel):
             candidates = [self.get_full_name()]
             if self.middle_name and self.suffix:
                 candidates.append(
-                    f"{self.first_name} "
-                    f"{self.middle_name[0]} "
-                    f"{self.last_name} "
-                    f"{self.suffix}"
+                    f"{self.first_name} " f"{self.middle_name[0]} " f"{self.last_name} " f"{self.suffix}"
                 )
-                candidates.append(
-                    f"{self.first_name} "
-                    f"{self.middle_name} "
-                    f"{self.last_name} "
-                    f"{self.suffix}"
-                )
+                candidates.append(f"{self.first_name} " f"{self.middle_name} " f"{self.last_name} " f"{self.suffix}")
             elif self.suffix:
-                candidates.append(
-                    f"{self.first_name} " f"{self.last_name} " f"{self.suffix}"
-                )
+                candidates.append(f"{self.first_name} " f"{self.last_name} " f"{self.suffix}")
             elif self.middle_name:
-                candidates.append(
-                    f"{self.first_name} " f"{self.middle_name[0]} " f"{self.last_name}"
-                )
-                candidates.append(
-                    f"{self.first_name} " f"{self.middle_name} " f"{self.last_name}"
-                )
+                candidates.append(f"{self.first_name} " f"{self.middle_name[0]} " f"{self.last_name}")
+                candidates.append(f"{self.first_name} " f"{self.middle_name} " f"{self.last_name}")
             self.choose_slug(candidates=candidates)
             if not self.slug:
                 # None of the normal candidates seem to have worked or we would
@@ -165,7 +147,7 @@ class Member(TimeStampedUUIDModel):
             return f"{self.get_short_name()} {self.last_name}"
 
     def get_short_name(self):
-        """ Return either the first_name or nickname for the member. """
+        """Return either the first_name or nickname for the member."""
         return self.nickname or self.first_name
 
     def choose_slug(self, candidates):
@@ -176,7 +158,7 @@ class Member(TimeStampedUUIDModel):
         return self.slug
 
     def age(self):
-        """ If we have a birthday, calculate the current age of the member. """
+        """If we have a birthday, calculate the current age of the member."""
         if self.date_of_birth:
             today = timezone.now()
             return (
@@ -197,7 +179,7 @@ class Member(TimeStampedUUIDModel):
 
 
 class Family(TimeStampedUUIDModel):
-    """ Track the relationship between members """
+    """Track the relationship between members"""
 
     name = models.CharField(
         max_length=64,
@@ -291,8 +273,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
         _("Active"),
         default=True,
         help_text=_(
-            "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts."
+            "Designates whether this user should be treated as active. " "Unselect this instead of deleting accounts."
         ),
     )
 
@@ -330,7 +311,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
             return self.family.children.filter(status__exact=Scout.ACTIVE)
 
     def get_partners(self):
-        """ Return a list of other parents who share the same scout(s) """
+        """Return a list of other parents who share the same scout(s)"""
         if self.family:
             return self.family.adults.exclude(uuid=self.uuid)
 
@@ -387,8 +368,7 @@ class Scout(Member):
         null=True,
         limit_choices_to={"categories__name__icontains": "school"},
         help_text=_(
-            "Tell us what school your child attends. If your school isn't "
-            "listed, tell us in the comments section."
+            "Tell us what school your child attends. If your school isn't " "listed, tell us in the comments section."
         ),
     )
 
@@ -407,10 +387,7 @@ class Scout(Member):
         _("Comments"),
         blank=True,
         default="",
-        help_text=_(
-            "What other information should we consider when reviewing your "
-            "application?"
-        ),
+        help_text=_("What other information should we consider when reviewing your " "application?"),
     )
 
     # These fields should be managed by the person(s) in charge of membership
@@ -463,23 +440,19 @@ class Scout(Member):
     objects = ScoutManager()
 
     class Meta:
-        indexes = [
-            models.Index(fields=["school", "family", "status", "started_school"])
-        ]
+        indexes = [models.Index(fields=["school", "family", "status", "started_school"])]
         verbose_name = _("Cub")
         verbose_name_plural = _("Cubs")
 
     def get_siblings(self):
-        """ Return a list of other Scouts who share the same parent(s) """
+        """Return a list of other Scouts who share the same parent(s)"""
         if self.family:
             return self.family.children.exclude(uuid=self.uuid)
 
     def get_current_den(self):
         """Return the Den assignment for the current Pack Year"""
         try:
-            den = Den.objects.get(
-                scouts__scout=self, scouts__year_assigned=PackYear.objects.current()
-            )
+            den = Den.objects.get(scouts__scout=self, scouts__year_assigned=PackYear.objects.current())
         except Den.DoesNotExist:
             den = None
         return den
