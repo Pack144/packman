@@ -22,16 +22,12 @@ no_autofocus = true
 tabindex_no_positive = true
 
 [tool.isort]
+extend_skip = "migrations"
 profile = "black"
-multi_line_output = 3
-combine_as_imports = true
-default_section = "THIRDPARTY"
-include_trailing_comma = true
 known_django = "django"
 known_first_party = "packman"
-no_lines_before = "LOCALFOLDER"
-sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
-skip = "migrations"
+sections = ['FUTURE', 'STDLIB', 'DJANGO', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
 
 [tool.black]
-extend-exclude = 'migrations'
+line-length = 119
+extend-exclude = "/migrations"
