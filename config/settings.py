@@ -247,16 +247,12 @@ SECURE_BROWSER_XSS_FILTER = env.bool("SECURE_BROWSER_XSS_FILTER", default=True)
 # https://docs.djangoproject.com/en/3.0/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = "DENY"
 # https://docs.djangoproject.com/en/3.0/ref/middleware/#x-content-type-options-nosniff
-SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
-    "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True
-)
+SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True)
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-seconds
 # TODO: set this to 60 seconds first and then to 518400 once you prove the former works
 SECURE_HSTS_SECONDS = env.int("DJANGO_SECURE_HSTS_SECONDS", default=60)
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-include-subdomains
-SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
-    "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True
-)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-preload
 SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=True)
 # https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-secure
@@ -275,11 +271,7 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
-    "formatters": {
-        "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s"
-        }
-    },
+    "formatters": {"verbose": {"format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s"}},
     "handlers": {
         "mail_admins": {
             "level": "ERROR",
@@ -355,15 +347,11 @@ EMAIL_CONFIG = env.email_url("DJANGO_EMAIL_URL", default="consolemail://")
 vars().update(EMAIL_CONFIG)
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
-DEFAULT_FROM_EMAIL = env(
-    "DJANGO_DEFAULT_FROM_EMAIL", default=f"{PACK_NAME} <noreply@{PACK_DOMAIN_NAME}>"
-)
+DEFAULT_FROM_EMAIL = env("DJANGO_DEFAULT_FROM_EMAIL", default=f"{PACK_NAME} <noreply@{PACK_DOMAIN_NAME}>")
 # https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
-EMAIL_SUBJECT_PREFIX = env(
-    "DJANGO_EMAIL_SUBJECT_PREFIX", default=f"[{PACK_SHORTNAME}] "
-)
+EMAIL_SUBJECT_PREFIX = env("DJANGO_EMAIL_SUBJECT_PREFIX", default=f"[{PACK_SHORTNAME}] ")
 # https://django-environ.readthedocs.io/en/latest/#nested-lists
 ADMINS = [x.split(":") for x in env.list("DJANGO_ADMINS", default=[])]
 MANAGERS = ADMINS

@@ -30,14 +30,11 @@ class MemberList(LoginRequiredMixin, ListView):
         elif not self.request.user.family:
             # The user doesn't belong to a family, so we'll just show them
             # their own information
-            return Member.objects.filter(
-                adult__uuid__exact=self.request.user.uuid
-            ).distinct()
+            return Member.objects.filter(adult__uuid__exact=self.request.user.uuid).distinct()
         else:
             # If you are not active, you can only see your own family
             return Member.objects.filter(
-                Q(adult__family__exact=self.request.user.family)
-                | Q(scout__family__exact=self.request.user.family)
+                Q(adult__family__exact=self.request.user.family) | Q(scout__family__exact=self.request.user.family)
             )
 
 
@@ -51,8 +48,7 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
         if self.request.GET.get("alum") == "included":
             results = (
                 Member.objects.filter(
-                    Q(adult__family__children__status__gte=Scout.ACTIVE)
-                    | Q(scout__status__gte=Scout.ACTIVE)
+                    Q(adult__family__children__status__gte=Scout.ACTIVE) | Q(scout__status__gte=Scout.ACTIVE)
                 )
                 .filter(
                     Q(first_name__icontains=query)
@@ -89,8 +85,7 @@ class MemberSearchResultsList(LoginRequiredMixin, ListView):
         else:
             # If you are not active, you only get members of your own family
             return results.filter(
-                Q(adult__family__exact=self.request.user.family)
-                | Q(scout__family__exact=self.request.user.family)
+                Q(adult__family__exact=self.request.user.family) | Q(scout__family__exact=self.request.user.family)
             )
 
 
@@ -105,8 +100,7 @@ class AdultList(LoginRequiredMixin, ListView):
             # If you have active cubs or are a contributor, you can get all
             # active members
             return Adult.objects.filter(
-                Q(family__children__status=Scout.ACTIVE)
-                | Q(role__exact=Adult.CONTRIBUTOR)
+                Q(family__children__status=Scout.ACTIVE) | Q(role__exact=Adult.CONTRIBUTOR)
             ).distinct()
         elif not self.request.user.family:
             # The user doesn't belong to a family, so we'll just show them
@@ -163,9 +157,7 @@ class AdultDetail(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["email"] = self.object.email if self.object.is_published else None
         context["addresses"] = self.object.addresses.filter(published__exact=True)
-        context["phone_numbers"] = self.object.phone_numbers.filter(
-            published__exact=True
-        )
+        context["phone_numbers"] = self.object.phone_numbers.filter(published__exact=True)
         return context
 
 
@@ -178,12 +170,8 @@ class AdultUpdate(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(AdultUpdate, self).get_context_data(**kwargs)
         if self.request.POST:
-            context["address_formset"] = AddressFormSet(
-                self.request.POST, instance=self.object
-            )
-            context["phonenumber_formset"] = PhoneNumberFormSet(
-                self.request.POST, instance=self.object
-            )
+            context["address_formset"] = AddressFormSet(self.request.POST, instance=self.object)
+            context["phonenumber_formset"] = PhoneNumberFormSet(self.request.POST, instance=self.object)
         else:
             context["address_formset"] = AddressFormSet(instance=self.object)
             context["phonenumber_formset"] = PhoneNumberFormSet(instance=self.object)

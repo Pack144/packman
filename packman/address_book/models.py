@@ -19,9 +19,7 @@ class Category(TimeStampedUUIDModel):
     cub sign-up view to provide a list of schools the pack is aware of.
     """
 
-    name = models.CharField(
-        max_length=64, help_text=_("e.g. School, Campground, Park, etc.")
-    )
+    name = models.CharField(max_length=64, help_text=_("e.g. School, Campground, Park, etc."))
 
     class Meta:
         ordering = ["name"]
@@ -133,17 +131,9 @@ class Address(TimeStampedUUIDModel):
 
     def single_line_display(self):
         if self.street2:
-            return (
-                f"{self.street} "
-                f"{self.street2}, "
-                f"{self.city}, "
-                f"{self.state} "
-                f"{self.zip_code}"
-            )
+            return f"{self.street} " f"{self.street2}, " f"{self.city}, " f"{self.state} " f"{self.zip_code}"
         else:
-            return (
-                f"{self.street}, " f"{self.city}, " f"{self.state} " f"{self.zip_code}"
-            )
+            return f"{self.street}, " f"{self.city}, " f"{self.state} " f"{self.zip_code}"
 
 
 class PhoneNumber(TimeStampedUUIDModel):
@@ -209,9 +199,7 @@ class DistributionList(TimeStampedUUIDModel):
     email = models.EmailField(_("email address"), unique=True)
 
     is_all = models.BooleanField(_("all active members"), default=False)
-    committees = models.ManyToManyField(
-        Committee, related_name="distribution_lists", blank=True
-    )
+    committees = models.ManyToManyField(Committee, related_name="distribution_lists", blank=True)
     dens = models.ManyToManyField(Den, related_name="distribution_lists", blank=True)
 
     contact_us = models.BooleanField(
@@ -229,9 +217,7 @@ class DistributionList(TimeStampedUUIDModel):
     def get_email_addresses(self):
         return [
             (" ".join((n or f, l)), e)
-            for f, n, l, e in self.get_members().values_list(
-                "first_name", "nickname", "last_name", "email"
-            )
+            for f, n, l, e in self.get_members().values_list("first_name", "nickname", "last_name", "email")
         ]
 
     def get_members(self):

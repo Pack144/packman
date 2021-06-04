@@ -80,7 +80,7 @@ class Rank(TimeStampedUUIDModel):
 
 
 class Den(TimeStampedModel):
-    """ Each active cub should be a member of 1 den each Pack Year """
+    """Each active cub should be a member of 1 den each Pack Year"""
 
     number = models.IntegerField(
         primary_key=True,

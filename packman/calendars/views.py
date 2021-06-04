@@ -26,9 +26,7 @@ class EventListView(ActiveMemberOrContributorTest, generic.ListView):
         Return a queryset containing all events for the next 6 months
         """
         return (
-            Event.objects.filter(
-                start__lte=timezone.now() + timezone.timedelta(weeks=26)
-            )
+            Event.objects.filter(start__lte=timezone.now() + timezone.timedelta(weeks=26))
             .filter(start__gte=timezone.now() - timezone.timedelta(hours=8))
             .order_by("start")
         )
@@ -79,8 +77,6 @@ class EventDeleteView(PermissionRequiredMixin, generic.DeleteView):
     success_url = reverse_lazy("calendars:list")
 
     def delete(self, request, *args, **kwargs):
-        success_message = _(
-            "The event '%(event)s' has been successfully deleted."
-        ) % {"event": self.get_object()}
+        success_message = _("The event '%(event)s' has been successfully deleted.") % {"event": self.get_object()}
         messages.success(request, success_message, "danger")
         return super().delete(request, *args, **kwargs)

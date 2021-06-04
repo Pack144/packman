@@ -54,9 +54,7 @@ class PageCreateView(PermissionRequiredMixin, SuccessMessageMixin, CreateView):
     model = Page
     form_class = PageForm
     permission_required = "pages.add_page"
-    success_message = _(
-        "The page: '%(title)s' has been successfully created."
-    )
+    success_message = _("The page: '%(title)s' has been successfully created.")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -84,9 +82,7 @@ class PageDeleteView(PermissionRequiredMixin, SuccessMessageMixin, DeleteView):
     success_url = reverse_lazy("pages:home")
 
     def delete(self, request, *args, **kwargs):
-        success_message = _(
-            "The page: '%(page)s' has been successfully deleted."
-        ) % {"page": self.get_object()}
+        success_message = _("The page: '%(page)s' has been successfully deleted.") % {"page": self.get_object()}
         messages.success(request, success_message, "danger")
         return super().delete(request, *args, **kwargs)
 
@@ -95,9 +91,7 @@ class PageUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Page
     form_class = PageForm
     permission_required = "pages.change_page"
-    success_message = _(
-        "The page: '%(title)s' has been successfully updated."
-    )
+    success_message = _("The page: '%(title)s' has been successfully updated.")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -124,9 +118,7 @@ class AboutPageView(PageDetailView):
     def get_object(self):
         obj, created = self.get_queryset().get_or_create(page=Page.ABOUT)
         if created:
-            logger.info = _(
-                "About page was requested but none was found in the database."
-            )
+            logger.info = _("About page was requested but none was found in the database.")
             obj.title = _("About Us")
             obj.save()
         return obj
@@ -138,15 +130,10 @@ class HomePageView(PageDetailView):
     def get_object(self):
         obj, created = self.get_queryset().get_or_create(page=Page.HOME)
         if created:
-            logger.info = _(
-                "Home page was requested but none was found in the database."
-            )
+            logger.info = _("Home page was requested but none was found in the database.")
 
         if self.request.user.is_authenticated and (
-            (
-                not self.request.user.family
-                or not self.request.user.family.children.exists()
-            )
+            (not self.request.user.family or not self.request.user.family.children.exists())
         ):
             messages.add_message(
                 self.request,
@@ -168,9 +155,7 @@ class HomePageView(PageDetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["events"] = (
-            Event.objects.filter(
-                start__lte=timezone.now() + timezone.timedelta(weeks=1)
-            )
+            Event.objects.filter(start__lte=timezone.now() + timezone.timedelta(weeks=1))
             .filter(start__gte=timezone.now() - timezone.timedelta(hours=8))
             .order_by("start")
         )
@@ -183,9 +168,7 @@ class HistoryPageView(PageDetailView):
     def get_object(self):
         obj, created = self.get_queryset().get_or_create(page=Page.HISTORY)
         if created:
-            logger.info = _(
-                "History page was requested but none was found in the database."
-            )
+            logger.info = _("History page was requested but none was found in the database.")
             obj.title = _("Our History")
             obj.save()
         return obj
@@ -219,9 +202,7 @@ class SignUpPageView(CreateView):
             context["address_formset"] = AddressFormSet()
             context["phonenumber_formset"] = PhoneNumberFormSet()
         try:
-            context["page"] = Page.objects.get_visible_content(
-                user=self.request.user
-            ).get(page=Page.SIGNUP)
+            context["page"] = Page.objects.get_visible_content(user=self.request.user).get(page=Page.SIGNUP)
         except Page.DoesNotExist:
             context["page"] = None
         return context
