@@ -213,12 +213,8 @@ class ScoutForm(forms.ModelForm):
             "date_of_birth": DatePicker(
                 options={
                     "maxDate": str(timezone.now()),
-                    "minDate": str(
-                        timezone.now().replace(year=timezone.now().year - 13)
-                    ),
-                    "defaultDate": str(
-                        timezone.now().replace(year=timezone.now().year - 6)
-                    ),
+                    "minDate": str(timezone.now().replace(year=timezone.now().year - 13)),
+                    "defaultDate": str(timezone.now().replace(year=timezone.now().year - 6)),
                 },
                 attrs={
                     "append": "far fa-calendar-alt",

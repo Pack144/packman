@@ -73,21 +73,13 @@ class FamilyListFilter(admin.SimpleListFilter):
         string and retrievable via `self.value()`.
         """
         if self.value() == "complete":
-            return queryset.filter(
-                adults__isnull=False, children__isnull=False
-            ).distinct()
+            return queryset.filter(adults__isnull=False, children__isnull=False).distinct()
         if self.value() == "empty":
-            return queryset.filter(
-                adults__isnull=True, children__isnull=True
-            ).distinct()
+            return queryset.filter(adults__isnull=True, children__isnull=True).distinct()
         if self.value() == "orphan":
-            return queryset.filter(
-                adults__isnull=True, children__isnull=False
-            ).distinct()
+            return queryset.filter(adults__isnull=True, children__isnull=False).distinct()
         if self.value() == "childless":
-            return queryset.filter(
-                adults__isnull=False, children__isnull=True
-            ).distinct()
+            return queryset.filter(adults__isnull=False, children__isnull=True).distinct()
 
 
 class AdultsBasedOnCubStatusFilter(admin.SimpleListFilter):
@@ -95,7 +87,7 @@ class AdultsBasedOnCubStatusFilter(admin.SimpleListFilter):
     parameter_name = "cub_status"
 
     def lookups(self, request, model_admin):
-        lookups = models.Scout.STATUS_CHOICES + ((7, _("Eligible for Next Year")), )
+        lookups = models.Scout.STATUS_CHOICES + ((7, _("Eligible for Next Year")),)
         return lookups
 
     def queryset(self, request, queryset):
@@ -319,22 +311,16 @@ class ScoutAdmin(admin.ModelAdmin):
         )
 
     def continue_in_same_den_one_more_year(self, request, queryset):
-        next_year, created = PackYear.objects.get_or_create(
-            year=PackYear.get_current_pack_year_year() + 1
-        )
+        next_year, created = PackYear.objects.get_or_create(year=PackYear.get_current_pack_year_year() + 1)
         n = queryset.count()
         if n:
             for obj in queryset:
                 if obj.current_den:
-                    m, c = DenMembership.objects.get_or_create(
-                        den=obj.current_den, scout=obj, year_assigned=next_year
-                    )
+                    m, c = DenMembership.objects.get_or_create(den=obj.current_den, scout=obj, year_assigned=next_year)
                     if not c:
                         self.message_user(
                             request,
-                            _(
-                                f"{obj} is already assigned to Den {obj.current_den} for the {next_year} Pack Year."
-                            ),
+                            _(f"{obj} is already assigned to Den {obj.current_den} for the {next_year} Pack Year."),
                             messages.WARNING,
                         )
                         n -= 1
@@ -393,8 +379,8 @@ class ScoutAdmin(admin.ModelAdmin):
                     "Printed": "No",
                 }
                 if obj.photo:
-                    fields['Image'] = f"{fields['FirstName']}{fields['LastName']}.jpg"
-                    zip_obj.write(obj.photo["320x320"].path, fields['Image'])
+                    fields["Image"] = f"{fields['FirstName']}{fields['LastName']}.jpg"
+                    zip_obj.write(obj.photo["320x320"].path, fields["Image"])
                 writer.writerow([fields[field] for field in fields])
 
             zip_obj.writestr("roster.csv", csv_file.getvalue())
@@ -559,8 +545,8 @@ class AdultAdmin(UserAdmin):
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename={}.csv".format(meta)
         writer = csv.writer(response)
 
         writer.writerow(field_names)

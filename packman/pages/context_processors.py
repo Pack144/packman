@@ -15,9 +15,7 @@ def populate_navbar(request):
         },
         "site": get_current_site(request),
     }
-    for page in Page.objects.get_visible_content(user=request.user).filter(
-        include_in_nav=True
-    ):
+    for page in Page.objects.get_visible_content(user=request.user).filter(include_in_nav=True):
         if page.content_blocks.count():
             navbar["navbar_links"].append(page)
     return navbar

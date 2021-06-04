@@ -19,27 +19,21 @@ class ContactForm(forms.Form):
         label=_("Your Name"),
         help_text=_("What is your name"),
         max_length=254,
-        widget=forms.TextInput(
-            attrs={"autocomplete": "name", "placeholder": "Your Name"}
-        ),
+        widget=forms.TextInput(attrs={"autocomplete": "name", "placeholder": "Your Name"}),
         required=True,
     )
     from_email = forms.EmailField(
         label=_("Your E-mail"),
         help_text=_("How can we get a hold of you"),
         max_length=254,
-        widget=forms.EmailInput(
-            attrs={"autocomplete": "email", "placeholder": "email@example.com"}
-        ),
+        widget=forms.EmailInput(attrs={"autocomplete": "email", "placeholder": "email@example.com"}),
         required=True,
     )
     url = forms.URLField(
         # A fake field to catch spambots using the form. May also be read by screen readers.
         label=_("Webpage"),
         help_text=_("Optionally tell give us your website"),
-        widget=forms.URLInput(
-            attrs={"autocomplete": "off", "placeholder": "https://example.com"}
-        ),
+        widget=forms.URLInput(attrs={"autocomplete": "off", "placeholder": "https://example.com"}),
         required=False,
     )
     subject = forms.CharField(
@@ -67,9 +61,7 @@ class ContactForm(forms.Form):
             )
 
     def send_mail(self):
-        from_address = (
-            f"{self.cleaned_data['from_name']} <{self.cleaned_data['from_email']}>"
-        )
+        from_address = f"{self.cleaned_data['from_name']} <{self.cleaned_data['from_email']}>"
         email = EmailMessage(
             subject=f"{settings.EMAIL_SUBJECT_PREFIX}{self.cleaned_data['subject']}",
             body=f"We have received the following message from "
@@ -78,9 +70,7 @@ class ContactForm(forms.Form):
             to=[f"{a[0]} <{a[1]}>" for a in settings.MANAGERS],
             reply_to=[from_address],
         )
-        logger.info(
-            f"Sending email from {email.reply_to} with the subject '{email.subject}' to '{email.to}'"
-        )
+        logger.info(f"Sending email from {email.reply_to} with the subject '{email.subject}' to '{email.to}'")
         email.send()
 
 
@@ -89,7 +79,9 @@ class ContentBlockForm(forms.ModelForm):
         model = ContentBlock
         fields = ("heading", "visibility", "body", "images")
         widgets = {
-            "body": TinyMCE(mce_attrs={"link_list": "/api/v1/pages/link_list/", "image_list": "/api/v1/pages/image_list/"}),
+            "body": TinyMCE(
+                mce_attrs={"link_list": "/api/v1/pages/link_list/", "image_list": "/api/v1/pages/image_list/"}
+            ),
             "visibility": forms.RadioSelect,
         }
 

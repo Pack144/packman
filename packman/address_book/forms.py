@@ -30,11 +30,7 @@ class AddressFormHelper(FormHelper):
                     ),
                     Row(
                         Column(Field("type", css_class="custom-select")),
-                        Column(
-                            Field(
-                                "published", css_class="custom-control custom-checkbox"
-                            )
-                        ),
+                        Column(Field("published", css_class="custom-control custom-checkbox")),
                     ),
                     Field("uuid", type="hidden"),
                     Field("member", type="hidden"),
@@ -57,9 +53,7 @@ class AddressForm(forms.ModelForm):
             if visible.field.widget.__class__ == forms.widgets.TextInput:
                 visible.field.widget.attrs["placeholder"] = visible.label
         self.helper = AddressFormHelper(self)
-        self.fields["state"].choices = STATE_CHOICES + (
-            (None, self.fields["state"].label),
-        )
+        self.fields["state"].choices = STATE_CHOICES + ((None, self.fields["state"].label),)
 
 
 class PhoneNumberFormHelper(FormHelper):

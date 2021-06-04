@@ -25,11 +25,7 @@ class EventForm(forms.ModelForm):
             "published",
         ]
         widgets = {
-            "description": TinyMCE(
-                mce_attrs={
-                    "link_list ": reverse("link_list", urlconf="packman.pages.urls")
-                }
-            ),
+            "description": TinyMCE(mce_attrs={"link_list ": reverse("link_list", urlconf="packman.pages.urls")}),
             "start": DateTimePicker(attrs={"append": "fa fa-calendar"}),
             "end": DateTimePicker(attrs={"append": "fa fa-calendar"}),
             "status": forms.RadioSelect,
@@ -41,9 +37,7 @@ class EventForm(forms.ModelForm):
         self.helper.form_tag = False
         self.helper.layout = Layout(
             Row(
-                Column(
-                    Field("name", css_class="form-control-lg"), css_class="col-md-8"
-                ),
+                Column(Field("name", css_class="form-control-lg"), css_class="col-md-8"),
                 Column("status"),
             ),
             Row(
