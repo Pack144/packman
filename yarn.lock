@@ -3,9 +3,9 @@
 
 
 "@forevolve/bootstrap-dark@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@forevolve/bootstrap-dark/-/bootstrap-dark-1.0.0.tgz#05fb14e73fbf5ce159a5ba5d1aee151a57c79bca"
-  integrity sha512-DrW2ztlas60UgumD0KZP/MzfO2WQd8U1vT3O7aSG7ACXeVYGb+WnGz4H3LL3PD7/nOQunK+U57rVeJcyQ/uivA==
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@forevolve/bootstrap-dark/-/bootstrap-dark-1.1.0.tgz#ac52beb02763817e935623bbcfb2aeda55b50583"
+  integrity sha512-A3ucpEpxPoTVO490lZZCfjPXxv832l7mm1IxX3bXyxvgwnPGXDLyh7dWrphXKO8YBAu3EswbBEu3VSW8NRMW3A==
   dependencies:
     bootstrap "^4.6.0"
     jquery "^3.5.1"
