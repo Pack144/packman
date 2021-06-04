@@ -1,5 +1,4 @@
 import html as python_html
-import uuid
 from datetime import datetime
 
 from django.conf import settings
@@ -10,6 +9,8 @@ from django.utils import html, timezone
 from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
+
+from packman.core.models import TimeStampedUUIDModel
 
 from .managers import PackYearManager
 
@@ -117,7 +118,7 @@ class PackYear(models.Model):
         return year_obj.end_date.year
 
 
-class Category(models.Model):
+class Category(TimeStampedUUIDModel):
     """
     Events should be tagged with a category for filtering and display
     """
@@ -212,18 +213,6 @@ class Category(models.Model):
         help_text=_("Optionally choose a color to display these event in."),
     )
 
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
-    )
-
     class Meta:
         indexes = [models.Index(fields=["name"])]
         ordering = ("name",)
@@ -234,7 +223,7 @@ class Category(models.Model):
         return self.name
 
 
-class Event(models.Model):
+class Event(TimeStampedUUIDModel):
     """ Store information about events """
 
     TENTATIVE = "TENTATIVE"
@@ -288,18 +277,6 @@ class Event(models.Model):
         max_length=9,
         choices=STATUS_CHOICES,
         default=CONFIRMED,
-    )
-
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:

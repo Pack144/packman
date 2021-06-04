@@ -1,6 +1,3 @@
-import uuid
-
-from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
@@ -15,6 +12,8 @@ from easy_thumbnails.signals import saved_file
 
 from packman.dens.models import Den
 from packman.calendars.models import PackYear
+from packman.core.models import TimeStampedUUIDModel
+
 from .managers import FamilyManager, MemberManager, ScoutManager
 
 
@@ -23,7 +22,7 @@ def get_photo_path(instance, filename):
     return f"headshots/{instance.slug}/{filename}"
 
 
-class Member(models.Model):
+class Member(TimeStampedUUIDModel):
     """
     A class implementing the details we would want to capture for any person.
     Used by the later models, Adult and Scout, to populate common fields used.
@@ -99,14 +98,6 @@ class Member(models.Model):
             "This information is not generally disclosed to the member unless "
             "they are granted access to Membership."
         ),
-    )
-
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_added = models.DateTimeField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:
@@ -205,7 +196,7 @@ class Member(models.Model):
         return self.get_short_name()
 
 
-class Family(models.Model):
+class Family(TimeStampedUUIDModel):
     """ Track the relationship between members """
 
     name = models.CharField(
@@ -225,21 +216,10 @@ class Family(models.Model):
         ),
     )
 
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
     legacy_id = models.IntegerField(
         unique=True,
         blank=True,
         null=True,
-    )
-    date_added = models.DateField(
-        auto_now_add=True,
-    )
-    last_updated = models.DateTimeField(
-        auto_now=True,
     )
 
     objects = FamilyManager()
