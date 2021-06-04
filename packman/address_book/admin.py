@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 
-from .models import Address, PhoneNumber, Venue, Category, DistributionList
+from .models import Address, Category, DistributionList, PhoneNumber, Venue
 
 
 class PhoneNumberInline(admin.TabularInline):

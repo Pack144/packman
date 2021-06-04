@@ -1,8 +1,8 @@
 from django.contrib.auth.models import UserManager
 from django.db import models
 
-from packman.dens.models import Rank
 from packman.calendars.models import PackYear
+from packman.dens.models import Rank
 
 
 class FamilyQuerySet(models.QuerySet):
