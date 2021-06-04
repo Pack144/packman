@@ -29,14 +29,10 @@ class TimeStampedModel(models.Model):
     """
 
     date_added = models.DateTimeField(
-        _("created"),
-        default=timezone.now,
-        help_text=_("Date and time this entry was first added to the database.")
+        _("created"), default=timezone.now, help_text=_("Date and time this entry was first added to the database.")
     )
     last_updated = models.DateTimeField(
-        _("modified"),
-        auto_now=True,
-        help_text=_("Date and time this entry was last changed in the database.")
+        _("modified"), auto_now=True, help_text=_("Date and time this entry was last changed in the database.")
     )
 
     class Meta:

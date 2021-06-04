@@ -33,9 +33,7 @@ class PageQuerySet(models.QuerySet):
         return self.prefetch_related(
             models.Prefetch(
                 "content_blocks",
-                queryset=self.model.content_blocks.field.model.objects.get_visible(
-                    user=user
-                ),
+                queryset=self.model.content_blocks.field.model.objects.get_visible(user=user),
                 # to_attr='visible_content',
             )
         )

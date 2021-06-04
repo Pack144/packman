@@ -4,7 +4,7 @@ from .models import Adult
 
 
 class ActiveMemberTest(UserPassesTestMixin):
-    """ Parents with active cubs should be allowed to view this page """
+    """Parents with active cubs should be allowed to view this page"""
 
     def test_func(self):
         if self.request.user.is_authenticated:
@@ -12,7 +12,7 @@ class ActiveMemberTest(UserPassesTestMixin):
 
 
 class ContributorTest(UserPassesTestMixin):
-    """ Contributors should be allowed to view this page """
+    """Contributors should be allowed to view this page"""
 
     def test_func(self):
         if self.request.user.is_authenticated:
@@ -20,7 +20,7 @@ class ContributorTest(UserPassesTestMixin):
 
 
 class ActiveMemberOrContributorTest(UserPassesTestMixin):
-    """ Parents with active cubs should be allowed to view this page """
+    """Parents with active cubs should be allowed to view this page"""
 
     def test_func(self):
         if self.request.user.is_authenticated and (
