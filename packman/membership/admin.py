@@ -1,17 +1,18 @@
 import csv
 import logging
-
 from io import StringIO
 from zipfile import ZipFile
 
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
-from django.db.models import Case, Count, When, CharField
+from django.db.models import Case, CharField, Count, When
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.urls import reverse
-from django.utils.html import format_html_join, format_html
-from django.utils.translation import gettext_lazy as _, ngettext
+from django.utils.html import format_html, format_html_join
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
+
 from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
 
@@ -19,7 +20,9 @@ from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
 from packman.calendars.models import PackYear
 from packman.committees.models import Membership as CommitteeMembership
-from packman.dens.models import Membership as DenMembership, Rank
+from packman.dens.models import Membership as DenMembership
+from packman.dens.models import Rank
+
 from . import forms, models
 
 logger = logging.getLogger(__name__)

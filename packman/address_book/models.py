@@ -6,11 +6,11 @@ from django.utils.translation import gettext_lazy as _
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
-from packman.core.models import TimeStampedUUIDModel
-from packman.membership.models import Adult, Family
 from packman.calendars.models import PackYear
 from packman.committees.models import Committee
+from packman.core.models import TimeStampedUUIDModel
 from packman.dens.models import Den
+from packman.membership.models import Adult, Family
 
 
 class Category(TimeStampedUUIDModel):

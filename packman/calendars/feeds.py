@@ -5,6 +5,7 @@ from django_ical.views import ICalFeed
 from icalendar import vCalAddress, vText
 
 from packman.membership.models import Family
+
 from .models import Event
 
 

@@ -1,22 +1,27 @@
 import logging
 
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib import messages
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, DeleteView, DetailView, FormView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    FormView,
+    UpdateView,
+)
 
+from packman.calendars.models import Event
 from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from packman.membership.models import Family
-from packman.calendars.models import Event
 
 from .forms import ContactForm, ContentBlockFormSet, PageForm
-from .models import Page, Image
-
+from .models import Image, Page
 
 logger = logging.getLogger(__name__)
 
