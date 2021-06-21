@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 from packman.calendars.models import PackYear
 from packman.core.models import TimeStampedUUIDModel
 
+from .managers import CommitteeQuerySet
+
 
 class Committee(TimeStampedUUIDModel):
     """
@@ -46,6 +48,8 @@ class Committee(TimeStampedUUIDModel):
     slug = models.SlugField(
         unique=True,
     )
+
+    objects = CommitteeQuerySet.as_manager()
 
     class Meta:
         ordering = ["-leadership", "name"]
