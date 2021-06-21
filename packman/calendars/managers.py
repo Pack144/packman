@@ -21,3 +21,12 @@ class PackYearManager(models.Manager):
     def previous(self):
         """Return the prior year's PackDate."""
         return self.current().get_previous_by_end_date()
+
+    def recent(self):
+        """
+        Returns a queryset of the current year plus the year before and after.
+        """
+        return self.filter(
+            start_date__lte=self.current().end_date + timezone.timedelta(days=1),
+            end_date__gte=self.current().start_date - timezone.timedelta(days=1)
+        )
