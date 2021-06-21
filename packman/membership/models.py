@@ -318,7 +318,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
     def is_staff(self):
         return bool(
             self._is_staff
-            or self.committee_memberships.filter(committee__is_staff=True).filter(
+            or self.committee_memberships.filter(committee__are_staff=True).filter(
                 year_served=PackYear.get_current_pack_year()
             )
         )
