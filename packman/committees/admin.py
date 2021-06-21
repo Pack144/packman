@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext as _
 
 from .models import Committee, Membership
 
@@ -12,8 +13,12 @@ class MembershipAdmin(admin.TabularInline):
 
 @admin.register(Committee)
 class CommitteeAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"slug": ["name"]}
+    fieldsets = (
+        (None, {"fields": (("name", "slug"), "description")}),
+        (_("Permissions"), {"fields": (("are_staff", "are_superusers"), "permissions"), "classes": ("collapse",)}),
+    )
     inlines = [MembershipAdmin]
-    list_display = ["name", "description", "leadership", "are_staff"]
-    list_filter = ["membership__year_served", "leadership", "are_staff"]
-    search_fields = ("name", "description", "membership__den")
+    list_display = ["name", "description", "leadership", "are_staff", "are_superusers"]
+    list_filter = ["membership__year_served", "leadership", "are_staff", "are_superusers"]
+    prepopulated_fields = {"slug": ["name"]}
+    search_fields = ("name", "description", "membership__den", "members__first_name", "members__nickname", "members__last_name")
