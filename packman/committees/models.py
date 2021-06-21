@@ -30,7 +30,7 @@ class Committee(TimeStampedUUIDModel):
         default=False,
         help_text=_("e.g. Akela, Assistant Akela, Den Leader"),
     )
-    is_staff = models.BooleanField(
+    are_staff = models.BooleanField(
         _("Staff"),
         default=False,
         help_text=_("Designates whether members can log into this admin site."),
