@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group
 from django.utils.translation import gettext as _
 
 from .models import Committee, Membership
@@ -23,3 +24,8 @@ class CommitteeAdmin(admin.ModelAdmin):
     list_filter = ["membership__year_served", "leadership", "are_staff", "are_superusers"]
     prepopulated_fields = {"slug": ["name"]}
     search_fields = ("name", "description", "membership__den__number", "members__first_name", "members__nickname", "members__last_name")
+
+
+# This application does not rely on Dango groups; we'll assign permissions to Committee instead.
+# Remove the groups section from Admin to avoid confusion.
+admin.site.unregister(Group)
