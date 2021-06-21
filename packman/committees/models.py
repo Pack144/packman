@@ -119,9 +119,3 @@ class Membership(TimeStampedUUIDModel):
 
     def __str__(self):
         return f"{self.member} {self.year_served}"
-
-    def save(self, *args, **kwargs):
-        group, created = Group.objects.get_or_create(name=self.committee.name)
-        if group not in self.member.groups.all():
-            self.member.groups.add(group)
-        super().save(*args, **kwargs)
