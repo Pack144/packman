@@ -8,7 +8,7 @@ class CommitteePermissionsBackend(ModelBackend):
         Return a set of permission strings for the user `user_obj` based
         on the committees they belong to.
         """
-        recent_committees = user_obj.committees.recent()
+        recent_committees = user_obj.committee_set.recent()
         if recent_committees.filter(are_superusers=True):
             return Permission.objects.all()
         return Permission.objects.filter(committee__in=recent_committees)
