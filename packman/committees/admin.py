@@ -22,4 +22,4 @@ class CommitteeAdmin(admin.ModelAdmin):
     list_display = ["name", "description", "leadership", "are_staff", "are_superusers"]
     list_filter = ["membership__year_served", "leadership", "are_staff", "are_superusers"]
     prepopulated_fields = {"slug": ["name"]}
-    search_fields = ("name", "description", "membership__den", "members__first_name", "members__nickname", "members__last_name")
+    search_fields = ("name", "description", "membership__den__number", "members__first_name", "members__nickname", "members__last_name")
