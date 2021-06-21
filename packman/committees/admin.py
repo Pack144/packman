@@ -17,6 +17,7 @@ class CommitteeAdmin(admin.ModelAdmin):
         (None, {"fields": (("name", "slug"), "description")}),
         (_("Permissions"), {"fields": (("are_staff", "are_superusers"), "permissions"), "classes": ("collapse",)}),
     )
+    filter_horizontal = ("permissions",)
     inlines = [MembershipAdmin]
     list_display = ["name", "description", "leadership", "are_staff", "are_superusers"]
     list_filter = ["membership__year_served", "leadership", "are_staff", "are_superusers"]
