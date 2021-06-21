@@ -304,6 +304,16 @@ LOGGING = {
 # -----------------------------------------------------------------------------
 AUTH_USER_MODEL = "membership.Adult"
 
+
+# Authentication Backends
+# https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#specifying-authentication-backends
+# -----------------------------------------------------------------------------
+AUTHENTICATION_BACKENDS = [
+    "packman.committees.backends.CommitteePermissionsBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+
 # django-tinymce
 # https://django-tinymce.readthedocs.io/en/latest/installation.html#configuration
 # -----------------------------------------------------------------------------
