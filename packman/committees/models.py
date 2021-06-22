@@ -69,20 +69,13 @@ class CommitteeMember(TimeStampedUUIDModel):
     service, and their position on the committee.
     """
 
-    CHAIR = 1
-    MEMBER = 2
-    APPRENTICE = 3
-    DEN_LEADER = 4
-    AKELA = 5
-    ASSISTANT_AKELA = 6
-    POSITION_CHOICES = [
-        (CHAIR, _("Chair")),
-        (MEMBER, _("Member")),
-        (APPRENTICE, _("Apprentice")),
-        (DEN_LEADER, _("Den Leader")),
-        (AKELA, _("Akela")),
-        (ASSISTANT_AKELA, _("Assistant Akela")),
-    ]
+    class Position(models.IntegerChoices):
+        CHAIR = 1, _("Chair")
+        MEMBER = 2, _("Member")
+        APPRENTICE = 3, _("Apprentice")
+        DEN_LEADER = 4, _("Den Leader")
+        AKELA = 5, _("Akela")
+        ASSISTANT_AKELA = 6, _("Assistant Akela")
 
     year_served = models.ForeignKey(
         PackYear,
@@ -91,8 +84,8 @@ class CommitteeMember(TimeStampedUUIDModel):
         related_name="committee_memberships",
     )
     position = models.IntegerField(
-        choices=POSITION_CHOICES,
-        default=MEMBER,
+        choices=Position.choices,
+        default=Position.MEMBER,
     )
     committee = models.ForeignKey(
         Committee,
