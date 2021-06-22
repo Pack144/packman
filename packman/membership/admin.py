@@ -19,7 +19,7 @@ from easy_thumbnails.widgets import ImageClearableFileInput
 from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
 from packman.calendars.models import PackYear
-from packman.committees.models import Membership as CommitteeMembership
+from packman.committees.models import CommitteeMember
 from packman.dens.models import Membership as DenMembership
 from packman.dens.models import Rank
 
@@ -118,9 +118,9 @@ class AddressInline(admin.StackedInline):
     model = Address
 
 
-class CommitteeMembershipInline(admin.TabularInline):
+class CommitteeMemberInline(admin.TabularInline):
     extra = 0
-    model = CommitteeMembership
+    model = CommitteeMember
     verbose_name_plural = _("Committee Assignments")
 
 
@@ -497,7 +497,7 @@ class AdultAdmin(UserAdmin):
         ),
         (_("Account Details"), {"fields": (("email", "password1", "password2"))}),
     )
-    inlines = [PhoneNumberInline, AddressInline, CommitteeMembershipInline]
+    inlines = [PhoneNumberInline, AddressInline, CommitteeMemberInline]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
