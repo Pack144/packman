@@ -40,7 +40,8 @@ class PackYear(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=["year"])]
-        ordering = ("-year",)
+        get_latest_by = "start_date"
+        ordering = ("-start_date",)
         verbose_name = _("pack year")
         verbose_name_plural = _("pack years")
 

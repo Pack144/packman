@@ -14,13 +14,16 @@ class PackYearManager(models.Manager):
     def next(self):
         """Return the upcoming PackYear."""
         try:
-            return self.current().get_next_by_end_date()
+            return self.filter(start_date__gt=self.current().end_date).earliest()
         except self.model.DoesNotExist:
             return None
 
     def previous(self):
-        """Return the prior year's PackDate."""
-        return self.current().get_previous_by_end_date()
+        """Return the prior PackYear."""
+        try:
+            return self.filter(end_date__lt=self.current().start_date).latest()
+        except self.model.DoesNotExist:
+            return None
 
     def recent(self):
         """
