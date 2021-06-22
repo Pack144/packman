@@ -21,7 +21,7 @@ class CommitteeAdmin(admin.ModelAdmin):
     filter_horizontal = ("permissions",)
     inlines = [CommitteeMemberAdmin]
     list_display = ["name", "description", "leadership", "are_staff", "are_superusers"]
-    list_filter = ["committee_member__year_served", "leadership", "are_staff", "are_superusers"]
+    list_filter = ["committee_member__year", "leadership", "are_staff", "are_superusers"]
     prepopulated_fields = {"slug": ["name"]}
     search_fields = ("name", "description", "membership__den__number", "members__first_name", "members__nickname", "members__last_name")
 

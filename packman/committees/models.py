@@ -77,11 +77,13 @@ class CommitteeMember(TimeStampedUUIDModel):
         AKELA = 5, _("Akela")
         ASSISTANT_AKELA = 6, _("Assistant Akela")
 
-    year_served = models.ForeignKey(
+    year = models.ForeignKey(
         PackYear,
         on_delete=models.CASCADE,
         default=PackYear.get_current_pack_year_year,
         related_name="committee_memberships",
+        related_query_name="committee_membership",
+        verbose_name=_("year served")
     )
     position = models.IntegerField(
         choices=Position.choices,
@@ -109,9 +111,9 @@ class CommitteeMember(TimeStampedUUIDModel):
     )
 
     class Meta:
-        ordering = ["year_served", "den", "position", "member"]
+        ordering = ["year", "den", "position", "member"]
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
 
     def __str__(self):
-        return f"{self.member} {self.year_served}"
+        return f"{self.member} {self.year}"
