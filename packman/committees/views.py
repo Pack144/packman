@@ -44,11 +44,11 @@ class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
         context["members"] = CommitteeMember.objects.filter(
             committee=context["committee"],
             year_served=year,
-            position__lt=CommitteeMember.AKELA,
+            position__lt=CommitteeMember.Position.AKELA,
         )
         context["akelas"] = CommitteeMember.objects.filter(
             committee=context["committee"],
             year_served=year,
-            position__gte=CommitteeMember.AKELA,
+            position__gte=CommitteeMember.Position.AKELA,
         )
         return context
