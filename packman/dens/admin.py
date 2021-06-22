@@ -77,6 +77,7 @@ class DenAdmin(admin.ModelAdmin):
     list_display = (
         "number",
         "cubs_count",
+        "cubs_count_next_year",
         "rank",
         "get_rank_category",
     )
@@ -96,6 +97,10 @@ class DenAdmin(admin.ModelAdmin):
                 "scouts",
                 filter=Q(scouts__year_assigned=PackYear.get_current_pack_year()),
             ),
+            _cubs_count_next_year=Count(
+                "scouts",
+                filter=Q(scouts__year_assigned=PackYear.objects.next())
+            )
         )
         return queryset
 
@@ -104,6 +109,10 @@ class DenAdmin(admin.ModelAdmin):
 
     cubs_count.admin_order_field = "_cubs_count"
     cubs_count.short_description = _("# of cubs")
+
+    @admin.display(description=_("# of Cubs next year"), ordering="_cubs_count_next_year")
+    def cubs_count_next_year(self, obj):
+        return obj._cubs_count_next_year
 
 
 @admin.register(Rank)
