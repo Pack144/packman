@@ -2,12 +2,12 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext as _
 
-from .models import Committee, Membership
+from .models import Committee, CommitteeMember
 
 
-class MembershipAdmin(admin.TabularInline):
+class CommitteeMemberAdmin(admin.TabularInline):
     autocomplete_fields = ["member"]
-    model = Membership
+    model = CommitteeMember
     exclude = ["date_added"]
     extra = 0
 
@@ -19,9 +19,9 @@ class CommitteeAdmin(admin.ModelAdmin):
         (_("Permissions"), {"fields": (("are_staff", "are_superusers"), "permissions"), "classes": ("collapse",)}),
     )
     filter_horizontal = ("permissions",)
-    inlines = [MembershipAdmin]
+    inlines = [CommitteeMemberAdmin]
     list_display = ["name", "description", "leadership", "are_staff", "are_superusers"]
-    list_filter = ["membership__year_served", "leadership", "are_staff", "are_superusers"]
+    list_filter = ["committee_member__year_served", "leadership", "are_staff", "are_superusers"]
     prepopulated_fields = {"slug": ["name"]}
     search_fields = ("name", "description", "membership__den__number", "members__first_name", "members__nickname", "members__last_name")
 

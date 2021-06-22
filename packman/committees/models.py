@@ -25,7 +25,7 @@ class Committee(TimeStampedUUIDModel):
     )
     members = models.ManyToManyField(
         "membership.Adult",
-        through="Membership",
+        through="CommitteeMember",
     )
     leadership = models.BooleanField(
         _("Pack Leadership"),
@@ -63,7 +63,7 @@ class Committee(TimeStampedUUIDModel):
         return reverse_lazy("committees:detail", args=[self.slug])
 
 
-class Membership(TimeStampedUUIDModel):
+class CommitteeMember(TimeStampedUUIDModel):
     """
     Tracks members who have signed up for a committee, the year of their
     service, and their position on the committee.
@@ -84,18 +84,27 @@ class Membership(TimeStampedUUIDModel):
         (ASSISTANT_AKELA, _("Assistant Akela")),
     ]
 
-    member = models.ForeignKey(
-        "membership.Adult",
+    year_served = models.ForeignKey(
+        PackYear,
         on_delete=models.CASCADE,
+        default=PackYear.get_current_pack_year_year,
         related_name="committee_memberships",
-    )
-    committee = models.ForeignKey(
-        Committee,
-        on_delete=models.CASCADE,
     )
     position = models.IntegerField(
         choices=POSITION_CHOICES,
         default=MEMBER,
+    )
+    committee = models.ForeignKey(
+        Committee,
+        on_delete=models.CASCADE,
+        related_name="committee_members",
+        related_query_name="committee_member",
+    )
+    member = models.ForeignKey(
+        "membership.Adult",
+        on_delete=models.CASCADE,
+        related_name="committee_memberships",
+        related_query_name="committee_membership",
     )
     den = models.ForeignKey(
         "dens.Den",
@@ -104,12 +113,6 @@ class Membership(TimeStampedUUIDModel):
         blank=True,
         null=True,
         help_text=_("If the member is a Den Leader, which Den # are they supporting?"),
-    )
-    year_served = models.ForeignKey(
-        PackYear,
-        on_delete=models.CASCADE,
-        default=PackYear.get_current_pack_year_year,
-        related_name="committee_memberships",
     )
 
     class Meta:
