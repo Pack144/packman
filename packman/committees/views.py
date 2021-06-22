@@ -4,7 +4,7 @@ from django.views import generic
 from packman.calendars.models import PackYear
 from packman.membership.mixins import ActiveMemberOrContributorTest
 
-from . import models
+from .models import Committee, CommitteeMember
 
 
 class CommitteesList(LoginRequiredMixin, generic.ListView):
@@ -14,7 +14,7 @@ class CommitteesList(LoginRequiredMixin, generic.ListView):
     Pack Year as defined in settings.py.
     """
 
-    model = models.Committee
+    model = Committee
     paginate_by = 50
     template_name = "committees/committees_list.html"
 
@@ -24,11 +24,11 @@ class CommitteesList(LoginRequiredMixin, generic.ListView):
             if "year" in self.kwargs
             else PackYear.get_current_pack_year()
         )
-        return models.Committee.objects.filter(membership__year_served=year).distinct()
+        return Committee.objects.filter(committee_member__year_served=year).distinct()
 
 
 class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
-    model = models.Committee
+    model = Committee
     template_name = "committees/committee_detail.html"
 
     def get_context_data(self, **kwargs):
@@ -41,14 +41,14 @@ class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
         all_years = PackYear.objects.filter(committee_memberships__committee=context["committee"]).distinct()
         context["current_year"] = year
         context["all_years"] = all_years
-        context["members"] = models.Membership.objects.filter(
+        context["members"] = CommitteeMember.objects.filter(
             committee=context["committee"],
             year_served=year,
-            position__lt=models.Membership.AKELA,
+            position__lt=CommitteeMember.AKELA,
         )
-        context["akelas"] = models.Membership.objects.filter(
+        context["akelas"] = CommitteeMember.objects.filter(
             committee=context["committee"],
             year_served=year,
-            position__gte=models.Membership.AKELA,
+            position__gte=CommitteeMember.AKELA,
         )
         return context

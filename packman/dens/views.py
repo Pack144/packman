@@ -1,7 +1,7 @@
 from django.views.generic import DetailView, ListView
 
 from packman.calendars.models import PackYear
-from packman.committees.models import Membership as CommitteeMembership
+from packman.committees.models import CommitteeMember
 from packman.membership.mixins import ActiveMemberOrContributorTest
 
 from .models import Den
@@ -22,7 +22,7 @@ class DenDetailView(ActiveMemberOrContributorTest, DetailView):
         all_years = PackYear.objects.filter(committee_memberships__den=context["den"]).distinct()
         context["current_year"] = year
         context["all_years"] = all_years
-        context["leaders"] = CommitteeMembership.objects.filter(
+        context["leaders"] = CommitteeMember.objects.filter(
             den=context["den"],
             year_served=year,
         )
