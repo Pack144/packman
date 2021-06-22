@@ -7,11 +7,11 @@ class CommitteeQuerySet(models.QuerySet):
 
     def by_year(self, year):
         """ Return a list of committees with members assigned for a given Pack Year. """
-        return self.filter(membership__year_served=year)
+        return self.filter(committee_member__year_served=year)
 
     def by_years(self, years):
         """ Return a list of committees with members assigned for a list of Pack Years. """
-        return self.filter(membership__year_served__in=years).distinct()
+        return self.filter(committee_member__year_served__in=years).distinct()
 
     def current(self):
         """ Return a list of committees with members assigned for the current Pack Year. """

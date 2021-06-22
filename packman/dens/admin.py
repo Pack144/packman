@@ -3,7 +3,7 @@ from django.db.models import Count, Q
 from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
-from packman.committees.models import Membership as CommitteeMembership
+from packman.committees.models import CommitteeMember
 
 from .models import Den, Membership, Rank
 
@@ -55,7 +55,7 @@ class AnimalRankListFilter(admin.SimpleListFilter):
 
 
 class LeadershipAdmin(admin.TabularInline):
-    model = CommitteeMembership
+    model = CommitteeMember
     classes = ["collapse"]
     exclude = ["date_added", "committee", "position"]
     autocomplete_fields = ["member"]
