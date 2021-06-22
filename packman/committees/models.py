@@ -111,6 +111,12 @@ class CommitteeMember(TimeStampedUUIDModel):
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("year", "committee", "member", "den"),
+                name="unique_assignment_each_year",
+            )
+        ]
         ordering = ["year", "den", "position", "member"]
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
