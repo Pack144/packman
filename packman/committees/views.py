@@ -24,7 +24,7 @@ class CommitteesList(LoginRequiredMixin, generic.ListView):
             if "year" in self.kwargs
             else PackYear.get_current_pack_year()
         )
-        return Committee.objects.filter(committee_member__year_served=year).distinct()
+        return Committee.objects.filter(committee_member__year=year).distinct()
 
 
 class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
