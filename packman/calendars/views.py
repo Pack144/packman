@@ -9,7 +9,7 @@ from django.views import generic
 from packman.membership.mixins import ActiveMemberOrContributorTest
 
 from .forms import EventForm
-from .models import Event
+from .models import Event, PackYear
 
 
 class EventListView(ActiveMemberOrContributorTest, generic.ListView):
@@ -23,10 +23,10 @@ class EventListView(ActiveMemberOrContributorTest, generic.ListView):
 
     def get_queryset(self):
         """
-        Return a queryset containing all events for the next 6 months
+        Return a queryset containing all future events for the current Pack Year
         """
         return (
-            Event.objects.filter(start__lte=timezone.now() + timezone.timedelta(weeks=26))
+            Event.objects.filter(start__lte=PackYear.objects.current().end_date)
             .filter(start__gte=timezone.now() - timezone.timedelta(hours=8))
             .order_by("start")
         )
@@ -44,7 +44,7 @@ class EventArchiveView(ActiveMemberOrContributorTest, generic.ListView):
 
     def get_queryset(self):
         """
-        Return a queryset containing all events for the next 6 months
+        Return a queryset containing all previous events
         """
         return Event.objects.filter(start__lt=timezone.now())
 
