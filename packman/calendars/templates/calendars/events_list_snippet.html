@@ -31,7 +31,7 @@
           <p><strong>Where:</strong>
             {{ event.get_location }}{% if event.venue.address %}<br>{{ event.venue.address }}{% endif %}</p>
         {% endif %}
-        {% if event.description %}<p>{{ event.plain_text_description|truncatewords_html:50 }}</p>{% endif %}
+        {% if event.description %}<p>{{ event.plain_text_description|linebreaks|truncatewords_html:50 }}</p>{% endif %}
       </div>
     </div>
   </a>
