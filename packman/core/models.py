@@ -1,7 +1,6 @@
 import uuid
 
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -29,7 +28,7 @@ class TimeStampedModel(models.Model):
     """
 
     date_added = models.DateTimeField(
-        _("created"), default=timezone.now, help_text=_("Date and time this entry was first added to the database.")
+        _("created"), auto_now_add=True, help_text=_("Date and time this entry was first added to the database.")
     )
     last_updated = models.DateTimeField(
         _("modified"), auto_now=True, help_text=_("Date and time this entry was last changed in the database.")
