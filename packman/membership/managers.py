@@ -1,5 +1,7 @@
 from django.contrib.auth.models import UserManager
 from django.db import models
+from django.db.models import Case, When
+from django.db.models.functions import Coalesce
 
 from packman.calendars.models import PackYear
 from packman.dens.models import Rank
@@ -12,10 +14,10 @@ class FamilyQuerySet(models.QuerySet):
             children__status=self.model.children.rel.related_model.ACTIVE,
         )
 
-    def in_den(self, den):
+    def in_den(self, den_list):
         return self.active().filter(
             children__den_memberships__year_assigned=PackYear.objects.current(),
-            children__den_memberships__den__number=den,
+            children__den_memberships__den__number__in=den_list,
         )
 
 
@@ -27,11 +29,44 @@ class FamilyManager(models.Manager):
     def active(self):
         return self.get_queryset().active()
 
-    def in_den(self, den):
-        return self.get_queryset().in_den(den=den)
+    def in_den(self, den_list):
+        return self.get_queryset().in_den(den_list=den_list)
+
+
+class MemberQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(family__in=self.model.family.field.related_model.objects.active())
+
+    def in_den(self, den_list):
+        return self.active().filter(family__in=self.model.family.field.related_model.objects.in_den(den_list))
+
+    def in_committee(self, committee_list):
+        return self.active().filter(committees__in=committee_list, committees__year=PackYear.objects.current())
 
 
 class MemberManager(UserManager):
+
+    def get_queryset(self):
+        return MemberQuerySet(model=self.model, using=self._db).annotate(
+            _short_name=Coalesce(
+                Case(
+                    When(nickname__exact="", then=None),
+                    default="nickname",
+                    outputfield=models.CharField(),
+                ),
+                "first_name",
+            )
+        )
+
+    def active(self):
+        return self.get_queryset().active()
+
+    def in_den(self, den_list):
+        return self.get_queryset().in_den(den_list)
+
+    def in_committee(self, committee_list):
+        return self.get_queryset().in_committee(committee_list)
+
     def _create_user(self, email, password, **extra_fields):
         """
         Custom user model manager where email is the unique identifiers for
