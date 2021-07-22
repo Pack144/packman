@@ -160,7 +160,7 @@ class Message(TimeStampedUUIDModel):
                 msg = ListEmail(
                     subject=subject,
                     body=plaintext,
-                    to=to_field,
+                    to=["%s <%s>" % (recipient.__str__(), recipient.email)],
                     cc=cc_field,
                     bcc=bcc_field,
                     rcpt_to=[recipient.email],
@@ -356,8 +356,8 @@ class ListEmail(EmailMultiAlternatives):
 
         return msg
 
-    def recipients(self):
-        """
-        Returns a filtered list of recipients for use in the SMTP envelope.
-        """
-        return self.rcpt_to
+    # def recipients(self):
+    #     """
+    #     Returns a filtered list of recipients for use in the SMTP envelope.
+    #     """
+    #     return self.rcpt_to
