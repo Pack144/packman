@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "packman.core",
     "packman.dens",
     "packman.documents",
+    "packman.mail",
     "packman.membership",
     "packman.pages",
 ]
