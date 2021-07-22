@@ -110,6 +110,20 @@ class PackYear(models.Model):
         year_obj = PackYear.get_current_pack_year()
         return year_obj.end_date.year
 
+    @staticmethod
+    def get_current():
+        try:
+            return PackYear.objects.current()
+        except PackYear.DoesNotExist:
+            pass
+
+    @staticmethod
+    def get_latest():
+        try:
+            return PackYear.objects.latest()
+        except PackYear.DoesNotExist:
+            pass
+
 
 class Category(TimeStampedUUIDModel):
     """
