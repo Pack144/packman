@@ -3,7 +3,9 @@ from django.db import models
 
 class MessageQuerySet(models.QuerySet):
     def in_inbox(self, recipient):
-        return self.filter(recipients=recipient, recipients__date_archived__isnull=True, recipients__date_deleted__isnull=True)
+        return self.filter(
+            recipients=recipient, recipients__date_archived__isnull=True, recipients__date_deleted__isnull=True
+        )
 
     def unread(self, recipient):
         return self.filter(recipients=recipient, recipients__date_read__isnull=True)
@@ -22,7 +24,6 @@ class MessageQuerySet(models.QuerySet):
 
 
 class MessageManager(models.Manager):
-
     def get_queryset(self):
         return MessageQuerySet(self.model, using=self._db)
 
@@ -43,4 +44,3 @@ class MessageManager(models.Manager):
 
     def sent(self, author):
         return self.get_queryset().sent(author)
-

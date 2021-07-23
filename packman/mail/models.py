@@ -35,9 +35,17 @@ class DistributionList(TimeStampedModel):
 
     name = models.CharField(_("name"), max_length=150, unique=True)
 
-    is_all = models.BooleanField(_("all members"), default=False, help_text=_("Messages sent to this distribution list should be delivered to all active members of the Pack."))
-    dens = models.ManyToManyField(Den, related_name="distribution_list", related_query_name="distribution_list", blank=True)
-    committees = models.ManyToManyField(Committee, related_name="distribution_list", related_query_name="distribution_list", blank=True)
+    is_all = models.BooleanField(
+        _("all members"),
+        default=False,
+        help_text=_("Messages sent to this distribution list should be delivered to all active members of the Pack."),
+    )
+    dens = models.ManyToManyField(
+        Den, related_name="distribution_list", related_query_name="distribution_list", blank=True
+    )
+    committees = models.ManyToManyField(
+        Committee, related_name="distribution_list", related_query_name="distribution_list", blank=True
+    )
 
     class Meta:
         ordering = ["name"]
@@ -47,23 +55,39 @@ class DistributionList(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    def get_default_email(self):
+        return self.addresses.get(is_default=True)
+
     def get_members(self):
         if self.is_all:
             return User.objects.active()
 
-        return User.objects.active().filter(
-            Q(committee_membership__year=PackYear.objects.current(), committee__in=self.committees.all()) |
-            Q(family__in=Family.objects.in_den(self.dens.all()))
-        ).distinct()
+        return (
+            User.objects.active()
+            .filter(
+                Q(committee_membership__year=PackYear.objects.current(), committee__in=self.committees.all())
+                | Q(family__in=Family.objects.in_den(self.dens.all()))
+            )
+            .distinct()
+        )
 
 
 class EmailAddress(TimeStampedModel):
     """
     A simple model to track an email address.
     """
+
     distribution_list = models.ForeignKey(DistributionList, on_delete=models.CASCADE, related_name="addresses")
-    address = models.EmailField(_("email address"), unique=True, error_messages={"unique": _("A distribution list with this email address already exists.")})
-    is_default = models.BooleanField(_("default"), default=False, help_text=_("Indicates whether this address should be used as the default from address."))
+    address = models.EmailField(
+        _("email address"),
+        unique=True,
+        error_messages={"unique": _("A distribution list with this email address already exists.")},
+    )
+    is_default = models.BooleanField(
+        _("default"),
+        default=False,
+        help_text=_("Indicates whether this address should be used as the default from address."),
+    )
 
     class Meta:
         ordering = ("-is_default", "address")
@@ -76,7 +100,9 @@ class EmailAddress(TimeStampedModel):
     def save(self, **kwargs):
         # Check to ensure whether one and only one address is default for the distribution list.
         if self.is_default:
-            EmailAddress.objects.filter(distribution_list=self.distribution_list, is_default=True).update(is_default=False)
+            EmailAddress.objects.filter(distribution_list=self.distribution_list, is_default=True).update(
+                is_default=False
+            )
         elif not EmailAddress.objects.filter(distribution_list=self.distribution_list, is_default=True).exists():
             self.is_default = True
         super().save(**kwargs)
@@ -103,15 +129,21 @@ class Message(TimeStampedUUIDModel):
     class Delivery(models.TextChoices):
         TO = "to", _("To")
         CC = "cc", _("Cc")
-        BCC = "bcc", _("Bcc")
+        # BCC = "bcc", _("Bcc")
 
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages", related_query_name="sent_message", blank=True)
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="sent_messages", related_query_name="sent_message", blank=True
+    )
     recipients = models.ManyToManyField(User, related_name="messages", through="MessageRecipient", blank=True)
-    distribution_lists = models.ManyToManyField(DistributionList, related_name="messages", through="MessageDistribution", blank=True)
+    distribution_lists = models.ManyToManyField(
+        DistributionList, related_name="messages", through="MessageDistribution", blank=True
+    )
     subject = models.CharField(_("subject"), max_length=150)
     body = models.TextField(_("body"))
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name="messages", blank=True, null=True)
-    parent = models.ForeignKey("self", on_delete=models.CASCADE, related_name="replies", blank=True, null=True, verbose_name=_("replying to"))
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, related_name="replies", blank=True, null=True, verbose_name=_("replying to")
+    )
     date_sent = models.DateTimeField(_("sent"), blank=True, null=True)
 
     objects = MessageManager()
@@ -130,22 +162,55 @@ class Message(TimeStampedUUIDModel):
             self.thread = self.parent.thread if self.parent else Thread.objects.create()
         super().save(**kwargs)
 
+    def get_absolute_url(self):
+        return reverse("mail:detail", kwargs={"pk": self.pk})
+
+    def get_full_recipients_list(self):
+        distros = (
+            self.distribution_lists.filter(addresses__is_default=True)
+            .values_list("message_distribution_list__delivery", "addresses__address", "name")
+            .order_by()
+        )
+        recipients = (
+            self.recipients.filter(message_recipient__from_distro=False)
+            .values_list("message_recipient__delivery", "_short_name", "email")
+            .order_by()
+        )
+        return recipients.union(distros)
+
+    def get_to_field(self):
+        return self.distribution_lists.filter(message_distribution_list__delivery=Message.Delivery.TO)
+
+    def get_cc_field(self):
+        return self.distribution_lists.filter(message_distribution_list__delivery=Message.Delivery.CC)
+
     def send(self):
         # ensure all mailboxes are expanded
         self.expand_distribution_lists()
+        if not self.recipients.exists():
+            raise AttributeError(_("Cannot send an Email with no recipients."))
+
         self.date_sent = timezone.now()
 
         # Format the message:
         site = Site.objects.get_current()
-        subject = render_to_string('mail/message_subject.txt', {"site": site, "message": self}).strip()
+        subject = render_to_string("mail/message_subject.txt", {"site": site, "message": self}).strip()
 
-        distros = self.distribution_lists.filter(addresses__is_default=True).values_list("message_distribution_list__delivery", "addresses__address", "name").order_by()
-        recipients = self.recipients.filter(message_recipient__from_distro=False).values_list("message_recipient__delivery", "_short_name", "email").order_by()
+        distros = (
+            self.distribution_lists.filter(addresses__is_default=True)
+            .values_list("message_distribution_list__delivery", "addresses__address", "name")
+            .order_by()
+        )
+        recipients = (
+            self.recipients.filter(message_recipient__from_distro=False)
+            .values_list("message_recipient__delivery", "_short_name", "email")
+            .order_by()
+        )
         all_recipients = recipients.union(distros)
 
         to_field = ["%s <%s>" % (n, e) for d, n, e in all_recipients if d == Message.Delivery.TO]
         cc_field = ["%s <%s>" % (n, e) for d, n, e in all_recipients if d == Message.Delivery.CC]
-        bcc_field = ["%s <%s>" % (n, e) for d, n, e in all_recipients if d == Message.Delivery.BCC]
+        # bcc_field = ["%s <%s>" % (n, e) for d, n, e in all_recipients if d == Message.Delivery.BCC]
 
         # open a connection to the mailserver
         with mail.get_connection() as connection:
@@ -158,19 +223,16 @@ class Message(TimeStampedUUIDModel):
                 richtext = render_to_string("mail/message_body.html", context)
 
                 msg = ListEmail(
-                    subject=subject,
-                    body=plaintext,
+                    subject,
+                    plaintext,
                     to=["%s <%s>" % (recipient.__str__(), recipient.email)],
-                    cc=cc_field,
-                    bcc=bcc_field,
-                    rcpt_to=[recipient.email],
                     connection=connection,
                 )
                 msg.attach_alternative(richtext, "text/html")
                 for attachment in self.attachments.all():
                     msg.attach_file(attachment.filename.path)
 
-                print("Sending message to %s" % msg.rcpt_to)
+                print("Sending message to %s" % msg.to)
                 msg.send()
 
         # Mark the message as sent
@@ -187,7 +249,9 @@ class Message(TimeStampedUUIDModel):
                 for member in distribution_list.get_members():
                     try:
                         with transaction.atomic():
-                            MessageRecipient.objects.create(message=self, recipient=member, delivery=delivery, from_distro=True)
+                            MessageRecipient.objects.create(
+                                message=self, recipient=member, delivery=delivery, from_distro=True
+                            )
                     except IntegrityError:
                         # The member is already a recipient of the message,
                         # check that we have the delivery level correct.
@@ -195,6 +259,24 @@ class Message(TimeStampedUUIDModel):
                         if recipient.delivery < delivery:
                             recipient.delivery = delivery
                             recipient.save()
+
+    def mark_read(self, recipient):
+        MessageRecipient.objects.get(message=self, recipient=recipient).mark_read()
+
+    def mark_unread(self, recipient):
+        MessageRecipient.objects.get(message=self, recipient=recipient).mark_unread()
+
+    def mark_archived(self, recipient):
+        MessageRecipient.objects.get(message=self, recipient=recipient).mark_archived()
+
+    def mark_unarchived(self, recipient):
+        MessageRecipient.objects.get(message=self, recipient=recipient).mark_unarchived()
+
+    def mark_deleted(self, recipient):
+        MessageRecipient.objects.get(message=self, recipient=recipient).mark_deleted()
+
+    def mark_undeleted(self, recipient):
+        MessageRecipient.objects.get(message=self, recipient=recipient).mark_undeleted()
 
 
 class Attachment(models.Model):
@@ -217,11 +299,19 @@ class MessageRecipient(models.Model):
     """
     An intermediate through model to track an individual member's copy of a message.
     """
+
     delivery = models.CharField("", max_length=3, choices=Message.Delivery.choices, default=Message.Delivery.TO)
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_query_name="message_recipient")
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_query_name="message_recipient")
 
-    from_distro = models.BooleanField(_("distribution list"), default=False, help_text=_("Specify whether this recipient was included in the message directly or as part of a larger distribution list."))
+    from_distro = models.BooleanField(
+        _("distribution list"),
+        default=False,
+        help_text=_(
+            "Specify whether this recipient was included in the message directly or as part of a larger distribution list."
+        ),
+    )
+    distros = models.ManyToManyField(DistributionList)
     date_received = models.DateTimeField(_("received"), auto_now_add=True)
     date_read = models.DateTimeField(_("read"), blank=True, null=True)
     date_archived = models.DateTimeField(_("archived"), blank=True, null=True)
@@ -240,17 +330,19 @@ class MessageRecipient(models.Model):
         return bool(self.date_read)
 
     def mark_read(self):
-        self.date_read = timezone.now()
-        self.save()
+        if not self.date_read:
+            self.date_read = timezone.now()
+            self.save()
 
     def mark_unread(self):
         self.date_read = None
         self.save()
 
     def mark_archived(self):
-        self.date_archived = timezone.now()
-        self.date_deleted = None
-        self.save()
+        if not self.date_archived:
+            self.date_archived = timezone.now()
+            self.date_deleted = None
+            self.save()
 
     def mark_unarchived(self):
         self.date_archived = None
@@ -258,9 +350,10 @@ class MessageRecipient(models.Model):
         self.save()
 
     def mark_deleted(self):
-        self.date_deleted = timezone.now()
-        self.date_archived = None
-        self.save()
+        if not self.date_deleted:
+            self.date_deleted = timezone.now()
+            self.date_archived = None
+            self.save()
 
     def mark_undeleted(self):
         self.date_deleted = None
@@ -275,10 +368,16 @@ class MessageDistribution(models.Model):
 
     delivery = models.CharField("", max_length=3, choices=Message.Delivery.choices, default=Message.Delivery.TO)
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_query_name="message_distribution_list")
-    distribution_list = models.ForeignKey(DistributionList, on_delete=models.CASCADE, related_query_name="message_distribution_list")
+    distribution_list = models.ForeignKey(
+        DistributionList, on_delete=models.CASCADE, related_query_name="message_distribution_list"
+    )
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=("message", "distribution_list"), name=_("unique_message_per_distribution_list"))]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("message", "distribution_list"), name=_("unique_message_per_distribution_list")
+            )
+        ]
         verbose_name = _("Message Distribution List")
         verbose_name_plural = _("Message Distribution Lists")
 
@@ -312,47 +411,37 @@ class Settings(TimeStampedModel):
 
 
 class ListEmail(EmailMultiAlternatives):
-
-    def __init__(self, subject="", body="", rcpt_to=None, from_email=None, **kwargs):
+    def __init__(self, subject="", body="", from_email=None, **kwargs):
         super().__init__(subject, body, **kwargs)
         try:
-            list_settings = Settings.objects.first()
-            list_from_email = list_settings.list_from or None
+            list_settings = Settings.objects.get(pk=1)
+            self.from_email = from_email or list_settings.from_email or settings.DEFAULT_FROM_EMAIL
         except Settings.DoesNotExist:
             # No settings have been stored, there's nothing more we can do here.
-            pass
-
-        if rcpt_to:
-            if isinstance(rcpt_to, str):
-                raise TypeError('"rcpt_to" argument must be a list or tuple')
-            self.rcpt_to = list(rcpt_to)
-        else:
-            self.rcpt_to = []
-        self.from_email = from_email or list_from_email or settings.DEFAULT_FROM_EMAIL
-
+            self.from_email = from_email or settings.DEFAULT_FROM_EMAIL
 
     def message(self):
         msg = super().message()
 
         # Get the list settings from the database
         try:
-            settings = Settings.objects.first()
+            settings = Settings.objects.get(pk=1)
         except Settings.DoesNotExist:
             # No settings have been stored, there's nothing more we can do here.
             return msg
         site = Site.objects.get_current()
 
-        msg['Subject'] = "[%s] %s" % (settings.list_subject, self.subject) if settings.list_subject else self.subject
+        msg["Subject"] = "[%s] %s" % (settings.list_subject, self.subject) if settings.list_subject else self.subject
 
         # Email header names are case-insensitive (RFC 2045), so we have to
         # accommodate that when doing comparisons.
         header_names = [key.lower() for key in self.extra_headers]
-        if 'list-id' not in header_names and settings.list_id != "":
-            msg['List-ID'] = settings.list_id
-        if 'list-help' not in header_names and settings.list_help != "":
-            msg['List-Help'] = settings.list_help
-        if 'list-unsubscribe' not in header_names:
-            msg['List-Unsubscribe'] = "<https://%s%s>" % (site.domain, reverse("membership:my-family"))
+        if "list-id" not in header_names and settings.list_id != "":
+            msg["List-ID"] = settings.list_id
+        if "list-help" not in header_names and settings.list_help != "":
+            msg["List-Help"] = settings.list_help
+        if "list-unsubscribe" not in header_names:
+            msg["List-Unsubscribe"] = "<https://%s%s>" % (site.domain, reverse("membership:my-family"))
 
         return msg
 

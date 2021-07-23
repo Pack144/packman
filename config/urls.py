@@ -37,6 +37,7 @@ urlpatterns = [
     path("dens/", include("packman.dens.urls")),
     path("documents/", include("packman.documents.urls")),
     path("calendar/", include("packman.calendars.urls")),
+    path("mail/", include("packman.mail.urls")),
     path("members/", include("packman.membership.urls")),
     path("", include("packman.pages.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

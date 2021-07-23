@@ -15,7 +15,7 @@
     This email was sent to <em>{{ recipient.email }}</em>. You received this email because you are an active member of {{ site.name }}.
   </p>
   <p style="font-size: 16px; font-weight: 400; line-height: 24px">
-    You can review this message in a web browser by visiting <a href="{{ message.get_absolue_url }}">our website</a>.
+    You can review this message in a web browser by visiting <a href="http://{{ site.domain }}{{ message.get_absolute_url }}">our website</a>.
     While you are there, you can update your email address or adjust your preferences.
   </p>
 {% endblock %}
