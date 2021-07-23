@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.contrib.admin.utils import quote
+from django.contrib.auth import get_permission_codename
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.http import urlquote
@@ -130,10 +131,53 @@ class MessageAdmin(admin.ModelAdmin):
 
         return super().response_change(request, obj)
 
-    # def has_change_permission(self, request, obj=None):
-    #     if obj.author != request.user:
-    #         return False
-    #     super().has_change_permission(request.obj)
+    def has_change_permission(self, request, obj=None):
+        #  Start with Django's default has_change_permission() method.
+        opts = self.opts
+        codename = get_permission_codename('change', opts)
+
+        # Pause to determine whether the user is either the author or if
+        # the Message has been sent.
+        if obj and obj.author != request.user:
+            return False
+        if obj and obj.date_sent:
+            return False
+
+        # Do the thing that Django does after checking our special case.
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+    def has_delete_permission(self, request, obj=None):
+        #  Start with Django's default has_delete_permission() method.
+        opts = self.opts
+        codename = get_permission_codename('delete', opts)
+
+        # Pause to determine whether the user is either the author or if
+        # the Message has been sent.
+        if obj and obj.author != request.user:
+            return False
+        if obj and obj.date_sent:
+            return False
+
+        # Do the thing that Django does after checking our special case.
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+    def has_view_permission(self, request, obj=None):
+        #  Start with Django's default has_view_permission() method.
+        opts = self.opts
+        codename = get_permission_codename('view', opts)
+
+        # Pause to determine whether the user is either the author or a
+        # recipient of a Message that has been sent.
+        if obj and obj.author != request.user:
+            return False
+        if obj and obj.date_sent and request.user not in obj.recipients.all():
+            return False
+
+        # Do the thing that Django does after checking our special case,
+        # except we're going to skip the check on whether the user has
+        # change permission as that cannot be expressed using the standard
+        # permissions model.
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
 
 
 @admin.register(Settings)
