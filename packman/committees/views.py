@@ -38,17 +38,17 @@ class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
             if "year" in self.kwargs
             else PackYear.get_current_pack_year()
         )
-        all_years = PackYear.objects.filter(committee_memberships__committee=context["committee"]).distinct()
+        all_years = PackYear.objects.filter(committee_membership__committee=context["committee"]).distinct()
         context["current_year"] = year
         context["all_years"] = all_years
         context["members"] = CommitteeMember.objects.filter(
             committee=context["committee"],
-            year_served=year,
+            year=year,
             position__lt=CommitteeMember.Position.AKELA,
         )
         context["akelas"] = CommitteeMember.objects.filter(
             committee=context["committee"],
-            year_served=year,
+            year=year,
             position__gte=CommitteeMember.Position.AKELA,
         )
         return context
