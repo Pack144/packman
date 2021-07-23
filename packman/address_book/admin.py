@@ -29,7 +29,6 @@ class VenueAdmin(admin.ModelAdmin):
     get_category_list.short_description = _("categories")
 
 
-@admin.register(DistributionList)
 class DistributionListAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {"fields": (("name", "email"), ("is_all", "contact_us"))}),
