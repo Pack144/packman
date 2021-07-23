@@ -7,7 +7,15 @@ from django.utils.http import urlquote
 from django.utils.translation import gettext as _
 
 from .forms import MessageForm, MessageDistributionForm, MessageRecipientForm
-from .models import Attachment, DistributionList, EmailAddress, Message, MessageDistribution, MessageRecipient, Settings
+from .models import (
+    Attachment,
+    DistributionList,
+    EmailAddress,
+    Message,
+    MessageDistribution,
+    MessageRecipient,
+    Settings,
+)
 
 
 class AttachmentInline(admin.TabularInline):
@@ -70,12 +78,12 @@ class MessageAdmin(admin.ModelAdmin):
     date_hierarchy = "last_updated"
     fieldsets = [
         (None, {"fields": ("author", "subject", "body")}),
-        (_("Metadata"), {"fields": (("last_updated", "date_sent"), ("thread", "parent")), "classes": ("collapse",)})
+        (_("Metadata"), {"fields": (("last_updated", "date_sent"), ("thread", "parent")), "classes": ("collapse",)}),
     ]
     form = MessageForm
     list_display = ("author", "subject", "last_updated", "sent")
     list_display_links = ("author", "subject", "last_updated")
-    list_filter = ("distribution_lists", )
+    list_filter = ("distribution_lists",)
     inlines = (MessageDistributionInline, MessageRecipientInline, AttachmentInline)
     search_fields = ("subject", "body")
     readonly_fields = ("author", "thread", "date_sent", "last_updated", "parent")
@@ -88,7 +96,7 @@ class MessageAdmin(admin.ModelAdmin):
         # Add a "Send" button to the message add page
         opts = obj._meta
         obj_url = reverse(
-            'admin:%s_%s_change' % (opts.app_label, opts.model_name),
+            "admin:%s_%s_change" % (opts.app_label, opts.model_name),
             args=(quote(obj.pk),),
             current_app=self.admin_site.name,
         )
@@ -98,16 +106,13 @@ class MessageAdmin(admin.ModelAdmin):
         else:
             obj_repr = str(obj)
         msg_dict = {
-            'name': opts.verbose_name,
-            'obj': obj_repr,
+            "name": opts.verbose_name,
+            "obj": obj_repr,
         }
 
         if "_send" in request.POST:
             obj.send()
-            msg = format_html(
-                _('The {name} “{obj}” was sent successfully.'),
-                **msg_dict
-            )
+            msg = format_html(_("The {name} “{obj}” was sent successfully."), **msg_dict)
             self.message_user(request, msg, messages.SUCCESS)
             return self.response_post_save_add(request, obj)
 
@@ -117,15 +122,12 @@ class MessageAdmin(admin.ModelAdmin):
         # Add a "Send" button to the message change page
         opts = self.model._meta
         msg_dict = {
-            'name': opts.verbose_name,
-            'obj': format_html('<a href="{}">{}</a>', urlquote(request.path), obj),
+            "name": opts.verbose_name,
+            "obj": format_html('<a href="{}">{}</a>', urlquote(request.path), obj),
         }
         if "_send" in request.POST:
             obj.send()
-            msg = format_html(
-                _('The {name} “{obj}” was sent successfully.'),
-                **msg_dict
-            )
+            msg = format_html(_("The {name} “{obj}” was sent successfully."), **msg_dict)
             self.message_user(request, msg, messages.SUCCESS)
             return self.response_post_save_change(request, obj)
 
@@ -134,7 +136,7 @@ class MessageAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         #  Start with Django's default has_change_permission() method.
         opts = self.opts
-        codename = get_permission_codename('change', opts)
+        codename = get_permission_codename("change", opts)
 
         # Pause to determine whether the user is either the author or if
         # the Message has been sent.
@@ -149,7 +151,7 @@ class MessageAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         #  Start with Django's default has_delete_permission() method.
         opts = self.opts
-        codename = get_permission_codename('delete', opts)
+        codename = get_permission_codename("delete", opts)
 
         # Pause to determine whether the user is either the author or if
         # the Message has been sent.
@@ -164,7 +166,7 @@ class MessageAdmin(admin.ModelAdmin):
     def has_view_permission(self, request, obj=None):
         #  Start with Django's default has_view_permission() method.
         opts = self.opts
-        codename = get_permission_codename('view', opts)
+        codename = get_permission_codename("view", opts)
 
         # Pause to determine whether the user is either the author or a
         # recipient of a Message that has been sent.
