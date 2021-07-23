@@ -1,0 +1,46 @@
+{% extends '_base.html' %}
+
+{% load humanize i18n %}
+
+{% block title %}{{ message.subject }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-2 text-center" id="message-author">
+          <a href="{{ message.author.get_absolute_url }}">
+            {% include 'membership/snippets/headshot_thumbnail.html' with member=message.author %}
+            <p class="card-subtitle h5 pt-3">{{ message.author }}</p>
+          </a>
+        </div>
+        <div class="col" id="message-body">
+          <div class="d-flex" id="message-header">
+            <div class="flex-grow-1">
+              <h1 class="card-title">{{ message.subject }}</h1>
+            </div>
+            <div class="text-muted">
+              {{ message.date_sent|naturaltime }}
+            </div>
+          </div>
+          {% if message.get_to_field %}
+            <div class="mb-1">
+              <strong>to:</strong>{% for list in message.get_to_field %}
+              <span class="badge badge-secondary ml-1 px-3 py-1" title="{{ list.get_default_email }}">{{ list }}</span>{% endfor %}
+            </div>
+          {% endif %}
+          {% if message.get_cc_field %}
+            <div class="mb-3">
+              <strong>cc:</strong>{% for list in message.get_cc_field %}
+              <span class="badge badge-secondary ml-1 ml-1 px-3 py-1" title="{{ list.get_default_email }}">{{ list }}</span>{% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="card-text mt-4">
+            {{ message.body|linebreaks }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
