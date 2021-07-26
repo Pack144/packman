@@ -19,12 +19,12 @@ class DenDetailView(ActiveMemberOrContributorTest, DetailView):
             else PackYear.get_current_pack_year()
         )
         # TODO: Look into this. Maybe we want to search for den_memberships
-        all_years = PackYear.objects.filter(committee_memberships__den=context["den"]).distinct()
+        all_years = PackYear.objects.filter(committee_membership__den=context["den"]).distinct()
         context["current_year"] = year
         context["all_years"] = all_years
         context["leaders"] = CommitteeMember.objects.filter(
             den=context["den"],
-            year_served=year,
+            year=year,
         )
         return context
 
