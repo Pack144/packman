@@ -184,4 +184,5 @@ class MessageAdmin(admin.ModelAdmin):
 
 @admin.register(ListSettings)
 class ListSettingsAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("list_id", "name", "subject_prefix", "help_email", "from_name", "from_email")
+    list_display_links = ("list_id", "name", "subject_prefix", "help_email", "from_name", "from_email")
