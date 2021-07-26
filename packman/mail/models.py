@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.core import mail
 from django.db import models, IntegrityError, transaction
 from django.db.models import Q
@@ -222,18 +222,16 @@ class Message(TimeStampedUUIDModel):
                 plaintext = render_to_string("mail/message_body.txt", context)
                 richtext = render_to_string("mail/message_body.html", context)
 
-                msg = ListEmail(
-                    subject,
-                    plaintext,
-                    to=["%s <%s>" % (recipient.__str__(), recipient.email)],
-                    connection=connection,
-                )
-                msg.attach_alternative(richtext, "text/html")
-                for attachment in self.attachments.all():
-                    msg.attach_file(attachment.filename.path)
+                send_mail(
+                        subject,
+                        plaintext,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [recipient],
+                        connection=connection,
+                        html_message=richtext,
+                    )
 
-                print("Sending message to %s" % msg.to)
-                msg.send()
+                print("Sending message to %s" % recipient)
 
         # Mark the message as sent
         self.save()
