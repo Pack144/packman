@@ -226,7 +226,7 @@ class Message(TimeStampedUUIDModel):
                         subject,
                         plaintext,
                         settings.DEFAULT_FROM_EMAIL,
-                        [recipient],
+                        ["%s <%s>" % (recipient.get_full_name(), recipient.email)],
                         connection=connection,
                         html_message=richtext,
                     )
