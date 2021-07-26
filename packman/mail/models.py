@@ -385,7 +385,7 @@ class MessageDistribution(models.Model):
         return self.distribution_list.__str__()
 
 
-class Settings(TimeStampedModel):
+class ListSettings(TimeStampedModel):
     """
     A simple model to track settings for email lists
     """
@@ -395,7 +395,7 @@ class Settings(TimeStampedModel):
     list_subject = models.CharField(_("subject line prefix"), max_length=20, blank=True)
     list_id = models.CharField(_("list ID"), max_length=100, blank=True)
     list_help = models.CharField(_("help "), max_length=100, blank=True)
-    list_from = models.EmailField(_("from"), max_length=100, blank=True)
+    list_from = models.CharField(_("from"), max_length=100, blank=True)
 
     class Meta:
         verbose_name = _("Settings")
@@ -414,9 +414,9 @@ class ListEmail(EmailMultiAlternatives):
     def __init__(self, subject="", body="", from_email=None, **kwargs):
         super().__init__(subject, body, **kwargs)
         try:
-            list_settings = Settings.objects.get(pk=1)
+            list_settings = ListSettings.objects.get(pk=1)
             self.from_email = from_email or list_settings.from_email or settings.DEFAULT_FROM_EMAIL
-        except Settings.DoesNotExist:
+        except ListSettings.DoesNotExist:
             # No settings have been stored, there's nothing more we can do here.
             self.from_email = from_email or settings.DEFAULT_FROM_EMAIL
 
@@ -425,8 +425,8 @@ class ListEmail(EmailMultiAlternatives):
 
         # Get the list settings from the database
         try:
-            settings = Settings.objects.get(pk=1)
-        except Settings.DoesNotExist:
+            settings = ListSettings.objects.get(pk=1)
+        except ListSettings.DoesNotExist:
             # No settings have been stored, there's nothing more we can do here.
             return msg
         site = Site.objects.get_current()
@@ -444,9 +444,3 @@ class ListEmail(EmailMultiAlternatives):
             msg["List-Unsubscribe"] = "<https://%s%s>" % (site.domain, reverse("membership:my-family"))
 
         return msg
-
-    # def recipients(self):
-    #     """
-    #     Returns a filtered list of recipients for use in the SMTP envelope.
-    #     """
-    #     return self.rcpt_to
