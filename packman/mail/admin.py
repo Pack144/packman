@@ -14,7 +14,7 @@ from .models import (
     Message,
     MessageDistribution,
     MessageRecipient,
-    Settings,
+    ListSettings,
 )
 
 
@@ -182,6 +182,6 @@ class MessageAdmin(admin.ModelAdmin):
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
 
 
-@admin.register(Settings)
-class SettingsAdmin(admin.ModelAdmin):
+@admin.register(ListSettings)
+class ListSettingsAdmin(admin.ModelAdmin):
     pass
