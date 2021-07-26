@@ -505,8 +505,7 @@ class ListEmail(EmailMultiAlternatives):
             return msg
 
         site = Site.objects.get_current()
-
-        msg["Subject"] = (
+        msg['Subject'] = (
             "%s %s" % (self.settings.subject_prefix, self.subject)
             if self.settings.subject_prefix != ""
             else self.subject
@@ -518,7 +517,7 @@ class ListEmail(EmailMultiAlternatives):
 
         if "list-id" not in header_names and self.settings.list_id != "":
             if self.settings.name:
-                msg["List-Id"] = "%s <%s>" % (self.settings.name, self.settings.list_id)
+                msg["List-Id"] = "<%s> %s" % (self.settings.list_id, self.settings.name)
             else:
                 msg["List-Id"] = "<%s>" % self.settings.list_id
 
