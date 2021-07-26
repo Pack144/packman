@@ -12,7 +12,7 @@
     {% include 'membership/snippets/detail_card.html' with member_email=email member_addresses=addresses member_phone_numbers=phone_numbers %}
 
     {% if member.committee_memberships.exists %}
-      {% regroup member.committee_memberships.all by year_served as assignments_by_year %}
+      {% regroup member.committee_memberships.all by year as assignments_by_year %}
       <div class="card">
         <div class="card-body">
           <h3 class="card-title">{% blocktrans count assignments=member.committee_memberships.count %}
@@ -37,7 +37,7 @@
                     <div class="list-group list-group-flush">
 
                       {% for assignment in year.list %}
-                        <a href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year_served.year %}" class="list-group-item list-group-item-action border-bottom-0">
+                        <a href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}" class="list-group-item list-group-item-action border-bottom-0">
                           <strong>{{ assignment.committee }}</strong>
                           <small class="ml-1">
                             {% if assignment.den %}
