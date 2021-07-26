@@ -415,7 +415,7 @@ class ListEmail(EmailMultiAlternatives):
         super().__init__(subject, body, **kwargs)
         try:
             list_settings = ListSettings.objects.get(pk=1)
-            self.from_email = from_email or list_settings.from_email or settings.DEFAULT_FROM_EMAIL
+            self.from_email = from_email or list_settings.list_from or settings.DEFAULT_FROM_EMAIL
         except ListSettings.DoesNotExist:
             # No settings have been stored, there's nothing more we can do here.
             self.from_email = from_email or settings.DEFAULT_FROM_EMAIL
