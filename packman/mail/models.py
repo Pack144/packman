@@ -428,15 +428,6 @@ class ListSettings(TimeStampedModel):
             "subject in the email subject field."
         ),
     )
-    help_email = models.EmailField(
-        _("help email"),
-        blank=True,
-        help_text=_(
-            "An email address that members should be able to contact in the "
-            "event they require assistance with the delivery of emails from "
-            "the list."
-        ),
-    )
 
     class Meta:
         verbose_name = _("Settings")
@@ -487,6 +478,12 @@ class ListEmail(EmailMultiAlternatives):
             # No settings have been stored, there's nothing more we can do here.
             self.settings = ListSettings()
 
+        self.subject = (
+            "%s %s" % (self.settings.subject_prefix, self.subject)
+            if self.settings.subject_prefix != ""
+            else self.subject
+        )
+
         if from_email:
             self.from_email = from_email
         elif self.settings.from_name and self.settings.from_email:
@@ -505,11 +502,6 @@ class ListEmail(EmailMultiAlternatives):
             return msg
 
         site = Site.objects.get_current()
-        msg['Subject'] = (
-            "%s %s" % (self.settings.subject_prefix, self.subject)
-            if self.settings.subject_prefix != ""
-            else self.subject
-        )
 
         # Email header names are case-insensitive (RFC 2045), so we have to
         # accommodate that when doing comparisons.
@@ -521,8 +513,6 @@ class ListEmail(EmailMultiAlternatives):
             else:
                 msg["List-Id"] = "<%s>" % self.settings.list_id
 
-        if "list-help" not in header_names and self.settings.help_email != "":
-            msg["List-Help"] = "<%s>" % self.settings.help_email
         if "list-unsubscribe" not in header_names:
             msg["List-Unsubscribe"] = "<https://%s%s>" % (site.domain, reverse("membership:my-family"))
 
