@@ -1,10 +1,10 @@
 {{ message.body|safe|wordwrap:80 }}
 
--------------------------------------------------
+-------------------------------------------------------------------------------
 You have received this message because you are an
 active member of {{ site.name }}.
 
-You can review this message in a web browser by
-visting {{ message.get_absolue_url }}.
-While you are there, you can update your email
-address or adjust your preferences.
+You can review this message in a web browser by visiting:
+http://{{ site.domain }}{{ message.get_absolute_url }}
+
+While there, you can update your email address or adjust your preferences.
