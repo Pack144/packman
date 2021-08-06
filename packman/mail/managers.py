@@ -1,20 +1,25 @@
 from django.db import models
+from django.db.models import Prefetch
 
 
 class MessageQuerySet(models.QuerySet):
+    def for_recipient(self, recipient):
+        message_recipients = self.model.message_recipients.field.model.objects.filter(recipient=recipient)
+        return self.filter(recipients=recipient).prefetch_related(Prefetch("message_recipients", queryset=message_recipients, to_attr="recipient")).distinct()
+
     def in_inbox(self, recipient):
-        return self.filter(
-            recipients=recipient, recipients__date_archived__isnull=True, recipients__date_deleted__isnull=True
+        return self.for_recipient(recipient).filter(
+            message_recipient__date_archived__isnull=True, message_recipient__date_deleted__isnull=True
         )
 
     def unread(self, recipient):
-        return self.filter(recipients=recipient, recipients__date_read__isnull=True)
+        return self.for_recipient(recipient).filter(message_recipient__date_read__isnull=True)
 
     def archived(self, recipient):
-        return self.filter(recipients=recipient, recipients__date_archived__isnull=False)
+        return self.for_recipient(recipient).filter(message_recipient__date_archived__isnull=False)
 
     def deleted(self, recipient):
-        return self.filter(recipients=recipient, recipients__date_deleted__isnull=False)
+        return self.for_recipient(recipient).filter(message_recipient__date_deleted__isnull=False)
 
     def drafts(self, author):
         return self.filter(author=author, date_sent__isnull=True)
