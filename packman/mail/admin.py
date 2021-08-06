@@ -171,10 +171,10 @@ class MessageAdmin(admin.ModelAdmin):
         # Pause to determine whether the user is either the author or a
         # recipient of a Message that has been sent.
         if obj:
-            if (obj.author == request.user) or (obj.date_sent and request.user in obj.recipients.all()):
-                return True
-            else:
-                return False
+             return bool(
+                (obj.author == request.user)
+                or (obj.date_sent and request.user in obj.recipients.all())
+            )
 
         # Do the thing that Django does after checking our special case,
         # except we're going to skip the check on whether the user has

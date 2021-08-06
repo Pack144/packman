@@ -1,0 +1,34 @@
+{% extends '_base.html' %}
+
+{% load i18n humanize %}
+
+{% block title %}{% translate 'Inbox' %} | {{ block.super }}{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <ul class="list-group list-group-flush">
+        {% for message in message_list %}
+          <li class="list-group-item list-group-item-action">
+              <div class="d-flex justify-content-between{% if not message.recipient.0.date_read %} font-weight-bold{% endif %}">
+                <div>
+                  {{ message.author }}
+                </div>
+                <div>
+            <a href="{{ message.get_absolute_url }}" class="card-link stretched-link">
+                  {{ message.subject }}
+            </a>
+                </div>
+                <div>
+                  {{ message.recipient.0.date_received|naturaltime }}
+                </div>
+              </div>
+            <div>
+              {{ message.body|linebreaks|truncatewords:100 }}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

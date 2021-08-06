@@ -230,6 +230,27 @@ class Message(TimeStampedUUIDModel):
     def sent(self):
         return bool(self.date_sent)
 
+    def get_recipients(self):
+        distros = (
+            self.distribution_lists.filter(addresses__is_default=True)
+            .values_list("message_distribution_list__delivery", "addresses__address", "name")
+            .order_by()
+        )
+        recipients = (
+            self.recipients.filter(message_recipient__from_distro=False)
+            .values_list("message_recipient__delivery", "_short_name", "email")
+            .order_by()
+        )
+        return recipients.union(distros)
+
+        to_field = ["%s <%s>" % (n, e) for d, n, e in all_recipients if d == Message.Delivery.TO]
+        cc_field = ["%s <%s>" % (n, e) for d, n, e in all_recipients if d == Message.Delivery.CC]
+
+    def to_field(self):
+        distribution_lists = self.distribution_lists.filter(message_distribution_list__delivery=Message.Delivery.TO).values("name", "email")
+        recipients = self.recipients.filter(message_recipient__delivery=Message.Delivery.TO, message_recipient__from_distro=False).values("get_full_name", "email")
+        return distribution_lists + recipients
+
     def expand_distribution_lists(self):
         # Create unique MessageRecipient instances for each DistributionList in the message.
         for delivery, label in Message.Delivery.choices:
@@ -290,8 +311,8 @@ class MessageRecipient(models.Model):
     """
 
     delivery = models.CharField("", max_length=3, choices=Message.Delivery.choices, default=Message.Delivery.TO)
-    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_query_name="message_recipient")
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_query_name="message_recipient")
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="message_recipients", related_query_name="message_recipient")
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="message_recipients", related_query_name="message_recipient")
 
     from_distro = models.BooleanField(
         _("distribution list"),
