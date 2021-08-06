@@ -1,0 +1,73 @@
+{% extends '_base.html' %}
+
+{% load i18n %}
+
+{% block title %}{% if message.pk %}{{ message.subject }}{% else %}{% translate 'New Message' %}{% endif %} | {{ block.super }}{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        <fieldset>
+          <legend>{% translate 'To' %}</legend>
+          <ul class="list-inline">
+            {% for to in message.to_field %}
+              <li class="list-inline-item"><span class="badge rounded-pill badge-secondary">{{ to }}</span></li>
+            {% endfor %}
+          </ul>
+          <ul class="list-unstyled" id="to_field">
+            {% for form in to_formset %}
+              <li>{{ form }}</li>
+            {% endfor %}
+            </ul>
+        </fieldset>
+        <fieldset>
+          <legend>{% translate 'Cc' %}</legend>
+          <ul class="list-inline">
+            {% for cc in message.cc_field %}
+              <li class="list-inline-item"><span class="badge rounded-pill bg-secondary">{{ cc }}</span></li>
+            {% endfor %}
+          </ul>
+          <ul class="list-unstyled" id="cc_field">
+            {% for form in cc_formset %}
+              <li>{{ form }}</li>
+            {% endfor %}
+            </ul>
+        </fieldset>
+        <fieldset>
+          <div class="field-wrapper">
+            {{ form.subject.label_tag }}
+            {{ form.subject }}
+            {{ form.subject.errors }}
+          </div>
+          <div>
+            {{ form.body.label_tag }}
+            {{ form.body }}
+            {{ form.body.errors }}
+          </div>
+        </fieldset>
+        {{ to_formset.management_form }}
+        {{ cc_formset.management_form }}
+        {% csrf_token %}
+        <button type="submit" name="_save">{% translate 'Save to Drafts' %}</button>
+        <button type="submit">{% translate 'Send' %}</button>
+      </form>
+    </div>
+  </div>
+{% endblock content %}
+
+
+{% block js %}
+  {{ block.super }}
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js" integrity="sha256-DqWm+/v1Q0tgaHhTPLema89wDw8Ir+kIM10JePtjrZQ=" crossorigin="anonymous"></script>
+  <script>
+    new Sortable(to_field, {
+      group: "addressees"
+    });
+
+    new Sortable(cc_field, {
+      group: "addressees"
+    })
+
+  </script>
+{% endblock js %}

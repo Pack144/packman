@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import inlineformset_factory
 
 from .models import Attachment, Message, MessageDistribution, MessageRecipient
 
@@ -25,3 +26,6 @@ class MessageRecipientForm(forms.ModelForm):
     class Meta:
         model = MessageRecipient
         fields = ("delivery", "recipient")
+
+
+MessageDistributionFormSet = inlineformset_factory(Message, MessageDistribution, fields=("distribution_list",))
