@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "packman.core",
     "packman.dens",
     "packman.documents",
+    "packman.fundraisers",
     "packman.mail",
     "packman.membership",
     "packman.pages",
@@ -326,9 +327,10 @@ TINYMCE_DEFAULT_CONFIG = {
     "link_quicklink": True,
     "link_title": False,
     "menubar": False,
-    "plugins": "autoresize emoticons hr link lists table image",
+    "plugins": "autoresize emoticons hr link lists table image imagetools media",
     "statusbar": False,
-    "toolbar": "undo redo | bold italic underline strikethrough bullist numlist link | image table hr | alignleft aligncenter alignright alignjustify | emoticons removeformat",
+    # "toolbar": "undo redo | bold italic underline strikethrough bullist numlist link | image table hr | alignleft aligncenter alignright alignjustify | emoticons removeformat",
+    "toolbar": "formatselect | bold italic underline strikethrough | alignleft aligncenter alignright | bullist numlist outdent indent | image media table | link unlink | removeformat",
 }
 
 
