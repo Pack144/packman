@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import AppendedText, FormActions, InlineRadios
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Field, Fieldset, Layout, Row, Submit
+from crispy_forms.layout import Column, Field, Fieldset, Layout, Row, Submit, HTML, Div
 from tempus_dominus.widgets import DatePicker
 
 from packman.address_book.forms import AddressForm, PhoneNumberForm
@@ -45,67 +45,6 @@ class AdminAdultCreation(UserCreationForm):
         fields = "__all__"
 
 
-class AdultCreation(UserCreationForm):
-    class Meta:
-        model = Adult
-        fields = (
-            "first_name",
-            "middle_name",
-            "last_name",
-            "suffix",
-            "nickname",
-            "email",
-            "is_published",
-            "gender",
-            "role",
-            "photo",
-        )
-        widgets = {
-            "photo": widgets.FileInput,
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(AdultCreation, self).__init__(*args, **kwargs)
-        for name, field in self.fields.items():
-            if field.widget.__class__ in [
-                forms.widgets.TextInput,
-                forms.widgets.EmailInput,
-            ]:
-                field.widget.attrs["placeholder"] = field.label
-        self.fields["password1"].required = False
-        self.fields["password2"].required = False
-        self.fields["role"].choices = (
-            (Adult.PARENT, _("Parent")),
-            (Adult.GUARDIAN, _("Guardian")),
-        )
-        self.helper = FormHelper(self)
-        self.helper.form_id = "parent_update"
-        self.helper.form_tag = False
-        self.helper.form_show_labels = False
-        self.helper.help_text_inline = True
-        self.helper.layout = Layout(
-            Row(
-                Column(
-                    "first_name",
-                    css_class="col-md-4",
-                ),
-                Column("middle_name", css_class="col-md-2 text-truncate"),
-                Column("last_name", css_class="col-md-5"),
-                Column("suffix", css_class="col-md-1"),
-            ),
-            "nickname",
-            Row(
-                Column("email"),
-                Column("is_published"),
-            ),
-            Row(
-                Column(InlineRadios("gender")),
-                Column(InlineRadios("role")),
-            ),
-            "photo",
-        )
-
-
 class FamilyForm(forms.ModelForm):
     class Meta:
         model = Family
@@ -138,6 +77,68 @@ class FamilyForm(forms.ModelForm):
         return instance
 
 
+class AdultCreation(UserCreationForm):
+    class Meta:
+        model = Adult
+        fields = (
+            "first_name",
+            "middle_name",
+            "last_name",
+            "suffix",
+            "nickname",
+            "email",
+            "is_published",
+            "gender",
+            "role",
+            "photo",
+        )
+        widgets = {
+            "gender": widgets.RadioSelect,
+            "photo": widgets.FileInput,
+            "role": widgets.RadioSelect,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(AdultCreation, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if field.widget.__class__ in [
+                forms.widgets.TextInput,
+                forms.widgets.EmailInput,
+            ]:
+                field.widget.attrs["placeholder"] = field.label
+        self.fields["password1"].required = False
+        self.fields["password2"].required = False
+        self.fields["role"].choices = (
+            (Adult.PARENT, _("Parent")),
+            (Adult.GUARDIAN, _("Guardian")),
+        )
+        self.helper = FormHelper(self)
+        self.helper.form_id = "parent_update"
+        self.helper.form_tag = False
+        # self.helper.form_show_labels = False
+        self.helper.help_text_inline = True
+        self.helper.layout = Layout(
+            Row(
+                Column(
+                    "first_name",
+                    css_class="col-md-4",
+                ),
+                Column("middle_name", css_class="col-md-2 text-truncate"),
+                Column("last_name", css_class="col-md-5"),
+                Column("suffix", css_class="col-md-1"),
+            ),
+            "nickname",
+            Row(
+                Column("email"),
+                Column("is_published"),
+            ),
+            Row(
+                Column(InlineRadios("gender")),
+                Column(InlineRadios("role")),
+            ),
+        )
+
+
 class AdultForm(forms.ModelForm):
     class Meta:
         model = Adult
@@ -154,6 +155,8 @@ class AdultForm(forms.ModelForm):
             "photo",
         )
         widgets = {
+            "gender": widgets.RadioSelect,
+            "role": widgets.RadioSelect,
             "photo": widgets.FileInput,
         }
 
@@ -186,10 +189,9 @@ class AdultForm(forms.ModelForm):
                 Column("is_published"),
             ),
             Row(
-                Column(InlineRadios("gender")),
-                Column(InlineRadios("role")),
+                Column("gender"),
+                Column("role"),
             ),
-            "photo",
         )
 
 
@@ -223,6 +225,7 @@ class ScoutForm(forms.ModelForm):
                     "placeholder": _("Birthday"),
                 },
             ),
+            "gender": widgets.RadioSelect,
             "photo": widgets.FileInput,
         }
 
@@ -233,6 +236,7 @@ class ScoutForm(forms.ModelForm):
                 field.widget.attrs["placeholder"] = field.label
         self.helper = FormHelper(self)
         self.helper.form_id = "scout_update"
+        self.helper.form_tag = False
         self.helper.render_required_fields = True
         self.helper.layout = Layout(
             Row(
@@ -242,9 +246,10 @@ class ScoutForm(forms.ModelForm):
                 Column("suffix", css_class="col-md-1"),
             ),
             "nickname",
-            InlineRadios("gender"),
-            Field("date_of_birth", css_class="col-md-3"),
-            Field("photo"),
+            Row(
+                Column(InlineRadios("gender")),
+                Column("date_of_birth", css_class="col-md-4"),
+            ),
             Row(
                 Column(
                     Field("school", css_class="custom-select"),
@@ -363,7 +368,6 @@ class SignupForm(UserCreationForm):
         self.helper.form_show_labels = False
         self.helper.layout = Layout(
             Fieldset(
-                "Your Details",
                 Row(
                     Column("first_name", css_class="col-md-4"),
                     Column("middle_name", css_class="col-md-2 text-truncate"),
@@ -384,9 +388,6 @@ class SignupForm(UserCreationForm):
                 Row(
                     Column(InlineRadios("gender")),
                     Column(InlineRadios("role")),
-                ),
-                Row(
-                    Column("photo", css_class="col-md-6"),
                 ),
             ),
         )
