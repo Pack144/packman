@@ -7,7 +7,7 @@
 {% block heading %}{{ message.subject|safe }}{% endblock heading %}
 
 {% block content %}
-  {{ message.body|linebreaks }}
+  {{ message.body|safe }}
 {% endblock %}
 
 {% block footer %}

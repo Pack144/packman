@@ -1,4 +1,4 @@
-{{ message.body|safe|wordwrap:80 }}
+{{ message.get_plaintext_body|safe|wordwrap:80 }}
 
 -------------------------------------------------------------------------------
 You have received this message because you are an
