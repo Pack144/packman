@@ -45,6 +45,10 @@
 
   <script src="{% static "dynamic_formsets/jquery.formset.js" %}" type="text/javascript"></script>
   <script type="text/javascript">
+    $(document).ready(function () {
+      bsCustomFileInput.init()
+    })
+
     $('#{{ address_formset.prefix }}').formset({
       addCssClass: "btn btn-primary btn-sm",
       deleteCssClass: 'btn btn-danger align-self-start',
@@ -55,6 +59,7 @@
         removePrompt: "<i class=\"fas fa-trash-alt\"></i>"
       },
     });
+
     $('#{{ phonenumber_formset.prefix }}').formset({
       addCssClass: "btn btn-primary btn-sm",
       deleteCssClass: 'btn btn-danger align-self-start',
