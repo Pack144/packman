@@ -1,3 +1,4 @@
+import html
 from pathlib import Path
 
 from django.contrib import admin
@@ -12,15 +13,18 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 
+from tinymce.models import HTMLField
+
 from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
+from packman.calendars.models import PackYear
 from packman.dens.models import Den
 from packman.committees.models import Committee
+from packman.membership.models import Family
 
 from .managers import MessageManager
-from packman.calendars.models import PackYear
-from packman.membership.models import Family
 
 User = get_user_model()
 
@@ -156,7 +160,7 @@ class Message(TimeStampedUUIDModel):
         blank=True
     )
     subject = models.CharField(_("subject"), max_length=150)
-    body = models.TextField(_("body"))
+    body = HTMLField(_("body"))
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name="messages", blank=True, null=True)
     parent = models.ForeignKey(
         "self",
@@ -229,6 +233,9 @@ class Message(TimeStampedUUIDModel):
     @admin.display(boolean=True, description=_("sent"))
     def sent(self):
         return bool(self.date_sent)
+
+    def get_plaintext_body(self):
+        return html.unescape(strip_tags(self.body))
 
     def get_recipients(self):
         distros = (
