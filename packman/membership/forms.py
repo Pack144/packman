@@ -268,32 +268,32 @@ class ScoutForm(forms.ModelForm):
             ),
         )
 
-    # def notify_membership(self, submitter):
-    #     """
-    #     TODO: remove hard-coded addresses & message body
-    #     Send an e-mail to the membership committee notifying them of a new
-    #     application to review.
-    #     """
-    #     subject = (
-    #         f"[{settings.PACK_SHORTNAME}] New member application - "
-    #         f"{self.cleaned_data['first_name']} {self.cleaned_data['last_name']}"
-    #     )
-    #     message = (
-    #         f"Hello Membership Committee,\n"
-    #         f"\n"
-    #         f"This email confirms that {self.cleaned_data['first_name']} "
-    #         f"{self.cleaned_data['last_name']}, has applied for membership in "
-    #         f"{settings.PACK_NAME}. Please login to pack144.org at your "
-    #         f"earliest convenience to review their application."
-    #     )
-    #     to_field = ("Membership Committee <membership@pack144.org>",)
-    #     from_field = "Cub Scouts Pack 144 <noreply@pack144.org>"
-    #     send_mail(
-    #         subject=subject,
-    #         message=message,
-    #         from_email=from_field,
-    #         recipient_list=to_field,
-    #     )
+    def notify_membership(self, submitter):
+        """
+        TODO: remove hard-coded addresses & message body
+        Send an e-mail to the membership committee notifying them of a new
+        application to review.
+        """
+        subject = (
+            f"[{settings.PACK_SHORTNAME}] New member application - "
+            f"{self.cleaned_data['first_name']} {self.cleaned_data['last_name']}"
+        )
+        message = (
+            f"Hello Membership Committee,\n"
+            f"\n"
+            f"This email confirms that {self.cleaned_data['first_name']} "
+            f"{self.cleaned_data['last_name']}, has applied for membership in "
+            f"{settings.PACK_NAME}. Please login to pack144.org at your "
+            f"earliest convenience to review their application."
+        )
+        to_field = ("Membership Committee <membership@pack144.org>",)
+        from_field = "Cub Scouts Pack 144 <noreply@pack144.org>"
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=from_field,
+            recipient_list=to_field,
+        )
 
     def send_confirmation_email(self, submitter):
         """
