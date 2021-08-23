@@ -1,7 +1,7 @@
 from django.contrib.auth.models import UserManager
 from django.db import models
-from django.db.models import Case, When
-from django.db.models.functions import Coalesce
+from django.db.models import Case, When, Value
+from django.db.models.functions import Coalesce, Concat
 
 from packman.calendars.models import PackYear
 from packman.dens.models import Rank
@@ -55,7 +55,8 @@ class MemberManager(UserManager):
                     outputfield=models.CharField(),
                 ),
                 "first_name",
-            )
+            ),
+            _full_name=Concat("_short_name", Value(" "), "last_name"),
         )
 
     def active(self):
