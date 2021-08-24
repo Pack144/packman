@@ -1,12 +1,16 @@
 {% extends '_base.html' %}
 
-{% load i18n %}
+{% load crispy_forms_tags i18n %}
 
 {% block title %}{% if message.pk %}{{ message.subject }}{% else %}{% translate 'New Message' %}{% endif %} | {{ block.super }}{% endblock %}
 
 {% block content %}
-  <div class="card">
-    <div class="card-body">
+  <div class="d-flex align-items-start justify-content-between vh-100 border rounded">
+    {% include 'mail/snippets/sidebar.html' %}
+    {% if message.pk %}
+      {% include 'mail/snippets/outbound_message_list.html' %}
+    {% endif %}
+    <div class="d-flex flex-column flex-grow-1 vh-100 align-items-start justify-content-center">
       <form method="post">
         <fieldset>
           <legend>{% translate 'To' %}</legend>
@@ -16,10 +20,14 @@
             {% endfor %}
           </ul>
           <ul class="list-unstyled" id="to_field">
-            {% for form in to_formset %}
+            {{ dl_formset.errors }}
+          {{ dl_formset.non_form_errors }}
+            {% for form in dl_formset %}
               <li>{{ form }}</li>
+              {{ form.non_field_errors }}
             {% endfor %}
-            </ul>
+
+          </ul>
         </fieldset>
         <fieldset>
           <legend>{% translate 'Cc' %}</legend>
@@ -28,11 +36,6 @@
               <li class="list-inline-item"><span class="badge rounded-pill bg-secondary">{{ cc }}</span></li>
             {% endfor %}
           </ul>
-          <ul class="list-unstyled" id="cc_field">
-            {% for form in cc_formset %}
-              <li>{{ form }}</li>
-            {% endfor %}
-            </ul>
         </fieldset>
         <fieldset>
           <div class="field-wrapper">
@@ -46,13 +49,13 @@
             {{ form.body.errors }}
           </div>
         </fieldset>
-        {{ to_formset.management_form }}
-        {{ cc_formset.management_form }}
+        {{ dl_formset.management_form }}
         {% csrf_token %}
         <button type="submit" name="_save">{% translate 'Save to Drafts' %}</button>
         <button type="submit">{% translate 'Send' %}</button>
       </form>
     </div>
+  </div>
   </div>
 {% endblock content %}
 
