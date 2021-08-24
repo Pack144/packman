@@ -2,33 +2,21 @@
 
 {% load i18n humanize %}
 
-{% block title %}{% translate 'Inbox' %} | {{ block.super }}{% endblock %}
+{% block title %}{{ mailbox }} | {{ block.super }}{% endblock %}
 
 {% block content %}
-  <div class="card">
-    <div class="card-body">
-      <ul class="list-group list-group-flush">
-        {% for message in message_list %}
-          <li class="list-group-item list-group-item-action">
-              <div class="d-flex justify-content-between{% if not message.recipient.0.date_read %} font-weight-bold{% endif %}">
-                <div>
-                  {{ message.author }}
-                </div>
-                <div>
-            <a href="{{ message.get_absolute_url }}" class="card-link stretched-link">
-                  {{ message.subject }}
-            </a>
-                </div>
-                <div>
-                  {{ message.recipient.0.date_received|naturaltime }}
-                </div>
-              </div>
-            <div>
-              {{ message.body|linebreaks|truncatewords:100 }}
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
+  <div class="d-flex align-items-start justify-content-between vh-100 border rounded">
+    {% include 'mail/snippets/sidebar.html' %}
+  <div class="d-flex flex-column flex-grow-1 align-items-stretch bg-white vh-100" id="mailbox-message-list">
+    {% if mailbox == mailbox.DRAFTS or mailbox == mailbox.SENT %}
+      {% include 'mail/snippets/outbound_message_list.html' %}
+    {% else %}
+      {% include 'mail/snippets/inbound_message_list.html' %}
+    {% endif %}
+  </div>
+    <div class="d-none d-lg-flex flex-column flex-grow-1 vh-100 align-items-center justify-content-center text-muted">
+          <span class="display-1"><i class="far fa-envelope"></i></span>
+          <p>No Message Selected</p>
     </div>
   </div>
 {% endblock %}
