@@ -6,7 +6,8 @@ from django.utils.translation import gettext as _
 from django.views.generic import DetailView, ListView, CreateView, UpdateView
 
 from .forms import MessageForm, MessageDistributionFormSet
-from .models import Message
+from .models import Message, Mailbox
+from .utils import get_mailbox_counts
 
 
 class MessageCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -18,30 +19,23 @@ class MessageCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["mail_count"] = get_mailbox_counts(self.request.user)
         if self.request.POST:
-            context["to_formset"] = MessageDistributionFormSet(self.request.POST, prefix="to_field")
-            context["cc_formset"] = MessageDistributionFormSet(self.request.POST, prefix="cc_field")
+            context["dl_formset"] = MessageDistributionFormSet(self.request.POST, prefix="to_field")
         else:
-            context["to_formset"] = MessageDistributionFormSet(prefix="to_field")
-            context["cc_formset"] = MessageDistributionFormSet(prefix="cc_field")
+            context["dl_formset"] = MessageDistributionFormSet(prefix="to_field")
         return context
 
     def form_valid(self, form):
         context = self.get_context_data(form=form)
-        to_formset = context["to_formset"]
-        cc_formset = context["cc_formset"]
+        dl_formset = context["dl_formset"]
 
-        if to_formset.is_valid() and cc_formset.is_valid():
+        if dl_formset.is_valid():
             form.instance.author = self.request.user
             obj = form.save()
 
-            to_formset.instance = obj
-            to_formset.delivery = Message.Delivery.TO
-            to_formset.save()
-
-            cc_formset.instance = obj
-            cc_formset.delivery = Message.Delivery.CC
-            cc_formset.save()
+            dl_formset.instance = obj
+            dl_formset.save()
 
             return super().form_valid(form)
 
@@ -67,30 +61,25 @@ class MessageUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["mailbox"] = Mailbox.DRAFTS
+        context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
+        context["message_list"] = Message.objects.drafts(self.request.user)
         if self.request.POST:
-            context["to_formset"] = MessageDistributionFormSet(self.request.POST, prefix="to_field", instance=self.object)
-            context["cc_formset"] = MessageDistributionFormSet(self.request.POST, prefix="cc_field", instance=self.object)
+            context["dl_formset"] = MessageDistributionFormSet(self.request.POST, prefix="to_field", instance=self.object)
         else:
-            context["to_formset"] = MessageDistributionFormSet(prefix="to_field", instance=self.object)
-            context["cc_formset"] = MessageDistributionFormSet(prefix="cc_field", instance=self.object)
+            context["dl_formset"] = MessageDistributionFormSet(prefix="to_field", instance=self.object)
         return context
 
     def form_valid(self, form):
         context = self.get_context_data(form=form)
-        to_formset = context["to_formset"]
-        cc_formset = context["cc_formset"]
+        dl_formset = context["dl_formset"]
 
-        if to_formset.is_valid() and cc_formset.is_valid():
+        if dl_formset.is_valid():
             form.instance.author = self.request.user
             obj = form.save()
 
-            to_formset.instance = obj
-            to_formset.delivery = Message.Delivery.TO
-            to_formset.save()
-
-            cc_formset.instance = obj
-            cc_formset.delivery = Message.Delivery.CC
-            cc_formset.save()
+            dl_formset.instance = obj
+            dl_formset.save()
 
             return super().form_valid(form)
 
@@ -115,15 +104,34 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
-        if obj.author != self.request.user and self.request.user not in obj.recipients:
+        if obj.author == self.request.user:
+            return obj
+        elif self.request.user in obj.recipients.all():
+            obj.mark_read(recipient=self.request.user)
+            return obj
+        else:
             raise Http404(
                 _("No %(verbose_name)s found matching the query") % {"verbose_name": queryset.model._meta.verbose_name}
             )
-        obj.mark_read(self.request.user)
-        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.object._meta.model == Message:
+            context["mailbox"] = Mailbox.SENT if self.object.date_sent else Mailbox.DRAFTS
+        else:
+            context["mailbox"] = self.object.get_mailbox()
+        context["message_list"] = Message.objects.in_mailbox(self.request.user, context["mailbox"])
+        context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
+        return context
 
 
-class MessageInboxView(LoginRequiredMixin, ListView):
+class MessageListView(LoginRequiredMixin, ListView):
+
+    model = Message
+    template_name = "mail/message_list.html"
+
+
+class MessageInboxView(MessageListView):
 
     model = Message
     template_name = "mail/message_list.html"
@@ -131,8 +139,14 @@ class MessageInboxView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return super().get_queryset().in_inbox(recipient=self.request.user)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["mailbox"] = Mailbox.INBOX
+        context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
+        return context
 
-class MessageDraftsView(LoginRequiredMixin, ListView):
+
+class MessageDraftsView(MessageListView):
 
     model = Message
     template_name = "mail/message_list.html"
@@ -140,8 +154,29 @@ class MessageDraftsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return super().get_queryset().drafts(author=self.request.user)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["mailbox"] = Mailbox.DRAFTS
+        context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
+        return context
 
-class MessageArchiveView(LoginRequiredMixin, ListView):
+
+class MessageSentView(MessageListView):
+
+    model = Message
+    template_name = "mail/message_list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().sent(author=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["mailbox"] = Mailbox.SENT
+        context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
+        return context
+
+
+class MessageArchiveView(MessageListView):
 
     model = Message
     template_name = "mail/message_list.html"
@@ -149,11 +184,23 @@ class MessageArchiveView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return super().get_queryset().archived(recipient=self.request.user)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["mailbox"] = Mailbox.ARCHIVES
+        context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
+        return context
 
-class MessageTrashView(LoginRequiredMixin, ListView):
+
+class MessageTrashView(MessageListView):
 
     model = Message
     template_name = "mail/message_list.html"
 
     def get_queryset(self):
         return super().get_queryset().deleted(recipient=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["mailbox"] = Mailbox.TRASH
+        context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
+        return context

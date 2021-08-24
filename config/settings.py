@@ -283,7 +283,7 @@ LOGGING = {
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
-            "formatter": "verbose",
+            # "formatter": "verbose",
         },
     },
     "root": {"level": "INFO", "handlers": ["console"]},
@@ -298,6 +298,12 @@ LOGGING = {
             "handlers": ["console", "mail_admins"],
             "propagate": True,
         },
+        # TODO: Take this out in production
+        'django.db.backends': {
+            # 'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+
     },
 }
 

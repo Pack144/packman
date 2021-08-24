@@ -72,6 +72,10 @@ footer {
     color: #fffafa;
 }
 
+.scrollarea {
+    overflow-y: auto;
+}
+
 #memberSearchForm #memberSearch {
     border-top-left-radius: 10rem;
     border-bottom-left-radius: 10rem;
@@ -80,4 +84,12 @@ footer {
 #memberSearchForm button {
     border-top-right-radius: 10rem;
     border-bottom-right-radius: 10rem;
+}
+
+#mailbox-sidebar {
+    width: 240px;
+}
+
+#mailbox-message-list {
+    width: 320px;
 }

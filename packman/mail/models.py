@@ -33,6 +33,14 @@ def get_upload_to(instance, filename):
     return _("mail/%(uuid)s/%(file)s") % {"uuid": instance.message.uuid, "file": filename}
 
 
+class Mailbox(models.TextChoices):
+    INBOX = "inbox", _("Inbox")
+    DRAFTS = "drafts", _("Drafts")
+    SENT = "sent", _("Sent")
+    ARCHIVES = "archives", _("Archives")
+    TRASH = "trash", _("Trash")
+
+
 class DistributionList(TimeStampedModel):
     """
     A simple model to track message group addresses and their members.
@@ -250,14 +258,6 @@ class Message(TimeStampedUUIDModel):
         )
         return recipients.union(distros)
 
-        to_field = ["%s <%s>" % (n, e) for d, n, e in all_recipients if d == Message.Delivery.TO]
-        cc_field = ["%s <%s>" % (n, e) for d, n, e in all_recipients if d == Message.Delivery.CC]
-
-    def to_field(self):
-        distribution_lists = self.distribution_lists.filter(message_distribution_list__delivery=Message.Delivery.TO).values("name", "email")
-        recipients = self.recipients.filter(message_recipient__delivery=Message.Delivery.TO, message_recipient__from_distro=False).values("get_full_name", "email")
-        return distribution_lists + recipients
-
     def expand_distribution_lists(self):
         # Create unique MessageRecipient instances for each DistributionList in the message.
         for delivery, label in Message.Delivery.choices:
@@ -346,6 +346,18 @@ class MessageRecipient(models.Model):
     @admin.display(boolean=True, description=_("read"))
     def is_read(self):
         return bool(self.date_read)
+
+    def get_mailbox(self):
+        if self.message.author == self.recipient and self.message.date_sent:
+            return Mailbox.SENT
+        elif self.message.author == self.recipient:
+            return Mailbox.DRAFTS
+        elif self.date_deleted:
+            return Mailbox.TRASH
+        elif self.date_archived:
+            return Mailbox.ARCHIVES
+        else:
+            return Mailbox.INBOX
 
     def mark_read(self):
         if not self.date_read:
