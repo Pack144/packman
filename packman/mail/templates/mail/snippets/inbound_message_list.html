@@ -1,40 +1,25 @@
 {% load humanize i18n %}
-<div class="d-flex flex-column align-items-stretch bg-white vh-100 border-right" id="mailbox-message-list">
-  <a href="{% url 'mail:create' %}" class="d-flex align-items-center justify-content-end flex-shrink-0 p-3 link-dark text-decoration-none">
-    <i class="far fa-edit"></i>
-  </a>
-  <div class="list-group list-group-flush scrollarea">
-    {% for message in message_list %}
-      <div class="list-group-item list-group-item-action py-3 d-flex align-items-start">
-        {% if message.receipt.0.date_read %}
-          <span class="text-muted"><i class="far fa-circle fa-xs"></i></span>
-        {% else %}
-          <span class="text-primary"><i class="fas fa-circle fa-xs"></i></span>
-        {% endif %}
+{% include 'mail/snippets/message_list_header.html' %}
+<div class="list-group list-group-flush scrollarea" id="message-list">
+  {% for message in message_list %}
+    <div class="list-group-item list-group-item-action py-3 d-flex align-items-start">
+      {% if message.receipt.0.date_read %}
+        <span class="text-muted"><i class="far fa-circle fa-xs"></i></span>
+      {% else %}
+        <span class="text-primary"><i class="fas fa-circle fa-xs"></i></span>
+      {% endif %}
+      <div class="d-flex flex-column flex-grow-1">
         <a href="
           {% if request.resolver_match.url_name == 'drafts' %}{% url 'mail:update' message.pk %}{% else %}{{ message.get_absolute_url }}{% endif %}" class="list-group-item-action ml-2 lh-tight{% if message.pk == object.pk %} active{% endif %}{% if not message.receipt.0.date_read %} font-weight-bold{% endif %}">
-          <strong class="d-flex w-100 align-items-center justify-content-between">
+          <strong class="d-flex align-items-center justify-content-between">
             <strong class="h6">{{ message.author }}</strong>
             <small>{% firstof message.recipient.date_received|naturalday message.date_sent|naturalday message.last_updated|naturalday %}</small>
           </strong>
           <div class="text-truncate">{{ message.subject }}</div>
-          <div class="mb-1 small text-muted">{{ message.get_plaintext_body|linebreaks|truncatewords:25 }}</div>
+          <small class="mb-1 text-muted text-wrap">{{ message.get_plaintext_body|linebreaks|truncatewords:25 }}</small>
         </a>
       </div>
-    {% endfor %}
-  </div>
-  <div class="container text-right mt-auto">
-    {% if mail_count.current %}
-      <small class="text-muted">
-        {% blocktranslate count total=mail_count.current.total %}
-          {{ total }} message
-          {% plural %}
-          {{ total }} messages
-        {% endblocktranslate %}
-        {% if mail_count.current.unread %}
-          | {% blocktranslate with unread=mail_count.current.unread %}{{ unread }} unread{% endblocktranslate %}
-        {% endif %}
-      </small>
-    {% endif %}
-  </div>
+    </div>
+  {% endfor %}
 </div>
+{% include 'mail/snippets/message_list_footer.html' %}

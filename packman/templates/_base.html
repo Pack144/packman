@@ -108,7 +108,8 @@
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarMemberDropdown">
                   <a class="dropdown-item" href="{% url 'membership:my-family' %}">{% trans 'My Family' %}</a>
                   <a class="dropdown-item" href="{% url 'password_change' %}">{% trans 'Change My Password' %}</a>
-                  {% if user.is_staff %}<a class="dropdown-item" href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>{% endif %}
+                  {% if user.is_staff %}
+                    <a class="dropdown-item" href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>{% endif %}
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item text-danger" href="{% url 'logout' %}">Log out</a>
                 </div>
@@ -128,35 +129,36 @@
   </div>
 </header>
 
-
+{% if messages %}
+  <!-- Messages section ---------------------------------------------------->
+  {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show rounded-0">
+      <button type="button" class="close" data-dismiss="alert" aria-label={% trans 'close' %}>
+        <span aria-hidden="true"><i class="fas fa-times-circle"></i></span>
+      </button>
+      {{ message|safe }}
+    </div>
+  {% endfor %}
+{% endif %}
+{% block supercontent %}
 <!-- Main Content -------------------------------------------------------->
 <main role="main" class="container col-lg-8 my-5">
-  {% if messages %}
-  <!-- Messages section ---------------------------------------------------->
-    {% for message in messages %}
-      <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show">
-        <button type="button" class="close" data-dismiss="alert" aria-label={% trans 'close' %}>
-          <span aria-hidden="true"><i class="fas fa-times-circle"></i></span>
-        </button>
-        {{ message|safe }}
-      </div>
-    {% endfor %}
-  {% endif %}
-
-
   {% block content %}
     <h1>{% trans 'Hello World!' %}</h1>
     {% lorem 6 p %}
   {% endblock content %}
 </main>
-
+{% endblock supercontent %}
 
 {% block footer %}
   <!-- Footer Section ------------------------------------------------------>
   <footer class="footer text-center text-light small">
     <div class="my-3">
-      <div>{% blocktrans %}A scout is <em>trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</em>{% endblocktrans %}</div>
-      <div><i class="far fa-copyright"></i> {% now "Y" %}{% if pack.name %} <strong>{{ pack.name }}</strong>{% endif %}</div>
+      <div>{% blocktrans %}A scout is
+        <em>trustworthy, loyal, helpful, friendly, courteous, kind, obedient, cheerful, thrifty, brave, clean, and reverent.</em>{% endblocktrans %}
+      </div>
+      <div><i class="far fa-copyright"></i> {% now "Y" %}{% if pack.name %} <strong>{{ pack.name }}</strong>{% endif %}
+      </div>
     </div>
   </footer>
 {% endblock footer %}

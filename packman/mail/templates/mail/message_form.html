@@ -1,15 +1,10 @@
-{% extends '_base.html' %}
+{% extends 'mail/base.html' %}
 
 {% load crispy_forms_tags i18n %}
 
 {% block title %}{% if message.pk %}{{ message.subject }}{% else %}{% translate 'New Message' %}{% endif %} | {{ block.super }}{% endblock %}
 
-{% block content %}
-  <div class="d-flex align-items-start justify-content-between vh-100 border rounded">
-    {% include 'mail/snippets/sidebar.html' %}
-    {% if message.pk %}
-      {% include 'mail/snippets/outbound_message_list.html' %}
-    {% endif %}
+{% block message_detail %}
     <div class="d-flex flex-column flex-grow-1 vh-100 align-items-start justify-content-center">
       <form method="post">
         <fieldset>
@@ -55,9 +50,7 @@
         <button type="submit">{% translate 'Send' %}</button>
       </form>
     </div>
-  </div>
-  </div>
-{% endblock content %}
+{% endblock %}
 
 
 {% block js %}

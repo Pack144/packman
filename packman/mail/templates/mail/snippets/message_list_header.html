@@ -1,0 +1,10 @@
+{% load i18n %}
+<div class="border-bottom d-flex align-items-center justify-content-between p-3" id="message-list-heading">
+  <a href="#mailbox-folders" role="button" data-toggle="collapse" data-target="#mailbox-folders" aria-expanded="true" aria-controls="mailbox-folders">
+    <i class="far fa-caret-square-left"></i>
+    <strong class="text-primary">{{ mailbox.label }}</strong>
+  </a>
+  <a href="{% url 'mail:create' %}" class="link-dark text-decoration-none">
+    <span data-toggle="tooltip" title="{% translate 'Compose a new message' %}"><i class="far fa-edit"></i></span>
+  </a>
+</div>

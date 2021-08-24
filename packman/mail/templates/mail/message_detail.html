@@ -1,54 +1,37 @@
-{% extends '_base.html' %}
+{% extends 'mail/base.html' %}
 
 {% load humanize i18n %}
 
 {% block title %}{{ message.subject }} | {{ block.super }}{% endblock %}
 
-{% block content %}
-  <div class="d-flex align-items-start justify-content-between vh-100 border rounded">
-    {% include 'mail/snippets/sidebar.html' %}
-  <div class="d-none d-lg-flex flex-column align-items-stretch bg-white vh-100" id="mailbox-message-list">
-    {% if mailbox == mailbox.DRAFTS or mailbox == mailbox.SENT %}
-      {% include 'mail/snippets/outbound_message_list.html' %}
-    {% else %}
-      {% include 'mail/snippets/inbound_message_list.html' %}
-    {% endif %}
-  </div>
-  <div class="d-flex flex-column flex-grow-1 vh-100 align-items-start justify-content-center">
-      <div class="container vh-100">
-        <div class="row">
-          <div class="col-2 text-center" id="message-author">
-            <a href="{{ message.author.get_absolute_url }}">
-              {% include 'membership/snippets/headshot_thumbnail.html' with member=message.author %}
-              <p class="card-subtitle h5 pt-3">{{ message.author }}</p>
-            </a>
-          </div>
-          <div class="col" id="message-body vh-100">
-            <div class="d-flex" id="message-header">
-              <div class="flex-grow-1">
-                <h1 class="card-title">{{ message.subject }}</h1>
-              </div>
-              <div class="text-muted">
-                {{ message.date_sent|naturaltime }}
-              </div>
-            </div>
-            {% for recipient in message.get_recipients %}
-              {% ifchanged recipient.0 %}
-              <div class="mb-1">
-                <strong>{{ recipient.0|title }}</strong>
-                {% endifchanged %}
-                <span class="badge badge-secondary badge-pill ml-1 px-3 py-1" title="{{ recipient.2 }}">{{ recipient.1 }}</span>
-              {% ifchanged recipient.0 %}
-              </div>
-              {% endifchanged %}
-              </div>
-            {% endfor %}
-            <div class="card-text mt-4 scrollarea">
-              {{ message.body|safe|linebreaks }}
-            </div>
+{% block message_detail %}
+  <div class="d-flex flex-column h-100" id="message-detail">
+    <div class="d-flex align-items-center border-bottom" id="message-header">
+      <div class="d-flex flex-column" id="message-author">
+        <a href="{{ message.author.get_absolute_url }}">
+          {% include 'membership/snippets/headshot_thumbnail.html' with member=message.author %}
+        </a>
+      </div>
+      <div class="d-flex flex-column flex-grow-1 p-3" id="message-metadata">
+        <div class="d-flex align-items-center justify-content-between">
+          <a href="{{ message.author.get_absolute_url }}" class="h6 mb-0">{{ message.author }}</a>
+          <div class="text-right">
+            <small class="text-muted">{% firstof message.receipt.0.date_received|naturalday message.date_sent|naturalday %}</small>
           </div>
         </div>
+        <div class="d-flex" id="to-line">
+          {% for recipient in message.get_recipients %}
+            {% ifchanged recipient.0 %}<small class="text-secondary">{{ recipient.0|title }}:</small>{% endifchanged %}
+            <small class="badge badge-secondary badge-pill ml-1" title="{{ recipient.2 }}">{{ recipient.1 }}</small>
+          {% endfor %}
+        </div>
+        <div class="d-flex mt-2" id="subject-line">
+          <span class="mb-0">{{ message.subject }}</span>
+        </div>
       </div>
+    </div>
+    <div class="d-flex flex-column pt-3 scrollarea" id="message-body">
+      {{ message.body|safe|linebreaks }}
     </div>
   </div>
 {% endblock %}
