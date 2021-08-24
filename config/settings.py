@@ -298,12 +298,6 @@ LOGGING = {
             "handlers": ["console", "mail_admins"],
             "propagate": True,
         },
-        # TODO: Take this out in production
-        'django.db.backends': {
-            # 'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-
     },
 }
 
