@@ -86,10 +86,26 @@ footer {
     border-bottom-right-radius: 10rem;
 }
 
-#mailbox-sidebar {
-    width: 240px;
+#mail-client {
+    width: 100%;
 }
 
-#mailbox-message-list {
+#mail-client #folder-sidebar {
+    max-width: 160px;
+}
+
+#mail-client #message-list {
+    /*flex-basis: 33%;*/
+    height: 100%;
     width: 320px;
+}
+
+#mail-client #message-detail {
+    flex-basis: 66%;
+}
+
+@media (max-width: 991.98px) {
+    #mail-client #message-list {
+        width: 100%;
+    }
 }

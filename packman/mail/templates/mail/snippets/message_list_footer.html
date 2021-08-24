@@ -1,0 +1,13 @@
+{% load i18n %}
+<div class="d-flex justify-content-end align-self-end border-top p-3" id="message-list-counter">
+  <small class="text-muted">
+    {% blocktranslate count total=mail_count.current.total %}
+      {{ total }} message
+    {% plural %}
+      {{ total }} messages
+    {% endblocktranslate %}
+    {% if mail_count.current.unread %}
+      | {% blocktranslate with unread=mail_count.current.unread %}{{ unread }} unread{% endblocktranslate %}
+    {% endif %}
+  </small>
+</div>
