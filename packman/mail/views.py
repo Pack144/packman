@@ -19,7 +19,9 @@ class MessageCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["mailbox"] = ""
         context["mail_count"] = get_mailbox_counts(self.request.user)
+
         if self.request.POST:
             context["dl_formset"] = MessageDistributionFormSet(self.request.POST, prefix="to_field")
         else:
@@ -116,10 +118,10 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.object._meta.model == Message:
+        if self.object.author == self.request.user:
             context["mailbox"] = Mailbox.SENT if self.object.date_sent else Mailbox.DRAFTS
         else:
-            context["mailbox"] = self.object.get_mailbox()
+            context["mailbox"] = self.object.message_recipients.get(recipient=self.request.user).get_mailbox()
         context["message_list"] = Message.objects.in_mailbox(self.request.user, context["mailbox"])
         context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
         return context
