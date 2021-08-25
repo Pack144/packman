@@ -347,14 +347,20 @@ class MessageRecipient(models.Model):
     def is_read(self):
         return bool(self.date_read)
 
+    def is_archived(self):
+        return bool(self.date_archived)
+
+    def is_deleted(self):
+        return bool(self.date_deleted)
+
     def get_mailbox(self):
         if self.message.author == self.recipient and self.message.date_sent:
             return Mailbox.SENT
         elif self.message.author == self.recipient:
             return Mailbox.DRAFTS
-        elif self.date_deleted:
+        elif self.is_deleted():
             return Mailbox.TRASH
-        elif self.date_archived:
+        elif self.is_archived():
             return Mailbox.ARCHIVES
         else:
             return Mailbox.INBOX
