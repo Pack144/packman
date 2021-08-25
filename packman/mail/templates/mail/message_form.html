@@ -5,65 +5,65 @@
 {% block title %}{% if message.pk %}{{ message.subject }}{% else %}{% translate 'New Message' %}{% endif %} | {{ block.super }}{% endblock %}
 
 {% block message_detail %}
-    <div class="d-flex flex-column flex-grow-1 vh-100 align-items-start justify-content-center">
-      <form method="post">
-        <fieldset>
-          <legend>{% translate 'To' %}</legend>
-          <ul class="list-inline">
-            {% for to in message.to_field %}
-              <li class="list-inline-item"><span class="badge rounded-pill badge-secondary">{{ to }}</span></li>
-            {% endfor %}
-          </ul>
-          <ul class="list-unstyled" id="to_field">
-            {{ dl_formset.errors }}
-          {{ dl_formset.non_form_errors }}
-            {% for form in dl_formset %}
-              <li>{{ form }}</li>
-              {{ form.non_field_errors }}
-            {% endfor %}
-
-          </ul>
-        </fieldset>
-        <fieldset>
-          <legend>{% translate 'Cc' %}</legend>
-          <ul class="list-inline">
-            {% for cc in message.cc_field %}
-              <li class="list-inline-item"><span class="badge rounded-pill bg-secondary">{{ cc }}</span></li>
-            {% endfor %}
-          </ul>
-        </fieldset>
-        <fieldset>
-          <div class="field-wrapper">
-            {{ form.subject.label_tag }}
-            {{ form.subject }}
-            {{ form.subject.errors }}
+  <div class="d-flex flex-column align-items-start justify-content-center">
+    <div class="card">
+      <div class="card-body">
+        <form method="post">
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="{% url 'mail:inbox' %}" class="btn btn-link">{% translate 'Cancel' %}</a>
+          <div class="btn-group btn-group-lg" role="group" aria-label="{% translate 'Message actions' %}">
+            <button type="submit" name="_save" class="btn btn-link text-decoration-none" data-toggle="tooltip" title="{% translate 'Save' %}">
+              <i class="fas fa-cloud-upload-alt"></i><span class="sr-only">{% translate 'Save' %}</span>
+            </button>
+            <button type="submit" class="btn btn-link text-decoration-none" data-toggle="tooltip" title="{% translate 'Send' %}">
+              <i class="far fa-paper-plane"></i><span class="sr-only">{% translate 'Send' %}</span>
+            </button>
           </div>
-          <div>
-            {{ form.body.label_tag }}
-            {{ form.body }}
-            {{ form.body.errors }}
           </div>
-        </fieldset>
-        {{ dl_formset.management_form }}
-        {% csrf_token %}
-        <button type="submit" name="_save">{% translate 'Save to Drafts' %}</button>
-        <button type="submit">{% translate 'Send' %}</button>
-      </form>
+          <fieldset>
+            <legend>{% translate 'To' %}</legend>
+            <div id="form_set">
+              {% for form in dl_formset.forms %}
+                {{ form.non_field_errors|as_crispy_errors }}
+                {{ form.errors|as_crispy_errors }}
+                <div class="form-row">
+                  {% for field in form.visible_fields %}
+                    {{ field|as_crispy_field }}
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+            <button type="button" class="btn btn-link" id="add_more"><i class="fas fa-plus-circle"></i></button>
+          </fieldset>
+          <fieldset>
+                  {% for field in form.visible_fields %}
+                    {{ field|as_crispy_field }}
+                  {% endfor %}
+                </div>
+          </fieldset>
+          {% csrf_token %}
+          {{ dl_formset.management_form }}
+          <div id="empty_form" class="d-none">
+            <div class="form-row">
+              {{ dl_formset.empty_form|crispy }}
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 {% endblock %}
 
 
 {% block js %}
   {{ block.super }}
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js" integrity="sha256-DqWm+/v1Q0tgaHhTPLema89wDw8Ir+kIM10JePtjrZQ=" crossorigin="anonymous"></script>
+  {{ form.media }}
+
   <script>
-    new Sortable(to_field, {
-      group: "addressees"
+    $('#add_more').click(function () {
+      var form_idx = $('#id_form-TOTAL_FORMS').val();
+      $('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+      $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
     });
-
-    new Sortable(cc_field, {
-      group: "addressees"
-    })
-
   </script>
 {% endblock js %}
