@@ -95,17 +95,16 @@ footer {
 }
 
 #mail-client #message-list {
-    /*flex-basis: 33%;*/
     height: 100%;
-    width: 320px;
+    max-width: 33%;
 }
 
-#mail-client #message-detail {
-    flex-basis: 66%;
-}
+/*#mail-client #message-detail {*/
+/*    flex-basis: 66%;*/
+/*}*/
 
 @media (max-width: 991.98px) {
     #mail-client #message-list {
-        width: 100%;
+        max-width: 100%;
     }
 }
