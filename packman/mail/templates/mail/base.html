@@ -28,7 +28,7 @@
             {% endif %}
           </a>
         </li>
-        {% if mail_count.drafts %}
+        {% if mail_count.drafts.total %}
           <li class="nav-item text-nowrap">
             <a href="{% url 'mail:drafts' %}" class="d-flex align-items-center justify-content-between nav-link{% if mailbox == mailbox.DRAFTS %} active" aria-current="page{% else %} text-white{% endif %}">
               <div>
