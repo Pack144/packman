@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import DetailView, ListView, CreateView, UpdateView
@@ -104,6 +104,9 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Message
     template_name = "mail/message_detail.html"
 
+    def get_queryset(self):
+        return super().get_queryset().with_receipts(self.request.user)
+
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if obj.author == self.request.user:
@@ -125,6 +128,22 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
         context["message_list"] = Message.objects.in_mailbox(self.request.user, context["mailbox"])
         context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if "_archive" in request.POST:
+            self.object.mark_archived(request.user)
+
+        if "_delete" in request.POST:
+            self.object.mark_deleted(request.user)
+
+        if "_unarchive" in request.POST:
+            self.object.mark_unarchived(request.user)
+
+        if "_undelete" in request.POST:
+            self.object.mark_undeleted(request.user)
+
+        return HttpResponseRedirect(self.object.get_absolute_url())
 
 
 class MessageListView(LoginRequiredMixin, ListView):
