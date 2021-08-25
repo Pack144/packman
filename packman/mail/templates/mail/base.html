@@ -71,7 +71,7 @@
     <div class="d-flex h-100 w-100">
       {% if mailbox %}
         <!--  Begin message list  -------------------------------------------------->
-        <div class="{% if view.template_name == 'mail/message_list.html' %}d-flex{% else %}d-none d-lg-flex{% endif %} flex-column flex-shrink-1 align-items-stretch bg-light" id="mailbox-message-list">
+        <div class="{% if view.template_name == 'mail/message_list.html' %}d-flex{% else %}d-none d-lg-flex{% endif %} flex-column flex-shrink-1 align-items-stretch" id="mailbox-message-list">
           {% if mailbox == mailbox.DRAFTS or mailbox == mailbox.SENT %}
             {% include 'mail/snippets/outbound_message_list.html' %}
           {% else %}
