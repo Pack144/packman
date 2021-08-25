@@ -6,6 +6,31 @@
 
 {% block message_detail %}
   <div class="d-flex flex-column h-100" id="message-detail">
+    <div class="d-flex justify-content-center" id="message-action-bar">
+      <form method="post">
+        <div class="btn-group btn-group-sm" role="group" aria-label="{% translate 'message toolbar' %}">
+          {% if message.receipt.0.is_archived %}
+            <button type="submit" name="_unarchive" class="btn btn-secondary" data-target="tooltip" title="{% translate 'Move to Inbox' %}">
+              <i class="fas fa-archive"></i>
+            </button>
+          {% else %}
+            <button type="submit" name="_archive" class="btn btn-outline-secondary" data-target="tooltip" title="{% translate 'Archive' %}">
+              <i class="fas fa-archive"></i>
+            </button>
+          {% endif %}
+          {% if message.receipt.0.is_deleted %}
+            <button type="submit" name="_undelete" class="btn btn-secondary" data-target="tooltip" title="{% translate 'Undelete' %}">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          {% else %}
+            <button type="submit" name="_delete" class="btn btn-outline-secondary" data-target="tooltip" title="{% translate 'Delete' %}">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          {% endif %}
+        </div>
+        {% csrf_token %}
+      </form>
+    </div>
     <div class="d-flex align-items-center border-bottom" id="message-header">
       <div class="d-flex flex-column" id="message-author">
         <a href="{{ message.author.get_absolute_url }}">
@@ -30,7 +55,7 @@
         </div>
       </div>
     </div>
-    <div class="d-flex flex-column pt-3 scrollarea" id="message-body">
+    <div class="d-flex flex-column flex-shrink-1 pt-3 scrollarea" id="message-body">
       {{ message.body|safe|linebreaks }}
     </div>
   </div>
