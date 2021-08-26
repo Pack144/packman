@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext as _
 
-from .models import Category, Customer, Order, Prize, Product, ProductLine, PrizeSelection, OrderItem
+from .models import Category, Customer, Order, Prize, Product, ProductLine, PrizeSelection, OrderItem, Tag
 
 
 class IsDeliveredFilter(admin.SimpleListFilter):
@@ -62,7 +62,7 @@ class CustomerAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
-    list_display = ["id", "customer", "seller", "year", "is_paid", "is_delivered"]
+    list_display = ["customer", "seller", "year", "is_paid", "is_delivered"]
     list_filter = [IsPaidFilter, IsDeliveredFilter, "year", "seller"]
 
 
@@ -74,10 +74,16 @@ class PrizeAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    filter_horizontal = ["tags"]
     list_display = ["name", "category", "price", "year"]
-    list_filter = ["category", "year"]
+    list_filter = ["category", "tags", "year"]
 
 
 @admin.register(ProductLine)
 class ProductLineAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
     pass
