@@ -33,10 +33,11 @@ urlpatterns = [
     # Third party apps
     path("t/", include("tinymce.urls")),
     # Local Apps
+    path("calendar/", include("packman.calendars.urls")),
     path("committees/", include("packman.committees.urls")),
     path("dens/", include("packman.dens.urls")),
     path("documents/", include("packman.documents.urls")),
-    path("calendar/", include("packman.calendars.urls")),
+    path("fundraisers/", include("packman.fundraisers.urls")),
     path("mail/", include("packman.mail.urls")),
     path("members/", include("packman.membership.urls")),
     path("", include("packman.pages.urls")),
