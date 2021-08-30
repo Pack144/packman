@@ -5,7 +5,7 @@ from django.db.models import Prefetch
 class MessageQuerySet(models.QuerySet):
     def with_receipts(self, recipient):
         message_recipients_filter = self.model.message_recipients.field.model.objects.filter(recipient=recipient)
-        return self.filter(message_recipient__recipient=recipient).prefetch_related(Prefetch("message_recipients", queryset=message_recipients_filter.select_related("recipient"), to_attr="receipt"), "receipt")
+        return self.prefetch_related(Prefetch("message_recipients", queryset=message_recipients_filter.select_related("recipient"), to_attr="receipt"), "receipt")
 
     def in_inbox(self, recipient):
         return self.with_receipts(recipient).filter(message_recipient__recipient=recipient, message_recipient__date_archived__isnull=True, message_recipient__date_deleted__isnull=True)
