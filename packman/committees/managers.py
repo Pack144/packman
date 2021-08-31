@@ -4,17 +4,16 @@ from packman.calendars.models import PackYear
 
 
 class CommitteeQuerySet(models.QuerySet):
-
     def by_year(self, year):
-        """ Return a list of committees with members assigned for a given Pack Year. """
+        """Return a list of committees with members assigned for a given Pack Year."""
         return self.filter(committee_member__year=year)
 
     def by_years(self, years):
-        """ Return a list of committees with members assigned for a list of Pack Years. """
+        """Return a list of committees with members assigned for a list of Pack Years."""
         return self.filter(committee_member__year__in=years).distinct()
 
     def current(self):
-        """ Return a list of committees with members assigned for the current Pack Year. """
+        """Return a list of committees with members assigned for the current Pack Year."""
         return self.by_year(year=PackYear.objects.current())
 
     def recent(self):

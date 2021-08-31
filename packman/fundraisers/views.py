@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from .models import Order, Prize
+from .models import Order
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -22,5 +22,3 @@ class OrderDeleteView(LoginRequiredMixin, DeleteView):
 
 class OrderDetailView(LoginRequiredMixin, DetailView):
     model = Order
-
-

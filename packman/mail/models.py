@@ -1,14 +1,14 @@
 import html
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
-from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
 from django.core import mail
+from django.core.mail import EmailMultiAlternatives
 from django.core.validators import URLValidator
-from django.db import models, IntegrityError, transaction
+from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -18,10 +18,10 @@ from django.utils.translation import gettext as _
 
 from tinymce.models import HTMLField
 
-from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
 from packman.calendars.models import PackYear
-from packman.dens.models import Den
 from packman.committees.models import Committee
+from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
+from packman.dens.models import Den
 from packman.membership.models import Family
 
 from .managers import MessageManager
@@ -52,21 +52,14 @@ class DistributionList(TimeStampedModel):
         _("all members"),
         default=False,
         help_text=_(
-            "Messages sent to this distribution list should be delivered to "
-            "all active members of the Pack."
+            "Messages sent to this distribution list should be delivered to " "all active members of the Pack."
         ),
     )
     dens = models.ManyToManyField(
-        Den,
-        related_name="distribution_list",
-        related_query_name="distribution_list",
-        blank=True
+        Den, related_name="distribution_list", related_query_name="distribution_list", blank=True
     )
     committees = models.ManyToManyField(
-        Committee,
-        related_name="distribution_list",
-        related_query_name="distribution_list",
-        blank=True
+        Committee, related_name="distribution_list", related_query_name="distribution_list", blank=True
     )
 
     class Meta:
@@ -154,29 +147,17 @@ class Message(TimeStampedUUIDModel):
         # BCC = "bcc", _("Bcc")
 
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="sent_messages",
-        related_query_name="sent_message",
-        blank=True
+        User, on_delete=models.CASCADE, related_name="sent_messages", related_query_name="sent_message", blank=True
     )
     recipients = models.ManyToManyField(User, related_name="messages", through="MessageRecipient", blank=True)
     distribution_lists = models.ManyToManyField(
-        DistributionList,
-        related_name="messages",
-        through="MessageDistribution",
-        blank=True
+        DistributionList, related_name="messages", through="MessageDistribution", blank=True
     )
     subject = models.CharField(_("subject"), max_length=150)
     body = HTMLField(_("body"))
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name="messages", blank=True, null=True)
     parent = models.ForeignKey(
-        "self",
-        on_delete=models.CASCADE,
-        related_name="replies",
-        blank=True,
-        null=True,
-        verbose_name=_("replying to")
+        "self", on_delete=models.CASCADE, related_name="replies", blank=True, null=True, verbose_name=_("replying to")
     )
     date_sent = models.DateTimeField(_("sent"), blank=True, null=True)
 
@@ -318,8 +299,12 @@ class MessageRecipient(models.Model):
     """
 
     delivery = models.CharField("", max_length=3, choices=Message.Delivery.choices, default=Message.Delivery.TO)
-    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="message_recipients", related_query_name="message_recipient")
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="message_recipients", related_query_name="message_recipient")
+    message = models.ForeignKey(
+        Message, on_delete=models.CASCADE, related_name="message_recipients", related_query_name="message_recipient"
+    )
+    recipient = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="message_recipients", related_query_name="message_recipient"
+    )
 
     from_distro = models.BooleanField(
         _("distribution list"),
@@ -405,9 +390,7 @@ class MessageDistribution(models.Model):
     delivery = models.CharField("", max_length=3, choices=Message.Delivery.choices, default=Message.Delivery.TO)
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_query_name="message_distribution_list")
     distribution_list = models.ForeignKey(
-        DistributionList,
-        on_delete=models.CASCADE,
-        related_query_name="message_distribution_list"
+        DistributionList, on_delete=models.CASCADE, related_query_name="message_distribution_list"
     )
 
     class Meta:
@@ -442,10 +425,7 @@ class ListSettings(TimeStampedModel):
         _("name"),
         max_length=100,
         blank=True,
-        help_text=_(
-            "An optional descriptive name for emails generated by this "
-            "application."
-        ),
+        help_text=_("An optional descriptive name for emails generated by this " "application."),
     )
     from_name = models.CharField(
         _("from name"),
@@ -470,8 +450,7 @@ class ListSettings(TimeStampedModel):
         max_length=20,
         blank=True,
         help_text=_(
-            "If provided, the subject prefix will precede every sent email's "
-            "subject in the email subject field."
+            "If provided, the subject prefix will precede every sent email's " "subject in the email subject field."
         ),
     )
 

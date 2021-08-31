@@ -2,7 +2,6 @@ from django.urls import path
 
 from .views import OrderCreateView, OrderDeleteView, OrderDetailView, OrderListView, OrderUpdateView
 
-
 app_name = "fundraisers"
 urlpatterns = [
     path("", OrderListView.as_view(), name="order_list"),
