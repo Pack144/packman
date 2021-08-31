@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from django.db import models
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -41,8 +41,8 @@ class Committee(TimeStampedUUIDModel):
         _("superusers"),
         default=False,
         help_text=_(
-            'Designates that members of this committee have all permissions without '
-            'explicitly assigning them.')
+            "Designates that members of this committee have all permissions without " "explicitly assigning them."
+        ),
     )
     permissions = models.ManyToManyField(Permission, verbose_name=_("permissions"), blank=True)
     slug = models.SlugField(
@@ -83,7 +83,7 @@ class CommitteeMember(TimeStampedUUIDModel):
         default=PackYear.get_current_pack_year_year,
         related_name="committee_memberships",
         related_query_name="committee_membership",
-        verbose_name=_("year served")
+        verbose_name=_("year served"),
     )
     position = models.IntegerField(
         choices=Position.choices,

@@ -31,5 +31,5 @@ class PackYearManager(models.Manager):
         """
         return self.filter(
             start_date__lte=self.current().end_date + timezone.timedelta(days=1),
-            end_date__gte=self.current().start_date - timezone.timedelta(days=1)
+            end_date__gte=self.current().start_date - timezone.timedelta(days=1),
         )

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext as _
 
-from .models import Category, Customer, Order, Prize, Product, ProductLine, PrizeSelection, OrderItem, Tag
+from .models import Category, Customer, Order, OrderItem, Prize, PrizeSelection, Product, ProductLine, Tag
 
 
 class IsDeliveredFilter(admin.SimpleListFilter):

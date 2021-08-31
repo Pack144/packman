@@ -23,7 +23,14 @@ class CommitteeAdmin(admin.ModelAdmin):
     list_display = ["name", "description", "leadership", "are_staff", "are_superusers"]
     list_filter = ["committee_member__year", "leadership", "are_staff", "are_superusers"]
     prepopulated_fields = {"slug": ["name"]}
-    search_fields = ("name", "description", "membership__den__number", "members__first_name", "members__nickname", "members__last_name")
+    search_fields = (
+        "name",
+        "description",
+        "membership__den__number",
+        "members__first_name",
+        "members__nickname",
+        "members__last_name",
+    )
 
 
 # This application does not rely on Dango groups; we'll assign permissions to Committee instead.

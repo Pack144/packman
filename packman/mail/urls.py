@@ -1,6 +1,15 @@
 from django.urls import path
 
-from .views import MessageDetailView, MessageCreateView, MessageInboxView, MessageUpdateView, MessageArchiveView, MessageTrashView, MessageDraftsView, MessageSentView
+from .views import (
+    MessageArchiveView,
+    MessageCreateView,
+    MessageDetailView,
+    MessageDraftsView,
+    MessageInboxView,
+    MessageSentView,
+    MessageTrashView,
+    MessageUpdateView,
+)
 
 app_name = "mail"
 urlpatterns = [
