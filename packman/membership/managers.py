@@ -1,6 +1,6 @@
 from django.contrib.auth.models import UserManager
 from django.db import models
-from django.db.models import Case, When, Value
+from django.db.models import Case, Value, When
 from django.db.models.functions import Coalesce, Concat
 
 from packman.calendars.models import PackYear
@@ -45,7 +45,6 @@ class MemberQuerySet(models.QuerySet):
 
 
 class MemberManager(UserManager):
-
     def get_queryset(self):
         return MemberQuerySet(model=self.model, using=self._db).annotate(
             _short_name=Coalesce(

@@ -6,15 +6,15 @@ from django.utils.html import format_html
 from django.utils.http import urlquote
 from django.utils.translation import gettext as _
 
-from .forms import MessageForm, MessageDistributionForm, MessageRecipientForm
+from .forms import MessageDistributionForm, MessageForm, MessageRecipientForm
 from .models import (
     Attachment,
     DistributionList,
     EmailAddress,
+    ListSettings,
     Message,
     MessageDistribution,
     MessageRecipient,
-    ListSettings,
 )
 
 
@@ -171,10 +171,7 @@ class MessageAdmin(admin.ModelAdmin):
         # Pause to determine whether the user is either the author or a
         # recipient of a Message that has been sent.
         if obj:
-             return bool(
-                (obj.author == request.user)
-                or (obj.date_sent and request.user in obj.recipients.all())
-            )
+            return bool((obj.author == request.user) or (obj.date_sent and request.user in obj.recipients.all()))
 
         # Do the thing that Django does after checking our special case,
         # except we're going to skip the check on whether the user has

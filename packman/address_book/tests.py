@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .models import Address, Category, PhoneNumber, Venue, DistributionList
+from .models import Address, Category, PhoneNumber, Venue
 
 
 class AddressModelTests(TestCase):

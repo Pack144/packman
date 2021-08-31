@@ -53,7 +53,8 @@ class Page(TimeStampedUUIDModel):
         _("title"),
         max_length=64,
         help_text=_(
-            "The title of this webpage. Will be shown as the top level header and, if added to the site navigation bar, as the link name."
+            "The title of this webpage. Will be shown as the top level header "
+            "and, if added to the site navigation bar, as the link name."
         ),
     )
 
@@ -63,7 +64,10 @@ class Page(TimeStampedUUIDModel):
         unique=True,
         blank=True,
         null=True,
-        help_text=_("If this is going to be one of the standard pages, specify which one here."),
+        help_text=_(
+            "If this is going to be one of the standard pages, specify which "
+            "one here."
+        ),
     )
     slug = models.SlugField(
         _("slug"),
@@ -71,15 +75,20 @@ class Page(TimeStampedUUIDModel):
         blank=True,
         null=True,
         help_text=_(
-            "A slug is the part of a URL which identifies a particular page on a website in an easy to read form. In other words, it’s the part of the URL that explains the page’s content. For this article, for example, the URL is https://example.com/slug, and the slug simply is ‘slug’."
+            "A slug is the part of a URL which identifies a particular page "
+            "on a website in an easy to read form. In other words, it’s the "
+            "part of the URL that explains the page’s content. For this "
+            "article, for example, the URL is https://example.com/slug, and "
+            "the slug simply is ‘slug’."
         ),
     )
     include_in_nav = models.BooleanField(
         _("Include in navigation"),
         default=False,
         help_text=_(
-            "Checking this option will add this page to the site's navigation bar. "
-            "Not used for standard pages (e.g. Home, About, Sign-up, etc.) since they will always be included."
+            "Checking this option will add this page to the site's navigation "
+            "bar. Not used for standard pages (e.g. Home, About, Sign-up, "
+            "etc.) since they will always be included."
         ),
     )
 
@@ -145,10 +154,11 @@ class ContentBlock(TimeStampedUUIDModel):
         choices=VISIBILITY_CHOICES,
         default=PRIVATE,
         help_text=(
-            "'Members Only' content will only be viewable to active members or "
-            "contributors. Content marked as 'Everyone' will be viewable by anyone on the "
-            "website, including applicants, alumni, and anonymous visitors. "
-            "Anonymous content will be displayed only if no user is logged-in."
+            "'Members Only' content will only be viewable to active members "
+            "or contributors. Content marked as 'Everyone' will be viewable "
+            "by anyone on the website, including applicants, alumni, and "
+            "anonymous visitors. Anonymous content will be displayed only if "
+            "no user is logged-in."
         ),
     )
     body = HTMLField(_("section body"))

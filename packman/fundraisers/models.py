@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext as _
+
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -34,7 +35,7 @@ class Tag(models.Model):
     name = models.CharField(_("name"), max_length=100)
 
     class Meta:
-        ordering = ("name", )
+        ordering = ("name",)
         verbose_name = _("Tag")
         verbose_name_plural = _("Tags")
 
@@ -47,7 +48,7 @@ class ProductLine(TimeStampedModel):
     name = models.CharField(_("name"), max_length=100)
 
     class Meta:
-        ordering = ("name", )
+        ordering = ("name",)
         verbose_name = _("Product Line")
         verbose_name_plural = _("Product Lines")
 
@@ -65,7 +66,9 @@ class Product(TimeStampedModel):
     tags = models.ManyToManyField(Tag, related_name="products")
     image = models.ImageField(_("image"), upload_to="fundraisers/", blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products")
-    product_line = models.ForeignKey(ProductLine, on_delete=models.CASCADE, related_name="products", blank=True, null=True)
+    product_line = models.ForeignKey(
+        ProductLine, on_delete=models.CASCADE, related_name="products", blank=True, null=True
+    )
     price = models.DecimalField(_("price"), decimal_places=2, max_digits=9)
     weight = models.DecimalField(_("weight"), decimal_places=1, max_digits=4, blank=True, null=True)
     unit = models.CharField(_("measured in"), max_length=2, choices=WeightUnit.choices, blank=True)
@@ -177,9 +180,15 @@ class Prize(TimeStampedModel):
 
 class PrizeSelection(TimeStampedModel):
 
-    year = models.ForeignKey(PackYear, on_delete=models.CASCADE, related_name="prize_selections", related_query_name="prize_selection")
-    cub = models.ForeignKey(Scout, on_delete=models.CASCADE, related_name="prize_selections", related_query_name="prize_selection")
-    prize = models.ForeignKey(Prize, on_delete=models.CASCADE, related_name="prize_selections", related_query_name="prize_selection")
+    year = models.ForeignKey(
+        PackYear, on_delete=models.CASCADE, related_name="prize_selections", related_query_name="prize_selection"
+    )
+    cub = models.ForeignKey(
+        Scout, on_delete=models.CASCADE, related_name="prize_selections", related_query_name="prize_selection"
+    )
+    prize = models.ForeignKey(
+        Prize, on_delete=models.CASCADE, related_name="prize_selections", related_query_name="prize_selection"
+    )
     quantity = models.IntegerField(_("quantity"), validators=[MinValueValidator(1)])
 
     class Meta:

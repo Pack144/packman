@@ -320,7 +320,7 @@ AUTHENTICATION_BACKENDS = [
 # https://django-tinymce.readthedocs.io/en/latest/installation.html#configuration
 # -----------------------------------------------------------------------------
 TINYMCE_INCLUDE_JQUERY = False
-TINYMCE_JS_URL = 'https://cdn.jsdelivr.net/npm/tinymce@5.8.2/tinymce.min.js'
+TINYMCE_JS_URL = "https://cdn.jsdelivr.net/npm/tinymce@5.8.2/tinymce.min.js"
 TINYMCE_COMPRESSOR = False
 TINYMCE_DEFAULT_CONFIG = {
     "convert_urls": False,
@@ -332,8 +332,8 @@ TINYMCE_DEFAULT_CONFIG = {
     "menubar": False,
     "plugins": "autoresize emoticons hr link lists table image imagetools media",
     "statusbar": False,
-    # "toolbar": "undo redo | bold italic underline strikethrough bullist numlist link | image table hr | alignleft aligncenter alignright alignjustify | emoticons removeformat",
-    "toolbar": "formatselect | bold italic underline strikethrough | alignleft aligncenter alignright | bullist numlist outdent indent | image media table | link unlink | removeformat",
+    "toolbar": "formatselect | bold italic underline strikethrough | alignleft aligncenter alignright | bullist "
+               "numlist outdent indent | image media table | link unlink | removeformat",
 }
 
 

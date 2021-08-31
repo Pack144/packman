@@ -23,7 +23,7 @@ def get_mailbox_counts(user, viewing_mailbox=None):
         "trash": {
             "total": Message.objects.deleted(recipient=user).count(),
             "unread": Message.objects.deleted(recipient=user).unread(user).count(),
-        }
+        },
     }
 
     if viewing_mailbox:
