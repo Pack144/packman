@@ -8,13 +8,7 @@ from django.http import JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import (
-    CreateView,
-    DeleteView,
-    DetailView,
-    FormView,
-    UpdateView,
-)
+from django.views.generic import CreateView, DeleteView, DetailView, FormView, UpdateView
 
 from packman.calendars.models import Event
 from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm

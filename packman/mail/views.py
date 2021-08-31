@@ -3,10 +3,10 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic import DetailView, ListView, CreateView, UpdateView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .forms import MessageForm, MessageDistributionFormSet
-from .models import Message, Mailbox
+from .forms import MessageDistributionFormSet, MessageForm
+from .models import Mailbox, Message
 from .utils import get_mailbox_counts
 
 
@@ -67,7 +67,9 @@ class MessageUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
         context["message_list"] = Message.objects.drafts(self.request.user)
         if self.request.POST:
-            context["dl_formset"] = MessageDistributionFormSet(self.request.POST, prefix="to_field", instance=self.object)
+            context["dl_formset"] = MessageDistributionFormSet(
+                self.request.POST, prefix="to_field", instance=self.object
+            )
         else:
             context["dl_formset"] = MessageDistributionFormSet(prefix="to_field", instance=self.object)
         return context

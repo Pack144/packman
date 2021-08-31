@@ -9,14 +9,13 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import AppendedText, FormActions, InlineRadios
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Field, Fieldset, Layout, Row, Submit, HTML, Div
+from crispy_forms.layout import Column, Field, Fieldset, Layout, Row, Submit
 from tempus_dominus.widgets import DatePicker
 
 from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
 
 from .models import Adult, Family, Scout
-
 
 AddressFormSet = inlineformset_factory(
     Adult,

@@ -97,10 +97,7 @@ class DenAdmin(admin.ModelAdmin):
                 "scouts",
                 filter=Q(scouts__year_assigned=PackYear.get_current_pack_year()),
             ),
-            _cubs_count_next_year=Count(
-                "scouts",
-                filter=Q(scouts__year_assigned=PackYear.objects.next())
-            )
+            _cubs_count_next_year=Count("scouts", filter=Q(scouts__year_assigned=PackYear.objects.next())),
         )
         return queryset
 

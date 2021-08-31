@@ -2,7 +2,6 @@ from django.conf import settings
 from django.utils.text import gettext_lazy as _
 
 from django_ical.views import ICalFeed
-from icalendar import vCalAddress, vText
 
 from packman.membership.models import Family
 
