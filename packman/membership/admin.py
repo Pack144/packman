@@ -90,8 +90,7 @@ class AdultsBasedOnCubStatusFilter(admin.SimpleListFilter):
     parameter_name = "cub_status"
 
     def lookups(self, request, model_admin):
-        lookups = models.Scout.STATUS_CHOICES + ((7, _("Eligible for Next Year")),)
-        return lookups
+        return models.Scout.STATUS_CHOICES + ((7, _("Eligible for Next Year")),)
 
     def queryset(self, request, queryset):
         """
@@ -101,13 +100,12 @@ class AdultsBasedOnCubStatusFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
         elif self.value() == "7":
-            # Returns a list of Members who have active Cubs not graduating next year.
-            qs = queryset.filter(
+            return queryset.filter(
                 family__children__den_memberships__year_assigned=PackYear.objects.current(),
                 family__children__den_memberships__den__rank__rank__lte=Rank.JR_WEBE,
                 family__children__status=models.Scout.ACTIVE,
             ).distinct()
-            return qs
+
         else:
             return queryset.filter(family__children__status=self.value()).distinct()
 
