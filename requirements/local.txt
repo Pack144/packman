@@ -1,12 +1,12 @@
 -r base.txt
 
-bandit[toml]
-black
-coverage
-django-debug-toolbar
-django-extensions
-djlint
-isort
-flake8
-factory_boy
-pre-commit
+bandit[toml]>=1.7.5
+black>=23.3.0
+coverage>=7.2.7
+django-debug-toolbar>=4.1
+django-extensions>=3.2
+djlint>=1.31.1
+isort>=5.12.0
+flake8>=6.0.0
+factory_boy>=3.2.1
+pre-commit>=3.3.3
