@@ -64,10 +64,7 @@ class Page(TimeStampedUUIDModel):
         unique=True,
         blank=True,
         null=True,
-        help_text=_(
-            "If this is going to be one of the standard pages, specify which "
-            "one here."
-        ),
+        help_text=_("If this is going to be one of the standard pages, specify which " "one here."),
     )
     slug = models.SlugField(
         _("slug"),
