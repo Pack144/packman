@@ -1,3 +1,36 @@
+:root {
+    color-scheme: light dark;
+    /* BSA Primary Colors */
+    --scouting-red: #CE1126;
+    --scouting-blue: #003F87;
+    --scouting-tan: #D6CEBD;
+    --scouting-warm-gray: #515354;
+    --scouting-olive: #243E2C;
+    --scouting-gold: #FDC116;
+
+    /* BSA Secondary Colors */
+    --scouting-pale-blue: #9AB3D5;
+    --scouting-dark-blue: #003366;
+    --scouting-light-tan: #E9E9E4;
+    --scouting-dark-tan: #AD9D7B;
+    --scouting-pale-gray: #858787;
+    --scouting-dark-gray: #232528;
+
+    /* Preferred colors */
+    --footer-background: var(--scouting-blue);
+    --h2-color: var(--scouting-blue);
+    --navbar-background: rgba(0, 63, 135, 0.8) /* scouting-blue as rgba */
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --footer-background: var(--scouting-dark-blue);
+        --h2-color: var(--scouting-pale-blue);
+        --navbar-background: rgba(0, 51, 102, 0.8) /* scouting-dark-blue as rgba */
+    }
+}
+
+
 @font-face {
     font-family: 'Cooper';
     src: url('/static/webfonts/CooperBlackStd.woff2') format('woff2'),
@@ -16,14 +49,17 @@ body {
     height: 100%;
 }
 
-h1, h2 {
-    color: #1c4181;
-    font-family: 'Cooper', serif;
-    text-shadow: 0 .125rem .25rem rgba(0, 0, 0, 0.33);
+h1 {
+    color: var(--scouting-red);
+}
+
+h2 {
+    color: var(--h2-color);
 }
 
 footer {
-    background-color: rgb(6, 63, 132);
+    background-color: var(--footer-background);
+    color: var(--scouting-pale-blue);
     margin-top: auto;
 }
 
@@ -51,25 +87,27 @@ footer {
 }
 
 .navbar {
-    background-color: rgba(24, 24, 24, 0.66);
+    background-color: var(--navbar-background);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 }
 
 .navbar-brand {
-    color: #ecefef;
     font-family: 'Cooper', serif;
     line-height: 1.1;
-    text-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.66);
+    color: var(--scouting-light-tan);
+    text-shadow: 0 0 0.3rem var(--scouting-dark-gray);
 }
 
 .navbar-brand #pack-name {
-    color: #eec712;
+    color: var(--scouting-gold);
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: var(--scouting-blue);
     font-weight: bold;
 }
 
 .navbar-brand #pack-location, #pack-tagline {
-    color: #fffafa;
+    color: var(--scouting-light-tan);
 }
 
 .scrollarea {
