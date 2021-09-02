@@ -1,0 +1,16 @@
+{% extends '_base.html' %}
+
+{% load i18n %}
+
+
+{% block title %}{% translate 'Prizes' %} | {{ block.super }}{% endblock %}
+
+
+{% block content %}
+  <h1>{% translate 'Prizes' %}</h1>
+  <ul>
+  {% for prize in prize_list %}
+      <li>{{ prize }}</li>
+  {% endfor %}
+  </ul>
+{% endblock %}

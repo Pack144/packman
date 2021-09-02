@@ -1,0 +1,23 @@
+{% extends '_base.html' %}
+
+{% load i18n %}
+
+
+{% block title %}{% translate 'Order Detail' %} | {{ block.super }}{% endblock %}
+
+
+{% block content %}
+  <h1>{% translate 'Order Detail' %}</h1>
+  <a href="{% url 'campaigns:order_update' order.pk %}">{% translate 'Make changes to this order' %}</a>
+  {{ order.customer.name }}
+  {{ order.customer.address }}
+  {{ order.customer.city }}, {{ order.customer.state }}, {{ order.customer.zipcode }}
+  {{ order.customer.email }}
+  {{ order.customer.phone_number }}
+
+
+  {% for item in order.items.all %}
+    {{ item.name }}
+    {{ item.quantity }}
+  {% endfor %}
+{% endblock %}
