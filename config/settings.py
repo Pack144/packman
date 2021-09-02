@@ -64,11 +64,11 @@ INSTALLED_APPS = [
     # Local apps
     "packman.address_book",
     "packman.calendars",
+    "packman.campaigns",
     "packman.committees",
     "packman.core",
     "packman.dens",
     "packman.documents",
-    "packman.fundraisers",
     "packman.mail",
     "packman.membership",
     "packman.pages",
@@ -333,7 +333,7 @@ TINYMCE_DEFAULT_CONFIG = {
     "plugins": "autoresize emoticons hr link lists table image imagetools media",
     "statusbar": False,
     "toolbar": "formatselect | bold italic underline strikethrough | alignleft aligncenter alignright | bullist "
-               "numlist outdent indent | image media table | link unlink | removeformat",
+    "numlist outdent indent | image media table | link unlink | removeformat",
 }
 
 

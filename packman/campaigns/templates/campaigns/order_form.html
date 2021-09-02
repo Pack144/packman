@@ -1,0 +1,114 @@
+{% extends '_base.html' %}
+{% load i18n %}
+
+
+{% block title %}{% if order.pk %}{% translate 'Update Order' %}{% else %}{% translate 'Start a New Order' %}{% endif %} | {{ block.super }}{% endblock %}
+
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1>{% if order.pk %}{% translate 'Update Order' %}{% else %}{% translate 'Start a New Order' %}{% endif %}</h1>
+        <h1 class="text-body">$<span id="order-total">0.00</span></h1>
+      </div>
+      <form method="post">
+        <ul class="list-group list-group-flush">
+          {% for product in product_list %}
+            {% ifchanged product.category %}
+              <li class="list-group-item mt-5"><h3>{{ product.category }}</h3></li>
+            {% endifchanged %}
+            <li class="list-group-item">
+              <div class="d-flex">
+                <div class="flex-shrink-0">
+                  {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" height="80">
+                  {% else %}
+                    <img src="https://via.placeholder.com/80" alt="{{ product.name }}" class="rounded" height="80">
+                  {% endif %}
+                </div>
+                <div class="flex-grow-1 ml-3">
+                  <div class="d-flex justify-content-between">
+                    <strong>{{ product.name }}</strong>
+                    <span class="text-muted">${{ product.price }}</span>
+                  </div>
+                  <p>{{ product.description }}</p>
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+        <fieldset>
+          <legend>{% translate 'Customer' %}</legend>
+          {{ customer_form.as_p }}
+        </fieldset>
+        <fieldset id="form_set">
+          <legend>{% translate 'Selections' %}</legend>
+          {% for form in items_formset %}
+            {{ form.as_p }}
+          {% endfor %}
+          <button type="button" class="add_more">add more</button>
+        </fieldset>
+        <fieldset>
+          <legend>{% translate 'Order Details' %}</legend>
+          {{ form.as_p }}
+        </fieldset>
+        {{ items_formset.management_form }}
+        <div id="empty_form" class="d-none">
+          {{ items_formset.empty_form.as_p }}
+        </div>
+        {% csrf_token %}
+        <button type="submit">
+          {% if order.pk %}{% translate 'Update' %}{% else %}{% translate 'Create' %}{% endif %}</button>
+        <button type="reset">{% translate 'Reset' %}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block js %}
+  {{ block.super }}
+
+  <script>
+    $('.add_more').click(function () {
+      var form_idx = $('#id_form-TOTAL_FORMS').val();
+      $('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+      $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    });
+  </script>
+
+  <script>
+    var x = document.getElementById("location");
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        x.innerHTML = "Geolcation is not supported by your browser"
+      }
+    }
+
+    function showPosition(position) {
+      x.innerHTML = "Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude;
+    }
+
+    function showError(error) {
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          x.innerHTML = "You've denied the request to locate you";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          x.innerHTML = "Location information is unavailable";
+          break;
+        case error.TIMEOUT:
+          x.innerHTML = "The request to locate you timed out";
+          break;
+        case error.UNKNOWN_ERROR:
+          x.innerHTML = "An unknown error occurred";
+          break;
+      }
+    }
+
+  </script>
+{% endblock js %}

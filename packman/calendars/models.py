@@ -115,13 +115,24 @@ class PackYear(models.Model):
         try:
             return PackYear.objects.current()
         except PackYear.DoesNotExist:
-            pass
+            return PackYear.objects.none()
+
+    @classmethod
+    def get_current_id(cls):
+        return cls.get_current().pk
 
     @staticmethod
     def get_latest():
         try:
             return PackYear.objects.latest()
         except PackYear.DoesNotExist:
+            pass
+
+    @classmethod
+    def get_latest_id(cls):
+        try:
+            return cls.objects.latest().pk
+        except cls.DoesNotExist:
             pass
 
 
