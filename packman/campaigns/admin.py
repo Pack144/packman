@@ -1,7 +1,20 @@
 from django.contrib import admin
 from django.utils.translation import gettext as _
 
-from .models import Category, Customer, Order, OrderItem, Prize, PrizeSelection, Product, ProductLine, Tag
+from .models import (
+    Campaign,
+    Category,
+    Customer,
+    Order,
+    OrderItem,
+    Prize,
+    PrizePoint,
+    PrizeSelection,
+    Product,
+    ProductLine,
+    Quota,
+    Tag,
+)
 
 
 class IsDeliveredFilter(admin.SimpleListFilter):
@@ -47,9 +60,30 @@ class PrizeSelectionInline(admin.TabularInline):
     extra = 0
 
 
+class QuotaInline(admin.TabularInline):
+    model = Quota
+    extra = 0
+
+
+@admin.register(Campaign)
+class CampaignAdmin(admin.ModelAdmin):
+    inlines = [QuotaInline]
+    list_display = [
+        "year",
+        "ordering_opens",
+        "ordering_closes",
+        "can_take_orders",
+        "delivery_available",
+        "can_deliver_orders",
+        "prize_window_opens",
+        "prize_window_closes",
+        "can_select_prizes",
+    ]
+
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["name", "description"]
 
 
 @admin.register(Customer)
@@ -62,21 +96,26 @@ class CustomerAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
-    list_display = ["customer", "seller", "year", "is_paid", "is_delivered"]
-    list_filter = [IsPaidFilter, IsDeliveredFilter, "year", "seller"]
+    list_display = ["customer", "seller", "campaign", "is_paid", "is_delivered"]
+    list_filter = [IsPaidFilter, IsDeliveredFilter, "campaign", "seller"]
 
 
 @admin.register(Prize)
 class PrizeAdmin(admin.ModelAdmin):
-    list_display = ["name", "points", "value", "year"]
-    list_filter = ["points", "year"]
+    list_display = ["name", "points", "value", "campaign"]
+    list_filter = ["points", "campaign"]
+
+
+@admin.register(PrizePoint)
+class PrizePointAdmin(admin.ModelAdmin):
+    list_display = ["value", "earned_at"]
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     filter_horizontal = ["tags"]
-    list_display = ["name", "category", "price", "year"]
-    list_filter = ["category", "tags", "year"]
+    list_display = ["name", "category", "price", "has_description", "has_image", "campaign"]
+    list_filter = ["category", "tags", "campaign"]
 
 
 @admin.register(ProductLine)
