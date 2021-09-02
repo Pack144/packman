@@ -11,14 +11,14 @@
         <form method="post">
           <div class="d-flex justify-content-between align-items-center">
             <a href="{% url 'mail:inbox' %}" class="btn btn-link">{% translate 'Cancel' %}</a>
-          <div class="btn-group btn-group-lg" role="group" aria-label="{% translate 'Message actions' %}">
-            <button type="submit" name="_save" class="btn btn-link text-decoration-none" data-toggle="tooltip" title="{% translate 'Save' %}">
-              <i class="fas fa-cloud-upload-alt"></i><span class="sr-only">{% translate 'Save' %}</span>
-            </button>
-            <button type="submit" class="btn btn-link text-decoration-none" data-toggle="tooltip" title="{% translate 'Send' %}">
-              <i class="far fa-paper-plane"></i><span class="sr-only">{% translate 'Send' %}</span>
-            </button>
-          </div>
+            <div class="btn-group btn-group-lg" role="group" aria-label="{% translate 'Message actions' %}">
+              <button type="submit" name="_save" class="btn btn-link text-decoration-none" data-toggle="tooltip" title="{% translate 'Save' %}">
+                <i class="fas fa-cloud-upload-alt"></i><span class="sr-only">{% translate 'Save' %}</span>
+              </button>
+              <button type="submit" class="btn btn-link text-decoration-none" data-toggle="tooltip" title="{% translate 'Send' %}">
+                <i class="far fa-paper-plane"></i><span class="sr-only">{% translate 'Send' %}</span>
+              </button>
+            </div>
           </div>
           <fieldset>
             <legend>{% translate 'To' %}</legend>
@@ -36,10 +36,9 @@
             <button type="button" class="btn btn-link" id="add_more"><i class="fas fa-plus-circle"></i></button>
           </fieldset>
           <fieldset>
-                  {% for field in form.visible_fields %}
-                    {{ field|as_crispy_field }}
-                  {% endfor %}
-                </div>
+            {% for field in form.visible_fields %}
+              {{ field|as_crispy_field }}
+            {% endfor %}
           </fieldset>
           {% csrf_token %}
           {{ dl_formset.management_form }}
@@ -61,9 +60,9 @@
 
   <script>
     $('#add_more').click(function () {
-      var form_idx = $('#id_form-TOTAL_FORMS').val();
+      var form_idx = $('#id_items-TOTAL_FORMS').val();
       $('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
-      $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+      $('#id_items-TOTAL_FORMS').val(parseInt(form_idx) + 1);
     });
   </script>
 {% endblock js %}
