@@ -24,7 +24,7 @@ from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
 from packman.dens.models import Den
 from packman.membership.models import Family
 
-from .managers import MessageManager
+from .managers import MessageManager, MessageRecipientQuerySet
 
 User = get_user_model()
 
@@ -319,6 +319,8 @@ class MessageRecipient(models.Model):
     date_read = models.DateTimeField(_("read"), blank=True, null=True)
     date_archived = models.DateTimeField(_("archived"), blank=True, null=True)
     date_deleted = models.DateTimeField(_("deleted"), blank=True, null=True)
+
+    objects = MessageRecipientQuerySet.as_manager()
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=("message", "recipient"), name="unique_message_per_recipient")]
