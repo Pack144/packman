@@ -130,10 +130,10 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
-        if obj.author == self.request.user:
-            return obj
-        elif self.request.user in obj.recipients.all():
+        if self.request.user in obj.recipients.all():
             obj.mark_read(recipient=self.request.user)
+            return obj
+        elif obj.author == self.request.user:
             return obj
         else:
             raise Http404(
