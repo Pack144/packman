@@ -2,35 +2,10 @@
 
 {% load humanize i18n %}
 
-{% block title %}{{ message.subject }} | {{ block.super }}{% endblock %}
+{% block title %}{% blocktranslate %}{{ message.subject }} (confirm delete){% endblocktranslate %} | {{ block.super }}{% endblock title %}
 
 {% block message_detail %}
   <div class="d-flex flex-column h-100" id="message-detail">
-    <div class="d-flex justify-content-center mb-3" id="message-action-bar">
-      <form method="post">
-        <div class="btn-group btn-group-sm" role="group" aria-label="{% translate 'message toolbar' %}">
-          {% if message.receipt.0.is_archived %}
-            <button type="submit" name="_unarchive" class="btn btn-secondary" data-toggle="tooltip" title="{% translate 'Move to Inbox' %}">
-              <i class="fas fa-archive"></i>
-            </button>
-          {% else %}
-            <button type="submit" name="_archive" class="btn btn-outline-secondary" data-toggle="tooltip" title="{% translate 'Archive' %}">
-              <i class="fas fa-archive"></i>
-            </button>
-          {% endif %}
-          {% if message.receipt.0.is_deleted %}
-            <button type="submit" name="_undelete" class="btn btn-secondary" data-toggle="tooltip" title="{% translate 'Recover message' %}">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          {% else %}
-            <button type="submit" name="_delete" class="btn btn-outline-secondary" data-toggle="tooltip" title="{% translate 'Delete' %}">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          {% endif %}
-        </div>
-        {% csrf_token %}
-      </form>
-    </div>
     <div class="card">
       <div class="card-body">
         <div class="d-flex align-items-center border-bottom" id="message-header">
@@ -80,4 +55,27 @@
       </div>
     </div>
   </div>
+
+  <div class="modal" role="alert" id="errorModal" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="text-danger"><i class="fas fa-exclamation-circle"></i> {% translate 'Warning' %}</h1>
+        </div>
+        <div class="modal-body">
+            {% blocktranslate with subject=message.subject %}
+              <p>Are you really sure you want permanently delete this message?</p>
+            {% endblocktranslate %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    errorModal.show();
+  </script>
 {% endblock %}
