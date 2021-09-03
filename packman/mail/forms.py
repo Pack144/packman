@@ -1,13 +1,11 @@
 from django import forms
 from django.forms import inlineformset_factory
 
-from .models import Attachment, Message, MessageDistribution, MessageRecipient
+from .models import Message, MessageDistribution, MessageRecipient
 
 
-class AttachmentForm(forms.ModelForm):
-    class Meta:
-        model = Attachment
-        fields = ("filename",)
+class AttachmentForm(forms.Form):
+    attachments = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={"multiple": True}))
 
 
 class MessageForm(forms.ModelForm):
@@ -28,4 +26,4 @@ class MessageRecipientForm(forms.ModelForm):
         fields = ("delivery", "recipient")
 
 
-MessageDistributionFormSet = inlineformset_factory(Message, MessageDistribution, form=MessageDistributionForm, extra=1)
+MessageDistributionFormSet = inlineformset_factory(Message, MessageDistribution, form=MessageDistributionForm, extra=0, min_num=1, can_delete=False)
