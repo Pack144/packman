@@ -9,6 +9,7 @@ from .views import (
     MessageSentView,
     MessageTrashView,
     MessageUpdateView,
+    MessageDeleteView,
 )
 
 app_name = "mail"
@@ -21,4 +22,5 @@ urlpatterns = [
     path("drafts/", MessageDraftsView.as_view(), name="drafts"),
     path("<uuid:pk>/", MessageDetailView.as_view(), name="detail"),
     path("<uuid:pk>/edit/", MessageUpdateView.as_view(), name="update"),
+    path("<uuid:pk>/delete/", MessageDeleteView.as_view(), name="delete"),
 ]
