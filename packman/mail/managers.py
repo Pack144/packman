@@ -77,3 +77,8 @@ class MessageManager(models.Manager):
             return self.get_queryset().archived(recipient)
         elif mailbox == "trash":
             return self.get_queryset().deleted(recipient)
+
+
+class MessageRecipientQuerySet(models.QuerySet):
+    def unread(self):
+        return self.filter(date_read__isnull=True)
