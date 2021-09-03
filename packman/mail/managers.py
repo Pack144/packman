@@ -81,4 +81,4 @@ class MessageManager(models.Manager):
 
 class MessageRecipientQuerySet(models.QuerySet):
     def unread(self):
-        return self.filter(date_read__isnull=True)
+        return self.filter(date_read__isnull=True, date_archived__isnull=True, date_deleted__isnull=True)
