@@ -18,16 +18,18 @@
 
 
 {% block content %}
-  {{ message.body|safe }}
+  <h1 style="color: #003F87; font-size: 24px; font-weight: 800; line-height: 24px; margin: 32px 0; text-align: center;">{{ message.subject|safe }}</h1>
+  {{ message.body|safe|linebreaks }}
 {% endblock %}
 
 
 {% block footer %}
-  <p style="font-size: 16px; font-weight: 400; line-height: 24px; margin-top: 48px;">
-    This email was sent to <em>{{ recipient.email }}</em>. You received this email because you are an active member of {{ site.name }}.
+  <p>
+    This email was sent to <em>{{ recipient.email }}</em>.<br>
+    You received this email because you have a Cub who is an active member with {{ site.name }}.
   </p>
-  <p style="font-size: 16px; font-weight: 400; line-height: 24px">
-    You can review this message in a web browser by visiting <a href="http://{{ site.domain }}{{ message.get_absolute_url }}">our website</a>.
+  <p>
+    You can view this message in a web browser by <a href="http://{{ site.domain }}{{ message.get_absolute_url }}">visiting our website</a>.<br>
     While you are there, you can update your email address or adjust your preferences.
   </p>
 {% endblock %}
