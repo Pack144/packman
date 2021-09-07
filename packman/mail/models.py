@@ -203,11 +203,11 @@ class Message(TimeStampedUUIDModel):
                 msg = ListEmail(
                     self.subject,
                     plaintext,
-                    from_email=self.author.__str__(),
                     to=["%s <%s>" % (recipient.__str__(), recipient.email)],
-                    reply_to=["%s <%s>" % (self.author, self.author.email)],
+                    reply_to=["%s <%s>" % (self.author.__str__(), self.author.email)],
                     connection=connection,
                     alternatives=[(richtext, "text/html")],
+                    headers={"From": "%s <%s>" % (self.author.__str__(), self.author.email)}
                 )
 
                 # add any attachments
@@ -513,16 +513,14 @@ class ListEmail(EmailMultiAlternatives):
             else self.subject
         )
 
-        from_field = []
         if from_email:
-            from_field.append(from_email)
-        if self.settings.from_name and self.settings.from_email:
-            from_field.append("%s <%s>" % (self.settings.from_name, self.settings.from_email))
+            self.from_email = from_email
+        elif self.settings.from_name and self.settings.from_email:
+            self.from_email = "%s <%s>" % (self.settings.from_name, self.settings.from_email)
         elif self.settings.from_email:
-            from_field.append(self.settings.from_email)
+            self.from_email = self.settings.from_email
         else:
-            from_field.append(settings.DEFAULT_FROM_EMAIL)
-        self.from_email = _(" via ").join(from_field)
+            self.from_email = settings.DEFAULT_FROM_EMAIL
 
     def message(self):
         msg = super().message()
@@ -538,13 +536,13 @@ class ListEmail(EmailMultiAlternatives):
         # accommodate that when doing comparisons.
         header_names = [key.lower() for key in self.extra_headers]
 
-        if "list-id" not in header_names and self.settings.list_id != "":
+        if "List-Id".lower() not in header_names and self.settings.list_id != "":
             if self.settings.name:
                 msg["List-Id"] = "<%s> %s" % (self.settings.list_id, self.settings.name)
             else:
                 msg["List-Id"] = "<%s>" % self.settings.list_id
 
-        if "list-unsubscribe" not in header_names:
+        if "List-Unsubscribe".lower() not in header_names:
             msg["List-Unsubscribe"] = "<https://%s%s>" % (site.domain, reverse("membership:my-family"))
 
         return msg
