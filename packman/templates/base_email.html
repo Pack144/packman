@@ -115,14 +115,14 @@
 
   <!-- Logo section and header. Headers are useful landmark elements. -->
   <header>
+    {% block header_top %}{% endblock %}
     <!-- Since this is a purely decorative image, we can leave the alternative text blank. -->
     <a href="http://{{ site.domain }}">
       <center><img src="http://{{ site.domain }}{% static 'img/logo.png' %}" width="125" height="70" alt=""></center>
     </a>
     <!-- The h1 is the main heading of the document and should come first. -->
     <!-- We can override the default styles inline. -->
-    <h1 style="color: #003F87; font-size: 32px; font-weight: 800; line-height: 32px; margin: 48px 0; text-align: center;">
-      {% block heading %}{% endblock %}</h1>
+    <h1 style="color: #003F87; font-size: 32px; font-weight: 800; line-height: 32px; margin: 48px 0; text-align: center;">{% block heading %}{% endblock %}</h1>
   </header>
 
   <main>
