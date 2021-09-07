@@ -1,14 +1,26 @@
 {% extends 'base_email.html' %}
 
+
 {% block title %}[{{ site.name }}] {{ message.subject|safe }}{% endblock %}
 
-{% block preheader %}{{ message.body|truncatechars_html:80 }}{% endblock %}
+
+{% block preheader %}{{ message.body|striptags|truncatechars:80 }}{% endblock %}
+
+
+{% block header_top %}
+  <p>Dear {{ recipient.short_name }},<br>
+    <strong>{{ message.author }}</strong> sent the following message{% if message.distribution_lists.exist %} to {% for dl in message.distribution_lists.all %}<i>{{ dl }}</i>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}:
+  </p>
+{% endblock %}
+
 
 {% block heading %}{{ message.subject|safe }}{% endblock heading %}
+
 
 {% block content %}
   {{ message.body|safe }}
 {% endblock %}
+
 
 {% block footer %}
   <p style="font-size: 16px; font-weight: 400; line-height: 24px; margin-top: 48px;">
