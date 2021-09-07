@@ -1,8 +1,4 @@
-Dear {{ recipient.short_name }},
-
-{{ message.author }} sent the following message{% if message.distribution_lists.exist %} to {% for dl in message.distribution_lists.all %}{{ dl }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}:
--------------------------------------------------------------------------------
-
+{{ message.subject|safe }}
 
 {{ message.get_plaintext_body|safe|wordwrap:80 }}
 
