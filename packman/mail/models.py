@@ -203,7 +203,9 @@ class Message(TimeStampedUUIDModel):
                 msg = ListEmail(
                     self.subject,
                     plaintext,
+                    from_email=self.author.__str__(),
                     to=["%s <%s>" % (recipient.__str__(), recipient.email)],
+                    reply_to=["%s <%s>" % (self.author, self.author.email)],
                     connection=connection,
                     alternatives=[(richtext, "text/html")],
                 )
@@ -511,14 +513,16 @@ class ListEmail(EmailMultiAlternatives):
             else self.subject
         )
 
+        from_field = []
         if from_email:
-            self.from_email = from_email
-        elif self.settings.from_name and self.settings.from_email:
-            self.from_email = "%s <%s>" % (self.settings.from_name, self.settings.from_email)
+            from_field.append(from_email)
+        if self.settings.from_name and self.settings.from_email:
+            from_field.append("%s <%s>" % (self.settings.from_name, self.settings.from_email))
         elif self.settings.from_email:
-            self.from_email = "<%s>" % self.settings.from_email
+            from_field.append(self.settings.from_email)
         else:
-            self.from_email = settings.DEFAULT_FROM_EMAIL
+            from_field.append(settings.DEFAULT_FROM_EMAIL)
+        self.from_email = _(" via ").join(from_field)
 
     def message(self):
         msg = super().message()

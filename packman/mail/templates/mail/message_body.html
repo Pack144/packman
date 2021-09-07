@@ -4,7 +4,7 @@
 {% block title %}[{{ site.name }}] {{ message.subject|safe }}{% endblock %}
 
 
-{% block preheader %}{{ message.body|striptags|truncatechars:80 }}{% endblock %}
+{% block preheader %}{{ message.body|striptags|truncatewords:100 }}{% endblock %}
 
 
 {% block header_top %}
