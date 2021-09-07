@@ -1,162 +1,145 @@
-{% load static %}
-<!DOCTYPE html>
-<!-- Set the language of your main document. This helps screenreaders use the proper language profile, pronunciation, and accent. -->
-<html lang="en">
-<head>
-  <title>{% block title %}{% endblock %}</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-  <style type="text/css">
-    body, table, td, a {
-      -webkit-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
-    }
-
-    table, td {
-      mso-table-lspace: 0pt;
-      mso-table-rspace: 0pt;
-    }
-
-    img {
-      -ms-interpolation-mode: bicubic;
-    }
-
-    /* RESET STYLES */
-    img {
-      border: 0;
-      height: auto;
-      line-height: 100%;
-      outline: none;
-      text-decoration: none;
-    }
-
-    table {
-      border-collapse: collapse !important;
-    }
-
-    body {
-      height: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 100% !important;
-    }
-
-    /* iOS BLUE LINKS */
-    a[x-apple-data-detectors] {
-      color: inherit !important;
-      text-decoration: none !important;
-      font-size: inherit !important;
-      font-family: inherit !important;
-      font-weight: inherit !important;
-      line-height: inherit !important;
-    }
-
-    /* GMAIL BLUE LINKS */
-    u + #body a {
-      color: inherit;
-      text-decoration: none;
-      font-size: inherit;
-      font-family: inherit;
-      font-weight: inherit;
-      line-height: inherit;
-    }
-
-    /* SAMSUNG MAIL BLUE LINKS */
-    #MessageViewBody a {
-      color: inherit;
-      text-decoration: none;
-      font-size: inherit;
-      font-family: inherit;
-      font-weight: inherit;
-      line-height: inherit;
-    }
-
-    /* These rules set the link and hover states, making it clear that links are, in fact, links. */
-    /* Embrace established conventions like underlines on links to keep emails accessible. */
-    a {
-      color: #B200FD;
-      font-weight: 600;
-      text-decoration: underline;
-    }
-
-    a:hover {
-      color: #000000 !important;
-      text-decoration: none !important;
-    }
-
-    /* These rules adjust styles for desktop devices, keeping the email responsive for users. */
-    /* Some email clients don't properly apply media query-based styles, which is why we go mobile-first. */
-    @media screen and (min-width: 600px) {
-      h1 {
-        font-size: 48px !important;
-        line-height: 48px !important;
+{% load i18n static %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <style>
+    /* -------------------------------------
+        INLINED WITH htmlemail.io/inline
+    ------------------------------------- */
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table[class=body] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+      }
+      table[class=body] p,
+            table[class=body] ul,
+            table[class=body] ol,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+        font-size: 16px !important;
+      }
+      table[class=body] .wrapper,
+            table[class=body] .article {
+        padding: 10px !important;
+      }
+      table[class=body] .content {
+        padding: 0 !important;
+      }
+      table[class=body] .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      table[class=body] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      table[class=body] .btn table {
+        width: 100% !important;
+      }
+      table[class=body] .btn a {
+        width: 100% !important;
+      }
+      table[class=body] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
       }
     }
-  </style>
-</head>
-<body style="margin: 0 !important; padding: 0 !important;">
-<!-- This ghost table is used to constrain the width in Outlook. The role attribute is set to presentation to prevent it from being read by screenreaders. -->
-<!--[if (gte mso 9)|(IE)]>
-<table cellspacing="0" cellpadding="0" border="0" width="720" align="center" role="presentation">
-  <tr>
-    <td>
-<![endif]-->
 
-<!-- Preheader text ----->
-<div style="display:none !important; visibility:hidden; mso-hide:all; font-size:1px; color:#ffffff; line-height:1px; max-height:0px; max-width:0px; opacity:0; overflow:hidden;">
-  {% block preheader %}{% endblock %}
-</div>
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
+    @media all {
+      .ExternalClass {
+        width: 100%;
+      }
+      .ExternalClass,
+            .ExternalClass p,
+            .ExternalClass span,
+            .ExternalClass font,
+            .ExternalClass td,
+            .ExternalClass div {
+        line-height: 100%;
+      }
+      .apple-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+      }
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+      }
+      .btn-primary table td:hover {
+        background-color: #34495e !important;
+      }
+      .btn-primary a:hover {
+        background-color: #34495e !important;
+        border-color: #34495e !important;
+      }
+    }
+    </style>
+  </head>
+  <body class="" style="background-color: #E9E9E4; font-family: sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+    <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">{% block preheader %}This is preheader text. Some clients will show this text as a preview.{% endblock %}</span>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #E9E9E4;">
+      <tr>
+        <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">&nbsp;</td>
+        <td class="container" style="font-family: sans-serif; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 580px; padding: 10px; width: 580px;">
 
+          <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 580px; padding: 10px;">
 
-<!-- The role and aria-label attributes are added to wrap the email content as an article for screen readers. Some of them will read out the aria-label as the title of the document, so use something like "An email from Your Brand Name" to make it recognizable. -->
-<!-- Default styling of text is applied to the wrapper div. Be sure to use text that is large enough and has a high contrast with the background color for people with visual impairments. -->
-<div role="article" aria-label="An email from {{ site.name }}" lang="en" style="background-color: white; color: #2b2b2b; font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; font-weight: 400; line-height: 28px; margin: 0 auto; max-width: 720px; padding: 40px 20px 40px 20px;">
+            <!-- START CENTERED WHITE CONTAINER -->
+            <table role="presentation" class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 3px;">
 
-  <!-- Logo section and header. Headers are useful landmark elements. -->
-  <header>
-    {% block header_top %}{% endblock %}
-    <!-- Since this is a purely decorative image, we can leave the alternative text blank. -->
-    <a href="http://{{ site.domain }}">
-      <center><img src="http://{{ site.domain }}{% static 'img/logo.png' %}" width="125" height="70" alt=""></center>
-    </a>
-    <!-- The h1 is the main heading of the document and should come first. -->
-    <!-- We can override the default styles inline. -->
-    <h1 style="color: #003F87; font-size: 32px; font-weight: 800; line-height: 32px; margin: 48px 0; text-align: center;">{% block heading %}{% endblock %}</h1>
-  </header>
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class="wrapper" style="font-family: sans-serif; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 20px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                    <tr>
+                      <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
+                      {% block content %}{% endblock %}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
 
-  <main>
-    <!-- This div is purely presentational, providing a container for the message. -->
-    <div style="background-color: #E9E9E4; color: #232528; border-radius: 4px; padding: 24px 48px;">
-      <!-- This ghost table is used solely for padding in Word-based Outlook clients. -->
-      <!--[if (gte mso 9)|(IE)]>
-      <table cellspacing="0" cellpadding="0" border="0" width="720" align="center" role="presentation">
-        <tr>
-          <td style="background-color: ghostwhite; padding: 24px 48px 24px 48px;">
-      <![endif]-->
+            <!-- END MAIN CONTENT AREA -->
+            </table>
 
-      <!-- Body copy -->
-      {% block content %}{% endblock %}
+            <!-- START FOOTER -->
+            <div class="footer" style="clear: both; Margin-top: 10px; text-align: center; width: 100%;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                <tr>
+                  <td class="content-block" style="font-family: sans-serif; vertical-align: top; padding-bottom: 10px; padding-top: 10px; font-size: 12px; color: #858787; text-align: center;">
+                    <span class="apple-link" style="color: #858787; font-size: 12px; text-align: center;">{% block footer %}{% endblock footer %}</span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <!-- END FOOTER -->
 
-      <!--[if (gte mso 9)|(IE)]>
-      </td></tr></table>
-      <![endif]-->
-    </div>
-  </main>
-
-  <!-- Footer information. Footer is a useful landmark element. -->
-  <footer>
-    {% block footer %}{% endblock footer %}
-      <!-- The address element does exactly what it says. By default, it is block-level and italicizes text. You can override this behavior inline. -->
-      <address style="font-size: 16px; font-style: normal; font-weight: 400; line-height: 24px;">
-        <strong>Your Friends:</strong> {{ site.name }}
-      </address>
-
-  </footer>
-
-</div>
-<!--[if (gte mso 9)|(IE)]>
-</td></tr></table>
-<![endif]-->
-</body>
+          <!-- END CENTERED WHITE CONTAINER -->
+          </div>
+        </td>
+        <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
 </html>
