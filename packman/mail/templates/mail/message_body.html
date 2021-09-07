@@ -25,8 +25,8 @@
 
 {% block footer %}
   <p>
-    This email was sent to <em>{{ recipient.email }}</em>.<br>
-    You received this email because you have a Cub who is an active member with {{ site.name }}.
+    This email was sent to <a href="mailto:{{ recipient.email }}">{{ recipient }} <<em>{{ recipient.email }}</em>></a>.<br>
+    We sent it to you because you have a Cub who is an active member in {{ site.name }}.
   </p>
   <p>
     You can view this message in a web browser by <a href="http://{{ site.domain }}{{ message.get_absolute_url }}">visiting our website</a>.<br>

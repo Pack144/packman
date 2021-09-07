@@ -4,10 +4,11 @@
 
 
 -------------------------------------------------------------------------------
-You have received this message because you are an
-active member of {{ site.name }}.
+This email was sent to {{ recipient }} <{{ recipient.email }}>.
+We sent it to you because you have a Cub who is an active member in
+{{ site.name }}.
 
-You can review this message in a web browser by visiting:
+You can view this message in a web browser by visiting our website at:
 http://{{ site.domain }}{{ message.get_absolute_url }}
 
 While there, you can update your email address or adjust your preferences.
