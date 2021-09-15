@@ -173,7 +173,7 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
     template_name = "mail/message_confirm_delete.html"
 
     def delete(self, request, *args, **kwargs):
-        self.object == self.get_object()
+        self.object = self.get_object()
         if self.request.user == self.object.author and not self.object.date_sent:
             success_message = _("Your message <strong>%(subject)s</strong> was deleted successfully.") % {
                 "subject": self.get_object()
