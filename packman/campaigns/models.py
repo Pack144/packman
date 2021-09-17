@@ -95,7 +95,7 @@ class Quota(models.Model):
     """
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     den = models.ForeignKey(Den, on_delete=models.CASCADE)
-    quota = models.DecimalField(_("quota"), max_digits=6, decimal_places=2)
+    target = models.DecimalField(_("quota"), max_digits=6, decimal_places=2)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=("campaign", "den"), name="unique_quota_per_campaign")]
