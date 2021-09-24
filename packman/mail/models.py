@@ -187,35 +187,46 @@ class Message(TimeStampedUUIDModel):
             raise AttributeError(_("Cannot send an Email with no recipients."))
 
         site = Site.objects.get_current()
+        author_name = self.author.__str__()
+        author_email = self.author.email
 
         # open a connection to the mail server
         with mail.get_connection() as connection:
 
             for recipient in self.recipients.all():
-                print("Sending message to %s" % recipient)
+                print("Sending message to %s <%s>" % (recipient, recipient.email))
 
                 # Personalize the email for each recipient.
                 context = {"site": site, "message": self, "recipient": recipient}
+                distros_string = ", ".join(
+                    recipient.message_recipients.get(
+                        message=self
+                    ).distros.values_list("name", flat=True)
+                )
+
+                subject = "[%s] %s" % (distros_string, self.subject)
                 plaintext = render_to_string("mail/message_body.txt", context)
                 richtext = render_to_string("mail/message_body.html", context)
 
                 # compose the email
                 msg = ListEmail(
-                    self.subject,
+                    subject,
                     plaintext,
                     to=["%s <%s>" % (recipient.__str__(), recipient.email)],
-                    reply_to=["%s <%s>" % (self.author.__str__(), self.author.email)],
+                    reply_to=["%s <%s>" % (author_name, author_email)],
                     connection=connection,
                     alternatives=[(richtext, "text/html")],
-                    headers={"From": "%s <%s>" % (self.author.__str__(), self.author.email)}
                 )
 
                 # add any attachments
                 for attachment in self.attachments.all():
                     msg.attach_file(attachment.filename.path)
 
-                sent = msg.send()
-                print("%s" % "  success" if sent else "  failed")
+                try:
+                    msg.send()
+                    print("  success")
+                except Exception as e:
+                    print("  failed: %s" % e)
 
         # Mark the message as sent
         self.date_sent = timezone.now()
