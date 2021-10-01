@@ -1,114 +1,172 @@
 {% extends '_base.html' %}
-{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags i18n %}
 
 
 {% block title %}{% if order.pk %}{% translate 'Update Order' %}{% else %}{% translate 'Start a New Order' %}{% endif %} | {{ block.super }}{% endblock %}
 
 
 {% block content %}
-  <div class="card">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center">
-        <h1>{% if order.pk %}{% translate 'Update Order' %}{% else %}{% translate 'Start a New Order' %}{% endif %}</h1>
-        <h1 class="text-body">$<span id="order-total">0.00</span></h1>
-      </div>
-      <form method="post">
-        <ul class="list-group list-group-flush">
-          {% for product in product_list %}
-            {% ifchanged product.category %}
-              <li class="list-group-item mt-5"><h3>{{ product.category }}</h3></li>
-            {% endifchanged %}
-            <li class="list-group-item">
-              <div class="d-flex">
-                <div class="flex-shrink-0">
-                  {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" height="80">
-                  {% else %}
-                    <img src="https://via.placeholder.com/80" alt="{{ product.name }}" class="rounded" height="80">
-                  {% endif %}
-                </div>
-                <div class="flex-grow-1 ml-3">
-                  <div class="d-flex justify-content-between">
-                    <strong>{{ product.name }}</strong>
-                    <span class="text-muted">${{ product.price }}</span>
-                  </div>
-                  <p>{{ product.description }}</p>
-                </div>
-              </div>
-            </li>
-          {% endfor %}
-        </ul>
-        <fieldset>
-          <legend>{% translate 'Customer' %}</legend>
-          {{ customer_form.as_p }}
-        </fieldset>
-        <fieldset id="form_set">
-          <legend>{% translate 'Selections' %}</legend>
-          {% for form in items_formset %}
-            {{ form.as_p }}
-          {% endfor %}
-          <button type="button" class="add_more">add more</button>
-        </fieldset>
-        <fieldset>
-          <legend>{% translate 'Order Details' %}</legend>
-          {{ form.as_p }}
-        </fieldset>
-        {{ items_formset.management_form }}
-        <div id="empty_form" class="d-none">
-          {{ items_formset.empty_form.as_p }}
-        </div>
-        {% csrf_token %}
-        <button type="submit">
-          {% if order.pk %}{% translate 'Update' %}{% else %}{% translate 'Create' %}{% endif %}</button>
-        <button type="reset">{% translate 'Reset' %}</button>
-      </form>
+  <div class="d-flex justify-content-between align-items-center">
+    <h1>{% if order.pk %}{% translate 'Update Order' %}{% else %}{% translate 'New Order' %}{% endif %}</h1>
+    <div>
+      <h1 class="text-success">$<span id="order-total">{% if order.get_total %}{{ order.get_total }}{% else %}0.00{% endif %}</span>
+      </h1>
+      <h4 class="text-muted text-right">
+        <span id="order-product-count">{% if order.product_count %}{{ order.product_count }}{% else %}0{% endif %}</span> items
+      </h4>
     </div>
   </div>
+
+  <form method="post" id="order-form" onsubmit="nudgeDonation()">
+    <div class="row">
+      {% regroup product_list by category as cateogrized_products %}
+      <div class="col-md-8">
+        <fieldset class="accordion" id="product-categories">
+          <legend>{% translate 'Products' %}</legend>
+          {% for category in cateogrized_products %}
+            <div class="card">
+              <div class="card-header" id="heading-{{ category.grouper.pk }}">
+                <h2 class="mb-0">
+                  <button class="d-flex justify-content-between align-items-center btn btn-link btn-block card-link collapsed" type="button" data-toggle="collapse" data-target="#collapse-{{ category.grouper.pk }}" aria-expanded="false" aria-controls="collapse-{{ category.grouper.pk }}">
+                    <span class="font-weight-bold">{{ category.grouper }}</span>
+                    <div class="d-flex flex-column">
+                      <span class="badge badge-primary badge-pill">{{ category.list|length }}</span>
+                    </div>
+                  </button>
+                </h2>
+              </div>
+              <div id="collapse-{{ category.grouper.pk }}" class="collapse" aria-labelledby="heading-{{ category.grouper.pk }}" data-parent="#product-categories">
+                <div class="card-body">
+                  <ul class="list-group list-group-flush">
+                    {% for product in category.list %}
+                      <li class="list-group-item" id="{{ product.pk }}">
+                        <div class="d-flex">
+                          <div class="flex-shrink-0">
+                            {% if product.image %}
+                              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" height="80">
+                            {% else %}
+                              <img src="https://via.placeholder.com/80" alt="{{ product.name }}" class="rounded" height="80">
+                            {% endif %}
+                          </div>
+                          <div class="flex-grow-1 ml-3">
+                            <div class="d-flex justify-content-between">
+                              <strong>{{ product.name }}</strong>
+                              <span class="text-muted"><i class="fas fa-dollar-sign"></i><span id="{{ product.pk }}-price">{{ product.price }}</span></span>
+                            </div>
+                            <p class="font-weight-lighter">{{ product.description }}</p>
+                            {% with ordered=product.orders.first %}
+                              <div class="btn-toolbar justify-content-end" role="toolbar">
+                                <div class="btn-group" role="group">
+                                  <button type="button" class="btn btn-secondary product-remove" data-product="{{ product.id }}" onclick="removeProduct(this)"
+                                    {% if order.pk and not ordered or not order.pk %} disabled{% endif %}>
+                                    <i class="fas fa-minus"></i></button>
+                                  <button type="button" class="btn btn-outline-secondary product-quantity" id="{{ product.id }}-quantity" disabled>
+                                    {% if order.pk and ordered %}{{ ordered.quantity }}{% else %}0{% endif %}</button>
+                                  <button type="button" class="btn btn-secondary product-add" data-product="{{ product.id }}" onclick="addProduct(this)">
+                                    <i class="fas fa-plus"></i></button>
+                                </div>
+                                <div class="input-group ml-2 w-50">
+                                  <div class="input-group-prepend">
+                                    <div class="input-group-text" id="{{ product.pk }}-subtotal-addon">
+                                      <i class="fas fa-dollar-sign"></i></div>
+                                  </div>
+                                  <input type="text" class="form-control product-subtotal" id="{{ product.pk }}-subtotal" aria-describedby="{{ product.pk }}-subtotal-addon" readonly
+                                    {% if order.pk and ordered %} value="{{ ordered.get_total_item_price }}"{% endif %}>
+                                </div>
+                              </div>
+                            {% endwith %}
+                          </div>
+                        </div>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </fieldset>
+      </div>
+
+      <div class="col-md-4">
+        <fieldset id="customer-fieldset mb-5">
+          <legend>{% translate 'Customer' %}</legend>
+          {{ customer_form|crispy }}
+          <button type="button" onclick="getLocation()" class="btn btn-primary"><i class="far fa-compass"></i></button>
+          <span class="text-danger" id="location-feedback"></span>
+        </fieldset>
+
+        <fieldset id="order-details mt-5">
+          <legend>{% translate 'Order Details' %}</legend>
+          {{ form|crispy }}
+          <div class="btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-success{% if order.date_paid %} active{% endif %}">
+              <input type="checkbox" {% if order.date_paid %}checked{% endif %} oninput="updateDatePaid(this)"> Paid
+            </label>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div id="{{ items_formset.prefix }}_form_set" class="d-none">
+      {% for form in items_formset %}
+        <div class="{{ items_formset.prefix }}_form-row d-flex justify-content-between align-items-center">
+          {{ form|crispy }}
+        </div>
+      {% endfor %}
+    </div>
+    <div id="{{ items_formset.prefix }}_empty_form" class="d-none">
+      <div class="{{ items_formset.prefix }}_form-row d-flex justify-content-between align-items-center">
+        {{ items_formset.empty_form|crispy }}
+      </div>
+    </div>
+    {{ items_formset.management_form }}
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success btn-block mt-5"">
+      {% if order.pk %}{% translate 'Update' %}{% else %}{% translate 'Create' %}{% endif %}
+    </button>
+    <div class="modal" tabindex="-1" id="donation-round-up-modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body">
+            <h5 class="modal-title">{% translate 'Thank You for Your Order' %}</h5>
+            <h6>{% translate 'Would You Like to Make a Donation?' %}</h6>
+            <p>
+              {% blocktranslate %}
+                You are only $
+                <strong id="round-up-amount"></strong> away from an even $<strong id="rounded-order-total"></strong>.
+                Would you like to round up your order with a donation to the Pack?
+              {% endblocktranslate %}
+            </p>
+          </div>
+          <div class="modal-footer d-flex align-items-center justify-content-between">
+            <button class="btn btn-primary" formnovalidate>{% translate 'No Donation' %}</button>
+            <div class="input-group w-50">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
+              </div>
+              <input type="number" min="0" step="5" class="form-control" id="donation-round-up-input">
+              <div class="input-group-append">
+                <button class="btn btn-success" onclick="updateDonationAndSubmit(document.getElementById('donation-round-up-input').value)">{% translate 'Donate' %}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+
+
 {% endblock %}
 
 
 {% block js %}
   {{ block.super }}
-
   <script>
-    $('.add_more').click(function () {
-      var form_idx = $('#id_form-TOTAL_FORMS').val();
-      $('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
-      $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
-    });
+    const csrftoken = "{{ csrf_token }}"
+    const update_url = "{% url 'campaigns:api_update' %}"
   </script>
-
-  <script>
-    var x = document.getElementById("location");
-
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-      } else {
-        x.innerHTML = "Geolcation is not supported by your browser"
-      }
-    }
-
-    function showPosition(position) {
-      x.innerHTML = "Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude;
-    }
-
-    function showError(error) {
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          x.innerHTML = "You've denied the request to locate you";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          x.innerHTML = "Location information is unavailable";
-          break;
-        case error.TIMEOUT:
-          x.innerHTML = "The request to locate you timed out";
-          break;
-        case error.UNKNOWN_ERROR:
-          x.innerHTML = "An unknown error occurred";
-          break;
-      }
-    }
-
-  </script>
+  <script src="{% static 'js/cart.js' %}"></script>
+  <script src="{% static 'js/nominatim.js' %}"></script>
 {% endblock js %}

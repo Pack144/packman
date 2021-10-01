@@ -1,0 +1,82 @@
+{% extends '_base.html' %}
+
+
+{% load humanize i18n static %}
+
+
+{% block title %}Products - {{ block.super }}{% endblock %}
+
+
+{% block content %}
+
+  {% comment %}
+  <a href="{% url 'campaigns:view_cart' %}" class="btn btn-link">
+    <i class="fas fa-shopping-cart fa-lg"></i>
+    {% if cart %}<span class="badge badge-pill badge-danger" id="cart-total">{{ cart|intcomma }}</span>{% endif %}
+  </a>
+{% endcomment %}
+
+  {% if request.user.family.children.active.count > 1 %}
+    <div class="card w-100">
+      <div class="card-body text-center">
+        <h2 class="card-title">Order Taker</h2>
+        <form>
+          {% for child in request.user.family.children.active %}
+            {% if reqeust.session.seller == child.pk %}
+              <span class="text-success">YES</span>
+            {% else %}
+              <div class="text-danger">"{{ request.session.seller }}" {{ request.session.seller|length }}</div>
+              <div class="text-danger">"{{ child.pk|stringformat:"s" }}" {{ child.pk|stringformat:"s"|length }}</div>
+            {% endif %}
+
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="seller" id="id_seller-{{ forloop.counter }}" value="{{ child.pk }}" onclick="updateSeller('{{ child.pk }}')"
+                {% if child.pk == request.session.seller %} checked{% endif %} onclick="updateSeller('{{ child.pk }}')">
+              <label class="form-check-label" for="id_seller-{{ forloop.counter }}"><span class="font-weight-bolder">{{ child }}</span></label>
+            </div>
+          {% endfor %}
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="row">
+    {% for product in product_list %}
+      {% ifchanged product.category %}
+        <div class="w-100 mt-5"><h2>{{ product.category }}</h2></div>
+      {% endifchanged %}
+
+      <div class="col-lg-4 mt-3">
+        <div class="card">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top">
+          {% else %}
+            <img src="https://via.placeholder.com/300/515354/E9E9E4/?text={{ product.name|urlencode }}" alt="{{ product.name }}" class="card-img-top">
+          {% endif %}
+          <div class="card-body">
+            <h3 class="card-title">{{ product.name }}</h3>
+            <p class="card-text font-weight-lighter d-none d-lg-block">{{ product.description }}</p>
+            <hr>
+            <button data-product="{{ product.id }}" data-action="add" data-order="1234567890" class="btn btn-outline-secondary add-btn update-cart">
+              <i class="fas fa-cart-plus"></i> {% translate 'Add to cart' %}
+            </button>
+            <p class="float-right font-weight-bolder text-black-50">${{ product.price|intcomma }}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock content %}
+
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    const csrftoken = "{{ csrf_token }}"
+    const update_url = "{% url 'campaigns:api_update' %}"
+    let sellerId = "{{ request.session.seller }}"
+  </script>
+  <script src="{% static 'js/cart.js' %}"></script>
+
+
+{% endblock js %}
