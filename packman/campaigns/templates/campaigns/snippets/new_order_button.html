@@ -1,0 +1,20 @@
+{% load i18n %}
+  {% if request.user.family.children.active.count > 1 %}
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-clipboard-list fa-fw"></i>
+        {% translate 'Start a new order' %}
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <h6 class="dropdown-header">{% translate 'Choose a seller' %}</h6>
+        {% for child in request.user.family.children.active %}
+          <a class="dropdown-item" href="{% url 'campaigns:order_create' %}?cub={{ child.pk }}">{{ child.get_short_name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <a href="{% url 'campaigns:order_create' %}" class="btn btn-secondary">
+      <i class="fas fa-clipboard-list fa-fw"></i>
+      {% translate 'Start a new order' %}
+    </a>
+  {% endif %}

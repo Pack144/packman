@@ -1,7 +1,11 @@
+import decimal
+
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -10,10 +14,11 @@ from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from packman.calendars.models import PackYear
-from packman.campaigns.managers import CampaignManager
 from packman.dens.models import Den
 from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
-from packman.membership.models import Scout
+from packman.membership.models import Scout, Family
+
+from .managers import CampaignQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet, OrderItemQuerySet
 
 
 def latest_campaign():
@@ -44,7 +49,7 @@ class Campaign(TimeStampedModel):
     )
     dens = models.ManyToManyField(Den, through="Quota", related_name="campaigns", blank=True)
 
-    objects = CampaignManager()
+    objects = CampaignQuerySet.as_manager()
 
     class Meta:
         get_latest_by = "ordering_opens"
@@ -94,11 +99,14 @@ class Quota(models.Model):
     A simple intermediate through model tracking quotas for individual Dens.
     """
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    den = models.ForeignKey(Den, on_delete=models.CASCADE)
+    den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name="quotas")
     target = models.DecimalField(_("quota"), max_digits=6, decimal_places=2)
+
+    objects = QuotaQuerySet.as_manager()
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=("campaign", "den"), name="unique_quota_per_campaign")]
+        get_latest_by = "campaign"
 
     def __str__(self):
         return str(self.den)
@@ -169,7 +177,9 @@ class Product(TimeStampedModel):
     product_line = models.ForeignKey(
         ProductLine, on_delete=models.CASCADE, related_name="products", blank=True, null=True
     )
-    price = models.DecimalField(_("price"), decimal_places=2, max_digits=9)
+    msrp = models.DecimalField(_("MSRP"), decimal_places=2, max_digits=9, blank=True, null=True)
+    price = models.DecimalField(_("sell price"), decimal_places=2, max_digits=9, blank=True, null=True)
+    cost = models.DecimalField(_("wholesale cost"), decimal_places=2, max_digits=9, blank=True, null=True)
     weight = models.DecimalField(_("weight"), decimal_places=1, max_digits=4, blank=True, null=True)
     unit = models.CharField(_("measured in"), max_length=2, choices=WeightUnit.choices, blank=True)
     sort_order = models.IntegerField(_("sort order"), blank=True, null=True)
@@ -187,6 +197,8 @@ class Product(TimeStampedModel):
     # qtyEachTitle
     # packingTableTitle
 
+    objects = ProductQuerySet.as_manager()
+
     class Meta:
         ordering = ("category", "sort_order", "name")
         verbose_name = _("Product")
@@ -194,6 +206,12 @@ class Product(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+    def savings(self):
+        return self.msrp - self.price
+
+    def margin(self):
+        return self.price - self.cost
 
     @admin.display(boolean=True, description=_("description"))
     def has_description(self):
@@ -249,6 +267,15 @@ class Customer(TimeStampedUUIDModel):
     def __str__(self):
         return self.name
 
+    def get_address_display(self):
+        address_components = (
+            self.address.strip(),
+            self.city.strip(),
+            self.state.strip(),
+            self.zipcode.strip(),
+        )
+        return ", ".join(filter(None, address_components))
+
 
 class Order(TimeStampedUUIDModel):
     """
@@ -259,23 +286,33 @@ class Order(TimeStampedUUIDModel):
         Campaign, on_delete=models.CASCADE, related_name="orders", default=Campaign.get_latest
     )
     seller = models.ForeignKey(Scout, on_delete=models.CASCADE, related_name="orders")
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders", blank=True, null=True)
 
-    donation = models.DecimalField(_("donation"), max_digits=6, decimal_places=2, blank=True, null=True)
+    donation = models.DecimalField(_("donation"), max_digits=6, decimal_places=2, default=0, blank=True, null=True)
     notes = models.TextField(_("notes"), blank=True)
 
     date_paid = models.DateTimeField(_("paid"), blank=True, null=True)
     date_delivered = models.DateTimeField(_("delivered"), blank=True, null=True)
 
+    objects = OrderQuerySet.as_manager()
+
     class Meta:
+        ordering = ("date_added", )
         verbose_name = _("Order")
         verbose_name_plural = _("Orders")
 
     def __str__(self):
-        return "%s: %s" % (self.date_added.date(), self.customer.name)
+        return "%s: %s" % (self.date_added.date(), self.customer or "unknown")
 
     def get_absolute_url(self):
         return reverse("campaigns:order_detail", args=[self.pk])
+
+    def annotated_items(self):
+        """Create an aggregated queryset"""
+        return self.items.all().aggregate(
+            total=Coalesce(Sum(F("product__price") * F("quantity"), output_field=models.DecimalField()), decimal.Decimal(0.00)),
+            count=Coalesce(Sum("quantity"), 0)
+        )
 
     @admin.display(description=_("paid"), boolean=True)
     def is_paid(self):
@@ -285,8 +322,20 @@ class Order(TimeStampedUUIDModel):
     def is_delivered(self):
         return bool(self.date_delivered)
 
+    def get_total(self):
+        if self.donation:
+            return self.annotated_items()["total"] + self.donation
+        else:
+            return self.annotated_items()["total"]
+
+    def product_count(self):
+        return self.annotated_items()["count"]
+
 
 class OrderItem(TimeStampedModel):
+    """
+    An intermediate model binding the sale of a product to an order.
+    """
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items", related_query_name="item")
     product = models.ForeignKey(
@@ -296,14 +345,19 @@ class OrderItem(TimeStampedModel):
         related_query_name="order",
         limit_choices_to=latest_campaign,
     )
-    quantity = models.IntegerField(_("quantity"), validators=[MinValueValidator(1)])
+    quantity = models.IntegerField(_("quantity"), default=1, validators=[MinValueValidator(1)])
+
+    objects = OrderItemQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("Product")
         verbose_name_plural = _("Products")
 
     def __str__(self):
-        return self.product.name
+        return _("%s (%s)") % (self.product.name, self.quantity)
+
+    def get_total_item_price(self):
+        return self.quantity * self.product.price
 
 
 class Prize(TimeStampedModel):
