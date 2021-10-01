@@ -37,9 +37,9 @@ urlpatterns = [
     path("committees/", include("packman.committees.urls")),
     path("dens/", include("packman.dens.urls")),
     path("documents/", include("packman.documents.urls")),
-    path("campaigns/", include("packman.campaigns.urls")),
     path("mail/", include("packman.mail.urls")),
     path("members/", include("packman.membership.urls")),
+    path("ncc/", include("packman.campaigns.urls")),
     path("", include("packman.pages.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
