@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <form method="post" id="order-form" onsubmit="nudgeDonation()">
+  <form method="post" id="order-form">
     <div class="row">
       {% regroup product_list by category as cateogrized_products %}
       <div class="col-md-8">
@@ -122,7 +122,7 @@
     </div>
     {{ items_formset.management_form }}
     {% csrf_token %}
-    <button type="submit" class="btn btn-success btn-block mt-5"">
+    <button type="button" class="btn btn-success btn-block mt-5" onclick="nudgeDonation()">
       {% if order.pk %}{% translate 'Update' %}{% else %}{% translate 'Create' %}{% endif %}
     </button>
     <div class="modal" tabindex="-1" id="donation-round-up-modal">
@@ -140,7 +140,7 @@
             </p>
           </div>
           <div class="modal-footer d-flex align-items-center justify-content-between">
-            <button class="btn btn-primary" formnovalidate>{% translate 'No Donation' %}</button>
+            <button class="btn btn-primary" formnovalidate>{% translate 'Order w/o Donating' %}</button>
             <div class="input-group w-50">
               <div class="input-group-prepend">
                 <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
