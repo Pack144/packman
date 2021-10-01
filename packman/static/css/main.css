@@ -126,6 +126,7 @@ footer {
 
 #mail-client {
     width: 100%;
+    min-height: 100%;
 }
 
 #mail-client #folder-sidebar {
@@ -134,7 +135,7 @@ footer {
 
 #mail-client #message-list {
     height: 100%;
-    max-width: 33%;
+    width: 33%;
 }
 
 /*#mail-client #message-detail {*/

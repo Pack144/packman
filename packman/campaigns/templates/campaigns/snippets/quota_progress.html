@@ -1,0 +1,31 @@
+{% load humanize i18n %}
+<h2>{{ scout.short_name }}</h2>
+
+{% if scout.current_den.quotas.current %}
+  <em>${{ scout.current_den.quotas.current.target }}</em>
+{% endif %}
+  <table class="table">
+    <thead>
+    <tr>
+      <th scope="col">
+        {% translate 'Product Orders' %}
+      </th>
+      <th scope="col">
+        {% translate 'Donations' %}
+      </th>
+      <th scope="col">
+        {% translate 'Total' %}
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>$ {{ scout.orders.current_campaign.products_total.total|intcomma }}</td>
+      <td>$ {{ scout.orders.current_campaign.donations_total.total|intcomma }}</td>
+      <td><strong>$ {{ scout.orders.current_campaign.products_total.total|add:scout.orders.current_campaign.donations_total.total|intcomma }}</strong></td>
+    </tr>
+    </tbody>
+  </table>
+<div class="progress">
+  <div class="progress-bar bg-warning" role="progressbar" style="width:{{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ progress }}</div>
+</div>
