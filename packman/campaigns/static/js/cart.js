@@ -181,15 +181,34 @@ function removeProduct(element) {
 }
 
 
-function updateDatePaid(target) {
-    const datePaidInput = document.getElementById("id_date_paid")
-    let paidStatus = target.checked
+function updateOrder(target, orderId, field) {
+    let status = target.checked
+    let action = "mark_"
 
-    if (paidStatus) {
-        console.log("marking as paid")
-        datePaidInput.value = new Date().toISOString()
+    if (status) {
+        action += field
     } else {
-        console.log("marking as not paid")
-        datePaidInput.value = ""
+        action += "un" + field
     }
+
+    fetch(update_url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({
+            "orderId": orderId,
+            "action": action,
+        })
+    })
+
+        .then((response) => {
+            return response.json()
+        })
+
+        .then((data) => {
+            console.log("data: ", data)
+            location.reload()
+        })
 }

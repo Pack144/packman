@@ -1,10 +1,12 @@
 import json
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch
 from django.http import JsonResponse
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -120,7 +122,7 @@ class OrderDeleteView(UserIsSellerFamilyTest, DeleteView):
     model = Order
 
 
-class OrderDetailView(UserIsSellerFamilyTest, DetailView):
+class OrderDetailView(DetailView):
     model = Order
     template_name = "campaigns/order_detail.html"
 
@@ -141,34 +143,21 @@ class ProductListView(ListView):
         return super().get_queryset().filter(campaign=Campaign.objects.current())
 
 
+@login_required
 def update_order(request):
     data = json.loads(request.body)
     action = data["action"]
-    order = data["order"]
-    product_id = data["productId"]
+    order = Order.objects.get(pk=data["orderId"])
 
-    try:
-        seller = Scout.objects.get(pk=data["seller"])
-        request.session["seller"] = str(seller.pk)
-    except KeyError:
-        if request.session.get("seller", None):
-            print("Great! I know who you are from your session")
-            seller = request.session.get("seller")
-        else:
-            print("and, what now?")
-            sellers = Scout.objects.active().filter(family=request.user.family)
-            if sellers.count == 1:
-                seller = sellers.objects.first()
-                request.session["seller"] = str(seller.pk)
+    if action == "mark_paid":
+        order.date_paid = timezone.now()
+    elif action == "mark_unpaid":
+        order.date_paid = None
+    elif action == "mark_delivered":
+        order.date_delivered = timezone.now()
+    elif action == "mark_undelivered":
+        order.date_delivered = None
 
-    print("action: ", action)
-    print("order: ", order)
-    print("product: ", product_id)
-    print("seller: ", str(seller.pk))
-
-    response = {"action": action, "order": order, "product": product_id, "seller": str(seller.pk)}
-
+    order.save()
+    response = {"action": action, "order": order.pk}
     return JsonResponse(response)
-
-
-
