@@ -7,11 +7,13 @@
 
 
 {% block content %}
-  <div class="d-flex justify-content-between align-items-center mb-5">
-    <a href="{% url 'campaigns:order_list' %}" class="btn btn-secondary"><i class="fas fa-caret-square-left"></i> {% translate 'Orders List' %}
-    </a>
-    {% include 'campaigns/snippets/new_order_button.html' %}
-  </div>
+  {% if request.user.family == order.seller.family %}
+    <div class="d-flex justify-content-between align-items-center mb-5">
+      <a href="{% url 'campaigns:order_list' %}" class="btn btn-secondary"><i class="fas fa-caret-square-left"></i> {% translate 'Orders List' %}
+      </a>
+      {% include 'campaigns/snippets/new_order_button.html' %}
+    </div>
+  {% endif %}
   <div class="d-flex justify-content-between mb-5">
     <div>
       <h1>{{ order.customer }}'s Order</h1>
@@ -40,22 +42,22 @@
     </div>
     <div>
       {% if order.date_paid %}<img src="{% static 'img/paid_stamp.svg' %}">
-        {% else %}
-      <h6 class="text-muted d-flex flex-column">
-        {% if order.product_count %}
-          <div class="row">
-            <p class="col-5">${{ order.annotated_items.total }}</p>
-            <p class="col">item{{ order.product_count|pluralize }}</p>
-          </div>
-        {% endif %}
-        {% if order.donation %}
-          <div class="row">
-            <p class="col-5">${{ order.donation }}</p>
-            <p class="col">{% translate 'donation' %}</p>
-          </div>
-        {% endif %}
-      </h6>
-    {% endif %}
+      {% else %}
+        <h6 class="text-muted d-flex flex-column">
+          {% if order.product_count %}
+            <div class="row">
+              <p class="col-5">${{ order.annotated_items.total }}</p>
+              <p class="col">item{{ order.product_count|pluralize }}</p>
+            </div>
+          {% endif %}
+          {% if order.donation %}
+            <div class="row">
+              <p class="col-5">${{ order.donation }}</p>
+              <p class="col">{% translate 'donation' %}</p>
+            </div>
+          {% endif %}
+        </h6>
+      {% endif %}
       <h1 class="text-success">
         $<span id="order-total">{% if order.get_total %}{{ order.get_total }}{% else %}0.00{% endif %}</span>
       </h1>
@@ -92,8 +94,22 @@
       <li class="list-group-item mt-5 text-right"><h3>Donation: ${{ order.donation }}</h3></li>
     {% endif %}
   </ul>
-  {% if order.campaign.can_take_orders %}
-    <a href="{% if order.date_paid or order.date_delivered %}#{% else %}{% url 'campaigns:order_update' order.pk %}{% endif %}" class="btn btn-outline-secondary btn-block{% if order.date_paid or order.date_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Make changes to this order' %}</a>
+  {% if request.user.family == order.seller.family %}
+    <div class="d-flex justify-content-between">
+    {% if order.campaign.can_take_orders %}
+      <a href="{% if order.date_paid or order.date_delivered %}#{% else %}{% url 'campaigns:order_update' order.pk %}{% endif %}" class="btn btn-outline-secondary btn-block mr-5{% if order.date_paid or order.date_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Make changes to this order' %}</a>
+    {% endif %}
+    {% include 'campaigns/snippets/order_status_buttons.html' %}
+    </div>
   {% endif %}
-
 {% endblock %}
+
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    const csrftoken = "{{ csrf_token }}"
+    const update_url = "{% url 'campaigns:api_update' %}"
+  </script>
+  <script src="{% static 'js/cart.js' %}"></script>
+{% endblock js %}
