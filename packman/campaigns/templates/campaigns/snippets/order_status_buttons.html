@@ -1,0 +1,9 @@
+{% load i18n %}
+<div class="btn-group btn-group-toggle" data-toggle="buttons">
+  <label class="btn btn-outline-success{% if order.is_paid %} active{% endif %}">
+    <input type="checkbox" {% if order.is_paid %}checked{% endif %} oninput="updateOrder(this, '{{ order.pk }}', 'paid')">{% translate 'Paid' %}
+  </label>
+  <label class="btn btn-outline-success{% if order.is_delivered %} active{% endif %}">
+    <input type="checkbox" {% if order.is_delivered %}checked{% endif %} oninput="updateOrder(this, '{{ order.pk }}', 'delivered')">{% translate 'Delivered' %}
+  </label>
+</div>
