@@ -28,7 +28,7 @@
             <div class="card">
               <div class="card-header" id="heading-{{ category.grouper.pk }}">
                 <h2 class="mb-0">
-                  <button class="d-flex justify-content-between align-items-center btn btn-link btn-block card-link collapsed" type="button" data-toggle="collapse" data-target="#collapse-{{ category.grouper.pk }}" aria-expanded="false" aria-controls="collapse-{{ category.grouper.pk }}">
+                  <button class="d-flex justify-content-between align-items-center btn btn-link btn-block card-link collapsed" type="button" data-toggle="collapse" data-target="#collapse-{{ category.grouper.pk }}" aria-expanded="true" aria-controls="collapse-{{ category.grouper.pk }}">
                     <span class="font-weight-bold">{{ category.grouper }}</span>
                     <div class="d-flex flex-column">
                       <span class="badge badge-primary badge-pill">{{ category.list|length }}</span>
@@ -36,7 +36,7 @@
                   </button>
                 </h2>
               </div>
-              <div id="collapse-{{ category.grouper.pk }}" class="collapse" aria-labelledby="heading-{{ category.grouper.pk }}" data-parent="#product-categories">
+              <div id="collapse-{{ category.grouper.pk }}" class="collapse show" aria-labelledby="heading-{{ category.grouper.pk }}" data-parent="#product-categories">
                 <div class="card-body">
                   <ul class="list-group list-group-flush">
                     {% for product in category.list %}
@@ -92,18 +92,13 @@
         <fieldset id="customer-fieldset mb-5">
           <legend>{% translate 'Customer' %}</legend>
           {{ customer_form|crispy }}
-          <button type="button" onclick="getLocation()" class="btn btn-primary"><i class="far fa-compass"></i></button>
+          <button type="button" onclick="getLocation()" class="btn btn-primary btn-sm btn-block"><i class="far fa-compass"></i></button>
           <span class="text-danger" id="location-feedback"></span>
         </fieldset>
 
         <fieldset id="order-details mt-5">
           <legend>{% translate 'Order Details' %}</legend>
           {{ form|crispy }}
-          <div class="btn-group-toggle" data-toggle="buttons">
-            <label class="btn btn-outline-success{% if order.date_paid %} active{% endif %}">
-              <input type="checkbox" {% if order.date_paid %}checked{% endif %} oninput="updateDatePaid(this)"> Paid
-            </label>
-          </div>
         </fieldset>
       </div>
     </div>
@@ -123,7 +118,7 @@
     {{ items_formset.management_form }}
     {% csrf_token %}
     <button type="button" class="btn btn-success btn-block mt-5" onclick="nudgeDonation()">
-      {% if order.pk %}{% translate 'Update' %}{% else %}{% translate 'Create' %}{% endif %}
+      {% if order.pk %}{% translate 'Update' %}{% else %}{% translate 'Complete Order' %}{% endif %}
     </button>
     <div class="modal" tabindex="-1" id="donation-round-up-modal">
       <div class="modal-dialog">
@@ -140,7 +135,7 @@
             </p>
           </div>
           <div class="modal-footer d-flex align-items-center justify-content-between">
-            <button class="btn btn-primary" formnovalidate>{% translate 'Order w/o Donating' %}</button>
+            <button class="btn btn-primary" formnovalidate>{% translate 'Order w/o Donation' %}</button>
             <div class="input-group w-50">
               <div class="input-group-prepend">
                 <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
