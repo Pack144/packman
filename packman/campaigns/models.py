@@ -256,9 +256,9 @@ class Customer(TimeStampedUUIDModel):
     longitude = models.FloatField(_("longitude"), blank=True, null=True)
     gps_accuracy = models.FloatField(_("accuracy"), blank=True, null=True)
 
-    phone_number = PhoneNumberField(_("phone number"), region="US", blank=True)
+    phone_number = PhoneNumberField(_("phone number"), region="US", blank=True, help_text=_("We would use this only if we needed to talk to you about your order."))
 
-    email = models.EmailField(_("email address"), blank=True)
+    email = models.EmailField(_("email address"), blank=True, help_text=_("We will only use your email address to contact you about your order."))
 
     class Meta:
         verbose_name = _("Customer")
