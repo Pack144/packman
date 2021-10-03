@@ -13,7 +13,8 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from .forms import CustomerForm, OrderForm, OrderItemFormSet, SimpleCustomerForm
 from .mixins import UserIsSellerFamilyTest
 from .models import Campaign, Order, Prize, Product, OrderItem, Customer
-from ..membership.models import Scout
+from .utils import email_receipt
+from packman.membership.models import Scout
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -74,6 +75,8 @@ class OrderCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             self.object = form.save()
             items_formset.instance = self.object
             items_formset.save()
+            if self.object.customer.email:
+                email_receipt(self.object)
             return super().form_valid(form)
         return super().form_invalid(form)
 
