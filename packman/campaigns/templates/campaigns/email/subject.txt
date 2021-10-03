@@ -1,0 +1,4 @@
+{% load i18n %}
+{% blocktranslate with us=site.name %}
+Your order with {{ us }}
+{% endblocktranslate %}
