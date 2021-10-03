@@ -1,0 +1,34 @@
+{% load i18n %}
+{% blocktranslate with name=site.name %}Thank You Supporting {{ name }}{% endblocktranslate %}
+{% blocktranslate with date=order.date_added|date:"F n, Y" %}Order Placed {{ date }}{% endblocktranslate %}
+
+{% if order.customer.get_address_display %}{{ order.customer.get_address_display }}{% endif %}
+{% if order.customer.email %}{{ order.customer.email }}{% endif %}
+{% if order.customer.phone_number %}{{ order.customer.phone_number }}{% endif %}
+
+{% if order.product_count %}Item{{ order.product_count|pluralize }}: ${{ order.annotated_items.total }}{% endif %}
+{% if order.donation %}{% translate 'Donation' %} ${{ order.donation }}{% endif %}
+{% translate 'Total' %}: ${{ order.get_total }}
+
+{% for item in order.items.all %}
+{% ifchanged item.product.category %}
+{{ item.product.category }}
+--------------------------------
+{% endifchanged %}
+{{ item.product.name }}      {{ item.quantity }} × ${{ item.product.price }}/ea.
+${{ item.get_total_item_price }}
+
+{% endfor %}
+{% if order.donation %}{% translate 'Donation' %}: ${{ order.donation }}{% endif %}
+
+Thank you for supporting my Pack!
+{{ order.seller }}
+
+_______________________________________________________________________________
+
+This is a one-time email sent to {{ order.customer.email }}.
+We sent it to you because you placed an order in our annual fundraiser
+supporting {{ site.name }}.
+
+You can view this message in a web browser by visiting our website at:
+http://{{ site.domain }}{{ order.get_absolute_url }}
