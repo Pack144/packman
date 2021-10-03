@@ -54,7 +54,7 @@
                               <strong>{{ product.name }}</strong>
                               <span class="text-muted"><i class="fas fa-dollar-sign"></i><span id="{{ product.pk }}-price">{{ product.price }}</span></span>
                             </div>
-                            <p class="font-weight-lighter">{{ product.description }}</p>
+                            <p class="font-weight-lighter d-none d-lg-block">{{ product.description }}</p>
                             {% with ordered=product.orders.first %}
                               <div class="btn-toolbar justify-content-end" role="toolbar">
                                 <div class="btn-group" role="group">
