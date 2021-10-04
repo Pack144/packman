@@ -12,11 +12,12 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
+from packman.calendars.models import PackYear
+
 from .forms import CustomerForm, OrderForm, OrderItemFormSet, SimpleCustomerForm
 from .mixins import UserIsSellerFamilyTest
 from .models import Campaign, Order, Prize, Product, OrderItem, Customer
 from .utils import email_receipt
-from packman.membership.models import Scout
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -24,12 +25,29 @@ class OrderListView(LoginRequiredMixin, ListView):
     template_name = "campaigns/order_list.html"
 
     def get_queryset(self):
+        campaign = (
+            Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
+            if "campaign" in self.kwargs
+            else Campaign.objects.current()
+        )
+
         return (
-            super().get_queryset().prefetch_related("items").filter(seller__family=self.request.user.family, campaign=Campaign.objects.latest()).order_by("-seller__date_of_birth", "date_added")
+            super().get_queryset().prefetch_related("items").filter(seller__family=self.request.user.family,
+                                                                    campaign=campaign).order_by(
+                "-seller__date_of_birth", "date_added")
         )
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        context["campaigns"] = {
+            "available": Campaign.objects.filter(orders__seller__family=self.request.user.family).distinct(),
+            "current": Campaign.objects.current(),
+            "viewing": (
+                Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
+                if "campaign" in self.kwargs
+                else Campaign.objects.current()
+            ),
+        }
         return context
 
 
@@ -91,7 +109,8 @@ class OrderUpdateView(UserIsSellerFamilyTest, SuccessMessageMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["product_list"] = Product.objects.filter(campaign=Campaign.get_latest()).prefetch_related(Prefetch("orders", queryset=OrderItem.objects.filter(order=self.object)))
+        context["product_list"] = Product.objects.filter(campaign=Campaign.get_latest()).prefetch_related(
+            Prefetch("orders", queryset=OrderItem.objects.filter(order=self.object)))
         if self.request.POST:
             context["customer_form"] = CustomerForm(self.request.POST, instance=self.object.customer)
             context["items_formset"] = OrderItemFormSet(self.request.POST, instance=self.object)
