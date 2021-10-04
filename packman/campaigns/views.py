@@ -1,11 +1,13 @@
 import json
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch
 from django.http import JsonResponse
+from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
@@ -123,6 +125,13 @@ class OrderUpdateView(UserIsSellerFamilyTest, SuccessMessageMixin, UpdateView):
 
 class OrderDeleteView(UserIsSellerFamilyTest, DeleteView):
     model = Order
+    template_name = "campaigns/order_confirm_delete.html"
+    success_url = reverse_lazy("campaigns:order_list")
+
+    def delete(self, request, *args, **kwargs):
+        message = _("The order has been successfully deleted.") % {"page": self.get_object()}
+        messages.success(request, message, "danger")
+        return super().delete(request, *args, **kwargs)
 
 
 class OrderDetailView(DetailView):
