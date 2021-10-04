@@ -1,6 +1,6 @@
 {% load i18n %}
 {% blocktranslate with name=site.name %}Thank You Supporting {{ name }}{% endblocktranslate %}
-{% blocktranslate with date=order.date_added|date:"F n, Y" %}Order Placed {{ date }}{% endblocktranslate %}
+{% blocktranslate with date=order.date_added|date:"F j, Y" %}Order Placed {{ date }}{% endblocktranslate %}
 
 {% if order.customer.get_address_display %}{{ order.customer.get_address_display }}{% endif %}
 {% if order.customer.email %}{{ order.customer.email }}{% endif %}
