@@ -14,9 +14,9 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from packman.calendars.models import PackYear
 
-from .forms import CustomerForm, OrderForm, OrderItemFormSet, SimpleCustomerForm
+from .forms import CustomerForm, OrderForm, OrderItemFormSet
 from .mixins import UserIsSellerFamilyTest
-from .models import Campaign, Order, Prize, Product, OrderItem, Customer
+from .models import Campaign, Customer, Order, OrderItem, Prize, Product
 from .utils import email_receipt
 
 
@@ -32,9 +32,11 @@ class OrderListView(LoginRequiredMixin, ListView):
         )
 
         return (
-            super().get_queryset().prefetch_related("items").filter(seller__family=self.request.user.family,
-                                                                    campaign=campaign).order_by(
-                "-seller__date_of_birth", "date_added")
+            super()
+            .get_queryset()
+            .prefetch_related("items")
+            .filter(seller__family=self.request.user.family, campaign=campaign)
+            .order_by("-seller__date_of_birth", "date_added")
         )
 
     def get_context_data(self, *args, **kwargs):
@@ -110,7 +112,8 @@ class OrderUpdateView(UserIsSellerFamilyTest, SuccessMessageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["product_list"] = Product.objects.filter(campaign=Campaign.get_latest()).prefetch_related(
-            Prefetch("orders", queryset=OrderItem.objects.filter(order=self.object)))
+            Prefetch("orders", queryset=OrderItem.objects.filter(order=self.object))
+        )
         if self.request.POST:
             context["customer_form"] = CustomerForm(self.request.POST, instance=self.object.customer)
             context["items_formset"] = OrderItemFormSet(self.request.POST, instance=self.object)
