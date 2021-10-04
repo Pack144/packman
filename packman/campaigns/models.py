@@ -370,6 +370,7 @@ class Prize(TimeStampedModel):
     points = models.IntegerField(_("points"), validators=[MinValueValidator(1)])
     value = models.DecimalField(_("retail value"), max_digits=9, decimal_places=2, blank=True, null=True)
     url = models.URLField(_("link"), max_length=320, blank=True)
+    image = models.ImageField(_("image"), upload_to="campaigns/", blank=True)
     campaign = models.ForeignKey(
         Campaign, on_delete=models.CASCADE, related_name="prizes", default=Campaign.get_latest
     )
