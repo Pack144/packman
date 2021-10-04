@@ -41,9 +41,9 @@
       </address>
     </div>
     <div>
-      {% if order.date_paid %}<img src="{% static 'img/paid_stamp.svg' %}">
-      {% else %}
+
         <h6 class="text-muted d-flex flex-column">
+        {% if order.is_paid %}<img src="{% static 'img/paid_stamp.svg' %}" height="134" class="position-absolute">{% endif %}
           {% if order.product_count %}
             <div class="row">
               <p class="col-5">${{ order.annotated_items.total|intcomma }}</p>
@@ -57,7 +57,7 @@
             </div>
           {% endif %}
         </h6>
-      {% endif %}
+
       <h1 class="text-success">
         $<span id="order-total">{% if order.get_total %}{{ order.get_total|intcomma }}{% else %}0.00{% endif %}</span>
       </h1>
