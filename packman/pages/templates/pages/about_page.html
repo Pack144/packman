@@ -2,7 +2,7 @@
 
 {% load i18n %}
 
-{% block title %}{{ block.super }}: {% if page %}{{ page.title }}{% else %}About Us{% endif %}{% endblock %}
+{% block title %}{% if page %}{{ page.title }}{% else %}About Us{% endif %} — {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center">
