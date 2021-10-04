@@ -8,7 +8,7 @@
       {% else %}
         <span class="text-primary"><i class="fas fa-circle fa-xs"></i></span>
       {% endif %}
-      <div class="d-flex flex-column flex-shrink-1 flex-grow-1">
+      <div class="d-flex flex-column w-100">
         <a href="{% if request.resolver_match.url_name == 'drafts' %}{% url 'mail:update' message.pk %}{% else %}{{ message.get_absolute_url }}{% endif %}" class="list-group-item-action ml-2 lh-tight{% if message.pk == object.pk %} active{% endif %}{% if not message.receipt.0.date_read %} font-weight-bold{% endif %}">
           <div class="d-flex align-items-center justify-content-between">
             <strong class="h6">{{ message.author }}</strong>

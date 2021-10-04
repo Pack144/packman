@@ -1,7 +1,7 @@
 {% extends '_base.html' %}
 {% load crispy_forms_tags i18n static %}
 
-{% block title %}{{ block.super }}: {% trans 'Sign In' %}{% endblock title %}
+{% block title %}{% trans 'Sign In' %} — {{ block.super }}{% endblock title %}
 
 {% block content %}
   <div class="row justify-content-center mt-5">

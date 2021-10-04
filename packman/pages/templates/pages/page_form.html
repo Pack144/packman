@@ -1,7 +1,7 @@
 {% extends '_base.html' %}
 {% load crispy_forms_tags i18n static %}
 
-{% block title %}{{ block.super }}: {% if page.pk %}{{ page_content.title }}{% else %}{% translate 'New Page' %}{% endif %}{% endblock %}
+{% block title %}{% if page.pk %}{{ page_content.title }}{% else %}{% translate 'New Page' %}{% endif %} — {{ block.super }}{% endblock %}
 
 {% block content %}
   <h1>
