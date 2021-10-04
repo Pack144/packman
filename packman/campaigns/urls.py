@@ -5,7 +5,7 @@ from .views import OrderCreateView, OrderDeleteView, OrderDetailView, OrderListV
 app_name = "campaigns"
 urlpatterns = [
     path("", OrderListView.as_view(), name="order_list"),
-    path("<int:year>/", OrderListView.as_view(), name="order_list_by_year"),
+    path("<int:campaign>/", OrderListView.as_view(), name="order_list_by_campaign"),
     path("new/", OrderCreateView.as_view(), name="order_create"),
     path("<uuid:pk>/", OrderDetailView.as_view(), name="order_detail"),
     path("<uuid:pk>/edit/", OrderUpdateView.as_view(), name="order_update"),
