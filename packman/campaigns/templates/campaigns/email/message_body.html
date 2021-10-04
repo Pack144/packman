@@ -14,7 +14,7 @@
   <div>
     <div>
       <h3>{% blocktranslate with name=site.name %}Thank You Supporting {{ name }}{% endblocktranslate %}</h3>
-      <h5>{% blocktranslate with date=order.date_added|date:"F n, Y" %}Order Placed {{ date }}{% endblocktranslate %}</h5>
+      <h5>{% blocktranslate with date=order.date_added|date:"F j, Y" %}Order Placed {{ date }}{% endblocktranslate %}</h5>
       <address>
         <ul style="list-style: none; margin-left: 0;  padding-left: 0;">
           {% if order.customer.get_address_display %}
