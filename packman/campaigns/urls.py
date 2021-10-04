@@ -1,6 +1,14 @@
 from django.urls import path
 
-from .views import OrderCreateView, OrderDeleteView, OrderDetailView, OrderListView, OrderUpdateView, ProductListView, update_order
+from .views import (
+    OrderCreateView,
+    OrderDeleteView,
+    OrderDetailView,
+    OrderListView,
+    OrderUpdateView,
+    ProductListView,
+    update_order,
+)
 
 app_name = "campaigns"
 urlpatterns = [

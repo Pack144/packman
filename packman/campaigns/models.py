@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Sum, F
+from django.db.models import F, Sum
 from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils import timezone
@@ -14,11 +14,11 @@ from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from packman.calendars.models import PackYear
-from packman.dens.models import Den
 from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
-from packman.membership.models import Scout, Family
+from packman.dens.models import Den
+from packman.membership.models import Scout
 
-from .managers import CampaignQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet, OrderItemQuerySet
+from .managers import CampaignQuerySet, OrderItemQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet
 
 
 def latest_campaign():
@@ -98,6 +98,7 @@ class Quota(models.Model):
     """
     A simple intermediate through model tracking quotas for individual Dens.
     """
+
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     den = models.ForeignKey(Den, on_delete=models.CASCADE, related_name="quotas")
     target = models.DecimalField(_("quota"), max_digits=6, decimal_places=2)
@@ -256,9 +257,18 @@ class Customer(TimeStampedUUIDModel):
     longitude = models.FloatField(_("longitude"), blank=True, null=True)
     gps_accuracy = models.FloatField(_("accuracy"), blank=True, null=True)
 
-    phone_number = PhoneNumberField(_("phone number"), region="US", blank=True, help_text=_("We would use this only if we needed to talk to you about your order."))
+    phone_number = PhoneNumberField(
+        _("phone number"),
+        region="US",
+        blank=True,
+        help_text=_("We would use this only if we needed to talk to you about your order."),
+    )
 
-    email = models.EmailField(_("email address"), blank=True, help_text=_("We will only use your email address to contact you about your order."))
+    email = models.EmailField(
+        _("email address"),
+        blank=True,
+        help_text=_("We will only use your email address to contact you about your order."),
+    )
 
     class Meta:
         verbose_name = _("Customer")
@@ -297,7 +307,7 @@ class Order(TimeStampedUUIDModel):
     objects = OrderQuerySet.as_manager()
 
     class Meta:
-        ordering = ("date_added", )
+        ordering = ("date_added",)
         verbose_name = _("Order")
         verbose_name_plural = _("Orders")
 
@@ -310,8 +320,10 @@ class Order(TimeStampedUUIDModel):
     def annotated_items(self):
         """Create an aggregated queryset"""
         return self.items.all().aggregate(
-            total=Coalesce(Sum(F("product__price") * F("quantity"), output_field=models.DecimalField()), decimal.Decimal(0.00)),
-            count=Coalesce(Sum("quantity"), 0)
+            total=Coalesce(
+                Sum(F("product__price") * F("quantity"), output_field=models.DecimalField()), decimal.Decimal(0.00)
+            ),
+            count=Coalesce(Sum("quantity"), 0),
         )
 
     @admin.display(description=_("paid"), boolean=True)
