@@ -92,7 +92,8 @@
         <fieldset id="customer-fieldset mb-5">
           <legend>{% translate 'Customer' %}</legend>
           {{ customer_form|crispy }}
-          <button type="button" onclick="getLocation()" class="btn btn-primary btn-sm btn-block"><i class="far fa-compass"></i></button>
+          <button type="button" onclick="getLocation()" class="btn btn-primary btn-sm btn-block">
+            <i class="far fa-compass"></i></button>
           <span class="text-danger" id="location-feedback"></span>
         </fieldset>
 
@@ -120,31 +121,36 @@
     <button type="button" class="btn btn-success btn-block mt-5" onclick="nudgeDonation()">
       {% if order.pk %}{% translate 'Update' %}{% else %}{% translate 'Complete Order' %}{% endif %}
     </button>
+    <a href="{% url 'campaigns:order_list' %}" class="btn btn-secondary btn-sm btn-block mt-3">{% translate 'Cancel' %}</a>
     <div class="modal" tabindex="-1" id="donation-round-up-modal">
       <div class="modal-dialog">
         <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h4 class="modal-title">{% translate 'Thank You for Your Order' %}</h4>
+              <h6 class="modal-title">{% translate 'Would You Like to Make a Donation?' %}</h6>
+            </div>
+          </div>
           <div class="modal-body">
-            <h5 class="modal-title">{% translate 'Thank You for Your Order' %}</h5>
-            <h6>{% translate 'Would You Like to Make a Donation?' %}</h6>
-            <p>
+            <p class="my-5">
               {% blocktranslate %}
-                You are only $
-                <strong id="round-up-amount"></strong> away from an even $<strong id="rounded-order-total"></strong>.
+                You are only $<strong id="round-up-amount"></strong> away from making it an even $<strong id="rounded-order-total"></strong>.
                 Would you like to round up your order with a donation to the Pack?
               {% endblocktranslate %}
             </p>
           </div>
-          <div class="modal-footer d-flex align-items-center justify-content-between">
-            <button class="btn btn-primary" formnovalidate>{% translate 'Order w/o Donation' %}</button>
-            <div class="input-group w-50">
+          <div class="modal-footer d-flex flex-column align-items-center">
+            <button class="btn btn-primary btn-block" formnovalidate>{% translate 'Complete Order without a donation' %}</button>
+            <div class="input-group mt-5">
               <div class="input-group-prepend">
-                <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
+                <span class="input-group-text">$</span>
               </div>
               <input type="number" min="0" step="5" class="form-control" id="donation-round-up-input">
               <div class="input-group-append">
-                <button class="btn btn-success" onclick="updateDonationAndSubmit(document.getElementById('donation-round-up-input').value)">{% translate 'Donate' %}</button>
+                <span class="input-group-text font-weight-light">{% translate 'Donation Amount' %}</span>
               </div>
             </div>
+            <button class="btn btn-success btn-block btn-lg" onclick="updateDonationAndSubmit(document.getElementById('donation-round-up-input').value)">{% translate 'Add a donation to the order and submit' %}</button>
           </div>
         </div>
       </div>
