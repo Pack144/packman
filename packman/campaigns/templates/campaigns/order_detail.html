@@ -1,6 +1,6 @@
 {% extends '_base.html' %}
 
-{% load i18n static %}
+{% load humanize i18n static %}
 
 
 {% block title %}{% translate 'Order Detail' %} | {{ block.super }}{% endblock %}
@@ -46,20 +46,20 @@
         <h6 class="text-muted d-flex flex-column">
           {% if order.product_count %}
             <div class="row">
-              <p class="col-5">${{ order.annotated_items.total }}</p>
+              <p class="col-5">${{ order.annotated_items.total|intcomma }}</p>
               <p class="col">item{{ order.product_count|pluralize }}</p>
             </div>
           {% endif %}
           {% if order.donation %}
             <div class="row">
-              <p class="col-5">${{ order.donation }}</p>
+              <p class="col-5">${{ order.donation|intcomma }}</p>
               <p class="col">{% translate 'donation' %}</p>
             </div>
           {% endif %}
         </h6>
       {% endif %}
       <h1 class="text-success">
-        $<span id="order-total">{% if order.get_total %}{{ order.get_total }}{% else %}0.00{% endif %}</span>
+        $<span id="order-total">{% if order.get_total %}{{ order.get_total|intcomma }}{% else %}0.00{% endif %}</span>
       </h1>
     </div>
   </div>
@@ -82,8 +82,8 @@
             <div class="d-flex justify-content-between align-items-center">
               <strong>{{ item.product.name }}</strong>
               <div class="d-flex flex-column text-right">
-                <small><em class="text-muted">{{ item.quantity }} &#120; ${{ item.product.price }}/ea.</em></small>
-                <span class="text-muted">${{ item.get_total_item_price }}</span>
+                <small><em class="text-muted">{{ item.quantity }} &times; ${{ item.product.price }}/ea.</em></small>
+                <span class="text-muted">${{ item.get_total_item_price|intcomma }}</span>
               </div>
             </div>
           </div>
@@ -91,13 +91,16 @@
       </li>
     {% endfor %}
     {% if order.donation %}
-      <li class="list-group-item mt-5 text-right"><h3>Donation: ${{ order.donation }}</h3></li>
+      <li class="list-group-item mt-5 text-right"><h3>Donation: ${{ order.donation|intcomma }}</h3></li>
     {% endif %}
   </ul>
   {% if request.user.family == order.seller.family %}
     <div class="d-flex justify-content-between">
     {% if order.campaign.can_take_orders %}
-      <a href="{% if order.date_paid or order.date_delivered %}#{% else %}{% url 'campaigns:order_update' order.pk %}{% endif %}" class="btn btn-outline-secondary btn-block mr-5{% if order.date_paid or order.date_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Make changes to this order' %}</a>
+      <div class="btn-group" role="group" aria-label="Order Editing tools">
+        <a href="{% url 'campaigns:order_update' order.pk %}" class="btn btn-outline-secondary btn-block{% if order.date_paid or order.date_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Make changes' %}</a>
+        <a href="{% url 'campaigns:order_delete' order.pk %}" class="btn btn-outline-danger{% if order.date_paid or order.date_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Delete' %}</a>
+      </div>
     {% endif %}
     {% include 'campaigns/snippets/order_status_buttons.html' %}
     </div>
