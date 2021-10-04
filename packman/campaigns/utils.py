@@ -1,13 +1,12 @@
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+
 from .models import Order
 
 
 def get_cart_from_user(request, seller):
-    order, created = Order.objects.get_or_create(
-        seller=request.user.family
-    )
+    order, created = Order.objects.get_or_create(seller=request.user.family)
     items = order.products.all()
     seller = order.seller
     cart = order.product_count

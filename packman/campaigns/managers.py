@@ -1,7 +1,7 @@
 import decimal
 
 from django.db import models
-from django.db.models import Sum, F, Subquery, OuterRef
+from django.db.models import F, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -9,14 +9,15 @@ from django.utils import timezone
 class CampaignQuerySet(models.QuerySet):
     def current(self):
         try:
-            return self.get(ordering_opens__lte=timezone.now(),
-                            ordering_closes__gte=timezone.now()) or models.QuerySet.none()
+            return (
+                self.get(ordering_opens__lte=timezone.now(), ordering_closes__gte=timezone.now())
+                or models.QuerySet.none()
+            )
         except self.model.DoesNotExist:
             return None
 
 
 class OrderQuerySet(models.QuerySet):
-
     def donations_total(self):
         return self.aggregate(
             total=Sum("donation"),
@@ -40,11 +41,8 @@ class OrderQuerySet(models.QuerySet):
         totals = self.aggregate(
             donations=Sum("donation", distinct=True),
             products=Coalesce(
-                Sum(
-                    F("item__product__price") * F("item__quantity"),
-                    output_field=models.DecimalField()
-                ),
-                decimal.Decimal(0.00)
+                Sum(F("item__product__price") * F("item__quantity"), output_field=models.DecimalField()),
+                decimal.Decimal(0.00),
             ),
         )
         totals.update(total=totals["donations"] + totals["products"])
@@ -60,8 +58,10 @@ class OrderQuerySet(models.QuerySet):
 class OrderItemQuerySet(models.QuerySet):
     def with_total(self):
         return self.annotate(
-            total=Coalesce(Sum(F("product__price") * F("quantity"), output_field=models.DecimalField()),
-                           decimal.Decimal(0.00)))
+            total=Coalesce(
+                Sum(F("product__price") * F("quantity"), output_field=models.DecimalField()), decimal.Decimal(0.00)
+            )
+        )
 
     def counted(self):
         return self.aggregate(count=Coalesce(Sum("quantity"), 0))
