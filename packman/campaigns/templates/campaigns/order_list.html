@@ -35,14 +35,14 @@
   {% regroup order_list by seller as seller_order_list %}
   {% for seller in seller_order_list %}
     {% include 'campaigns/snippets/quota_progress.html' with scout=seller.grouper %}
-    <div class="list-group list-group-flush mb-5">
+    <div class="list-group list-group-flush mt-3 mb-5">
       {% for order in seller.list %}
         <a href="{{ order.get_absolute_url }}" class="list-group-item list-group-item-action">
           <div class="d-flex justify-content-between align-items-center">
             <h5>{{ order.customer.name }}</h5>
             <div>
-              {% if order.is_paid %}<img src="{% static 'img/paid_stamp.svg' %}" class="float-left">{% endif %}
               <div class="d-flex flex-column align-items-end">
+                {% if order.is_paid %}<img src="{% static 'img/paid_stamp.svg' %}" height="43" class="position-absolute">{% endif %}
                 <small>{{ order.date_added|naturalday }}</small>
                 <strong class="text-success">${{ order.get_total|intcomma }}</strong>
               </div>
