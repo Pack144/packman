@@ -1,0 +1,51 @@
+{% extends '_base.html' %}
+
+{% load i18n static %}
+
+
+{% block title %}{% translate 'Delete Order' %} | {{ block.super }}{% endblock %}
+
+
+{% block content %}
+  <form method="post">
+    <div class="alert alert-danger" role="alert">
+      <h1 class="alert-heading">{% translate 'Are you absolutely certain?' %}</h1>
+      {% blocktranslate with customer=order.customer.name %}
+        <p>You are about to delete <strong>{{ customer }}</strong>'s order. This action cannot be undone.</p>
+        <p>To permanently remove this order from the database click the delete button below.</p>
+      {% endblocktranslate %}
+      <h2 class="alert-heading">{% translate "Order Details" %}</h2>
+      <ul class="list-group list-group-flush bg-transparent">
+        {% for item in order.items.all %}
+          <li class="list-group-item bg-transparent" id="{{ item.product.pk }}">
+            <div class="d-flex align-items-center">
+              <div class="flex-shrink-0">
+                {% if item.product.image %}
+                  <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="rounded" height="80">
+                {% else %}
+                  <img src="https://via.placeholder.com/80" alt="{{ item.product.name }}" class="rounded" height="80">
+                {% endif %}
+              </div>
+              <div class="flex-grow-1 ml-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <strong>{{ item.product.name }}</strong>
+                  <div class="d-flex flex-column text-right">
+                    <small><em class="text-muted">{{ item.quantity }} &times; ${{ item.product.price }}/ea.</em></small>
+                    <span class="text-muted">${{ item.get_total_item_price }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+        {% if order.donation %}
+          <li class="list-group-item bg-transparent text-right"><h3>Donation: ${{ order.donation }}</h3></li>
+        {% endif %}
+      </ul>
+      <hr>
+      <a href="{{ order.get_absolute_url }}" class="btn btn-primary">{% translate 'Wait! Take me back' %}</a>
+      <button type="submit" class="btn btn-danger">{% translate 'Yes, delete this order' %}</button>
+    </div>
+    {% csrf_token %}
+  </form>
+{% endblock %}
