@@ -307,7 +307,7 @@ class Order(TimeStampedUUIDModel):
     objects = OrderQuerySet.as_manager()
 
     class Meta:
-        ordering = ("date_added",)
+        ordering = ("-date_added",)
         verbose_name = _("Order")
         verbose_name_plural = _("Orders")
 

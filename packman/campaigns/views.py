@@ -34,7 +34,8 @@ class OrderListView(LoginRequiredMixin, ListView):
         return (
             super()
             .get_queryset()
-            .prefetch_related("items")
+            .prefetch_related("seller", "customer")
+            .calculate_total()
             .filter(seller__family=self.request.user.family, campaign=campaign)
             .order_by("-seller__date_of_birth", "date_added")
         )

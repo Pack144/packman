@@ -1,7 +1,7 @@
 import decimal
 
 from django.db import models
-from django.db.models import F, Sum
+from django.db.models import F, Sum, OuterRef, Subquery, ExpressionWrapper
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -37,6 +37,23 @@ class OrderQuerySet(models.QuerySet):
             ),
         )
 
+    def calculate_subtotal(self):
+        items = self.model.items.field.model.objects.filter(order=OuterRef("pk")).order_by().values("order")
+        return self.annotate(subtotal=Coalesce(Subquery(items.calculate_cost().values("cost")), decimal.Decimal(0.00)))
+
+    def calculate_total(self):
+        return self.calculate_subtotal().annotate(total=Sum(F("subtotal") + F("donation")))
+
+    def with_total(self):
+
+        return self.annotate(
+            total=Sum(
+                F("donation") + Subquery(
+                    self.model.items.field.model.objects.filter(order=OuterRef("pk")).calculate_subtotal().values("subtotal")[:1]
+                ), output_field=models.DecimalField(0.00),
+            )
+        )
+
     def totals(self):
         totals = self.aggregate(
             donations=Sum("donation", distinct=True),
@@ -56,6 +73,16 @@ class OrderQuerySet(models.QuerySet):
 
 
 class OrderItemQuerySet(models.QuerySet):
+    def calculate_cost(self):
+        return self.annotate(
+            cost=Sum(F("product__price") * F("quantity"))
+        )
+
+    def calculate_subtotal(self):
+        return self.calculate_cost().aggregate(
+            subtotal=Sum("cost")
+        )
+
     def with_total(self):
         return self.annotate(
             total=Coalesce(
