@@ -96,14 +96,18 @@ class CustomerAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
-    list_display = ["customer", "seller", "campaign", "is_paid", "is_delivered", "total"]
+    list_display = ["customer", "seller", "campaign", "is_paid", "is_delivered", "product_total", "donation", "order_total"]
     list_filter = [IsPaidFilter, IsDeliveredFilter, "campaign", "seller"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).calculate_total()
 
-    @admin.display(description=_("total"), ordering="total")
-    def total(self, obj):
+    @admin.display(description="product", ordering="subtotal")
+    def product_total(self, obj):
+        return obj.subtotal
+
+    @admin.display(description="total", ordering="total")
+    def order_total(self, obj):
         return obj.total
 
 

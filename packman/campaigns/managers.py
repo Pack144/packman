@@ -42,7 +42,7 @@ class OrderQuerySet(models.QuerySet):
         return self.annotate(subtotal=Coalesce(Subquery(items.calculate_cost().values("cost")), decimal.Decimal(0.00)))
 
     def calculate_total(self):
-        return self.calculate_subtotal().annotate(total=Sum(F("subtotal") + F("donation")))
+        return self.calculate_subtotal().annotate(total=F("subtotal") + Coalesce(F("donation"), decimal.Decimal(0.00)))
 
     def with_total(self):
 
@@ -75,7 +75,7 @@ class OrderQuerySet(models.QuerySet):
 class OrderItemQuerySet(models.QuerySet):
     def calculate_cost(self):
         return self.annotate(
-            cost=Sum(F("product__price") * F("quantity"))
+            cost=Sum(F("product__price") * F("quantity"), output_field=models.DecimalField(decimal_places=2))
         )
 
     def calculate_subtotal(self):
