@@ -44,7 +44,7 @@
               <div class="d-flex flex-column align-items-end">
                 {% if order.is_paid %}<img src="{% static 'img/paid_stamp.svg' %}" height="43" class="position-absolute">{% endif %}
                 <small>{{ order.date_added|naturalday }}</small>
-                <strong class="text-success">${{ order.get_total|intcomma }}</strong>
+                <strong class="text-success">${{ order.total|intcomma }}</strong>
               </div>
             </div>
           </div>
