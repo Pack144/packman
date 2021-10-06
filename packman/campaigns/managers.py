@@ -48,9 +48,13 @@ class OrderQuerySet(models.QuerySet):
 
         return self.annotate(
             total=Sum(
-                F("donation") + Subquery(
-                    self.model.items.field.model.objects.filter(order=OuterRef("pk")).calculate_subtotal().values("subtotal")[:1]
-                ), output_field=models.DecimalField(0.00),
+                F("donation")
+                + Subquery(
+                    self.model.items.field.model.objects.filter(order=OuterRef("pk"))
+                    .calculate_subtotal()
+                    .values("subtotal")[:1]
+                ),
+                output_field=models.DecimalField(0.00),
             )
         )
 
@@ -79,9 +83,7 @@ class OrderItemQuerySet(models.QuerySet):
         )
 
     def calculate_subtotal(self):
-        return self.calculate_cost().aggregate(
-            subtotal=Sum("cost")
-        )
+        return self.calculate_cost().aggregate(subtotal=Sum("cost"))
 
     def with_total(self):
         return self.annotate(
