@@ -114,6 +114,14 @@ footer {
     overflow-y: auto;
 }
 
+.quantity-adjustment-btn-group {
+}
+
+.cost-display {
+    max-width: 114px;
+    margin-left: 2rem;
+}
+
 #memberSearchForm #memberSearch {
     border-top-left-radius: 10rem;
     border-bottom-left-radius: 10rem;
