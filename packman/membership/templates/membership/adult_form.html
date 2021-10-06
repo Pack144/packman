@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 {% load crispy_forms_tags static %}
 
-{% block title %}{% if member %}{{ member }} - Update{% else %}Add Adult{% endif %} — {{ block.super }}{% endblock %}
+{% block title %}{% if member %}{{ member }} - Update{% else %}Add Adult{% endif %} | {{ block.super }}{% endblock %}
 
 {% block content %}
   <form method="post" enctype="multipart/form-data">
