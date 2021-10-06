@@ -22,7 +22,7 @@
     <div class="row">
       {% regroup product_list by category as cateogrized_products %}
       <div class="col-md-8">
-        <fieldset class="accordion" id="product-categories">
+        <fieldset class="accordion mb-5" id="product-categories">
           <legend>{% translate 'Products' %}</legend>
           {% for category in cateogrized_products %}
             <div class="card">
@@ -42,22 +42,22 @@
                     {% for product in category.list %}
                       <li class="list-group-item" id="{{ product.pk }}">
                         <div class="d-flex">
-                          <div class="flex-shrink-0">
+                          <div class="flex-shrink-0 d-none d-md-block">
                             {% if product.image %}
                               <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" height="80">
                             {% else %}
                               <img src="https://via.placeholder.com/80" alt="{{ product.name }}" class="rounded" height="80">
                             {% endif %}
                           </div>
-                          <div class="flex-grow-1 ml-3">
+                          <div class="flex-grow-1 ml-md-3">
                             <div class="d-flex justify-content-between">
                               <strong>{{ product.name }}</strong>
-                              <span class="text-muted"><i class="fas fa-dollar-sign"></i><span id="{{ product.pk }}-price">{{ product.price }}</span></span>
+                              <span class="text-muted">$<span id="{{ product.pk }}-price">{{ product.price }}</span></span>
                             </div>
                             <p class="font-weight-lighter d-none d-lg-block">{{ product.description }}</p>
                             {% with ordered=product.orders.first %}
-                              <div class="btn-toolbar justify-content-end" role="toolbar">
-                                <div class="btn-group" role="group">
+                              <div class="btn-toolbar justify-content-between align-items-center" role="toolbar">
+                                <div class="btn-group quantity-adjustment-btn-group" role="group">
                                   <button type="button" class="btn btn-secondary product-remove" data-product="{{ product.id }}" onclick="removeProduct(this)"
                                     {% if order.pk and not ordered or not order.pk %} disabled{% endif %}>
                                     <i class="fas fa-minus"></i></button>
@@ -66,10 +66,9 @@
                                   <button type="button" class="btn btn-secondary product-add" data-product="{{ product.id }}" onclick="addProduct(this)">
                                     <i class="fas fa-plus"></i></button>
                                 </div>
-                                <div class="input-group ml-2 w-50">
+                                <div class="input-group cost-display">
                                   <div class="input-group-prepend">
-                                    <div class="input-group-text" id="{{ product.pk }}-subtotal-addon">
-                                      <i class="fas fa-dollar-sign"></i></div>
+                                    <div class="input-group-text" id="{{ product.pk }}-subtotal-addon">$</div>
                                   </div>
                                   <input type="text" class="form-control product-subtotal" id="{{ product.pk }}-subtotal" aria-describedby="{{ product.pk }}-subtotal-addon" readonly
                                     {% if order.pk and ordered %} value="{{ ordered.get_total_item_price }}"{% endif %}>
@@ -89,7 +88,7 @@
       </div>
 
       <div class="col-md-4">
-        <fieldset id="customer-fieldset mb-5">
+        <fieldset class="mb-5" id="customer-fieldset">
           <legend>{% translate 'Customer' %}</legend>
           {{ customer_form|crispy }}
           <button type="button" onclick="getLocation()" class="btn btn-primary btn-sm btn-block">
@@ -97,7 +96,7 @@
           <span class="text-danger" id="location-feedback"></span>
         </fieldset>
 
-        <fieldset id="order-details mt-5">
+        <fieldset class="mb-5" id="order-details">
           <legend>{% translate 'Order Details' %}</legend>
           {{ form|crispy }}
         </fieldset>
