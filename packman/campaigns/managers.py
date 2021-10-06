@@ -44,6 +44,9 @@ class OrderQuerySet(models.QuerySet):
     def calculate_total(self):
         return self.calculate_subtotal().annotate(total=F("subtotal") + Coalesce(F("donation"), decimal.Decimal(0.00)))
 
+    def totaled(self):
+        return self.calculate_total().aggregate(totaled=Coalesce(Sum("total"), decimal.Decimal(0.00)))
+
     def with_total(self):
 
         return self.annotate(
