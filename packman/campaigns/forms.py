@@ -8,8 +8,8 @@ class CustomerForm(forms.ModelForm):
         model = Customer
         fields = (
             "name",
-            "phone_number",
             "email",
+            "phone_number",
             "address",
             "city",
             "state",
@@ -19,6 +19,7 @@ class CustomerForm(forms.ModelForm):
             "gps_accuracy",
         )
         widgets = {
+            "name": forms.TextInput(attrs={"autocapitalize": "words"}),
             "latitude": forms.HiddenInput(),
             "longitude": forms.HiddenInput(),
             "gps_accuracy": forms.HiddenInput(),
