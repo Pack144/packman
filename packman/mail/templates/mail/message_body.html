@@ -1,15 +1,18 @@
 {% extends 'base_email.html' %}
 
+{% load i18n static %}
+
 
 {% block title %}[{{ site.name }}] {{ message.subject|safe }}{% endblock %}
 
 
-{% block preheader %}{{ message.body|striptags|truncatewords:100 }}{% endblock %}
+{% block preheader %}{{ message.body|striptags|cut:"&nbsp;"|truncatewords:100 }}{% endblock %}
 
 
 {% block header_top %}
   <p>Dear {{ recipient.short_name }},<br>
-    <strong>{{ message.author }}</strong> sent the following message{% if message.distribution_lists.exist %} to {% for dl in message.distribution_lists.all %}<i>{{ dl }}</i>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}:
+    <strong>{{ message.author }}</strong> sent the following message{% if message.distribution_lists.exist %} to {% for dl in message.distribution_lists.all %}
+      <i>{{ dl }}</i>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}:
   </p>
 {% endblock %}
 
