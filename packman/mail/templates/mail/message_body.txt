@@ -1,6 +1,6 @@
 {{ message.subject|safe }}
 
-{{ message.get_plaintext_body|safe|wordwrap:80 }}
+{{ message.get_plaintext_body|safe|cut:"&nbsp;"|wordwrap:80 }}
 
 
 -------------------------------------------------------------------------------
