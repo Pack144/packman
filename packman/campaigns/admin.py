@@ -1,4 +1,8 @@
+import csv
+
 from django.contrib import admin
+from django.http import HttpResponse
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from .models import (
@@ -15,6 +19,8 @@ from .models import (
     Quota,
     Tag,
 )
+from packman.calendars.models import PackYear
+from packman.dens.models import Membership
 
 
 class IsDeliveredFilter(admin.SimpleListFilter):
@@ -95,6 +101,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    actions = ["generate_weekly_report"]
     inlines = [OrderItemInline]
     list_display = [
         "customer",
@@ -118,6 +125,26 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.display(description="total", ordering="total")
     def order_total(self, obj):
         return obj.total
+
+    @admin.display(description=_("Generate Weekly Report"))
+    def generate_weekly_report(self, request, queryset):
+        end_date = timezone.now()
+        start_date = end_date - timezone.timedelta(days=7)
+        report_name = f"Campaign Weekly Report ({end_date.month}-{end_date.day}-{end_date.year}).csv"
+        field_names = ["Cub", "Den", "Order Count", "Total"]
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename={report_name}"
+
+        orders = queryset.filter(date_added__gte=start_date, date_added__lte=end_date)
+        members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
+
+        writer = csv.writer(response)
+        writer.writerow(field_names)
+        for cub in members:
+            cub_orders = orders.filter(seller__den_memberships=cub)
+            writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
+
+        return response
 
 
 @admin.register(Prize)
