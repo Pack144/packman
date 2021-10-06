@@ -96,7 +96,16 @@ class CustomerAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
-    list_display = ["customer", "seller", "campaign", "is_paid", "is_delivered", "product_total", "donation", "order_total"]
+    list_display = [
+        "customer",
+        "seller",
+        "campaign",
+        "is_paid",
+        "is_delivered",
+        "product_total",
+        "donation",
+        "order_total",
+    ]
     list_filter = [IsPaidFilter, IsDeliveredFilter, "campaign", "seller"]
 
     def get_queryset(self, request):
