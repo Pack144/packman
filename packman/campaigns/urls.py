@@ -8,6 +8,7 @@ from .views import (
     OrderUpdateView,
     ProductListView,
     update_order,
+    PrizeListView,
 )
 
 app_name = "campaigns"
@@ -19,5 +20,6 @@ urlpatterns = [
     path("<uuid:pk>/edit/", OrderUpdateView.as_view(), name="order_update"),
     path("<uuid:pk>/delete/", OrderDeleteView.as_view(), name="order_delete"),
     path("products/", ProductListView.as_view(), name="product_list"),
+    path("prizes/", PrizeListView.as_view(), name="prize_list"),
     path("api/v1/update_order", update_order, name="api_update"),
 ]
