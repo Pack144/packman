@@ -95,11 +95,11 @@
     {% endif %}
   </ul>
   {% if request.user.family == order.seller.family %}
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between flex-wrap">
     {% if order.campaign.can_take_orders %}
-      <div class="btn-group" role="group" aria-label="Order Editing tools">
-        <a href="{% url 'campaigns:order_update' order.pk %}" class="btn btn-outline-secondary btn-block{% if order.date_paid or order.date_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Make changes' %}</a>
-        <a href="{% url 'campaigns:order_delete' order.pk %}" class="btn btn-outline-danger{% if order.date_paid or order.date_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Delete' %}</a>
+      <div class="btn-group mt-3 mr-5" role="group" aria-label="Order Editing tools">
+        <a href="{% url 'campaigns:order_update' order.pk %}" class="btn btn-outline-secondary btn-block{% if order.is_paid or order.is_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Make changes' %}</a>
+        <a href="{% url 'campaigns:order_delete' order.pk %}" class="btn btn-outline-danger{% if order.is_paid or order.is_delivered %} disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Delete' %}</a>
       </div>
     {% endif %}
     {% include 'campaigns/snippets/order_status_buttons.html' %}
