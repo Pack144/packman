@@ -247,7 +247,7 @@ class Customer(TimeStampedUUIDModel):
     A model representing the customer of a sale.
     """
 
-    name = models.CharField(_("name"), max_length=150)
+    name = models.CharField(_("name"), max_length=150, help_text=_("The name to place on the order"))
 
     address = models.CharField(_("address"), max_length=100, blank=True)
     city = models.CharField(_("city"), max_length=100, blank=True)
@@ -267,7 +267,9 @@ class Customer(TimeStampedUUIDModel):
     email = models.EmailField(
         _("email address"),
         blank=True,
-        help_text=_("We will only use your email address to contact you about your order."),
+        help_text=_(
+            "If provided, we will email you a receipt for this order. We do not share this information with anyone, including BSA."
+        ),
     )
 
     class Meta:
@@ -298,8 +300,19 @@ class Order(TimeStampedUUIDModel):
     seller = models.ForeignKey(Scout, on_delete=models.CASCADE, related_name="orders")
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders", blank=True, null=True)
 
-    donation = models.DecimalField(_("donation"), max_digits=6, decimal_places=2, default=0, blank=True, null=True)
-    notes = models.TextField(_("notes"), blank=True)
+    donation = models.DecimalField(
+        _("donation"),
+        max_digits=6,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text=_("Would you care to make monetary donation to the Pack?"),
+    )
+    notes = models.TextField(
+        _("notes"),
+        blank=True,
+        help_text=_('''Use the notes field to keep reminders such as "It's okay to leave nuts in the milkbox"'''),
+    )
 
     date_paid = models.DateTimeField(_("paid"), blank=True, null=True)
     date_delivered = models.DateTimeField(_("delivered"), blank=True, null=True)
