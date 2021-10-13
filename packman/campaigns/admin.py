@@ -101,7 +101,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    actions = ["generate_weekly_report"]
+    actions = ["generate_weekly_report", "generate_campaign_report"]
     inlines = [OrderItemInline]
     list_display = [
         "customer",
@@ -145,6 +145,27 @@ class OrderAdmin(admin.ModelAdmin):
             writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
 
         return response
+
+
+    @admin.display(description=_("Generate Campaign Report"))
+    def generate_campaign_report(self, request, queryset):
+        report_date = timezone.now()
+        report_name = f"Campaign Report ({report_date.month}-{report_date.day}-{report_date.year}).csv"
+        field_names = ["Cub", "Den", "Order Count", "Total"]
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename={report_name}"
+
+        orders = queryset.filter(campaign=Campaign.objects.current())
+        members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
+
+        writer = csv.writer(response)
+        writer.writerow(field_names)
+        for cub in members:
+            cub_orders = orders.filter(seller__den_memberships=cub)
+            writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
+
+        return response
+
 
 
 @admin.register(Prize)
