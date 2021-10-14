@@ -317,6 +317,10 @@ class Order(TimeStampedUUIDModel):
         help_text=_('''Use the notes field to keep reminders such as "It's okay to leave nuts in the milkbox"'''),
     )
 
+    latitude = models.FloatField(_("latitude"), blank=True, null=True)
+    longitude = models.FloatField(_("longitude"), blank=True, null=True)
+    gps_accuracy = models.FloatField(_("accuracy"), blank=True, null=True)
+
     date_paid = models.DateTimeField(_("paid"), blank=True, null=True)
     date_delivered = models.DateTimeField(_("delivered"), blank=True, null=True)
 
