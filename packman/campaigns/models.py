@@ -54,6 +54,9 @@ class Campaign(TimeStampedModel):
     class Meta:
         get_latest_by = "ordering_opens"
         ordering = ("-ordering_opens",)
+        permissions = [
+            ("generate_order_report", _("Can generate an order report"))
+        ]
         verbose_name = _("Campaign")
         verbose_name_plural = _("Campaigns")
 

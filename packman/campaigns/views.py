@@ -1,16 +1,19 @@
+import decimal
 import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
-from django.db.models import Prefetch
+from django.db import models
+from django.db.models import Prefetch, Count, DateField, Sum
+from django.db.models.functions import Trunc, TruncDate, Coalesce
 from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView
 
 from packman.calendars.models import PackYear
 
@@ -54,10 +57,29 @@ class OrderListView(LoginRequiredMixin, ListView):
         return context
 
 
-class CustomerCreateView(LoginRequiredMixin, CreateView):
-    model = Customer
-    form_class = CustomerForm
-    template_name = "campaigns/customer_form.html"
+class OrderReportView(PermissionRequiredMixin, TemplateView):
+    permission_required = "campaigns.generate_order_report"
+    template_name = "campaigns/order_report.html"
+
+    def get_context_data(self, *args, **kwargs):
+
+        context = super().get_context_data(*args, **kwargs)
+        context["campaigns"] = {
+            "available": Campaign.objects.filter(orders__seller__family=self.request.user.family).distinct(),
+            "current": Campaign.objects.current(),
+            "viewing": (
+                Campaign.objects.get(year=PackYear.get_pack_year(int(self.kwargs["campaign"]))["end_date"].year)
+                if "campaign" in self.kwargs
+                else Campaign.objects.current()
+            ),
+        }
+        orders = Order.objects.calculate_total().filter(campaign=context["campaigns"]["viewing"])
+        context["report"] = {
+            "count": orders.count(),
+            "total": orders.totaled()["totaled"],
+            "days": orders.annotate(date=TruncDate("date_added")).order_by("date").values("date").annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00))),
+        }
+        return context
 
 
 class OrderCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
