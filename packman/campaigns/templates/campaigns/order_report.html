@@ -17,7 +17,11 @@
       <div class="dropdown-menu dropdown-menu-right">
         {% for campaign in campaigns.available %}
           {% if not campaign == campaigns.viewing %}
-            <a class="dropdown-item" href="{% url 'campaigns:order_report_by_campaign' campaign=campaign.year.year %}">{{ campaign }}</a>
+            {% if campaign == campaigns.current %}
+              <a class="dropdown-item" href="{% url 'campaigns:order_report' %}">{{ campaign }}</a>
+            {% else %}
+              <a class="dropdown-item" href="{% url 'campaigns:order_report_by_campaign' campaign=campaign.year.year %}">{{ campaign }}</a>
+            {% endif %}
           {% else %}
             <div class="dropdown-item active">{{ campaign }}</div>
           {% endif %}
@@ -26,7 +30,10 @@
     </div>
   </div>
 
-  <table class="table table-hover">
+  <div>
+    <canvas id="order_report_by_date_chart"></canvas>
+  </div>
+  <table class="table table-hover" id="order_report_by_date_table">
     <caption>{% translate "Orders received by day" %}</caption>
     <thead class="thead-dark">
     <tr>
@@ -51,12 +58,54 @@
     {% endfor %}
     </tbody>
     <tfoot>
-      <tr>
-        <th scope="row">{% translate "Total" %}</th>
-        <td>{{ report.count|intcomma }}</td>
-        <td>${{ report.total|intcomma }}</td>
-      </tr>
+    <tr>
+      <th scope="row">{% translate "Total" %}</th>
+      <td>{{ report.count|intcomma }}</td>
+      <td>${{ report.total|intcomma }}</td>
+    </tr>
     </tfoot>
   </table>
 
-{% endblock %}
+{% endblock content %}
+
+
+{% block js %}
+  {{ block.super }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js" integrity="sha256-bC3LCZCwKeehY6T4fFi9VfOU0gztUa+S4cnkIhVPZ5E=" crossorigin="anonymous"></script>
+  {# {{ report.days.all|json_script:"report_data" }} #}
+  <script>
+  window.onload = function() {
+    const labels=[{% for day in report.days %}"{{ day.date|date:'M j' }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          label: "Count",
+          backgroundColor: "rgb(99, 132, 255)",
+          borderColor: "rgb(99, 132, 255)",
+          data: [{% for day in report.days %}"{{ day.count }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+        },
+        {
+        label: "Total $",
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgb(255, 99, 132)',
+        data: [{% for day in report.days %}"{{ day.order_total }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+      }
+      ]
+    }
+
+    const config = {
+      type: "bar",
+      data: data,
+      options: {}
+    };
+
+    var myChar = new Chart(
+      document.getElementById("order_report_by_date_chart"),
+      config
+    );
+
+  }
+  </script>
+{% endblock js %}

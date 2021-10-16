@@ -77,7 +77,7 @@ class OrderReportView(PermissionRequiredMixin, TemplateView):
         context["report"] = {
             "count": orders.count(),
             "total": orders.totaled()["totaled"],
-            "days": orders.annotate(date=TruncDate("date_added")).order_by("date").values("date").annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00))),
+            "days": orders.annotate(date=TruncDate("date_added")).order_by("date").values("date").annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00))).values("date", "count", "order_total"),
         }
         return context
 
