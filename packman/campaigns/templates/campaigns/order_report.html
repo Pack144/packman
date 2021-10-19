@@ -11,7 +11,8 @@
     <h1>{% translate 'Order Report' %}</h1>
     <div class="btn-group">
       <button type="button" class="btn btn-outline-secondary">{{ campaigns.viewing }}</button>
-      <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
         <span class="sr-only">{% translate 'Toggle Dropdown' %}</span>
       </button>
       <div class="dropdown-menu dropdown-menu-right">
@@ -20,7 +21,8 @@
             {% if campaign == campaigns.current %}
               <a class="dropdown-item" href="{% url 'campaigns:order_report' %}">{{ campaign }}</a>
             {% else %}
-              <a class="dropdown-item" href="{% url 'campaigns:order_report_by_campaign' campaign=campaign.year.year %}">{{ campaign }}</a>
+              <a class="dropdown-item"
+                 href="{% url 'campaigns:order_report_by_campaign' campaign=campaign.year.year %}">{{ campaign }}</a>
             {% endif %}
           {% else %}
             <div class="dropdown-item active">{{ campaign }}</div>
@@ -30,100 +32,112 @@
     </div>
   </div>
 
-  <div>
-    <canvas id="order_report_by_date_chart"></canvas>
-  </div>
-  <table class="table table-hover" id="order_report_by_date_table">
-    <caption>{% translate "Orders received by day" %}</caption>
-    <thead class="thead-dark">
-    <tr>
-      <th scope="col">
-        {% translate 'Date' %}
-      </th>
-      <th scope="col">
-        {% translate 'Orders Received' %}
-      </th>
-      <th scope="col">
-        {% translate 'Total' %}
-      </th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for day in report.days %}
-      <tr>
-        <th scope="row">{{ day.date|naturalday|capfirst }}</th>
-        <td>{{ day.count|intcomma }}</td>
-        <td>${{ day.order_total|intcomma }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-    <tfoot>
-    <tr>
-      <th scope="row">{% translate "Total" %}</th>
-      <td>{{ report.count|intcomma }}</td>
-      <td>${{ report.total|intcomma }}</td>
-    </tr>
-    </tfoot>
-  </table>
-
-  <table class="table table-hover" id="products_ordered_table">
-    <caption>{% translate 'Products Ordered' %}</caption>
-    <thead class="thead-dark">
-      <tr>
-        <th scope="col">{% translate 'Product' %}</th>
-        <th scope="col">{% translate 'Quantity Ordered' %}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for product in campaigns.viewing.products.all.quantity.count_orders %}
+  <div class="card mb-5" id="daily-order-report">
+    <div class="card-body">
+      <h2 class="card-header">{% translate 'Daily Order Breakdown' %}</h2>
+      <div>
+        <canvas id="order_report_by_date_chart"></canvas>
+      </div>
+      <table class="table table-hover" id="order_report_by_date_table">
+        <caption>{% translate "Orders received by day" %}</caption>
+        <thead class="thead-dark">
         <tr>
-          <th scope="row">{{ product.name }}</th>
-          <td>{{ product.ordered_quantity }}</td>
+          <th scope="col">
+            {% translate 'Date' %}
+          </th>
+          <th scope="col">
+            {% translate 'Orders Received' %}
+          </th>
+          <th scope="col">
+            {% translate 'Total' %}
+          </th>
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        </thead>
+        <tbody>
+        {% for day in report.days %}
+          <tr>
+            <th scope="row">{{ day.date|naturalday|capfirst }}</th>
+            <td>{{ day.count|intcomma }}</td>
+            <td>${{ day.order_total|intcomma }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        <tr>
+          <th scope="row">{% translate "Total" %}</th>
+          <td>{{ report.count|intcomma }}</td>
+          <td>${{ report.total|intcomma }}</td>
+        </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="card mb-5" id="product-order-report">
+    <div class="card-body">
+      <h2 class="card-header">{% translate 'Product Orders' %}</h2>
+      <table class="table table-hover" id="products_ordered_table">
+        <caption>{% translate 'Products Ordered' %}</caption>
+        <thead class="thead-dark">
+        <tr>
+          <th scope="col">{% translate 'Product' %}</th>
+          <th scope="col">{% translate 'Quantity Ordered' %}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for product in campaigns.viewing.products.all.quantity.count_orders %}
+          <tr>
+            <th scope="row">{{ product.name }}</th>
+            <td>{{ product.ordered_quantity }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 
 {% endblock content %}
 
 
 {% block js %}
   {{ block.super }}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js" integrity="sha256-bC3LCZCwKeehY6T4fFi9VfOU0gztUa+S4cnkIhVPZ5E=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"
+          integrity="sha256-bC3LCZCwKeehY6T4fFi9VfOU0gztUa+S4cnkIhVPZ5E=" crossorigin="anonymous"></script>
   {# {{ report.days.all|json_script:"report_data" }} #}
   <script>
-  window.onload = function() {
-    const labels=[{% for day in report.days %}"{{ day.date|date:'M j' }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+    window.onload = function () {
+      const labels = [{% for day in report.days %}"{{ day.date|date:'M j' }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
 
-    const data = {
-      labels: labels,
-      datasets: [
-        {
-          label: "Count",
-          backgroundColor: "rgb(99, 132, 255)",
-          borderColor: "rgb(99, 132, 255)",
-          data: [{% for day in report.days %}"{{ day.count }}"{% if not forloop.last %},{% endif %}{% endfor %}]
-        },
-        {
-        label: "Total $",
-        backgroundColor: 'rgb(255, 99, 132)',
-        borderColor: 'rgb(255, 99, 132)',
-        data: [{% for day in report.days %}"{{ day.order_total }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+      const data = {
+        labels: labels,
+        datasets: [
+          {
+            label: "Count",
+            backgroundColor: "rgb(99, 132, 255)",
+            borderColor: "rgb(99, 132, 255)",
+            data: [{% for day in report.days %}"{{ day.count }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
+          },
+          {
+            label: "Total $",
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [{% for day in report.days %}"{{ day.order_total }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
+          }
+        ]
       }
-      ]
+
+      const config = {
+        type: "bar",
+        data: data,
+        options: {}
+      };
+
+      const myChar = new Chart(
+        document.getElementById("order_report_by_date_chart"),
+        config
+      );
+
     }
-
-    const config = {
-      type: "bar",
-      data: data,
-      options: {}
-    };
-
-    var myChar = new Chart(
-      document.getElementById("order_report_by_date_chart"),
-      config
-    );
-
-  }
   </script>
 {% endblock js %}
