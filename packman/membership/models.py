@@ -320,7 +320,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
 
     def get_partners(self):
         """Return a list of other parents who share the same scout(s)"""
-        if self.family:
+        if self.family and not self.family.is_seperated:
             return self.family.adults.exclude(uuid=self.uuid)
 
     def is_staff(self):
