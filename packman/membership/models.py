@@ -198,6 +198,14 @@ class Family(TimeStampedUUIDModel):
         ),
     )
 
+    seperated = models.BooleanField(
+        _("parents seperated"),
+        default=False,
+        help_text=_(
+            "Check this box if the parents in this family have legally "
+            "seperated."
+        )
+    )
     legacy_id = models.IntegerField(
         unique=True,
         blank=True,
