@@ -28,16 +28,20 @@ class OrderListView(LoginRequiredMixin, ListView):
     template_name = "campaigns/order_list.html"
 
     def get_queryset(self):
+        queryset = super().get_queryset()
+
         campaign = (
             Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
             if "campaign" in self.kwargs
             else Campaign.objects.current()
         )
 
+        if self.request.user.family.is_seperated:
+            queryset = queryset.filter(recorded_by=self.request.user)
+
         return (
-            super()
-            .get_queryset()
-            .prefetch_related("seller", "customer")
+            queryset
+            .prefetch_related("seller", "customer", "recorded_by")
             .calculate_total()
             .filter(seller__family=self.request.user.family, campaign=campaign)
             .order_by("-seller__date_of_birth", "date_added")
@@ -117,6 +121,7 @@ class OrderCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         items_formset = context["items_formset"]
         if customer_form.is_valid() and items_formset.is_valid():
             form.instance.customer = customer_form.save()
+            form.instance.recorded_by = self.request.user
             self.object = form.save()
             items_formset.instance = self.object
             items_formset.save()
