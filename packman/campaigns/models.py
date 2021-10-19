@@ -1,6 +1,7 @@
 import decimal
 
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -19,6 +20,8 @@ from packman.dens.models import Den
 from packman.membership.models import Scout
 
 from .managers import CampaignQuerySet, OrderItemQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet
+
+User = get_user_model()
 
 
 def latest_campaign():
@@ -302,6 +305,7 @@ class Order(TimeStampedUUIDModel):
     )
     seller = models.ForeignKey(Scout, on_delete=models.CASCADE, related_name="orders")
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders", blank=True, null=True)
+    recorded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", blank=True, null=True)
 
     donation = models.DecimalField(
         _("donation"),
