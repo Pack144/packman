@@ -198,7 +198,7 @@ class Family(TimeStampedUUIDModel):
         ),
     )
 
-    seperated = models.BooleanField(
+    is_seperated = models.BooleanField(
         _("parents seperated"),
         default=False,
         help_text=_(
