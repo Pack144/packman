@@ -58,6 +58,10 @@ class MemberManager(UserManager):
             _full_name=Concat("_short_name", Value(" "), "last_name"),
         )
 
+    def get_by_natural_key(self, username):
+        case_insensitive_username_field = '{}__iexact'.format(self.model.USERNAME_FIELD)
+        return self.get(**{case_insensitive_username_field: username})
+
     def active(self):
         return self.get_queryset().active()
 
