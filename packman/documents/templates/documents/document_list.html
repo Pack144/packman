@@ -8,7 +8,7 @@
     <div class="container" id="document-list">
     {% for category in category_list %}
       {% if category.documents.count %}
-      <h3>{{ category }}</h3>
+      <h3 id="{{ category|slugify }}">{{ category }}</h3>
       <dl class="row">
         {% for document in category.documents.all %}
         <dt class="col-sm-4"><a href="{{ document.file.url }}" target="_blank">{{ document.name }}</a></dt>
