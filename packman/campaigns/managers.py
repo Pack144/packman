@@ -1,7 +1,7 @@
 import decimal
 
 from django.db import models
-from django.db.models import F, Sum, OuterRef, Subquery, ExpressionWrapper
+from django.db.models import F, Sum, OuterRef, Subquery, ExpressionWrapper, Count
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -111,6 +111,12 @@ class OrderItemQuerySet(models.QuerySet):
 class ProductQuerySet(models.QuerySet):
     def current(self):
         return self.filter(campaign=self.model.campaign.field.related_model.objects.current())
+
+    def quantity(self):
+        return self.annotate(ordered_quantity=Sum("order__quantity"))
+
+    def count_orders(self):
+        return self.annotate(order_count=Count("order"))
 
 
 class QuotaQuerySet(models.QuerySet):
