@@ -158,7 +158,7 @@ class OrderAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={report_name}"
 
-        members = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(year_assigned=PackYear.objects.current())
+        members = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE)
 
         writer = csv.writer(response)
         writer.writerow(field_names)
