@@ -168,7 +168,11 @@ class OrderAdmin(admin.ModelAdmin):
             quota = cub.den.quotas.current().target
             # TODO: Don't hard-code the minimum if quota unmet
             met_quota = total >= quota
-            owed = quota * decimal.Decimal("0.65") if not met_quota else total
+            if not met_quota:
+                shortfall = quota - total
+                owed = total + shortfall * decimal.Decimal("0.65")
+            else:
+                owed = total
             writer.writerow([cub.scout, cub.den, cub_orders.count(), total, quota, met_quota, owed.quantize(decimal.Decimal(".01"))])
         return response
 
