@@ -16,6 +16,10 @@ class CampaignQuerySet(models.QuerySet):
         except self.model.DoesNotExist:
             return None
 
+    def calculate_amount_owed(self):
+        orders = self.model.orders.field.model.objects.filter(campaign=OuterRef("pk").order_by().calculate_total().values("total"))
+        return orders
+
 
 class OrderQuerySet(models.QuerySet):
     def donations_total(self):

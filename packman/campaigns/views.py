@@ -167,9 +167,8 @@ class OrderUpdateView(UserIsSellerFamilyTest, SuccessMessageMixin, UpdateView):
             items_formset.save()
             if self.object.items.exists() or self.object.donation:
                 return super().form_valid(form)
-            else:
-                form.add_error(None, ValidationError(_("You haven't ordered anything."), code="incomplete"))
-                return super().form_invalid(form)
+            form.add_error(None, ValidationError(_("You haven't ordered anything."), code="incomplete"))
+            return super().form_invalid(form)
         return super().form_invalid(form)
 
 

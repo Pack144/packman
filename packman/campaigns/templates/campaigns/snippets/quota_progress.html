@@ -1,7 +1,9 @@
 {% load humanize i18n %}
 <h2>{{ scout.short_name }}</h2>
+{# TODO: find a way to show progress in non-current campaigns #}
 {% if campaigns.viewing == campaigns.current  %}
 {% with quota=scout.current_den.quotas.current.target products_total=scout.orders.current_campaign.products_total.total donations_total=scout.orders.current_campaign.donations_total.total total=scout.orders.current_campaign.products_total.total|add:scout.orders.current_campaign.donations_total.total %}
+  {# TODO: don't hard code incentive values #}
   {% if total < quota %}
     {% widthratio total quota 100 as quota_percentage %}
     <div class="text-right"><strong>quota: ${{ quota }}</strong></div>
