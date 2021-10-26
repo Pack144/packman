@@ -1,4 +1,5 @@
 import csv
+import decimal
 
 from django.contrib import admin
 from django.http import HttpResponse
@@ -132,40 +133,44 @@ class OrderAdmin(admin.ModelAdmin):
         start_date = end_date - timezone.timedelta(days=7)
         report_name = f"Campaign Weekly Report ({end_date.month}-{end_date.day}-{end_date.year}).csv"
         field_names = ["Cub", "Den", "Order Count", "Total"]
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = f"attachment; filename={report_name}"
 
         orders = queryset.filter(date_added__gte=start_date, date_added__lte=end_date)
         members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
 
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename={report_name}"
         writer = csv.writer(response)
         writer.writerow(field_names)
+
         for cub in members:
             cub_orders = orders.filter(seller__den_memberships=cub)
             writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
 
         return response
-
 
     @admin.display(description=_("Generate Campaign Report"))
     def generate_campaign_report(self, request, queryset):
         report_date = timezone.now()
+        orders = Order.objects.filter(campaign=Campaign.objects.current())
         report_name = f"Campaign Report ({report_date.month}-{report_date.day}-{report_date.year}).csv"
-        field_names = ["Cub", "Den", "Order Count", "Total"]
+
+        field_names = ["Cub", "Den", "Order Count", "Total", "Quota", "Achieved", "Amount Owed"]
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={report_name}"
 
-        orders = queryset.filter(campaign=Campaign.objects.current())
-        members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
+        members = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(year_assigned=PackYear.objects.current())
 
         writer = csv.writer(response)
         writer.writerow(field_names)
         for cub in members:
             cub_orders = orders.filter(seller__den_memberships=cub)
-            writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
-
+            total = cub_orders.totaled()["totaled"]
+            quota = cub.den.quotas.current().target
+            # TODO: Don't hard-code the minimum if quota unmet
+            met_quota = total >= quota
+            owed = quota * decimal.Decimal("0.65") if not met_quota else total
+            writer.writerow([cub.scout, cub.den, cub_orders.count(), total, quota, met_quota, owed.quantize(decimal.Decimal(".01"))])
         return response
-
 
 
 @admin.register(Prize)
