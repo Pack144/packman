@@ -1,6 +1,6 @@
 from django.contrib.auth.models import UserManager
 from django.db import models
-from django.db.models import Case, Value, When
+from django.db.models import Case, Value, When, Count, Q
 from django.db.models.functions import Coalesce, Concat
 
 from packman.calendars.models import PackYear
@@ -20,6 +20,9 @@ class FamilyQuerySet(models.QuerySet):
             children__den_memberships__den__number__in=den_list,
         )
 
+    def count_active_scouts(self):
+        return self.annotate(active_cub_count=Count(Q(children__in=self.model.children.rel.related_model.objects.active())))
+
 
 class FamilyManager(models.Manager):
     def get_queryset(self):
@@ -31,6 +34,9 @@ class FamilyManager(models.Manager):
 
     def in_den(self, den_list):
         return self.get_queryset().in_den(den_list=den_list)
+
+    def count_active_scouts(self):
+        return self.get_queryset().count_active_scouts()
 
 
 class MemberQuerySet(models.QuerySet):
