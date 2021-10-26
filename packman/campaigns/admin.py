@@ -158,14 +158,15 @@ class OrderAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={report_name}"
 
-        members = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE)
+        cubs = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE)
 
         writer = csv.writer(response)
         writer.writerow(field_names)
-        for cub in members:
+        for cub in cubs:
             cub_orders = orders.filter(seller__den_memberships=cub)
             total = cub_orders.totaled()["totaled"]
             quota = cub.den.quotas.current().target
+
             # TODO: Don't hard-code the minimum if quota unmet
             met_quota = total >= quota
             if not met_quota:
