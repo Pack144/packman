@@ -91,6 +91,11 @@ footer {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 }
+.prize-details{
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
 
 .navbar-brand {
     font-family: 'Cooper', serif;
