@@ -10,7 +10,7 @@ class CampaignQuerySet(models.QuerySet):
     def current(self):
         try:
             return (
-                self.get(ordering_opens__lte=timezone.now(), ordering_closes__gte=timezone.now() + timezone.timedelta(days=30))
+                self.get(ordering_opens__lte=timezone.now(), ordering_closes__gte=timezone.now() - timezone.timedelta(days=30))
                 or models.QuerySet.none()
             )
         except self.model.DoesNotExist:
