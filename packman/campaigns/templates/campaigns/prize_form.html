@@ -38,7 +38,7 @@
             <ul class="list-group list-group-flush">
               {% for prize in prize_list %}
                 <li class="list-group-item">
-                  <div class="row">
+                  <div class="row bg-white">
                     <div class="col-4 text-center">
                       {% if prize.image %}
                         <img src="{{ prize.image.url }}" class="rounded" alt="{{ prize.name }}" style="max-height: 180px; width: auto">
@@ -46,12 +46,16 @@
                         <img src="https://via.placeholder.com/180/515354/E9E9E4/?text={{ prize.name|urlencode }}" class="rounded" alt="{{ prize.name }}">
                       {% endif %}
                     </div>
-                    <div class="col">
+                    <div class="col prize-details">
                       {% if prize.url %}
                         <a href="{{ prize.url }}" target="_blank"><h5 class="card-title">{{ prize.name }}</h5></a>
                       {% else %}
-                        <h5 class="card-title">{{ prize.name }}</h5>
+                        <h5 class="text-dark">{{ prize.name }}</h5>
                       {% endif %}
+                      <h4 class="text-right">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span class="font-weight-bolder text-black-50">{{ prize.points }}</span>
+                      </h4>
                       <hr>
                       <div class="btn-group btn-group-sm">
                         {% for cub in cub_list %}
@@ -60,10 +64,6 @@
                           </a>
                         {% endfor %}
                       </div>
-                      <p class="card-text text-right">
-                        <i class="fas fa-ticket-alt"></i>
-                        <span class="font-weight-bolder text-black-50">{{ prize.points }}</span>
-                      </p>
                     </div>
                   </div>
                 </li>
