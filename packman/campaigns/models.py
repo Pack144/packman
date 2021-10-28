@@ -19,7 +19,7 @@ from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
 from packman.dens.models import Den
 from packman.membership.models import Scout
 
-from .managers import CampaignQuerySet, OrderItemQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet
+from .managers import CampaignQuerySet, OrderItemQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet, PrizeSelectionQuerySet
 
 User = get_user_model()
 
@@ -234,6 +234,8 @@ class PrizePoint(models.Model):
     A simple model representing the points that can be earned through product
     sales as an incentive. Points can be spent on prizes offered during the
     campaign.
+
+    TODO: Rework incentives to be accessible and configurable through the database
     """
 
     earned_at = models.DecimalField(_("earned at"), max_digits=6, decimal_places=2)
@@ -439,7 +441,9 @@ class PrizeSelection(TimeStampedModel):
         related_query_name="prize_selection",
         limit_choices_to=latest_campaign,
     )
-    quantity = models.IntegerField(_("quantity"), validators=[MinValueValidator(1)])
+    quantity = models.IntegerField(_("quantity"), validators=[MinValueValidator(1)], default=1)
+
+    objects = PrizeSelectionQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("Prize Selection")

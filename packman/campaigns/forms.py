@@ -1,6 +1,7 @@
 from django import forms
 
-from .models import Customer, Order, OrderItem
+from packman.membership.models import Scout
+from .models import Customer, Order, OrderItem, PrizeSelection
 
 
 class CustomerForm(forms.ModelForm):
@@ -66,3 +67,12 @@ class OrderItemForm(forms.ModelForm):
 
 
 OrderItemFormSet = forms.inlineformset_factory(Order, OrderItem, form=OrderItemForm, extra=0)
+
+
+class PrizeSelectionForm(forms.ModelForm):
+    class Meta:
+        model = PrizeSelection
+        fields = ("campaign", "cub", "prize", "quantity")
+
+
+PrizeSelectionFormSet = forms.inlineformset_factory(Scout, PrizeSelection, form=PrizeSelectionForm, extra=0)

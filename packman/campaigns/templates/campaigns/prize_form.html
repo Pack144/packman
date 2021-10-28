@@ -1,0 +1,145 @@
+{% extends "_base.html" %}
+
+{% load humanize i18n static %}
+
+
+{% block title %}{% translate 'Prize Selections' %} | {{ block.super }}{% endblock %}
+
+
+{% block content %}
+  <h1>{% translate 'Wonderful Prizes' %}</h1>
+  <div class="card">
+    <div class="card-body">
+      <div class="card-text">
+        <p>Congratulations
+          {% for cub in cub_list %}{{ cub.name }}{% if forloop.revcounter > 2 %},
+            {% elif forloop.revcounter > 1 %}{% if cub_list.count > 2 %},{% endif %} and {% endif %}{% endfor %}!
+          The campaign is now over. You worked hard and now it is time to collect your reward!</p>
+        <p>
+          {% if cub_list.count > 1 %}Together y{% else %}Y{% endif %}ou have brought in
+          <em>${{ total|intcomma|default:"0" }}</em> to help make the pack go! This means you now have points to spend on these fantastic prizes.
+        </p>
+
+        <ul class="list-group list-group-horizontal m-5">
+          {% for cub in cub_list %}
+            <li class="list-group-item"><strong>{{ cub.name }}</strong><br>
+              Earned
+              <span class="badge badge-primary badge-pill mr-3"><i class="fas fa-ticket-alt"></i> {{ cub.points.earned }}</span>
+              Spent
+              <span class="badge badge-warning badge-pill mr-3"><i class="fas fa-ticket-alt"></i> {{ cub.points.spent }}</span>
+              Remaining
+              <span class="badge badge-success badge-pill"><i class="fas fa-ticket-alt"></i> {{ cub.points.remaining }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <div class="row">
+          <div class="col-8">
+            <ul class="list-group list-group-flush">
+              {% for prize in prize_list %}
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-4 text-center">
+                      {% if prize.image %}
+                        <img src="{{ prize.image.url }}" class="rounded" alt="{{ prize.name }}" style="max-height: 180px; width: auto">
+                      {% else %}
+                        <img src="https://via.placeholder.com/180/515354/E9E9E4/?text={{ prize.name|urlencode }}" class="rounded" alt="{{ prize.name }}">
+                      {% endif %}
+                    </div>
+                    <div class="col">
+                      {% if prize.url %}
+                        <a href="{{ prize.url }}" target="_blank"><h5 class="card-title">{{ prize.name }}</h5></a>
+                      {% else %}
+                        <h5 class="card-title">{{ prize.name }}</h5>
+                      {% endif %}
+                      <hr>
+                      <div class="btn-group btn-group-sm">
+                        {% for cub in cub_list %}
+                          <a class="btn btn-success{% if prize.points > cub.points.remaining %} disabled{% endif %} prize-update-btn" data-action="add" data-prize="{{ prize.pk }}" data-cub="{{ cub.pk }}">
+                            <i class="fas fa-plus-circle"></i> {{ cub.name }}
+                          </a>
+                        {% endfor %}
+                      </div>
+                      <p class="card-text text-right">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span class="font-weight-bolder text-black-50">{{ prize.points }}</span>
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+
+
+            </ul>
+          </div>
+          <div class="col">
+            <h3>Selections</h3>
+            <hr>
+            {% for cub in request.user.family.children.active %}
+              {% if request.user.family.children.active.count > 1 %}<h4>{{ cub.short_name }}</h4>{% endif %}
+              <ul class="list-group list-group-flush">
+                {% for selection in cub.prize_selections.current %}
+                  <li class="list-group-item d-flex align-items-center justify-content-between">
+                    <span>{{ selection.prize.name }} ({{ selection.quantity }})</span>
+                    <a class="btn btn-link text-danger prize-update-btn" data-action="remove" data-prize="{{ selection.prize.pk }}" data-cub="{{ cub.pk }}"><i class="fas fa-minus-circle"></i></a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+      <div class="card-footer">
+        <p class="card-text">You have earned {{ prize_points }} prize points.</p>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block js %}
+  {{ block.super }}
+  {{ cub_list|json_script:"cub-list" }}
+  <script>
+    const csrftoken = '{{ csrf_token }}'
+    const url = "{% url 'campaigns:api_update_prize_selection' %}"
+
+    const prizeSelectionUpdateBtns = document.getElementsByClassName("prize-update-btn");
+
+    for (let button of prizeSelectionUpdateBtns) {
+      button.addEventListener("click", function () {
+        const action = this.dataset.action;
+        const prizeId = this.dataset.prize;
+        const cubId = this.dataset.cub;
+        console.log("action", action, "prizeId", prizeId, "cubId", cubId)
+
+        updatePrizeSelection(prizeId, cubId, action)
+      })
+    }
+
+
+    function updatePrizeSelection(prizeId, cubId, action) {
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({
+          "prize": prizeId,
+          "cub": cubId,
+          "action": action,
+        })
+      })
+
+        .then((response) => {
+          return response.json()
+        })
+
+        .then((data) => {
+          console.log("data:", data)
+          location.reload()
+        })
+    }
+  </script>
+{% endblock js %}
