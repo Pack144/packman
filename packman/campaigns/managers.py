@@ -17,8 +17,9 @@ class CampaignQuerySet(models.QuerySet):
             return None
 
     def calculate_amount_owed(self):
-        orders = self.model.orders.field.model.objects.filter(campaign=OuterRef("pk").order_by().calculate_total().values("total"))
-        return orders
+        return self.model.orders.field.model.objects.filter(
+            campaign=OuterRef("pk").order_by().calculate_total().values("total")
+        )
 
 
 class OrderQuerySet(models.QuerySet):
@@ -47,6 +48,9 @@ class OrderQuerySet(models.QuerySet):
 
     def calculate_total(self):
         return self.calculate_subtotal().annotate(total=F("subtotal") + Coalesce(F("donation"), decimal.Decimal(0.00)))
+
+    def calculate_prize_points(self):
+        return self.calculate_total().aggregate(prize_points=Sum(F("total") - 550))
 
     def totaled(self):
         return self.calculate_total().aggregate(totaled=Coalesce(Sum("total"), decimal.Decimal(0.00)))
@@ -126,3 +130,16 @@ class ProductQuerySet(models.QuerySet):
 class QuotaQuerySet(models.QuerySet):
     def current(self):
         return self.get(campaign=self.model.campaign.field.related_model.objects.current()) or models.QuerySet.none()
+
+
+class PrizeSelectionQuerySet(models.QuerySet):
+    def calculate_points(self):
+        return self.annotate(
+            points=Coalesce(Sum(F("prize__points") * F("quantity")), 0)
+        )
+
+    def aggregate_points(self):
+        return self.calculate_points().aggregate(spent=Coalesce(Sum("points"), 0))
+
+    def current(self):
+        return self.filter(campaign=self.model.campaign.field.related_model.objects.latest())

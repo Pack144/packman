@@ -6,20 +6,20 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
-from django.db import models
-from django.db.models import Prefetch, Count, DateField, Sum
-from django.db.models.functions import Trunc, TruncDate, Coalesce
+from django.db.models import Prefetch, Count, Sum
+from django.db.models.functions import TruncDate, Coalesce
 from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView, FormView
 
 from packman.calendars.models import PackYear
+from packman.membership.models import Scout
 
-from .forms import CustomerForm, OrderForm, OrderItemFormSet
+from .forms import CustomerForm, OrderForm, OrderItemFormSet, PrizeSelectionForm
 from .mixins import UserIsSellerFamilyTest
-from .models import Campaign, Customer, Order, OrderItem, Prize, Product
+from .models import Campaign, Order, OrderItem, Prize, Product, Quota, PrizePoint, PrizeSelection
 from .utils import email_receipt
 
 
@@ -41,10 +41,10 @@ class OrderListView(LoginRequiredMixin, ListView):
 
         return (
             queryset
-            .prefetch_related("seller", "customer", "recorded_by")
-            .calculate_total()
-            .filter(seller__family=self.request.user.family, campaign=campaign)
-            .order_by("-seller__date_of_birth", "date_added")
+                .prefetch_related("seller", "customer", "recorded_by")
+                .calculate_total()
+                .filter(seller__family=self.request.user.family, campaign=campaign)
+                .order_by("-seller__date_of_birth", "date_added")
         )
 
     def get_context_data(self, *args, **kwargs):
@@ -66,7 +66,6 @@ class OrderReportView(PermissionRequiredMixin, TemplateView):
     template_name = "campaigns/order_report.html"
 
     def get_context_data(self, *args, **kwargs):
-
         context = super().get_context_data(*args, **kwargs)
         context["campaigns"] = {
             "available": Campaign.objects.filter(orders__seller__family=self.request.user.family).distinct(),
@@ -81,7 +80,9 @@ class OrderReportView(PermissionRequiredMixin, TemplateView):
         context["report"] = {
             "count": orders.count(),
             "total": orders.totaled()["totaled"],
-            "days": orders.annotate(date=TruncDate("date_added")).order_by("date").values("date").annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00))).values("date", "count", "order_total"),
+            "days": orders.annotate(date=TruncDate("date_added")).order_by("date").values("date").annotate(
+                count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00))).values("date", "count",
+                                                                                                       "order_total"),
         }
         return context
 
@@ -196,6 +197,53 @@ class PrizeListView(LoginRequiredMixin, ListView):
         return super().get_queryset().filter(campaign=Campaign.objects.latest())
 
 
+class PrizeSelectionView(LoginRequiredMixin, FormView):
+    form_class = PrizeSelectionForm
+    success_message = _("You prize selections were updated successfully.")
+    template_name = "campaigns/prize_form.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        cubs = self.request.user.family.children.active()
+        orders = Order.objects.prefetch_related("seller").calculate_total().filter(seller__in=cubs,
+                                                                                   campaign=Campaign.objects.latest())
+
+        cub_list = []
+
+        for cub in cubs:
+            quota = Quota.objects.get(den=cub.current_den, campaign=Campaign.objects.latest()).target
+            total = orders.filter(seller=cub).totaled()["totaled"]
+            if total < quota:
+                points_earned = 0
+            elif total <= 2000:
+                points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
+            else:
+                points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
+                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100)
+            points_spent = PrizeSelection.objects.filter(campaign=Campaign.objects.latest(), cub=cub).aggregate_points()["spent"]
+
+            # points_spent = PrizeSelection.objects.filter(campaign=Campaign.objects.current(), cub=cub).aggregate(
+            #     spent=Coalesce(Sum("prize__points"), 0))["spent"]
+            cub_list.append({
+                "name": cub.short_name,
+                "pk": cub.pk,
+                "quota": quota,
+                "total": total,
+                "points": {
+                    "earned": points_earned,
+                    "spent": points_spent,
+                    "remaining": points_earned - points_spent,
+                }
+
+            })
+
+        context["prize_list"] = Prize.objects.filter(campaign=Campaign.objects.latest())
+        context["cub_list"] = cub_list
+        context["total"] = orders.totaled()["totaled"]
+        return context
+
+
 class ProductListView(ListView):
     model = Product
     template_name = "campaigns/product_list.html"
@@ -221,4 +269,35 @@ def update_order(request):
 
     order.save()
     response = {"action": action, "order": order.pk}
+    return JsonResponse(response)
+
+
+@login_required
+def update_prize_selection(request):
+    data = json.loads(request.body)
+    action = data["action"]
+    prize = Prize.objects.get(pk=data["prize"])
+    cub = Scout.objects.get(pk=data["cub"])
+
+    if action == "add":
+        selection, created = PrizeSelection.objects.get_or_create(
+            prize=prize,
+            cub=cub,
+        )
+        if not created:
+            selection.quantity += 1
+            selection.save()
+
+    elif action == "remove":
+        selection = PrizeSelection.objects.get(
+            prize=prize,
+            cub=cub,
+        )
+        if selection.quantity <= 1:
+            selection.delete()
+        else:
+            selection.quantity -= 1
+            selection.save()
+
+    response = {"action": action, "prize": prize.pk, "cub": cub.pk, "quantity": selection.quantity if selection else 0}
     return JsonResponse(response)
