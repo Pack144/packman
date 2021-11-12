@@ -221,7 +221,8 @@ class PrizeSelectionView(LoginRequiredMixin, FormView):
             else:
                 points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
                     (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100)
-            points_spent = PrizeSelection.objects.filter(campaign=Campaign.objects.latest(), cub=cub).aggregate_points()["spent"]
+            points_spent = PrizeSelection.objects.filter(campaign=Campaign.objects.latest(),
+                                                         cub=cub).calculate_total_points_spent()["spent"]
 
             # points_spent = PrizeSelection.objects.filter(campaign=Campaign.objects.current(), cub=cub).aggregate(
             #     spent=Coalesce(Sum("prize__points"), 0))["spent"]
