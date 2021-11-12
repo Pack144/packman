@@ -155,7 +155,7 @@ class OrderAdmin(admin.ModelAdmin):
         orders = Order.objects.filter(campaign=campaign)
         report_name = f"Campaign Report ({report_date.month}-{report_date.day}-{report_date.year}).csv"
 
-        field_names = ["Cub", "Den", "Order Count", "Total", "Quota", "Achieved", "Amount Owed", "Prize Points Earned", "Prize Points Spent"]
+        field_names = ["Cub", "Den", "Order Count", "Total", "Quota", "Achieved", "Amount Owed", "Prize Points Earned", "Prize Points Spent", "Points Remaining"]
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={report_name}"
 
@@ -177,7 +177,8 @@ class OrderAdmin(admin.ModelAdmin):
                 points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
                     (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100)
 
-            pp_spent = PrizeSelection.objects.filter(cub=cub.scout, campaign=campaign).calculate_total_points_spent()["spent"]
+            points_spent = PrizeSelection.objects.filter(cub=cub.scout, campaign=campaign).calculate_total_points_spent()["spent"]
+            points_remaining = points_earned - points_spent
 
             # TODO: Don't hard-code the minimum if quota unmet
             met_quota = total >= quota
@@ -195,7 +196,8 @@ class OrderAdmin(admin.ModelAdmin):
                 met_quota,
                 owed.quantize(decimal.Decimal(".01")),
                 points_earned,
-                pp_spent,
+                points_spent,
+                points_remaining,
             ])
         return response
 
