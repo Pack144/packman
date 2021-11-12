@@ -138,7 +138,7 @@ class PrizeSelectionQuerySet(models.QuerySet):
             points=Coalesce(Sum(F("prize__points") * F("quantity")), 0)
         )
 
-    def aggregate_points(self):
+    def calculate_total_points_spent(self):
         return self.calculate_points().aggregate(spent=Coalesce(Sum("points"), 0))
 
     def current(self):
