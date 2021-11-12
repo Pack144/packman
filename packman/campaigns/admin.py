@@ -150,11 +150,12 @@ class OrderAdmin(admin.ModelAdmin):
 
     @admin.display(description=_("Generate Campaign Report"))
     def generate_campaign_report(self, request, queryset):
+        campaign = Campaign.objects.current()
         report_date = timezone.now()
-        orders = Order.objects.filter(campaign=Campaign.objects.current())
+        orders = Order.objects.filter(campaign=campaign)
         report_name = f"Campaign Report ({report_date.month}-{report_date.day}-{report_date.year}).csv"
 
-        field_names = ["Cub", "Den", "Order Count", "Total", "Quota", "Achieved", "Amount Owed"]
+        field_names = ["Cub", "Den", "Order Count", "Total", "Quota", "Achieved", "Amount Owed", "Prize Points Earned", "Prize Points Spent"]
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={report_name}"
 
@@ -167,6 +168,17 @@ class OrderAdmin(admin.ModelAdmin):
             total = cub_orders.totaled()["totaled"]
             quota = cub.den.quotas.current().target
 
+            # calculate points earned
+            if total < quota:
+                points_earned = 0
+            elif total <= 2000:
+                points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
+            else:
+                points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
+                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100)
+
+            pp_spent = PrizeSelection.objects.filter(cub=cub.scout, campaign=campaign).calculate_total_points_spent()["spent"]
+
             # TODO: Don't hard-code the minimum if quota unmet
             met_quota = total >= quota
             if not met_quota:
@@ -174,7 +186,17 @@ class OrderAdmin(admin.ModelAdmin):
                 owed = total + shortfall * decimal.Decimal("0.65")
             else:
                 owed = total
-            writer.writerow([cub.scout, cub.den, cub_orders.count(), total, quota, met_quota, owed.quantize(decimal.Decimal(".01"))])
+            writer.writerow([
+                cub.scout,
+                cub.den,
+                cub_orders.count(),
+                total,
+                quota,
+                met_quota,
+                owed.quantize(decimal.Decimal(".01")),
+                points_earned,
+                pp_spent,
+            ])
         return response
 
 
