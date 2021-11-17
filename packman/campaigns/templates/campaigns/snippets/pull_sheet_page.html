@@ -1,0 +1,19 @@
+  {{ products.count }}
+  <table>
+    {% for product in products.quantity.all %}
+      {% ifchanged product.category %}
+        <tr>
+          <td colspan="3" class="categoryTitle">{{ product.category }}</td>
+          <td class="categoryGroups">CATEGORY QUANTITY</td>
+        </tr>
+      {% endifchanged %}
+      <tr>
+        <td class="productCheck">
+          <div class="productCheckSquare"></div>
+        </td>
+        <td class="productQty">{{ product.ordered_quantity }}</td>
+        <td class="productTitle">{{ product }}</td>
+        <td class="productGroups">HELPFUL PRODUCT GROUPING</td>
+      </tr>
+    {% endfor %}
+  </table>

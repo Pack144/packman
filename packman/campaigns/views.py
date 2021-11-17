@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView, FormView
 
+from packman.dens.models import Den
 from packman.calendars.models import PackYear
 from packman.membership.models import Scout
 
@@ -302,3 +303,35 @@ def update_prize_selection(request):
 
     response = {"action": action, "prize": prize.pk, "cub": cub.pk, "quantity": selection.quantity if selection else 0}
     return JsonResponse(response)
+
+
+class PlaceMarkerTemplateView(PermissionRequiredMixin, TemplateView):
+    permission_required = "campaigns.generate_order_report"
+    template_name = "campaigns/reports/place_markers.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["cub_list"] = Scout.objects.active()
+        return context
+
+
+class PullSheetTemplateView(PermissionRequiredMixin, TemplateView):
+    permission_required = "campaigns.generate_order_report"
+    template_name = "campaigns/reports/pull_sheets.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["den_list"] = Den.objects.prefetch_related("campaigns").filter(scouts__year_assigned=PackYear.get_current_pack_year()).distinct()
+        return context
+
+
+class PrizeSelectionReportView(PermissionRequiredMixin, TemplateView):
+    permission_required = "campaigns.generate_order_report"
+    template_name = "campaigns/reports/prize_selections.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_campaign = Campaign.objects.current()
+        context["prize_selections"] = PrizeSelection.objects.filter(campaign=current_campaign).order_by("cub")
+        context["prizes"] = Prize.objects.filter(campaign=current_campaign).calculate_quantity()
+        return context

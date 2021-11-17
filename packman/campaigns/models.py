@@ -19,7 +19,8 @@ from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
 from packman.dens.models import Den
 from packman.membership.models import Scout
 
-from .managers import CampaignQuerySet, OrderItemQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet, PrizeSelectionQuerySet
+from .managers import CampaignQuerySet, OrderItemQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet, \
+    PrizeSelectionQuerySet, PrizeQuerySet
 
 User = get_user_model()
 
@@ -412,6 +413,8 @@ class Prize(TimeStampedModel):
     campaign = models.ForeignKey(
         Campaign, on_delete=models.CASCADE, related_name="prizes", default=Campaign.get_latest
     )
+
+    objects = PrizeQuerySet.as_manager()
 
     class Meta:
         ordering = ["-campaign", "points", "name"]

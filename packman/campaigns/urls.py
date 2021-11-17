@@ -9,7 +9,8 @@ from .views import (
     OrderReportView,
     ProductListView,
     update_order,
-    PrizeListView, PrizeSelectionView, update_prize_selection,
+    PrizeListView, PrizeSelectionView, update_prize_selection, PlaceMarkerTemplateView, PullSheetTemplateView,
+    PrizeSelectionReportView,
 )
 
 app_name = "campaigns"
@@ -25,5 +26,8 @@ urlpatterns = [
     path("<uuid:pk>/edit/", OrderUpdateView.as_view(), name="order_update"),
     path("<uuid:pk>/delete/", OrderDeleteView.as_view(), name="order_delete"),
     path("reports/", OrderReportView.as_view(), name="order_report"),
+    path("reports/place_markers/", PlaceMarkerTemplateView.as_view(), name="place_markers"),
+    path("reports/prize_selections/", PrizeSelectionReportView.as_view(), name="prize_selection_report"),
+    path("reports/pull_sheets/", PullSheetTemplateView.as_view(), name="pull_sheets"),
     re_path(r"^reports/(?P<campaign>[0-9]{4})/", OrderReportView.as_view(), name="order_report_by_campaign"),
 ]

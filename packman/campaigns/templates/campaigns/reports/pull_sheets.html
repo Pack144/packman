@@ -1,0 +1,33 @@
+{% load static %}
+<html lang="en-us">
+<head>
+  <link rel="stylesheet" href="{% static 'css/reports.css' %}">
+  <title>Place Markers</title>
+</head>
+
+<body>
+
+{% for den in den_list %}
+  <div class="cubName{% if not forloop.first %} page-break{% endif %}">DEN TOTAL
+    <div class="denNumber">{{ den|upper }}</div>
+  </div>
+  {% include 'campaigns/snippets/pull_sheet_page.html' with products=den.campaigns.current.products %}
+  {% if not request.GET.denOnly %}
+    {% for cub in den.active_cubs %}
+      {% with product_list=cub.scout.orders.current_campaign.products %}
+      {% if product_list %}
+      <div class="cubName page-break">
+        {{ cub.scout }}
+        <div class="denNumber">{{ den|upper }}</div>
+      </div>
+      {% include 'campaigns/snippets/pull_sheet_page.html' with products=product_list %}
+
+      {% endif %}
+
+      {% endwith %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+</body>
+</html>
