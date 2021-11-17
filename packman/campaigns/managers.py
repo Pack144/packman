@@ -23,6 +23,10 @@ class CampaignQuerySet(models.QuerySet):
 
 
 class OrderQuerySet(models.QuerySet):
+
+    def products(self):
+        return self.model.items.rel.related_model.product.field.related_model.objects.filter(order__order__in=self)
+
     def donations_total(self):
         return self.aggregate(
             total=Sum("donation"),
@@ -121,7 +125,7 @@ class ProductQuerySet(models.QuerySet):
         return self.filter(campaign=self.model.campaign.field.related_model.objects.current())
 
     def quantity(self):
-        return self.annotate(ordered_quantity=Sum("order__quantity"))
+        return self.annotate(ordered_quantity=Sum("order__quantity")).order_by("category", "sort_order", "name")
 
     def count_orders(self):
         return self.annotate(order_count=Count("order"))
@@ -130,6 +134,11 @@ class ProductQuerySet(models.QuerySet):
 class QuotaQuerySet(models.QuerySet):
     def current(self):
         return self.get(campaign=self.model.campaign.field.related_model.objects.current()) or models.QuerySet.none()
+
+
+class PrizeQuerySet(models.QuerySet):
+    def calculate_quantity(self):
+        return self.annotate(quantity=Sum("prize_selection__quantity"))
 
 
 class PrizeSelectionQuerySet(models.QuerySet):
