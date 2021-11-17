@@ -1,0 +1,100 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+table {
+    border: 0;
+    border-spacing: 0;
+    /*height: 100%;*/
+    width: 100%;
+}
+
+@media screen {
+    table {
+        padding-bottom: 128px;
+    }
+}
+
+td {
+    padding-top: 7pt;
+}
+
+.placeMarkerDenName,
+.placeMarkerCubName,
+.placeMarkerCubDen {
+    width: 100%;
+    text-align: center;
+}
+
+.placeMarkerDenName {
+    font-size: 200pt;
+    font-weight: bold;
+    vertical-align: middle;
+    height: 100%;
+}
+
+.placeMarkerCubName {
+    font-size: 100pt;
+    font-weight: bold;
+    width: 100%;
+    padding-top: 100pt;
+    vertical-align: bottom;
+    height: 50%;
+}
+
+.placeMarkerCubDen {
+    font-size: 80pt;
+    font-weight: bold;
+    vertical-align: top;
+    padding-top: 40pt;
+    height: 50%;
+}
+
+.page-break {
+    page-break-before: always;
+}
+
+.cubName {
+	font-size: 18pt;
+	font-weight: bold;
+}
+.denNumber {
+	float: right;
+}
+.categoryTitle {
+	font-size: 12pt;
+	border-bottom: solid 2px black;
+	font-weight: bold;
+	padding-top: 14pt;
+	vertical-align: bottom;
+}
+.categoryGroups {
+	font-size: 9pt;
+	font-weight: lighter;
+	border-bottom: solid 2px black;
+	vertical-align: bottom;
+	line-height: 14pt;
+}
+.productTitle {
+	font-size: 11pt;
+	width: 240pt;
+}
+.productQty {
+	font-size: 11pt;
+	width: 48pt;
+	text-align: center;
+	font-weight: bold;
+}
+.productCheck {
+	width: 40pt;
+}
+.productCheckSquare {
+	height: 11pt;
+	width: 11pt;
+	border: solid 2px black;
+	margin-left: auto;
+}
+.productGroups {
+	font-size: 9pt;
+    font-weight: lighter;
+}
