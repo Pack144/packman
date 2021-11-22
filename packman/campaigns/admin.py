@@ -6,6 +6,9 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from packman.calendars.models import PackYear
+from packman.dens.models import Membership
+
 from .models import (
     Campaign,
     Category,
@@ -20,8 +23,6 @@ from .models import (
     Quota,
     Tag,
 )
-from packman.calendars.models import PackYear
-from packman.dens.models import Membership
 
 
 class IsDeliveredFilter(admin.SimpleListFilter):
