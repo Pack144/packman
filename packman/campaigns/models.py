@@ -19,8 +19,15 @@ from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
 from packman.dens.models import Den
 from packman.membership.models import Scout
 
-from .managers import CampaignQuerySet, OrderItemQuerySet, OrderQuerySet, ProductQuerySet, QuotaQuerySet, \
-    PrizeSelectionQuerySet, PrizeQuerySet
+from .managers import (
+    CampaignQuerySet,
+    OrderItemQuerySet,
+    OrderQuerySet,
+    PrizeQuerySet,
+    PrizeSelectionQuerySet,
+    ProductQuerySet,
+    QuotaQuerySet,
+)
 
 User = get_user_model()
 

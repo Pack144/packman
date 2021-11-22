@@ -1,6 +1,6 @@
 from django.contrib.auth.models import UserManager
 from django.db import models
-from django.db.models import Case, Value, When, Count, Q
+from django.db.models import Case, Count, Q, Value, When
 from django.db.models.functions import Coalesce, Concat
 
 from packman.calendars.models import PackYear

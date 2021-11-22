@@ -3,13 +3,13 @@ from django.urls import path
 from .views import (
     MessageArchiveView,
     MessageCreateView,
+    MessageDeleteView,
     MessageDetailView,
     MessageDraftsView,
     MessageInboxView,
     MessageSentView,
     MessageTrashView,
     MessageUpdateView,
-    MessageDeleteView,
 )
 
 app_name = "mail"

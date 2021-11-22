@@ -4,10 +4,10 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, DetailView, ListView, UpdateView, DeleteView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from .forms import AttachmentForm, MessageDistributionFormSet, MessageForm
-from .models import Mailbox, Message, Attachment
+from .models import Attachment, Mailbox, Message
 from .utils import get_mailbox_counts
 
 
