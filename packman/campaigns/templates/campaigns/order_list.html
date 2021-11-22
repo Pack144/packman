@@ -9,7 +9,7 @@
 {% block content %}
   {% if campaigns.viewing == campaigns.current %}
   <div class="d-flex justify-content-center">
-      {% include 'campaigns/snippets/new_order_button.html' %}
+      {% include 'campaigns/snippets/new_order_button.html' with campaign=campaigns.viewing %}
   </div>
   {% endif %}
 
