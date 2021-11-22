@@ -5,12 +5,16 @@ from .views import (
     OrderDeleteView,
     OrderDetailView,
     OrderListView,
-    OrderUpdateView,
     OrderReportView,
-    ProductListView,
-    update_order,
-    PrizeListView, PrizeSelectionView, update_prize_selection, PlaceMarkerTemplateView, PullSheetTemplateView,
+    OrderUpdateView,
+    PlaceMarkerTemplateView,
+    PrizeListView,
     PrizeSelectionReportView,
+    PrizeSelectionView,
+    ProductListView,
+    PullSheetTemplateView,
+    update_order,
+    update_prize_selection,
 )
 
 app_name = "campaigns"
