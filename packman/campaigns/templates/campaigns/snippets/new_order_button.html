@@ -1,4 +1,5 @@
 {% load i18n %}
+{% if campaign.can_take_orders %}
 {% if request.user.family.children.active.count > 1 %}
   <div class="dropdown">
     <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -17,4 +18,5 @@
     <i class="fas fa-clipboard-list fa-fw"></i>
     {% translate 'Start a new order' %}
   </a>
+{% endif %}
 {% endif %}
