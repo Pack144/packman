@@ -40,10 +40,11 @@ td {
     font-weight: bold;
     vertical-align: middle;
     height: 100%;
+    padding-top: 100pt;
 }
 
 .placeMarkerCubName {
-    font-size: 100pt;
+    font-size: 80pt;
     font-weight: bold;
     width: 100%;
     padding-top: 100pt;
@@ -52,8 +53,7 @@ td {
 }
 
 .placeMarkerCubDen {
-    font-size: 80pt;
-    font-weight: bold;
+    font-size: 72pt;
     vertical-align: top;
     padding-top: 40pt;
     height: 50%;
