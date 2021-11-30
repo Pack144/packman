@@ -1,10 +1,9 @@
-  {{ products.count }}
-  <table>
+    <table>
     {% for product in products.quantity.all %}
       {% ifchanged product.category %}
         <tr>
           <td colspan="3" class="categoryTitle">{{ product.category }}</td>
-          <td class="categoryGroups">CATEGORY QUANTITY</td>
+          <td class="categoryGroups"></td>
         </tr>
       {% endifchanged %}
       <tr>
@@ -13,7 +12,7 @@
         </td>
         <td class="productQty">{{ product.ordered_quantity }}</td>
         <td class="productTitle">{{ product }}</td>
-        <td class="productGroups">HELPFUL PRODUCT GROUPING</td>
+        <td class="productGroups">{{ product. }}</td>
       </tr>
     {% endfor %}
   </table>

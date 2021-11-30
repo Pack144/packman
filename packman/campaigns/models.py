@@ -296,13 +296,19 @@ class Customer(TimeStampedUUIDModel):
         return self.name
 
     def get_address_display(self):
-        address_components = (
+        components = (
             self.address.strip(),
+            self.get_city_state_display(),
+        )
+        return ", ".join(filter(None, components))
+
+    def get_city_state_display(self):
+        components = (
             self.city.strip(),
             self.state.strip(),
             self.zipcode.strip(),
         )
-        return ", ".join(filter(None, address_components))
+        return ", ".join(filter(None, components))
 
 
 class Order(TimeStampedUUIDModel):

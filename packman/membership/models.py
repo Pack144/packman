@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
@@ -173,7 +174,7 @@ class Member(TimeStampedUUIDModel):
 
     age.admin_order_field = "date_of_birth"
 
-    @property
+    @cached_property
     def short_name(self):
         return self.get_short_name()
 
@@ -489,16 +490,16 @@ class Scout(Member):
     get_grade.admin_order_field = "started_school"
     get_grade.short_description = _("school grade")
 
-    @property
+    @cached_property
     def rank(self):
         """A cub's rank is derived from the den they are a member of."""
         return self.get_current_den().rank
 
-    @property
+    @cached_property
     def current_den(self):
         return self.get_current_den()
 
-    @property
+    @cached_property
     def grade(self):
         return self.get_grade()
 
