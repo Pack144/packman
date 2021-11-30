@@ -1,3 +1,12 @@
+@font-face {
+    font-family: 'childs_hand';
+    src: url('/static/webfonts/childshand-x3owo-webfont.woff2') format('woff2'),
+    url('/static/webfonts/childshand-x3owo-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
 body {
     font-family: Arial, sans-serif;
 }
@@ -55,46 +64,212 @@ td {
 }
 
 .cubName {
-	font-size: 18pt;
-	font-weight: bold;
+    font-size: 18pt;
+    font-weight: bold;
 }
+
 .denNumber {
-	float: right;
+    float: right;
 }
+
 .categoryTitle {
-	font-size: 12pt;
-	border-bottom: solid 2px black;
-	font-weight: bold;
-	padding-top: 14pt;
-	vertical-align: bottom;
+    font-size: 12pt;
+    border-bottom: solid 2px black;
+    font-weight: bold;
+    padding-top: 14pt;
+    vertical-align: bottom;
 }
+
 .categoryGroups {
-	font-size: 9pt;
-	font-weight: lighter;
-	border-bottom: solid 2px black;
-	vertical-align: bottom;
-	line-height: 14pt;
-}
-.productTitle {
-	font-size: 11pt;
-	width: 240pt;
-}
-.productQty {
-	font-size: 11pt;
-	width: 48pt;
-	text-align: center;
-	font-weight: bold;
-}
-.productCheck {
-	width: 40pt;
-}
-.productCheckSquare {
-	height: 11pt;
-	width: 11pt;
-	border: solid 2px black;
-	margin-left: auto;
-}
-.productGroups {
-	font-size: 9pt;
+    font-size: 9pt;
     font-weight: lighter;
+    border-bottom: solid 2px black;
+    vertical-align: bottom;
+    line-height: 14pt;
+}
+
+.productTitle {
+    font-size: 11pt;
+    width: 240pt;
+}
+
+.productQty {
+    font-size: 11pt;
+    width: 48pt;
+    text-align: center;
+    font-weight: bold;
+}
+
+.productCheck {
+    width: 40pt;
+}
+
+.productCheckSquare {
+    height: 11pt;
+    width: 11pt;
+    border: solid 2px black;
+    margin-left: auto;
+}
+
+.productGroups {
+    font-size: 9pt;
+    font-weight: lighter;
+}
+
+
+.orderSlip {
+    max-width: 234pt;
+    display: flex;
+    flex-direction: column;
+}
+
+.cubSignature {
+    border-bottom: 2px solid black;
+    font-family: childs_hand, cursive;
+    font-size: 32pt;
+    text-align: left;
+}
+
+.cubSignature p {
+    margin: 0 0 0 8pt;
+}
+
+.cubSignature p:first-child {
+    margin-left: 0;
+    font-size: 28pt;
+}
+
+.cubId {
+    text-align: left;
+    font-size: 9pt;
+}
+
+.cubId p {
+    margin: 0.25rem;
+}
+
+.foldOver {
+    text-align: center;
+    rotate: 180deg;
+}
+
+.foldOver h1 {
+    font-family: "Roboto Slab", serif;
+    font-size: 32pt;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.foldOver h2 {
+    font-family: Arial, sans-serif;
+    font-size: 18pt;
+    margin-top: 0;
+    margin-bottom: 4px;
+}
+
+.foldOver img {
+    opacity: 0.8;
+}
+
+.dotted-line {
+    border-color: lightgrey;
+    border-style: dashed;
+    margin: 32pt 8pt;
+    width: 100%;
+}
+
+.page {
+    display: flex;
+    width: 540pt;
+    height: 720pt;
+    margin: 36pt;
+}
+
+.column {
+    flex: 50%;
+    height: 100%;
+}
+
+.left {
+    margin-right: 72pt;
+}
+
+.right {
+}
+
+.section-break {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 234pt;
+    margin-left: 342pt;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.orderDetails {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.orderItems {
+    flex: 1;
+}
+
+.orderItem {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    justify-content: stretch;
+}
+
+.categoryHeader {
+    background-color: dimgray;
+    color: #fff;
+    text-transform: uppercase;
+    padding: 2pt 5pt;
+    margin-bottom: 0.25rem;
+}
+
+.orderItem .orderQuantity {
+    flex-basis: 18pt;
+}
+
+.orderItem .orderTitle {
+    font-size: 10pt;
+    font-weight: bold;
+    flex: auto;
+}
+
+.orderItem .orderTotal {
+    flex-basis: 32pt;
+    text-align: right;
+}
+
+.orderSummary {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    border-top: 1px solid dimgray;
+    padding-top: 2rem;
+    margin-top: 0.5rem;
+}
+
+.orderSummary img {
+    position: absolute;
+    top: 45%;
+    height: 40px;
+}
+
+.page-id {
+    margin-top: 1rem;
+    font-size: 8pt;
+    color: darkgray;
 }
