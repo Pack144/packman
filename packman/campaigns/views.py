@@ -66,8 +66,8 @@ class OrderReportView(PermissionRequiredMixin, TemplateView):
     permission_required = "campaigns.generate_order_report"
     template_name = "campaigns/order_report.html"
 
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context["campaigns"] = {
             "available": Campaign.objects.filter(orders__seller__family=self.request.user.family).distinct(),
             "current": Campaign.objects.current(),
@@ -334,4 +334,15 @@ class PrizeSelectionReportView(PermissionRequiredMixin, TemplateView):
         current_campaign = Campaign.objects.current()
         context["prize_selections"] = PrizeSelection.objects.filter(campaign=current_campaign).order_by("cub")
         context["prizes"] = Prize.objects.filter(campaign=current_campaign).calculate_quantity()
+        return context
+
+
+class OrderSlipView(PermissionRequiredMixin, TemplateView):
+    permission_required = "campaigns.generate_order_report"
+    template_name = "campaigns/reports/order_slips.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        campaign = Campaign.objects.latest()
+        context["order_list"] = Order.objects.filter(campaign=campaign, item__isnull=False).distinct().calculate_total().select_related('seller', 'customer').prefetch_related('items', 'items__product').order_by("seller")
         return context

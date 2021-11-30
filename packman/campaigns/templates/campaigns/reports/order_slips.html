@@ -1,0 +1,87 @@
+{% load humanize %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/reports.css' %}">
+  <title>Order Slips</title>
+</head>
+
+<body>
+{% for order in order_list %}
+  {% ifchanged order.seller %}
+    {% if forloop.counter|divisibleby:2 %}</div>{% endif %}
+    <div class="page{% if not forloop.first %} page-break{% endif %} section-break">
+      <h1>{{ order.seller }}</h1>
+      <h2>{{ order.seller.current_den }}</h2>
+      <p>{{ order.seller.orders.latest_campaign.count }} order{{ order.seller.orders.latest_campaign.count|pluralize }}</p>
+    {% with order.seller.orders.latest_campaign.totaled.totaled as total %}
+      <p>${{ total|floatformat:"0"|intcomma }} Total Sales</p>
+      {% if total > 2000 %}
+        <p>Gold Medal Winner!</p>
+      {% elif total > 1500 %}
+        <p>Silver Medal Winner!</p>
+      {% elif total > 1000 %}
+        <p>Bronze Medal Winner!</p>
+      {% endif %}
+    {% endwith %}
+      <h3>{{ order.campaign }}</h3>
+    </div>
+    {% if forloop.counter|divisibleby:2 %}<div class="page page-break">{% endif %}
+  {% endifchanged %}
+  {% if not forloop.counter|divisibleby:2 %}<div class="page page-break">{% endif %}
+    <div class="column orderSlip {% cycle 'left' 'right' %}">
+      <div class="foldOver">
+        <h1>Thank You!</h1>
+        <h2>For Supporting</h2>
+        <h2>Cub Scout Pack 144</h2>
+        <div class="flex">
+          <img src="{% static 'img/CubScout_BW-Logo-CSBC.png' %}" height="128" width="128" alt="Cub Scouts Logo">
+          <div>
+            <div class="cubSignature">
+              <p>Thanks,</p>
+              <p>{{ order.seller.short_name }}</p>
+            </div>
+            <div class="cubId">
+              <p><u>pack144.org</u></p>
+            </div>
+          </div>
+        </div>
+        <div class="page-id">{{ order.seller }}, {{ order.seller.current_den }}</div>
+      </div>
+      <hr class="dotted-line"/>
+      <div class="orderDetails">
+        <div class="customerDetails">
+          <p><strong>{{ order.customer.name }}</strong></p>
+          <p>
+            {{ order.customer.address }}<br/>
+            {{ order.customer.get_city_state_display }}
+          </p>
+        </div>
+        <div class="orderItems">
+          {% for item in order.items.all %}
+            {% ifchanged item.product.category %}<h3 class="categoryHeader">{{ item.product.category }}</h3>{% endifchanged %}
+            <div class="orderItem">
+              <div class="orderQuantity">{{ item.quantity }}</div>
+              <div class="orderTitle">{{ item.product }}</div>
+              <div class="orderTotal">${{ item.get_total_item_price|floatformat:"0" }}</div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="orderSummary">
+          {% if order.is_paid %}<img src="{% static 'img/paid_stamp.svg' %}" alt="Paid stamp">{% endif %}
+          {% if order.donation %}<div class="donationAmount"><strong>Donation:</strong> ${{ order.donation|floatformat:"0"|intcomma }}</div>{% endif %}
+          <div class="orderTotal"><strong>{% if order.is_paid %}Total{% else %}COD – Please Pay{% endif %}:</strong> ${{ order.total|floatformat:"0"|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+  {% if forloop.counter|divisibleby:2 or forloop.last %}</div>{% endif %}
+{% endfor %}
+</body>
+</html>
