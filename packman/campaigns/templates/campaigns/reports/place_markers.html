@@ -7,25 +7,25 @@
 
 <body>
 {% for cub in cub_list %}
-  {% ifchanged cub.current_den %}
+  {% ifchanged cub.den %}
     {% if not forloop.first %}
       <div class="page-break"></div>
     {% endif %}
     <table>
       <tr>
-        <td class="placeMarkerDenName">{{ cub.current_den|upper }}</td>
-      </tr>
-    </table>
-    <div class="page-break"></div>
-    <table>
-      <tr>
-        <td class="placeMarkerCubName">{{ cub }}</td>
-      </tr>
-      <tr>
-        <td class="placeMarkerCubDen">{{ cub.current_den }}</td>
+        <td class="placeMarkerDenName">{{ cub.den|upper }}</td>
       </tr>
     </table>
   {% endifchanged %}
+    <div class="page-break"></div>
+    <table>
+      <tr>
+        <td class="placeMarkerCubName">{{ cub.scout }}</td>
+      </tr>
+      <tr>
+        <td class="placeMarkerCubDen">{{ cub.den }}</td>
+      </tr>
+    </table>
 {% endfor %}
 </body>
 </html>
