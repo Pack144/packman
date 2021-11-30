@@ -15,7 +15,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
 
 from packman.calendars.models import PackYear
-from packman.dens.models import Den
+from packman.dens.models import Den, Membership
 from packman.membership.models import Scout
 
 from .forms import CustomerForm, OrderForm, OrderItemFormSet, PrizeSelectionForm
@@ -311,7 +311,7 @@ class PlaceMarkerTemplateView(PermissionRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["cub_list"] = Scout.objects.active()
+        context["cub_list"] = Membership.objects.filter(year_assigned=PackYear.objects.current(), scout__status=Scout.ACTIVE).select_related("den", "scout").order_by("den", "scout")
         return context
 
 
