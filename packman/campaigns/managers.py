@@ -1,7 +1,7 @@
 import decimal
 
 from django.db import models
-from django.db.models import Count, F, OuterRef, Subquery, Sum
+from django.db.models import Count, F, OuterRef, Subquery, Sum, Q
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -24,6 +24,18 @@ class CampaignQuerySet(models.QuerySet):
 
 
 class OrderQuerySet(models.QuerySet):
+
+    def donation_only(self):
+        # Returns a filtered queryset of orders that contain no items
+        return self.filter(item__isnull=True)
+
+    def delivered(self):
+        # Returns a filtered queryset of orders that contain no items or has a delivery date
+        return self.filter(Q(item__isnull=True) | Q(date_delivered__isnull=False)).distinct()
+
+    def undelivered(self):
+        # Returns a filtered queryset where order contains items ond does not have a delivery date
+        return self.filter(item__isnull=False, date_delivered__isnull=True).distinct()
 
     def products(self):
         return self.model.items.rel.related_model.product.field.related_model.objects.filter(order__order__in=self)

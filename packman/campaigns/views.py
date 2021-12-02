@@ -31,6 +31,11 @@ class OrderListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
+        if self.request.GET.get("filter") == "delivered":
+            queryset = queryset.delivered()
+        elif self.request.GET.get("filter") == "undelivered":
+            queryset = queryset.undelivered()
+
         campaign = (
             Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
             if "campaign" in self.kwargs
