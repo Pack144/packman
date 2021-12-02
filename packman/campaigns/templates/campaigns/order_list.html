@@ -8,9 +8,9 @@
 
 {% block content %}
   {% if campaigns.viewing == campaigns.current %}
-  <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center">
       {% include 'campaigns/snippets/new_order_button.html' with campaign=campaigns.viewing %}
-  </div>
+    </div>
   {% endif %}
 
   <div class="d-flex justify-content-between align-items-center">
@@ -39,10 +39,16 @@
       {% for order in seller.list %}
         <a href="{{ order.get_absolute_url }}" class="list-group-item list-group-item-action">
           <div class="d-flex justify-content-between align-items-center">
-            <h5>{{ order.customer.name }}</h5>
+            <h5>{{ order.customer.name }}
+              {% if order.notes %}
+                <span class="border border-secondary rounded ml-3 px-2 py-1" data-toggle="tooltip" title="{{ order.notes }}"><i class="fas fa-align-justify fa-xs fa-fw"></i></span>
+              {% endif %}
+            </h5>
             <div>
               <div class="d-flex flex-column align-items-end">
-                {% if order.is_paid %}<img src="{% static 'img/paid_stamp.svg' %}" height="43" class="position-absolute">{% endif %}
+                {% if order.is_paid %}
+                  <img src="{% static 'img/paid_stamp.svg' %}" height="43" class="position-absolute">
+                {% endif %}
                 <small>{{ order.date_added|naturalday }}</small>
                 <strong class="text-success">${{ order.total|intcomma }}</strong>
               </div>
@@ -54,5 +60,15 @@
       <p class="text-right">{{ seller.list|length }} order{{ seller.list|length|pluralize }}</p>
     </div>
   {% endfor %}
-{#  <p>${{ order_list.totaled.totaled|intcomma }} Due</p>#}
+{% endblock %}
+
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  </script>
 {% endblock %}
