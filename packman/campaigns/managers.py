@@ -1,7 +1,7 @@
 import decimal
 
 from django.db import models
-Ifrom django.db.models import Count, F, OuterRef, Subquery, Sum
+from django.db.models import Count, F, OuterRef, Subquery, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
