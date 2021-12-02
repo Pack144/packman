@@ -1,16 +1,17 @@
 import decimal
 
 from django.db import models
-from django.db.models import Count, ExpressionWrapper, F, OuterRef, Subquery, Sum
+Ifrom django.db.models import Count, F, OuterRef, Subquery, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 
 class CampaignQuerySet(models.QuerySet):
     def current(self):
+        today = timezone.now()
         try:
             return (
-                self.get(ordering_opens__lte=timezone.now(), ordering_closes__gte=timezone.now() - timezone.timedelta(days=30))
+                self.get(ordering_opens__lte=today, ordering_closes__gte=today - timezone.timedelta(days=90))
                 or models.QuerySet.none()
             )
         except self.model.DoesNotExist:
