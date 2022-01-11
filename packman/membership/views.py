@@ -112,7 +112,7 @@ class AdultCreate(LoginRequiredMixin, CreateView):
     template_name = "membership/adult_form.html"
 
     def get_context_data(self, **kwargs):
-        context = super(AdultCreate, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         if self.request.POST:
             context["address_formset"] = AddressFormSet(self.request.POST)
             context["phonenumber_formset"] = PhoneNumberFormSet(self.request.POST)
@@ -162,7 +162,7 @@ class AdultUpdate(LoginRequiredMixin, UpdateView):
     template_name = "membership/adult_form.html"
 
     def get_context_data(self, **kwargs):
-        context = super(AdultUpdate, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         if self.request.POST:
             context["address_formset"] = AddressFormSet(self.request.POST, instance=self.object)
             context["phonenumber_formset"] = PhoneNumberFormSet(self.request.POST, instance=self.object)
@@ -213,7 +213,7 @@ class ScoutCreate(LoginRequiredMixin, CreateView):
     template_name = "membership/scout_form.html"
 
     def get_initial(self, *args, **kwargs):
-        initial = super(ScoutCreate, self).get_initial(**kwargs)
+        initial = super().get_initial(**kwargs)
         initial["last_name"] = self.request.user.last_name
         return initial
 
