@@ -46,11 +46,10 @@ class OrderListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(recorded_by=self.request.user)
 
         return (
-            queryset
-                .prefetch_related("seller", "customer", "recorded_by")
-                .calculate_total()
-                .filter(seller__family=self.request.user.family, campaign=campaign)
-                .order_by("-seller__date_of_birth", "date_added")
+            queryset.prefetch_related("seller", "customer", "recorded_by")
+            .calculate_total()
+            .filter(seller__family=self.request.user.family, campaign=campaign)
+            .order_by("-seller__date_of_birth", "date_added")
         )
 
     def get_context_data(self, *args, **kwargs):
@@ -86,9 +85,11 @@ class OrderReportView(PermissionRequiredMixin, TemplateView):
         context["report"] = {
             "count": orders.count(),
             "total": orders.totaled()["totaled"],
-            "days": orders.annotate(date=TruncDate("date_added")).order_by("date").values("date").annotate(
-                count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00))).values("date", "count",
-                                                                                                       "order_total"),
+            "days": orders.annotate(date=TruncDate("date_added"))
+            .order_by("date")
+            .values("date")
+            .annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00)))
+            .values("date", "count", "order_total"),
         }
         return context
 
@@ -212,8 +213,11 @@ class PrizeSelectionView(LoginRequiredMixin, FormView):
         context = super().get_context_data(**kwargs)
 
         cubs = self.request.user.family.children.active()
-        orders = Order.objects.prefetch_related("seller").calculate_total().filter(seller__in=cubs,
-                                                                                   campaign=Campaign.objects.latest())
+        orders = (
+            Order.objects.prefetch_related("seller")
+            .calculate_total()
+            .filter(seller__in=cubs, campaign=Campaign.objects.latest())
+        )
 
         cub_list = []
 
@@ -226,24 +230,27 @@ class PrizeSelectionView(LoginRequiredMixin, FormView):
                 points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
             else:
                 points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
-                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100)
-            points_spent = PrizeSelection.objects.filter(campaign=Campaign.objects.latest(),
-                                                         cub=cub).calculate_total_points_spent()["spent"]
+                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100
+                )
+            points_spent = PrizeSelection.objects.filter(
+                campaign=Campaign.objects.latest(), cub=cub
+            ).calculate_total_points_spent()["spent"]
 
             # points_spent = PrizeSelection.objects.filter(campaign=Campaign.objects.current(), cub=cub).aggregate(
             #     spent=Coalesce(Sum("prize__points"), 0))["spent"]
-            cub_list.append({
-                "name": cub.short_name,
-                "pk": cub.pk,
-                "quota": quota,
-                "total": total,
-                "points": {
-                    "earned": points_earned,
-                    "spent": points_spent,
-                    "remaining": points_earned - points_spent,
+            cub_list.append(
+                {
+                    "name": cub.short_name,
+                    "pk": cub.pk,
+                    "quota": quota,
+                    "total": total,
+                    "points": {
+                        "earned": points_earned,
+                        "spent": points_spent,
+                        "remaining": points_earned - points_spent,
+                    },
                 }
-
-            })
+            )
 
         context["prize_list"] = Prize.objects.filter(campaign=Campaign.objects.latest())
         context["cub_list"] = cub_list
@@ -316,7 +323,11 @@ class PlaceMarkerTemplateView(PermissionRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["cub_list"] = Membership.objects.filter(year_assigned=PackYear.objects.current(), scout__status=Scout.ACTIVE).select_related("den", "scout").order_by("den", "scout")
+        context["cub_list"] = (
+            Membership.objects.filter(year_assigned=PackYear.objects.current(), scout__status=Scout.ACTIVE)
+            .select_related("den", "scout")
+            .order_by("den", "scout")
+        )
         return context
 
 
@@ -326,7 +337,11 @@ class PullSheetTemplateView(PermissionRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["den_list"] = Den.objects.prefetch_related("campaigns").filter(scouts__year_assigned=PackYear.get_current_pack_year()).distinct()
+        context["den_list"] = (
+            Den.objects.prefetch_related("campaigns")
+            .filter(scouts__year_assigned=PackYear.get_current_pack_year())
+            .distinct()
+        )
         return context
 
 
@@ -349,5 +364,12 @@ class OrderSlipView(PermissionRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         campaign = Campaign.objects.latest()
-        context["order_list"] = Order.objects.filter(campaign=campaign, item__isnull=False).distinct().calculate_total().select_related('seller', 'customer').prefetch_related('items', 'items__product').order_by("seller")
+        context["order_list"] = (
+            Order.objects.filter(campaign=campaign, item__isnull=False)
+            .distinct()
+            .calculate_total()
+            .select_related("seller", "customer")
+            .prefetch_related("items", "items__product")
+            .order_by("seller")
+        )
         return context

@@ -156,11 +156,24 @@ class OrderAdmin(admin.ModelAdmin):
         orders = Order.objects.filter(campaign=campaign)
         report_name = f"Campaign Report ({report_date.month}-{report_date.day}-{report_date.year}).csv"
 
-        field_names = ["Cub", "Den", "Order Count", "Total", "Quota", "Achieved", "Amount Owed", "Prize Points Earned", "Prize Points Spent", "Points Remaining"]
+        field_names = [
+            "Cub",
+            "Den",
+            "Order Count",
+            "Total",
+            "Quota",
+            "Achieved",
+            "Amount Owed",
+            "Prize Points Earned",
+            "Prize Points Spent",
+            "Points Remaining",
+        ]
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={report_name}"
 
-        cubs = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE)
+        cubs = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(
+            year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE
+        )
 
         writer = csv.writer(response)
         writer.writerow(field_names)
@@ -176,9 +189,12 @@ class OrderAdmin(admin.ModelAdmin):
                 points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
             else:
                 points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
-                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100)
+                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100
+                )
 
-            points_spent = PrizeSelection.objects.filter(cub=cub.scout, campaign=campaign).calculate_total_points_spent()["spent"]
+            points_spent = PrizeSelection.objects.filter(
+                cub=cub.scout, campaign=campaign
+            ).calculate_total_points_spent()["spent"]
             points_remaining = points_earned - points_spent
 
             # TODO: Don't hard-code the minimum if quota unmet
@@ -188,18 +204,20 @@ class OrderAdmin(admin.ModelAdmin):
                 owed = total + shortfall * decimal.Decimal("0.65")
             else:
                 owed = total
-            writer.writerow([
-                cub.scout,
-                cub.den,
-                cub_orders.count(),
-                total,
-                quota,
-                met_quota,
-                owed.quantize(decimal.Decimal(".01")),
-                points_earned,
-                points_spent,
-                points_remaining,
-            ])
+            writer.writerow(
+                [
+                    cub.scout,
+                    cub.den,
+                    cub_orders.count(),
+                    total,
+                    quota,
+                    met_quota,
+                    owed.quantize(decimal.Decimal(".01")),
+                    points_earned,
+                    points_spent,
+                    points_remaining,
+                ]
+            )
         return response
 
 
