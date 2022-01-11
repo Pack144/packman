@@ -26,4 +26,6 @@ class MessageRecipientForm(forms.ModelForm):
         fields = ("delivery", "recipient")
 
 
-MessageDistributionFormSet = inlineformset_factory(Message, MessageDistribution, form=MessageDistributionForm, extra=0, min_num=1, can_delete=False)
+MessageDistributionFormSet = inlineformset_factory(
+    Message, MessageDistribution, form=MessageDistributionForm, extra=0, min_num=1, can_delete=False
+)

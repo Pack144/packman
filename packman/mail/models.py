@@ -199,9 +199,7 @@ class Message(TimeStampedUUIDModel):
                 # Personalize the email for each recipient.
                 context = {"site": site, "message": self, "recipient": recipient}
                 distros_string = ", ".join(
-                    recipient.message_recipients.get(
-                        message=self
-                    ).distros.values_list("name", flat=True)
+                    recipient.message_recipients.get(message=self).distros.values_list("name", flat=True)
                 )
 
                 subject = "[%s] %s" % (distros_string, self.subject)
