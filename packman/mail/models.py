@@ -194,7 +194,7 @@ class Message(TimeStampedUUIDModel):
         with mail.get_connection() as connection:
 
             for recipient in self.recipients.all():
-                print("Sending message to %s <%s>" % (recipient, recipient.email))
+                print(f"Sending message to {recipient} <{recipient.email}>")
 
                 # Personalize the email for each recipient.
                 context = {"site": site, "message": self, "recipient": recipient}
@@ -202,7 +202,7 @@ class Message(TimeStampedUUIDModel):
                     recipient.message_recipients.get(message=self).distros.values_list("name", flat=True)
                 )
 
-                subject = "[%s] %s" % (distros_string, self.subject)
+                subject = f"[{distros_string}] {self.subject}"
                 plaintext = render_to_string("mail/message_body.txt", context)
                 richtext = render_to_string("mail/message_body.html", context)
 
@@ -210,8 +210,8 @@ class Message(TimeStampedUUIDModel):
                 msg = ListEmail(
                     subject,
                     plaintext,
-                    to=["%s <%s>" % (recipient.__str__(), recipient.email)],
-                    reply_to=["%s <%s>" % (author_name, author_email)],
+                    to=[f"{recipient.__str__()} <{recipient.email}>"],
+                    reply_to=[f"{author_name} <{author_email}>"],
                     connection=connection,
                     alternatives=[(richtext, "text/html")],
                 )
@@ -517,15 +517,13 @@ class ListEmail(EmailMultiAlternatives):
             self.settings = ListSettings()
 
         self.subject = (
-            "%s %s" % (self.settings.subject_prefix, self.subject)
-            if self.settings.subject_prefix != ""
-            else self.subject
+            f"{self.settings.subject_prefix} {self.subject}" if self.settings.subject_prefix != "" else self.subject
         )
 
         if from_email:
             self.from_email = from_email
         elif self.settings.from_name and self.settings.from_email:
-            self.from_email = "%s <%s>" % (self.settings.from_name, self.settings.from_email)
+            self.from_email = f"{self.settings.from_name} <{self.settings.from_email}>"
         elif self.settings.from_email:
             self.from_email = self.settings.from_email
         else:
@@ -547,11 +545,11 @@ class ListEmail(EmailMultiAlternatives):
 
         if "List-Id".lower() not in header_names and self.settings.list_id != "":
             if self.settings.name:
-                msg["List-Id"] = "<%s> %s" % (self.settings.list_id, self.settings.name)
+                msg["List-Id"] = f"<{self.settings.list_id}> {self.settings.name}"
             else:
                 msg["List-Id"] = "<%s>" % self.settings.list_id
 
         if "List-Unsubscribe".lower() not in header_names:
-            msg["List-Unsubscribe"] = "<https://%s%s>" % (site.domain, reverse("membership:my-family"))
+            msg["List-Unsubscribe"] = "<https://{}{}>".format(site.domain, reverse("membership:my-family"))
 
         return msg

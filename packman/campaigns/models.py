@@ -351,7 +351,7 @@ class Order(TimeStampedUUIDModel):
         verbose_name_plural = _("Orders")
 
     def __str__(self):
-        return "%s: %s" % (self.date_added.date(), self.customer or "unknown")
+        return "{}: {}".format(self.date_added.date(), self.customer or "unknown")
 
     def get_absolute_url(self):
         return reverse("campaigns:order_detail", args=[self.pk])

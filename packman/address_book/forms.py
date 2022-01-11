@@ -9,7 +9,7 @@ from .models import Address, PhoneNumber
 
 class AddressFormHelper(FormHelper):
     def __init__(self, *args, **kwargs):
-        super(AddressFormHelper, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.disable_csrf = True
         self.form_show_labels = False
         self.form_tag = False
@@ -48,7 +48,7 @@ class AddressForm(forms.ModelForm):
         exclude = ("member", "venue", "date_added")
 
     def __init__(self, *args, **kwargs):
-        super(AddressForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for visible in self.visible_fields():
             if visible.field.widget.__class__ == forms.widgets.TextInput:
                 visible.field.widget.attrs["placeholder"] = visible.label
@@ -58,7 +58,7 @@ class AddressForm(forms.ModelForm):
 
 class PhoneNumberFormHelper(FormHelper):
     def __init__(self, *args, **kwargs):
-        super(PhoneNumberFormHelper, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.disable_csrf = True
         self.form_show_labels = False
@@ -89,7 +89,7 @@ class PhoneNumberForm(forms.ModelForm):
         exclude = ("member", "venue", "date_added")
 
     def __init__(self, *args, **kwargs):
-        super(PhoneNumberForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for visible in self.visible_fields():
             if visible.field.widget.__class__ == forms.widgets.TextInput:
                 visible.field.widget.attrs["placeholder"] = visible.label

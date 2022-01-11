@@ -60,7 +60,7 @@ class FamilyForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
-        super(FamilyForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.instance:
             self.fields["adults"].initial = self.instance.adults.all()
             self.fields["children"].initial = self.instance.children.all()
@@ -69,7 +69,7 @@ class FamilyForm(forms.ModelForm):
         # FIXME: 'commit' argument is not handled
         # TODO: Wrap reassignments into transaction
         # NOTE: Previously assigned Foos are silently reset
-        instance = super(FamilyForm, self).save(commit=False)
+        instance = super().save(commit=False)
         self.fields["adults"].initial.update(family=None)
         self.fields["children"].initial.update(family=None)
         self.cleaned_data["adults"].update(family=instance)
@@ -99,7 +99,7 @@ class AdultCreation(UserCreationForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(AdultCreation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if field.widget.__class__ in [
                 forms.widgets.TextInput,
@@ -161,7 +161,7 @@ class AdultForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(AdultForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if field.widget.__class__ in [
                 forms.widgets.TextInput,
@@ -230,7 +230,7 @@ class ScoutForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ScoutForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if field.widget.__class__ == forms.widgets.TextInput:
                 field.widget.attrs["placeholder"] = field.label
@@ -350,7 +350,7 @@ class SignupForm(UserCreationForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(SignupForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if field.widget.__class__ in [
                 forms.widgets.TextInput,
