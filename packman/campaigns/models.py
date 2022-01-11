@@ -282,7 +282,8 @@ class Customer(TimeStampedUUIDModel):
         _("email address"),
         blank=True,
         help_text=_(
-            "If provided, we will email you a receipt for this order. We do not share this information with anyone, including BSA."
+            "If provided, we will email you a receipt for this order. We do "
+            "not share this information with anyone, including BSA."
         ),
     )
 

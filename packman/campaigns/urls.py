@@ -9,7 +9,6 @@ from .views import (
     OrderSlipView,
     OrderUpdateView,
     PlaceMarkerTemplateView,
-    PrizeListView,
     PrizeSelectionReportView,
     PrizeSelectionView,
     ProductListView,
