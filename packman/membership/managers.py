@@ -67,7 +67,7 @@ class MemberManager(UserManager):
         )
 
     def get_by_natural_key(self, username):
-        case_insensitive_username_field = "{}__iexact".format(self.model.USERNAME_FIELD)
+        case_insensitive_username_field = f"{self.model.USERNAME_FIELD}__iexact"
         return self.get(**{case_insensitive_username_field: username})
 
     def active(self):
