@@ -21,7 +21,9 @@ class FamilyQuerySet(models.QuerySet):
         )
 
     def count_active_scouts(self):
-        return self.annotate(active_cub_count=Count(Q(children__in=self.model.children.rel.related_model.objects.active())))
+        return self.annotate(
+            active_cub_count=Count(Q(children__in=self.model.children.rel.related_model.objects.active()))
+        )
 
 
 class FamilyManager(models.Manager):
