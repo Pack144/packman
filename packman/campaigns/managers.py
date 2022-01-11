@@ -24,7 +24,6 @@ class CampaignQuerySet(models.QuerySet):
 
 
 class OrderQuerySet(models.QuerySet):
-
     def donation_only(self):
         # Returns a filtered queryset of orders that contain no items
         return self.filter(item__isnull=True)
@@ -156,9 +155,7 @@ class PrizeQuerySet(models.QuerySet):
 
 class PrizeSelectionQuerySet(models.QuerySet):
     def calculate_points(self):
-        return self.annotate(
-            points=Coalesce(Sum(F("prize__points") * F("quantity")), 0)
-        )
+        return self.annotate(points=Coalesce(Sum(F("prize__points") * F("quantity")), 0))
 
     def calculate_total_points_spent(self):
         return self.calculate_points().aggregate(spent=Coalesce(Sum("points"), 0))
