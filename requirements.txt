@@ -6,31 +6,39 @@
 #
 
 -i https://pypi.org/simple
-argon2-cffi==21.1.0
+argon2-cffi-bindings==21.2.0; python_version >= '3.6'
+argon2-cffi==21.3.0
 asgiref==3.4.1; python_version >= '3.6'
 cffi==1.15.0
+cssselect2==0.4.1; python_version >= '3.6'
 django-crispy-forms==1.13.0
-django-debug-toolbar==3.2.2
+django-debug-toolbar==3.2.4
 django-dynamic-formsets==0.0.8
 django-environ==0.8.1
-django-extensions==3.1.3
-django-ical==1.8.0
+django-extensions==3.1.5
+django-ical==1.8.1
 django-localflavor==3.1
-django-phonenumber-field==5.2.0
+django-phonenumber-field==6.0.0
 django-recurrence==1.10.3
 django-tempus-dominus==5.1.2.16
-django-tinymce==3.3.0
-django==3.2.8
-docutils==0.17.1
-easy-thumbnails==2.7.2
+django-tinymce==3.4.0
+django==3.2.11
+docutils==0.18.1
+easy-thumbnails==2.8
 icalendar==4.0.9; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-phonenumberslite==8.12.35
-pillow==8.4.0
-psycopg2-binary==2.9.1
-pycparser==2.20; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+lxml==4.7.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+phonenumberslite==8.12.41
+pillow==9.0.0
+pip==21.3.1
+psycopg2-binary==2.9.3
+pycparser==2.21; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-dateutil==2.8.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-memcached==1.59
 python-stdnum==1.17
 pytz==2021.3
+reportlab==3.6.5; python_version >= '3.6' and python_version < '4'
 six==1.16.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 sqlparse==0.4.2; python_version >= '3.5'
+svglib==1.1.0; python_version >= '3'
+tinycss2==1.1.1; python_version >= '3.6'
+webencodings==0.5.1
