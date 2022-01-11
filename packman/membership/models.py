@@ -297,7 +297,7 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
         return self.get_full_name()
 
     def save(self, *args, **kwargs):
-        super(Adult, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         if self.family:
             self.family.save()
 

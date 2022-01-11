@@ -132,7 +132,7 @@ class HomePageView(PageDetailView):
             logger.info = _("Home page was requested but none was found in the database.")
 
         if self.request.user.is_authenticated and (
-            (not self.request.user.family or not self.request.user.family.children.exists())
+            not self.request.user.family or not self.request.user.family.children.exists()
         ):
             messages.add_message(
                 self.request,
