@@ -79,11 +79,13 @@ class PackYear(models.Model):
 
     # Legacy methods starting here
     @staticmethod
-    def get_pack_year(date_to_test=timezone.now()):
+    def get_pack_year(date_to_test=None):
         """
         Given a date, calculate the date range (start, end) for the pack year
         which encapsulates that date.
         """
+        if not date_to_test:
+            date_to_test = timezone.now()
         if not isinstance(date_to_test, datetime):
             date_to_test = timezone.datetime(date_to_test, 1, 1)
         if timezone.is_aware(date_to_test):
