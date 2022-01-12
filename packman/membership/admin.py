@@ -493,7 +493,7 @@ class AdultAdmin(UserAdmin):
                 )
             },
         ),
-        (_("Account Details"), {"fields": (("email", "password1", "password2"))}),
+        (_("Account Details"), {"fields": (("email", "password1", "password2"),)}),
     )
     inlines = [PhoneNumberInline, AddressInline, CommitteeMemberInline]
 
