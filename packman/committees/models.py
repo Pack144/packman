@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Permission
 from django.db import models
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
@@ -60,7 +60,7 @@ class Committee(TimeStampedUUIDModel):
         return self.name
 
     def get_absolute_url(self):
-        return reverse_lazy("committees:detail", args=[self.slug])
+        return reverse("committees:detail", args=[self.slug])
 
 
 class CommitteeMember(TimeStampedUUIDModel):

@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import Http404, HttpResponseRedirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -56,10 +56,10 @@ class MessageCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     def get_success_url(self):
         """Return the appropriate URL for save vs. send."""
         if "_save" in self.request.POST:
-            return reverse_lazy("mail:update", kwargs={"pk": self.object.uuid})
+            return reverse("mail:update", kwargs={"pk": self.object.uuid})
 
         self.object.send()
-        return reverse_lazy("mail:inbox")
+        return reverse("mail:inbox")
 
     def get_success_message(self, cleaned_data):
         return self.success_message % dict(cleaned_data, action=_("sent") if self.object.date_sent else _("saved"))
@@ -111,10 +111,10 @@ class MessageUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_success_url(self):
         """Return the appropriate URL for save vs. send."""
         if "_save" in self.request.POST:
-            return reverse_lazy("mail:update", kwargs={"pk": self.object.uuid})
+            return reverse("mail:update", kwargs={"pk": self.object.uuid})
 
         self.object.send()
-        return reverse_lazy("mail:inbox")
+        return reverse("mail:inbox")
 
     def get_success_message(self, cleaned_data):
         return self.success_message % dict(cleaned_data, action=_("sent") if self.object.date_sent else _("saved"))
