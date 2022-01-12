@@ -278,12 +278,12 @@ class ScoutForm(forms.ModelForm):
             f"{self.cleaned_data['first_name']} {self.cleaned_data['last_name']}"
         )
         message = (
-            f"Hello Membership Committee,\n"
-            f"\n"
+            "Hello Membership Committee,\n"
+            "\n"
             f"This email confirms that {self.cleaned_data['first_name']} "
             f"{self.cleaned_data['last_name']}, has applied for membership in "
             f"{settings.PACK_NAME}. Please login to pack144.org at your "
-            f"earliest convenience to review their application."
+            "earliest convenience to review their application."
         )
         to_field = ("Membership Committee <membership@pack144.org>",)
         from_field = "Cub Scouts Pack 144 <noreply@pack144.org>"
@@ -308,11 +308,11 @@ class ScoutForm(forms.ModelForm):
         message = (
             f"Hello {submitter},\n"
             "\n"
-            f"This email confirms the receipt of "
+            "This email confirms the receipt of "
             f"{self.cleaned_data['first_name']}'s application to join Pack "
-            f"144.\nPlease note that receipt of your application does not "
-            f"guarantee membership to the Pack. You will be\n be notified "
-            f"ASAP of the status of your application.\n"
+            "144.\nPlease note that receipt of your application does not "
+            "guarantee membership to the Pack. You will be\n be notified "
+            "ASAP of the status of your application.\n"
             "\n"
             "If you have any questions in the mean time, please contact us at "
             "membership@pack144.org."
