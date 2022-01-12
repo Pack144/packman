@@ -96,7 +96,7 @@ class MessageAdmin(admin.ModelAdmin):
         # Add a "Send" button to the message add page
         opts = obj._meta
         obj_url = reverse(
-            "admin:%s_%s_change" % (opts.app_label, opts.model_name),
+            f"admin:{opts.app_label}_{opts.model_name}_change",
             args=(quote(obj.pk),),
             current_app=self.admin_site.name,
         )
@@ -146,7 +146,7 @@ class MessageAdmin(admin.ModelAdmin):
             return False
 
         # Do the thing that Django does after checking our special case.
-        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+        return request.user.has_perm(f"{opts.app_label}.{codename}")
 
     def has_delete_permission(self, request, obj=None):
         #  Start with Django's default has_delete_permission() method.
@@ -161,7 +161,7 @@ class MessageAdmin(admin.ModelAdmin):
             return False
 
         # Do the thing that Django does after checking our special case.
-        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+        return request.user.has_perm(f"{opts.app_label}.{codename}")
 
     def has_view_permission(self, request, obj=None):
         #  Start with Django's default has_view_permission() method.
@@ -177,7 +177,7 @@ class MessageAdmin(admin.ModelAdmin):
         # except we're going to skip the check on whether the user has
         # change permission as that cannot be expressed using the standard
         # permissions model.
-        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+        return request.user.has_perm(f"{opts.app_label}.{codename}")
 
 
 @admin.register(ListSettings)
