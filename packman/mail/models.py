@@ -224,7 +224,7 @@ class Message(TimeStampedUUIDModel):
                     msg.send()
                     print("  success")
                 except Exception as e:
-                    print("  failed: %s" % e)
+                    print(f"  failed: {e}")
 
         # Mark the message as sent
         self.date_sent = timezone.now()
@@ -547,9 +547,9 @@ class ListEmail(EmailMultiAlternatives):
             if self.settings.name:
                 msg["List-Id"] = f"<{self.settings.list_id}> {self.settings.name}"
             else:
-                msg["List-Id"] = "<%s>" % self.settings.list_id
+                msg["List-Id"] = f"<{self.settings.list_id}>"
 
         if "List-Unsubscribe".lower() not in header_names:
-            msg["List-Unsubscribe"] = "<https://{}{}>".format(site.domain, reverse("membership:my-family"))
+            msg["List-Unsubscribe"] = f"<https://{site.domain}{reverse('membership:my-family')}>"
 
         return msg
