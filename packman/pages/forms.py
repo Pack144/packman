@@ -63,9 +63,7 @@ class ContactForm(forms.Form):
         from_address = f"{self.cleaned_data['from_name']} <{self.cleaned_data['from_email']}>"
         email = EmailMessage(
             subject=f"{settings.EMAIL_SUBJECT_PREFIX}{self.cleaned_data['subject']}",
-            body=f"We have received the following message from "
-            f"{from_address}:"
-            f"\n\n{self.cleaned_data['message']}",
+            body=f"We have received the following message from {from_address}:\n\n{self.cleaned_data['message']}",
             to=[f"{a[0]} <{a[1]}>" for a in settings.MANAGERS],
             reply_to=[from_address],
         )
