@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db import models
 from django.utils import timezone
 
@@ -9,7 +10,13 @@ class PackYearManager(models.Manager):
 
     def current(self):
         """Return the current PackYear."""
-        return self.for_date(date=timezone.now())
+        current_year = cache.get("current_year")
+
+        if current_year is None:
+            current_year = self.for_date(date=timezone.now())
+            cache.set("current_year", current_year)
+
+        return current_year
 
     def next(self):
         """Return the upcoming PackYear."""
