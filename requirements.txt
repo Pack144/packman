@@ -5,10 +5,10 @@
 #    pipenv lock --requirements
 #
 
--i https://pypi.org/simple
+-i https://pypi.org/simple/
 argon2-cffi-bindings==21.2.0; python_version >= '3.6'
 argon2-cffi==21.3.0
-asgiref==3.4.1; python_version >= '3.6'
+asgiref==3.5.0; python_version >= '3.7'
 cffi==1.15.0
 cssselect2==0.4.1; python_version >= '3.6'
 django-crispy-forms==1.13.0
@@ -19,10 +19,10 @@ django-extensions==3.1.5
 django-ical==1.8.2
 django-localflavor==3.1
 django-phonenumber-field==6.0.0
-django-recurrence==1.10.3
+django-recurrence==1.11.1; python_version >= '3.7'
 django-tempus-dominus==5.1.2.16
 django-tinymce==3.4.0
-django==3.2.11
+django==3.2.12
 docutils==0.18.1
 easy-thumbnails==2.8
 icalendar==4.0.9; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
@@ -36,9 +36,9 @@ pymemcache==3.5.0
 python-dateutil==2.8.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-stdnum==1.17
 pytz==2021.3
-reportlab==3.6.5; python_version >= '3.6' and python_version < '4'
+reportlab==3.6.6; python_version >= '3.6' and python_version < '4'
 six==1.16.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 sqlparse==0.4.2; python_version >= '3.5'
-svglib==1.1.0; python_version >= '3'
+svglib==1.2.1; python_version >= '3.7'
 tinycss2==1.1.1; python_version >= '3.6'
 webencodings==0.5.1
