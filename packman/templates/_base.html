@@ -119,21 +119,34 @@
                   </span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarMemberDropdown">
-                  <a class="dropdown-item" href="{% url 'mail:inbox' %}"><i
-                    class="fas fa-envelope fa-fw"></i> {% translate 'Mail' %}
-                    {% if user.message_recipients.unread.exists %}<span
-                      class="badge badge-secondary rounded-pill">{{ user.message_recipients.unread.count }}</span>{% endif %}
+                  <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'mail:inbox' %}">
+                    <span>
+                      <i class="fas fa-envelope fa-fw"></i>
+                      <span class="ml-1">{% translate 'Mail' %}</span>
+                    </span>
+                    {% if user.message_recipients.unread.exists %}
+                      <span class="badge bg-danger text-white rounded-pill">{{ user.message_recipients.unread.count }}</span>
+                    {% endif %}
                   </a>
-                  <a class="dropdown-item" href="{% url 'membership:my-family' %}"><i
-                    class="fas fa-user-friends fa-fw"></i> {% translate 'My Family' %}</a>
-                  <a class="dropdown-item" href="{% url 'password_change' %}"><i
-                    class="fas fa-key fa-fw"></i> {% translate 'Change My Password' %}</a>
+                  <a class="dropdown-item" href="{% url 'membership:my-family' %}">
+                    <i class="fas fa-user-friends fa-fw"></i>
+                    <span class="ml-1">{% translate 'My Family' %}</span>
+                  </a>
+                  <a class="dropdown-item" href="{% url 'password_change' %}">
+                    <i class="fas fa-key fa-fw"></i>
+                    <span class="ml-1">{% translate 'Change My Password' %}</span>
+                  </a>
                   {% if user.is_staff %}
-                    <a class="dropdown-item" href="{% url 'admin:index' %}"><i
-                      class="fas fa-toolbox"></i> {% translate 'Admin' %}</a>{% endif %}
+                    <a class="dropdown-item" href="{% url 'admin:index' %}">
+                      <i class="fas fa-toolbox fa-fw"></i>
+                      <span class="ml-1">{% translate 'Admin' %}</span>
+                    </a>
+                  {% endif %}
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item text-danger" href="{% url 'logout' %}"><i
-                    class="fas fa-sign-out-alt"></i> {% translate 'Log out' %}</a>
+                  <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt fa-fw"></i>
+                    <span class="ml-1">{% translate 'Log out' %}</span>
+                  </a>
                 </div>
               </li>
             {% else %}
