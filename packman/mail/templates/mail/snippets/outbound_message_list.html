@@ -2,7 +2,7 @@
 {% include 'mail/snippets/message_list_header.html' %}
 <div class="list-group list-group-flush scrollarea w-100">
   {% for message in message_list %}
-    <a href="{% if mailbox == mailbox.DRAFTS %}{% url 'mail:update' message.pk %}{% else %}{{ message.get_absolute_url }}{% endif %}" class="list-group-item list-group-item-action py-3 lh-tight{% if message.pk == object.pk %} active{% endif %}">
+    <a href="{% if mailbox == mailbox.DRAFTS %}{% url 'mail:update' message.pk %}{% else %}{{ message.get_absolute_url }}{% endif %}" class="list-group-item list-group-item-action py-3{% if message.pk == object.pk %} active{% endif %}">
       <div class="d-flex align-items-center justify-content-between w-100">
         <strong>{% for dl in message.distribution_lists.all %}{{ dl }}{% if not forloop.last %}, {% endif %}{% endfor %}</strong>
         <small>{% firstof message.date_sent|naturalday message.last_updated|naturalday %}</small>

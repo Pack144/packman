@@ -4,10 +4,13 @@
 {% load i18n humanize %}
 
 
+{% block body_extra_class %}vh-100{% endblock %}
+
+
 {% block supercontent %}
-  <div class="d-flex min-vh-100" id="mail-client">
+  <div id="mail-client">
     <!--  Begin folder list  --------------------------------------------------->
-    <div class="d-flex flex-column p-3 text-white bg-dark align-items-stretch collapse collapse-horizontal show" id="folder-sidebar">
+    <section class="d-none d-sm-flex flex-column p-3 text-white bg-dark align-items-stretch collapse collapse-horizontal show" id="folder-sidebar">
       <a href="{% url 'mail:inbox' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ml-3 ml-md-0 mr-md-auto text-white text-decoration-none">
         <i class="fas fa-envelope fa-2x me-2 mr-2"></i>
         <span class="d-none d-md-inline fs-4 h4 mb-0">{% translate 'Mail' %}</span>
@@ -62,13 +65,13 @@
       <div class="d-flex justify-content-end">
         <a href="{{ request.get_full_path }}"><i class="fas fa-sync"></i></a>
       </div>
-    </div>
+    </section>
     <!--  End folder list  ----------------------------------------------------->
 
-    <div class="d-flex w-100">
+    <div class="d-flex flex-grow-1 justify-content-center">
       {% if mailbox %}
         <!--  Begin message list  -------------------------------------------------->
-        <div class="{% if view.template_name == 'mail/message_list.html' %}d-flex flex-grow-1{% else %}d-none d-lg-flex{% endif %} flex-column align-items-stretch" id="message-list">
+        <div class="{% if view.template_name == 'mail/message_list.html' %}d-flex{% else %}d-none d-lg-flex{% endif %} flex-grow-1" id="message-list-column">
           {% if mailbox == mailbox.DRAFTS or mailbox == mailbox.SENT %}
             {% include 'mail/snippets/outbound_message_list.html' %}
           {% else %}
@@ -79,7 +82,7 @@
       {% endif %}
 
       <!--  Begin message detail  ------------------------------------------------>
-      <main class="{% if view.template_name != 'mail/message_list.html' %}d-flex flex-grow-1{% else %}d-none d-lg-flex{% endif %} flex-column h-100 p-4">
+      <main class="border-left {% if view.template_name != 'mail/message_list.html' %}d-flex{% else %}d-none d-lg-flex{% endif %} flex-grow-1 p-4" id="message-detail-column">
         {% block message_detail %}
           <div class="d-flex flex-column align-items-center justify-content-center text-light h-100 w-100">
             <span class="display-1"><i class="far fa-envelope"></i></span>
