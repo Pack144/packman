@@ -160,3 +160,7 @@ footer {
     flex-basis: 66%;
     flex-direction: column;
 }
+
+.read-marker {
+    flex: 0 0 1rem;
+}
