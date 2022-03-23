@@ -18,6 +18,10 @@ class MessageDistributionForm(forms.ModelForm):
     class Meta:
         model = MessageDistribution
         fields = ("delivery", "distribution_list")
+        widgets = {
+            "delivery": forms.Select(attrs={"class": "custom-select"}),
+            "distribution_list": forms.Select(attrs={"class": "custom-select"}),
+        }
 
 
 class MessageRecipientForm(forms.ModelForm):
