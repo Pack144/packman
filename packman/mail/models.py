@@ -1,12 +1,13 @@
+
+import logging
 import html
 from pathlib import Path
 
-from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.core.mail import EmailMultiAlternatives
+from django.core.cache import cache
 from django.core.validators import URLValidator
 from django.db import IntegrityError, models, transaction
 from django.db.models import Q
@@ -25,7 +26,9 @@ from packman.dens.models import Den
 from packman.membership.models import Family
 
 from .managers import MessageManager, MessageRecipientQuerySet
+from .utils import ListEmailMessage
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -186,49 +189,52 @@ class Message(TimeStampedUUIDModel):
         if not self.recipients.exists():
             raise AttributeError(_("Cannot send an Email with no recipients."))
 
-        site = Site.objects.get_current()
-        author_name = self.author.__str__()
-        author_email = self.author.email
-
         # open a connection to the mail server
         with mail.get_connection() as connection:
-
-            for recipient in self.recipients.all():
-                print(f"Sending message to {recipient} <{recipient.email}>")
-
-                # Personalize the email for each recipient.
-                context = {"site": site, "message": self, "recipient": recipient}
-                distros_string = ", ".join(
-                    recipient.message_recipients.get(message=self).distros.values_list("name", flat=True)
-                )
-
-                subject = f"[{distros_string}] {self.subject}"
-                plaintext = render_to_string("mail/message_body.txt", context)
-                richtext = render_to_string("mail/message_body.html", context)
-
-                # compose the email
-                msg = ListEmail(
-                    subject,
-                    plaintext,
-                    to=[f"{recipient.__str__()} <{recipient.email}>"],
-                    reply_to=[f"{author_name} <{author_email}>"],
-                    connection=connection,
-                    alternatives=[(richtext, "text/html")],
-                )
-
-                # add any attachments
-                for attachment in self.attachments.all():
-                    msg.attach_file(attachment.filename.path)
-
-                try:
-                    msg.send()
-                    print("  success")
-                except Exception as e:
-                    print(f"  failed: {e}")
+            messages = self._personalize_messages()
+            succeeded = connection.send_messages(messages)
+            logger.info(_("Sent %d emails") % succeeded)
 
         # Mark the message as sent
         self.date_sent = timezone.now()
         self.save()
+
+    def _personalize_messages(self):
+        messages = []
+
+        site = Site.objects.get_current()
+        author_name = self.author.__str__()
+        author_email = self.author.email
+
+        for recipient in self.recipients.all():
+            logger.info(_("Generating an email copy for %s") % recipient)
+
+            # Personalize the email for each recipient.
+            context = {"site": site, "message": self, "recipient": recipient}
+            distros_string = ", ".join(
+                recipient.message_recipients.get(message=self).distros.values_list("name", flat=True)
+            )
+
+            subject = f"[{distros_string}] {self.subject}"
+            plaintext = render_to_string("mail/message_body.txt", context)
+            richtext = render_to_string("mail/message_body.html", context)
+
+            # compose the email
+            msg = ListEmailMessage(
+                subject,
+                plaintext,
+                to=[f"{recipient.__str__()} <{recipient.email}>"],
+                reply_to=[f"{author_name} <{author_email}>"],
+                alternatives=[(richtext, "text/html")],
+                settings=ListSettings.current(),
+            )
+
+            # add any attachments
+            for attachment in self.attachments.all():
+                msg.attach_file(attachment.filename.path)
+
+            messages.append(msg)
+        return messages
 
     @admin.display(boolean=True, description=_("sent"))
     def sent(self):
@@ -477,79 +483,16 @@ class ListSettings(TimeStampedModel):
     def save(self, *args, **kwargs):
         if self.__class__.objects.count():
             self.pk = self.__class__.objects.first().pk
+        cache.set("mail_settings", self)
         super().save(*args, **kwargs)
 
-
-class ListEmail(EmailMultiAlternatives):
-    def __init__(
-        self,
-        subject="",
-        body="",
-        from_email=None,
-        to=None,
-        bcc=None,
-        connection=None,
-        attachments=None,
-        headers=None,
-        alternatives=None,
-        cc=None,
-        reply_to=None,
-    ):
-
-        super().__init__(
-            subject,
-            body,
-            from_email,
-            to,
-            bcc,
-            connection,
-            attachments,
-            headers,
-            alternatives,
-            cc,
-            reply_to,
-        )
-
-        try:
-            self.settings = ListSettings.objects.get(pk=1)
-        except ListSettings.DoesNotExist:
-            # No settings have been stored, there's nothing more we can do here.
-            self.settings = ListSettings()
-
-        self.subject = (
-            f"{self.settings.subject_prefix} {self.subject}" if self.settings.subject_prefix != "" else self.subject
-        )
-
-        if from_email:
-            self.from_email = from_email
-        elif self.settings.from_name and self.settings.from_email:
-            self.from_email = f"{self.settings.from_name} <{self.settings.from_email}>"
-        elif self.settings.from_email:
-            self.from_email = self.settings.from_email
-        else:
-            self.from_email = settings.DEFAULT_FROM_EMAIL
-
-    def message(self):
-        msg = super().message()
-
-        # Get the list settings from the database
-        if not self.settings:
-            # No settings have been stored, there's nothing more we can do here.
-            return msg
-
-        site = Site.objects.get_current()
-
-        # Email header names are case-insensitive (RFC 2045), so we have to
-        # accommodate that when doing comparisons.
-        header_names = [key.lower() for key in self.extra_headers]
-
-        if "List-Id".lower() not in header_names and self.settings.list_id != "":
-            if self.settings.name:
-                msg["List-Id"] = f"<{self.settings.list_id}> {self.settings.name}"
-            else:
-                msg["List-Id"] = f"<{self.settings.list_id}>"
-
-        if "List-Unsubscribe".lower() not in header_names:
-            msg["List-Unsubscribe"] = f"<https://{site.domain}{reverse('membership:my-family')}>"
-
-        return msg
+    @classmethod
+    def current(cls):
+        mail_settings = cache.get("mail_settings")
+        if not mail_settings:
+            try:
+                mail_settings = cls.objects.first()
+                cache.set("mail_settings", mail_settings)
+            except cls.DoesNotExist:
+                pass
+        return mail_settings

@@ -1,32 +1,51 @@
-from .models import Message
+from django.contrib.sites.models import Site
+from django.core.mail import EmailMultiAlternatives
+from django.urls import reverse
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def get_mailbox_counts(user, viewing_mailbox=None):
+class ListEmailMessage(EmailMultiAlternatives):
     """
-    Given a user, return the message counts for all standard folders
+    A version of EmailMultiAlternatives customized for sending messages to
+    an email list.
     """
-    counts = {
-        "inbox": {
-            "total": Message.objects.in_inbox(recipient=user).count(),
-            "unread": Message.objects.in_inbox(recipient=user).unread(user).count(),
-        },
-        "drafts": {
-            "total": Message.objects.drafts(author=user).count(),
-        },
-        "sent": {
-            "total": Message.objects.sent(author=user).count(),
-        },
-        "archives": {
-            "total": Message.objects.archived(recipient=user).count(),
-            "unread": Message.objects.archived(recipient=user).unread(user).count(),
-        },
-        "trash": {
-            "total": Message.objects.deleted(recipient=user).count(),
-            "unread": Message.objects.deleted(recipient=user).unread(user).count(),
-        },
-    }
+    def __init__(
+        self,
+        subject="",
+        body="",
+        from_email=None,
+        to=None,
+        bcc=None,
+        connection=None,
+        attachments=None,
+        headers=None,
+        alternatives=None,
+        cc=None,
+        reply_to=None,
+        settings=None,
+    ):
 
-    if viewing_mailbox:
-        counts["current"] = counts[viewing_mailbox]
+        self.settings = settings
+        if settings:
+            site = Site.objects.get_current()
+            from_email = from_email or self.settings.from_email
+            subject = f"{self.settings.subject_prefix} {subject}".strip()
+            headers = headers or {}
+            headers['List-Id'] = f"<{self.settings.list_id}> {self.settings.name}".strip()
+            headers["List-Unsubscribe"] = f"<https://{site.domain}{reverse('membership:my-family')}>"
 
-    return counts
+        super().__init__(
+            subject,
+            body,
+            from_email,
+            to,
+            bcc,
+            connection,
+            attachments,
+            headers,
+            alternatives,
+            cc,
+            reply_to,
+        )
