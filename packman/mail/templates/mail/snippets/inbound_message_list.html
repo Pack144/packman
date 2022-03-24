@@ -7,19 +7,21 @@
     >
       <span class="read-marker">
       {% if not message.receipt.0.date_read %}
-        <span class="text-primary"><i class="fas fa-circle fa-xs"></i></span>
+        <span class="text-primary">
+          <i class="fas fa-circle fa-xs"></i>
+        </span>
       {% endif %}
       </span>
-      <div class="d-flex flex-column flex-grow-1 mt-1">
+      <div class="d-flex flex-column flex-grow-1 mt-1 overflow-hidden">
         <div class="ml-2 {% if not message.receipt.0.date_read %} font-weight-bold{% endif %}">
           <div class="d-flex align-items-center justify-content-between">
             <strong>{{ message.author }}</strong>
             <small>{% firstof message.receipt.0.date_received|naturalday message.date_sent|naturalday message.last_updated|naturalday %}</small>
           </div>
-          <div class="message-subject">
+          <div class="message-subject text-truncate">
             <strong class="h6 mb-2">{{ message.subject }}</strong>
           </div>
-          <div class="message-preview">
+          <div class="message-preview text-break">
             <small class="mb-1">{{ message.get_plaintext_body|linebreaksbr|truncatewords:50 }}</small>
           </div>
         </div>
