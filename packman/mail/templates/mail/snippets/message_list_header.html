@@ -1,6 +1,14 @@
 {% load i18n %}
 <div class="border-bottom d-flex align-items-center justify-content-between p-3" id="message-list-heading">
-  <a href="#folder-sidebar" role="button" data-toggle="collapse" data-target="#folder-sidebar" aria-expanded="true" aria-controls="folder-sidebar" class="text-decoration-none">
+  <a
+    href="#folder-sidebar"
+    role="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#folder-sidebar"
+    aria-expanded="true"
+    aria-controls="folder-sidebar"
+    class="text-decoration-none"
+  >
     <i class="far fa-caret-square-left"></i>
     <strong class="text-primary">{{ mailbox.label }}</strong>
   </a>
