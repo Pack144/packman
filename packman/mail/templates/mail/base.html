@@ -10,7 +10,7 @@
 {% block supercontent %}
   <div id="mail-client">
     <!--  Begin folder list  --------------------------------------------------->
-    <section class="d-none d-sm-flex flex-column p-3 text-white bg-dark align-items-stretch collapse-horizontal show" id="folder-sidebar">
+    <section class="d-flex flex-column p-3 text-white bg-dark align-items-stretch collapse-horizontal show" id="folder-sidebar">
       <a href="{% url 'mail:inbox' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ml-3 ml-md-0 mr-md-auto text-white text-decoration-none">
         <i class="fas fa-envelope fa-2x me-2 mr-2"></i>
         <span class="d-none d-md-inline fs-4 h4 mb-0">{% translate 'Mail' %}</span>
@@ -24,7 +24,7 @@
               <span class="d-none d-md-inline ml-2">{% translate 'Inbox' %}</span>
             </div>
             {% if mail_count.inbox.unread %}
-              <span class="badge rounded-pill bg-light text-dark ml-3">{{ mail_count.inbox.unread }}</span>
+              <span class="badge rounded-pill bg-light text-dark ml-1">{{ mail_count.inbox.unread }}</span>
             {% endif %}
           </a>
         </li>
@@ -35,7 +35,7 @@
                 <i class="fas fa-file-alt fa-fw"></i>
                 <span class="d-none d-md-inline ml-2">{% translate 'Drafts' %}</span>
               </div>
-              <span class="badge rounded-pill bg-light text-dark ml-3">{{ mail_count.drafts.total }}</span>
+              <span class="badge rounded-pill bg-light text-dark ml-2">{{ mail_count.drafts.total }}</span>
             </a>
           </li>
         {% endif %}
