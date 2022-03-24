@@ -12,6 +12,7 @@ django-rename-app = "*"
 curlylint = "*"
 black = "*"
 flake8 = "*"
+ipython = "*"
 
 [packages]
 argon2-cffi = "*"
