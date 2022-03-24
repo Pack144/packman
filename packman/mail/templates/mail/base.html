@@ -82,7 +82,7 @@
       {% endif %}
 
       <!--  Begin message detail  ------------------------------------------------>
-      <main class="border-left {% if view.template_name != 'mail/message_list.html' %}d-flex{% else %}d-none d-lg-flex{% endif %} flex-grow-1 overflow-hidden p-4" id="message-detail-column">
+      <main class="border-left {% if view.template_name != 'mail/message_list.html' %}d-flex{% else %}d-none d-lg-flex{% endif %} flex-grow-1 overflow-hidden" id="message-detail-column">
         {% block message_detail %}
           <div class="d-flex flex-column align-items-center justify-content-center text-light h-100">
             <span class="display-1"><i class="far fa-envelope"></i></span>
