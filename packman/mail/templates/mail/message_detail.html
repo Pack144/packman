@@ -5,7 +5,7 @@
 {% block title %}{{ message.subject }} | {{ block.super }}{% endblock %}
 
 {% block message_detail %}
-    <div class="d-flex justify-content-center mb-3" id="message-action-bar">
+    <div class="d-flex justify-content-center my-2" id="message-action-bar">
       <form method="post">
         <div class="btn-group btn-group-sm" role="group" aria-label="{% translate 'message toolbar' %}">
           {% if message.receipt.0.is_archived %}
