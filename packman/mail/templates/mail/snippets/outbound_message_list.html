@@ -2,19 +2,22 @@
 {% include 'mail/snippets/message_list_header.html' %}
 <div class="list-group list-group-flush scrollarea">
   {% for message in message_list %}
-    <a href="
-
-      {% if mailbox == mailbox.DRAFTS %}{% url 'mail:update' message.pk %}{% else %}{{ message.get_absolute_url }}{% endif %}"
+    <a href="{% if mailbox == mailbox.DRAFTS %}{% url 'mail:update' message.pk %}{% else %}{{ message.get_absolute_url }}{% endif %}"
        class="list-group-item list-group-item-action py-3{% if message.pk == object.pk %} active{% endif %}">
       <div class="d-flex align-items-center justify-content-between">
-        <strong>{% for dl in message.distribution_lists.all %}{{ dl }}{% if not forloop.last %},
-        {% endif %}{% endfor %}</strong>
-        <small>{% firstof message.date_sent|naturalday message.last_updated|naturalday %}</small>
+        <strong>
+          {% for dl in message.distribution_lists.all %}
+            {{ dl }}{% if not forloop.last %},{% endif %}
+          {% endfor %}
+        </strong>
+        <small>
+          {% firstof message.date_sent|naturalday message.last_updated|naturalday %}
+        </small>
       </div>
-      <div class="message-subject">
+      <div class="message-subject text-truncate">
         <strong class="h6 mb-2">{{ message.subject }}</strong>
       </div>
-      <div class="message-preview">
+      <div class="message-preview text-break">
         <small class="mb-1">{{ message.get_plaintext_body|linebreaksbr|truncatewords:50 }}</small>
       </div>
     </a>
