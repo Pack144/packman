@@ -13,6 +13,7 @@ curlylint = "*"
 black = "*"
 flake8 = "*"
 ipython = "*"
+djlint = "*"
 
 [packages]
 argon2-cffi = "*"
@@ -22,7 +23,6 @@ django-debug-toolbar = "*"
 django-extensions = "*"
 django-localflavor = "*"
 pillow = "*"
-easy-thumbnails = "*"
 psycopg2-binary = "*"
 pip = "*"
 django-tempus-dominus = "*"
@@ -34,6 +34,7 @@ django-tinymce = "*"
 django-environ = "*"
 phonenumberslite = "*"
 pymemcache = "*"
+easy-thumbnails = "*"
 
 [requires]
 python_version = "3.9"
