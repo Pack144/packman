@@ -1,28 +1,50 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 
 {% load i18n %}
 
-{% block title %}{% if page %}{{ page.title }}{% else %}Our History{% endif %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% if page %}
+    {{ page.title }}
+  {% else %}
+    Our History
+  {% endif %}
+  | {{ block.super }}
+{% endblock title %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center">
-    <h1>{% if page %}{{ page.title }}{% else %}{% translate 'Our History' %}{% endif %}</h1>
+    <h1>
+      {% if page %}
+        {{ page.title }}
+      {% else %}
+        {% translate 'Our History' %}
+      {% endif %}
+    </h1>
     {% if perms.pages %}
       <div class="btn-group btn-group-sm">
         {% if perms.pages.add_page %}
-          <a href="{% url 'pages:create' %}" class="btn btn-outline-secondary" data-toggle="tooltip" title="{% translate 'Add a new webpage' %}"><i class="far fa-plus-square"></i></a>
+          <a href="{% url 'pages:create' %}"
+             class="btn btn-outline-secondary"
+             data-toggle="tooltip"
+             title="{% translate 'Add a new webpage' %}"><i class="far fa-plus-square"></i></a>
         {% endif %}
         {% if perms.pages.change_page %}
-          <a href="{% url 'pages:update' page.pk %}" class="btn btn-outline-secondary" data-toggle="tooltip" title="{% translate 'Edit this page' %}"><i class="far fa-edit"></i></a>
+          <a href="{% url 'pages:update' page.pk %}"
+             class="btn btn-outline-secondary"
+             data-toggle="tooltip"
+             title="{% translate 'Edit this page' %}"><i class="far fa-edit"></i></a>
         {% endif %}
         {% if perms.pages.delete_page and not page.page %}
-          <a href="{% url 'pages:delete' page.pk %}" class="btn btn-outline-danger" data-toggle="tooltip" title="{% translate 'Delete this webpage' %}"><i class="far fa-minus-square"></i></a>
+          <a href="{% url 'pages:delete' page.pk %}"
+             class="btn btn-outline-danger"
+             data-toggle="tooltip"
+             title="{% translate 'Delete this webpage' %}"><i class="far fa-minus-square"></i></a>
         {% endif %}
       </div>
     {% endif %}
   </div>
-  {% include 'pages/snippets/content_blocks.html' %}
-{% endblock %}
+  {% include "pages/snippets/content_blocks.html" %}
+{% endblock content %}
 
 {% block js %}
   {{ block.super }}

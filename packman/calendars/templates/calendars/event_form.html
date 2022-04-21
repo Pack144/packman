@@ -1,7 +1,8 @@
 {% extends "_base.html" %}
+
 {% load humanize crispy_forms_tags static %}
 
-{% block title %}{{ event }} — {{ block.super }}{% endblock title %}
+{% block title %}{{ event }} | {{ block.super }}{% endblock %}
 
 {% block css %}
   {{ block.super }}
@@ -23,7 +24,6 @@
 {% block js %}
   {{ block.super }}
   {{ form.media }}
-
   <script src="{% static 'moment/moment.js' %}"></script>
   <script src="{% static 'tempusdominus-bootstrap-4/build/js/tempusdominus-bootstrap-4.min.js' %}"></script>
   <script type="text/javascript">

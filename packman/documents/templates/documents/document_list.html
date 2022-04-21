@@ -1,27 +1,36 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 
 {% block title %}Documents | {{ block.super }}{% endblock %}
 
 {% block content %}
-   <h1>Documents</h1>
+  <h1>Documents</h1>
   {% if category_list %}
     <div class="container" id="document-list">
-    {% for category in category_list %}
-      {% if category.documents.count %}
-      <h3 id="{{ category|slugify }}">{{ category }}</h3>
-      <dl class="row">
-        {% for document in category.documents.all %}
-        <dt class="col-sm-4"><a href="{{ document.file.url }}" target="_blank">{{ document.name }}</a></dt>
-        <dd class="col-sm-8">{% if document.description %}{{ document.description }}<br>{% endif %}
-          <small class="text-muted ">Last updated: {{ document.last_updated }}</small></dd>
-        {% endfor %}
-      </dl>
-      {% endif %}
-    {% endfor %}
+      {% for category in category_list %}
+        {% if category.documents.count %}
+          <h3 id="{{ category|slugify }}">{{ category }}</h3>
+          <dl class="row">
+            {% for document in category.documents.all %}
+              <dt class="col-sm-4">
+                <a href="{{ document.file.url }}" target="_blank">{{ document.name }}</a>
+              </dt>
+              <dd class="col-sm-8">
+                {% if document.description %}
+                  {{ document.description }}
+                  <br>
+                {% endif %}
+                <small class="text-muted ">Last updated: {{ document.last_updated }}</small>
+              </dd>
+            {% endfor %}
+          </dl>
+        {% endif %}
+      {% endfor %}
     </div>
   {% else %}
     <div class="alert alert-light" role="alert">
-      <p>The pack has no uploaded documents to display</p>
+      <p>
+        The pack has no uploaded documents to display
+      </p>
     </div>
   {% endif %}
-{% endblock %}
+{% endblock content %}

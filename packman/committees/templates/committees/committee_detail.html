@@ -1,6 +1,6 @@
-{% extends '_base.html' %}
-{% load static %}
-{% load thumbnail %}
+{% extends "_base.html" %}
+
+{% load static thumbnail %}
 
 {% block title %}{{ committee }} | {{ block.super }}{% endblock %}
 
@@ -10,13 +10,18 @@
       <h1>{{ committee }}</h1>
       <div class="btn-group">
         <button type="button" class="btn btn-secondary">{{ current_year }}</button>
-        <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button type="button"
+                class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
           <span class="sr-only">Toggle Dropdown</span>
         </button>
         <div class="dropdown-menu dropdown-menu-right">
           {% for year in all_years %}
             {% if not year == current_year %}
-              <a class="dropdown-item" href="{% url 'committees:detail_by_year' slug=committee.slug year=year.year %}">{{ year }}</a>
+              <a class="dropdown-item"
+                 href="{% url 'committees:detail_by_year' slug=committee.slug year=year.year %}">{{ year }}</a>
             {% else %}
               <div class="dropdown-item active">{{ year }}</div>
             {% endif %}
@@ -24,21 +29,24 @@
         </div>
       </div>
     </div>
-    {% if committee.description %}<p class="text-muted">{{ committee.description }}</p>{% endif %}
+    {% if committee.description %}
+      <p class="text-muted">
+        {{ committee.description }}
+      </p>
+    {% endif %}
   </div>
-
   <div class="container">
-  {% if members.count %}
-    <h2 class="mt-3">Member{{ members.count|pluralize }}</h2>
-    <div class="list-group">
-      {% for member in members.all %}
-          <a class="list-group-item list-group-item-action" href="{{ member.member.get_absolute_url }}">
+    {% if members.count %}
+      <h2 class="mt-3">Member{{ members.count|pluralize }}</h2>
+      <div class="list-group">
+        {% for member in members.all %}
+          <a class="list-group-item list-group-item-action"
+             href="{{ member.member.get_absolute_url }}">
             <div class="row align-items-center">
-              <div class="col-sm-3 col-lg-2">
-                {% include 'membership/snippets/headshot.html' with member=member.member %}
-              </div>
+              <div class="col-sm-3 col-lg-2">{% include 'membership/snippets/headshot.html' with member=member.member %}</div>
               <div class="col">
-                <strong>{{ member.member }}</strong><br>
+                <strong>{{ member.member }}</strong>
+                <br>
                 <span class="text-muted">
                   {% if member.position == member.DEN_LEADER %}
                     {{ member.den }}
@@ -49,27 +57,25 @@
               </div>
             </div>
           </a>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  {% if akelas %}
-    {% if not 'Akela' in committee.name %}<h2 class="mt-3">Supporting Akela{{ akelas.count|pluralize }}</h2>{% endif %}
-    <div class="list-group">
-      {% for member in akelas.all %}
-          <a class="list-group-item list-group-item-action" href="{{ member.member.get_absolute_url }}">
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if akelas %}
+      {% if not 'Akela' in committee.name %}<h2 class="mt-3">Supporting Akela{{ akelas.count|pluralize }}</h2>{% endif %}
+      <div class="list-group">
+        {% for member in akelas.all %}
+          <a class="list-group-item list-group-item-action"
+             href="{{ member.member.get_absolute_url }}">
             <div class="row align-items-center">
-              <div class="col-sm-3 col-lg-2">
-                {% include 'membership/snippets/headshot.html' with member=member.member %}
-              </div>
+              <div class="col-sm-3 col-lg-2">{% include 'membership/snippets/headshot.html' with member=member.member %}</div>
               <div class="col">
-                <strong>{{ member.member }}</strong><br>
+                <strong>{{ member.member }}</strong>
+                <br>
               </div>
             </div>
           </a>
-      {% endfor %}
-    </div>
-  {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
   </div>
-
-{% endblock %}
+{% endblock content %}

@@ -1,20 +1,20 @@
 {% extends "_base.html" %}
+
 {% load i18n %}
 
-{% block title %}{{ member }} — {{ block.super }}{% endblock title %}
+{% block title %}{{ member }} | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center">
     <h1 class="display-4">{{ member }}</h1>
   </div>
-
   <div class="card-group mb-5">
     {% include 'membership/snippets/detail_card.html' with member_email=email member_addresses=addresses member_phone_numbers=phone_numbers %}
   </div>
-
-
   {% if member.family.children.count > 1 or member.family.adults.count %}
-    <h2>{% blocktrans with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktrans %}</h2>
+    <h2>
+      {% blocktrans with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktrans %}
+    </h2>
     <div class="card-group" id="family-card-group">
       {% for adult in member.family.adults.all %}
         {% include 'membership/snippets/detail_card.html' with member=adult %}
@@ -24,15 +24,19 @@
       {% endfor %}
     </div>
   {% endif %}
-
   {% if user.family == member.family %}
     <div class="dropdown">
-      <a class="btn mt-4 btn-secondary dropdown-toggle" href="#" role="button" id="addFamilyMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">{% trans 'Add Family Members' %}</a>
+      <a class="btn mt-4 btn-secondary dropdown-toggle"
+         href="#"
+         role="button"
+         id="addFamilyMenuLink"
+         data-toggle="dropdown"
+         aria-haspopup="true"
+         aria-expanded="true">{% translate 'Add Family Members' %}</a>
       <div class="dropdown-menu" aria-labelledby="addFamilyMenuLink">
-        <a href="{% url 'membership:parent_create' %}" class="dropdown-item">{% trans 'Add an adult' %}<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
-        <a href="{% url 'membership:scout_create' %}" class="dropdown-item">{% trans 'Submit a Cub application' %}<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
+        <a href="{% url 'membership:parent_create' %}" class="dropdown-item">{% translate 'Add an adult' %}<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
+        <a href="{% url 'membership:scout_create' %}" class="dropdown-item">{% translate 'Submit a Cub application' %}<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
       </div>
     </div>
   {% endif %}
-
-{% endblock %}
+{% endblock content %}

@@ -1,10 +1,13 @@
 {% extends "_base_wo_nav.html" %}
 
-{% block title %}Client Error — {{ block.super }}{% endblock title %}
+{% block title %}Client Error | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="alert alert-danger" role="alert">
     <h1 class="alert-heading">Client Error</h1>
-    <p>Hmm…something went wrong on your end. Try starting over at <a href="{% url 'pages:home' %}" class="alert-link">the homepage</a>.</p>
+    <p>
+      Hmm…something went wrong on your end. Try starting over at <a href="{% url 'pages:home' %}" class="alert-link">the
+      homepage</a>.
+    </p>
   </div>
-{% endblock %}
+{% endblock content %}

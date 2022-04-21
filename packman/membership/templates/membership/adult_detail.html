@@ -1,43 +1,61 @@
 {% extends "_base.html" %}
+
 {% load i18n %}
 
-{% block title %}{{ member }} — {{ block.super }}{% endblock title %}
+{% block title %}{{ member }} | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center">
     <h1 class="display-4">{{ member }}</h1>
   </div>
-
   <div class="card-group mb-5">
     {% include 'membership/snippets/detail_card.html' with member_email=email member_addresses=addresses member_phone_numbers=phone_numbers %}
-
     {% if member.committee_memberships.exists %}
       {% regroup member.committee_memberships.all by year as assignments_by_year %}
       <div class="card">
         <div class="card-body">
-          <h3 class="card-title">{% blocktrans count assignments=member.committee_memberships.count %}
-            Committee Served
-          {% plural %}
-            Committees Served
-          {% endblocktrans %}
+          <h3 class="card-title">
+            {% blocktrans count assignments=member.committee_memberships.count %}
+              Committee Served
+            {% plural %}
+              Committees Served
+            {% endblocktrans %}
           </h3>
           <div class="accordion" id="assignments-accordion">
-
             {% for year in assignments_by_year %}
               <div class="card">
                 <div class="card-header" id="heading-{{ year.grouper.year }}">
                   <h2 class="mb-0">
-                    <button class="btn btn-link btn-block text-left card-link{% if not forloop.first %} collapsed{% endif %}" type="button" data-toggle="collapse" data-target="#collapse-{{ year.grouper.year }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse-{{ year.grouper.year }}">
+                    <button class="btn btn-link btn-block text-left card-link
+                                   {% if not forloop.first %}
+                                     collapsed
+                                   {% endif %}"
+                            type="button"
+                            data-toggle="collapse"
+                            data-target="#collapse-{{ year.grouper.year }}"
+                            aria-expanded="{% if forloop.first %}
+                                             true
+                                           {% else %}
+                                             false
+                                           {% endif %}"
+                            aria-controls="collapse-{{ year.grouper.year }}">
                       {{ year.grouper }}
                     </button>
                   </h2>
                 </div>
-                <div id="collapse-{{ year.grouper.year }}" class="collapse{% if forloop.first %} show{% endif %}" aria-labelledby="heading-{{ year.grouper.year }}" data-parent="#assignments-accordion">
+                <div id="collapse-{{ year.grouper.year }}"
+                     class="collapse
+                            {% if forloop.first %}
+                              show
+                            {% endif %}"
+                     aria-labelledby="heading-{{ year.grouper.year }}"
+                     data-parent="#assignments-accordion">
                   <div class="card-body">
                     <div class="list-group list-group-flush">
-
                       {% for assignment in year.list %}
-                        <a href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}" class="list-group-item list-group-item-action border-bottom-0">
+                        <a
+                          href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}"
+                          class="list-group-item list-group-item-action border-bottom-0">
                           <strong>{{ assignment.committee }}</strong>
                           <small class="ml-1">
                             {% if assignment.den %}
@@ -49,22 +67,20 @@
                           </small>
                         </a>
                       {% endfor %}
-
                     </div>
                   </div>
                 </div>
               </div>
             {% endfor %}
-
           </div>
         </div>
       </div>
     {% endif %}
-
   </div>
-
   {% if member.family.children.count or member.family.adults.count > 1 %}
-    <h2>{% blocktrans with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktrans %}</h2>
+    <h2>
+      {% blocktrans with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktrans %}
+    </h2>
     <div class="card-group" id="family-card-group">
       {% for partner in member.get_partners %}
         {% include 'membership/snippets/detail_card.html' with member=partner %}
@@ -74,15 +90,25 @@
       {% endfor %}
     </div>
   {% endif %}
-
   {% if user.family == member.family %}
     <div class="dropdown">
-      <a class="btn mt-4 btn-secondary dropdown-toggle" href="#" role="button" id="addFamilyMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">{% trans 'Add Family Members' %}</a>
+      <a class="btn mt-4 btn-secondary dropdown-toggle"
+         href="#"
+         role="button"
+         id="addFamilyMenuLink"
+         data-toggle="dropdown"
+         aria-haspopup="true"
+         aria-expanded="true">{% translate 'Add Family Members' %}</a>
       <div class="dropdown-menu" aria-labelledby="addFamilyMenuLink">
-        <a href="{% url 'membership:parent_create' %}" class="dropdown-item">{% trans 'Add an adult' %}<span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span></a>
-        <a href="{% url 'membership:scout_create' %}" class="dropdown-item">{% trans 'Submit a Cub application' %}<span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span></a>
+        <a href="{% url 'membership:parent_create' %}" class="dropdown-item">
+          {% translate 'Add an adult' %}
+          <span class="ml-3 px-2 badge badge-light"><i class="fas fa-male"></i></span>
+        </a>
+        <a href="{% url 'membership:scout_create' %}" class="dropdown-item">
+          {% translate 'Submit a Cub application' %}
+          <span class="ml-3 badge badge-light"><i class="fas fa-child"></i></span>
+        </a>
       </div>
     </div>
   {% endif %}
-
-{% endblock %}
+{% endblock content %}
