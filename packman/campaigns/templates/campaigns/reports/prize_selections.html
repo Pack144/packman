@@ -1,37 +1,41 @@
-{% extends '_base.html' %}
-{% load i18n %}
+{% extends "_base.html" %}
 
+{% load i18n %}
 
 {% block title %}{% translate 'Prize Selection Report' %} | {{ block.super }}{% endblock %}
 
 {% block content %}
   <h1 class="mb-5">{% translate 'Prize Selection Report' %}</h1>
-
   <div class="card mb-5">
     <div class="card-body">
       <h2 class="card-header">{% translate 'All Prizes Selected' %}</h2>
       <table class="table table-hover">
         <caption>{% translate 'All Prizes Selected' %}</caption>
         <thead class="thead-dark">
-        <tr>
-          <th scope="col">{% translate 'Prize' %}</th>
-          <th scope="col">{% translate 'Quantity' %}</th>
-        </tr>
+          <tr>
+            <th scope="col">{% translate 'Prize' %}</th>
+            <th scope="col">{% translate 'Quantity' %}</th>
+          </tr>
         </thead>
         <tbody>
-        {% for prize in prizes %}
-          {% if prize.quantity %}
-            <tr>
-              <td>{% if prize.url %}<a href="{{ prize.url }}" target="_blank">{{ prize }}</a>{% else %}{{ prize }}{% endif %}</td>
-              <td>{{ prize.quantity }}</td>
-            </tr>
-          {% endif %}
-        {% endfor %}
+          {% for prize in prizes %}
+            {% if prize.quantity %}
+              <tr>
+                <td>
+                  {% if prize.url %}
+                    <a href="{{ prize.url }}" target="_blank">{{ prize }}</a>
+                  {% else %}
+                    {{ prize }}
+                  {% endif %}
+                </td>
+                <td>{{ prize.quantity }}</td>
+              </tr>
+            {% endif %}
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
-
   <div class="card mb-5">
     <div class="card-body">
       <h2 class="card-header">{% translate 'Prize Selections by Cub' %}</h2>
@@ -39,31 +43,30 @@
         <caption>{% translate 'Prize Selections by Cub' %}</caption>
         <colgroup>
           <col span="2" class="table-active">
-          <col span="2" class="">
+          <col span="2">
         </colgroup>
         <thead class="thead-dark">
-        <tr>
-          <th scope="col">{% translate 'Den' %}</th>
-          <th scope="col">{% translate 'Cub' %}</th>
-          <th scope="col">{% translate 'Prize' %}</th>
-          <th scope="col">{% translate 'Quantity' %}</th>
-        </tr>
+          <tr>
+            <th scope="col">{% translate 'Den' %}</th>
+            <th scope="col">{% translate 'Cub' %}</th>
+            <th scope="col">{% translate 'Prize' %}</th>
+            <th scope="col">{% translate 'Quantity' %}</th>
+          </tr>
         </thead>
         <tbody>
-        {% for prize_selection in prize_selections %}
-          <tr>
-          <th scope="row">{{ prize_selection.cub.current_den.number }}</th>
-          <th scope="row">{{ prize_selection.cub }}</th>
-          <td>{{ prize_selection.prize }}</td>
-          <td>{{ prize_selection.quantity }}
-          </td>
-        {% endfor %}
+          {% for prize_selection in prize_selections %}
+            <tr>
+              <th scope="row">{{ prize_selection.cub.current_den.number }}</th>
+              <th scope="row">{{ prize_selection.cub }}</th>
+              <td>{{ prize_selection.prize }}</td>
+              <td>{{ prize_selection.quantity }}</td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 {% endblock content %}
-
 
 {% block js %}
   {{ block.super }}

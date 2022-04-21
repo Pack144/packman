@@ -1,6 +1,6 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 
-{% block title %}Committees — {{ block.super }}{% endblock title %}
+{% block title %}Committees | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="container row">
@@ -10,7 +10,8 @@
     {% if committee_list %}
       <div class="list-group">
         {% for committee in committee_list %}
-          <a class="list-group-item list-group-item-action" href="{{ committee.get_absolute_url }}">
+          <a class="list-group-item list-group-item-action"
+             href="{{ committee.get_absolute_url }}">
             <div class="d-flex w-100 justify-content-between">
               <h2>{{ committee }}</h2>
               {% if committee.leadership %}<span class="text-warning"><i class="fas fa-star fa-2x"></i></span>{% endif %}
@@ -23,4 +24,4 @@
       <div class="alert alert-light" role="alert">No committees have been defined yet</div>
     {% endif %}
   </div>
-{% endblock %}
+{% endblock content %}

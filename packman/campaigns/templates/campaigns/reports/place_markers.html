@@ -1,31 +1,29 @@
 {% load static %}
-<html lang="en-us">
-<head>
-  <link rel="stylesheet" href="{% static 'css/reports.css' %}">
-  <title>Place Markers</title>
-</head>
 
-<body>
-{% for cub in cub_list %}
-  {% ifchanged cub.den %}
-    {% if not forloop.first %}
+<html lang="en-US">
+  <head>
+    <link rel="stylesheet" href="{% static 'css/reports.css' %}">
+    <title>Place Markers</title>
+  </head>
+  <body>
+    {% for cub in cub_list %}
+      {% ifchanged cub.den %}
+        {% if not forloop.first %}<div class="page-break"></div>{% endif %}
+        <table>
+          <tr>
+            <td class="placeMarkerDenName">{{ cub.den|upper }}</td>
+          </tr>
+        </table>
+      {% endifchanged %}
       <div class="page-break"></div>
-    {% endif %}
-    <table>
-      <tr>
-        <td class="placeMarkerDenName">{{ cub.den|upper }}</td>
-      </tr>
-    </table>
-  {% endifchanged %}
-    <div class="page-break"></div>
-    <table>
-      <tr>
-        <td class="placeMarkerCubName">{{ cub.scout }}</td>
-      </tr>
-      <tr>
-        <td class="placeMarkerCubDen">{{ cub.den }}</td>
-      </tr>
-    </table>
-{% endfor %}
-</body>
+      <table>
+        <tr>
+          <td class="placeMarkerCubName">{{ cub.scout }}</td>
+        </tr>
+        <tr>
+          <td class="placeMarkerCubDen">{{ cub.den }}</td>
+        </tr>
+      </table>
+    {% endfor %}
+  </body>
 </html>

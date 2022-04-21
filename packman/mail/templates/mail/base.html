@@ -1,24 +1,29 @@
-{% extends '_base.html' %}
-
+{% extends "_base.html" %}
 
 {% load i18n humanize %}
 
-
-{% block body_extra_class %}vh-100{% endblock %}
-
+{% block body_extra_class %}vh-100{% endblock body_extra_class %}
 
 {% block supercontent %}
   <div id="mail-client">
     <!--  Begin folder list  --------------------------------------------------->
-    <section class="d-flex flex-column p-3 text-white bg-dark align-items-stretch collapse-horizontal show" id="folder-sidebar">
-      <a href="{% url 'mail:inbox' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ml-3 ml-md-0 mr-md-auto text-white text-decoration-none">
+    <section class="d-flex flex-column p-3 text-white bg-dark align-items-stretch collapse-horizontal show"
+             id="folder-sidebar">
+      <a href="{% url 'mail:inbox' %}"
+         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ml-3 ml-md-0 mr-md-auto text-white text-decoration-none">
         <i class="fas fa-envelope fa-2x me-2 mr-2"></i>
         <span class="d-none d-md-inline fs-4 h4 mb-0">{% translate 'Mail' %}</span>
       </a>
       <hr>
       <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item text-nowrap">
-          <a href="{% url 'mail:inbox' %}" class="d-flex align-items-center justify-content-between nav-link{% if mailbox == mailbox.INBOX %} active" aria-current="page{% else %} text-white{% endif %}">
+          <a href="{% url 'mail:inbox' %}"
+             class="d-flex align-items-center justify-content-between nav-link
+                    {% if mailbox == mailbox.INBOX %}
+                      active" aria-current="page
+                    {% else %}
+                      text-white
+                    {% endif %}">
             <div>
               <i class="fas fa-inbox fa-fw"></i>
               <span class="d-none d-md-inline ml-2">{% translate 'Inbox' %}</span>
@@ -30,7 +35,13 @@
         </li>
         {% if mail_count.drafts.total %}
           <li class="nav-item text-nowrap">
-            <a href="{% url 'mail:drafts' %}" class="d-flex align-items-center justify-content-between nav-link{% if mailbox == mailbox.DRAFTS %} active" aria-current="page{% else %} text-white{% endif %}">
+            <a href="{% url 'mail:drafts' %}"
+               class="d-flex align-items-center justify-content-between nav-link
+                      {% if mailbox == mailbox.DRAFTS %}
+                        active" aria-current="page
+                      {% else %}
+                        text-white
+                      {% endif %}">
               <div>
                 <i class="fas fa-file-alt fa-fw"></i>
                 <span class="d-none d-md-inline ml-2">{% translate 'Drafts' %}</span>
@@ -40,26 +51,44 @@
           </li>
         {% endif %}
         <li class="nav-item text-nowrap">
-          <a href="{% url 'mail:sent' %}" class="nav-link{% if mailbox == mailbox.SENT %} active" aria-current="page{% else %} text-white{% endif %}">
+          <a href="{% url 'mail:sent' %}"
+             class="nav-link
+                    {% if mailbox == mailbox.SENT %}
+                      active" aria-current="page
+                    {% else %}
+                      text-white
+                    {% endif %}">
             <i class="fas fa-paper-plane fa-fw"></i>
             <span class="d-none d-md-inline ml-2">{% translate 'Sent' %}</span>
           </a>
         </li>
         <li class="nav-item text-nowrap">
-          <a href="{% url 'mail:archives' %}" class="nav-link{% if mailbox == mailbox.ARCHIVES %} active" aria-current="page{% else %} text-white{% endif %}">
+          <a href="{% url 'mail:archives' %}"
+             class="nav-link
+                    {% if mailbox == mailbox.ARCHIVES %}
+                      active" aria-current="page
+                    {% else %}
+                      text-white
+                    {% endif %}">
             <i class="fas fa-archive fa-fw"></i>
             <span class="d-none d-md-inline ml-2">{% translate 'Archives' %}</span>
           </a>
         </li>
         <li class="nav-item text-nowrap">
-          <a href="{% url 'mail:trash' %}" class="nav-link{% if mailbox == mailbox.TRASH %} active" aria-current="page{% else %} text-white{% endif %}">
+          <a href="{% url 'mail:trash' %}"
+             class="nav-link
+                    {% if mailbox == mailbox.TRASH %}
+                      active" aria-current="page
+                    {% else %}
+                      text-white
+                    {% endif %}">
             <i class="fas fa-trash-alt fa-fw"></i>
             <span class="d-none d-md-inline ml-2">{% translate 'Trash' %}</span>
           </a>
         </li>
-{#        <li>#}
-{#          <a href="#tags_submenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">{% translate 'Tags' %}</a>#}
-{#        </li>#}
+        {#        <li>#}
+        {#          <a href="#tags_submenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">{% translate 'Tags' %}</a>#}
+        {#        </li>#}
       </ul>
       <hr>
       <div class="d-flex justify-content-end">
@@ -67,11 +96,16 @@
       </div>
     </section>
     <!--  End folder list  ----------------------------------------------------->
-
     <div class="d-flex flex-grow-1 justify-content-center overflow-hidden">
       {% if mailbox %}
         <!--  Begin message list  -------------------------------------------------->
-        <div class="{% if view.template_name == 'mail/message_list.html' %}d-flex{% else %}d-none d-lg-flex{% endif %} flex-grow-1 overflow-hidden" id="message-list-column">
+        <div class="{% if view.template_name == 'mail/message_list.html' %}
+                      d-flex
+                    {% else %}
+                      d-none d-lg-flex
+                    {% endif %}
+                    flex-grow-1 overflow-hidden"
+             id="message-list-column">
           {% if mailbox == mailbox.DRAFTS or mailbox == mailbox.SENT %}
             {% include 'mail/snippets/outbound_message_list.html' %}
           {% else %}
@@ -80,25 +114,32 @@
         </div>
         <!--  End message list  ---------------------------------------------------->
       {% endif %}
-
       <!--  Begin message detail  ------------------------------------------------>
-      <main class="border-left {% if view.template_name != 'mail/message_list.html' %}d-flex{% else %}d-none d-lg-flex{% endif %} flex-grow-1 overflow-hidden" id="message-detail-column">
+      <main class="border-left
+                   {% if view.template_name != 'mail/message_list.html' %}
+                     d-flex
+                   {% else %}
+                     d-none d-lg-flex
+                   {% endif %}
+                   flex-grow-1 overflow-hidden"
+            id="message-detail-column">
         {% block message_detail %}
           <div class="d-flex flex-column align-items-center justify-content-center text-light h-100">
             <span class="display-1"><i class="far fa-envelope"></i></span>
-            <p>No Message Selected</p>
+            <p>
+              No Message Selected
+            </p>
           </div>
         {% endblock message_detail %}
+
       </main>
       <!--  End message detail  -------------------------------------------------->
     </div>
   </div>
-{% endblock %}
-
+{% endblock supercontent %}
 
 {% block js %}
   {{ block.super }}
-
   <script>
     /* Enable tooltips on this page */
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
@@ -106,4 +147,4 @@
       return new bootstrap.Tooltip(tooltipTriggerEl)
     });
   </script>
-{% endblock %}
+{% endblock js %}

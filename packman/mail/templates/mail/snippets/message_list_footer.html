@@ -1,5 +1,7 @@
 {% load i18n %}
-<div class="d-flex justify-content-end border-top mt-auto px-3" id="message-list-counter">
+
+<div class="d-flex justify-content-end border-top mt-auto px-3"
+     id="message-list-counter">
   <small class="text-muted">
     {% blocktranslate count total=mail_count.current.total %}
       {{ total }} message

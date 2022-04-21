@@ -1,34 +1,52 @@
-{% extends 'mail/base.html' %}
+{% extends "mail/base.html" %}
 
 {% load humanize i18n %}
 
 {% block title %}{{ message.subject }} | {{ block.super }}{% endblock %}
 
 {% block message_detail %}
-    <div class="d-flex justify-content-center my-2" id="message-action-bar">
-      <form method="post">
-        <div class="btn-group btn-group-sm" role="group" aria-label="{% translate 'message toolbar' %}">
-          {% if message.receipt.0.is_archived %}
-            <button type="submit" name="_unarchive" class="btn btn-secondary" data-toggle="tooltip" title="{% translate 'Move to Inbox' %}">
-              <i class="fas fa-archive"></i>
-            </button>
-          {% else %}
-            <button type="submit" name="_archive" class="btn btn-outline-secondary" data-toggle="tooltip" title="{% translate 'Archive' %}">
-              <i class="fas fa-archive"></i>
-            </button>
-          {% endif %}
-          {% if message.receipt.0.is_deleted %}
-            <button type="submit" name="_undelete" class="btn btn-secondary" data-toggle="tooltip" title="{% translate 'Recover message' %}">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          {% else %}
-            <button type="submit" name="_delete" class="btn btn-outline-secondary" data-toggle="tooltip" title="{% translate 'Delete' %}">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          {% endif %}
-        </div>
-        {% csrf_token %}
-      </form>
-    </div>
-    {% include 'mail/partials/message.html' %}
-{% endblock %}
+  <div class="d-flex justify-content-center my-2" id="message-action-bar">
+    <form method="post">
+      <div class="btn-group btn-group-sm"
+           role="group"
+           aria-label="{% translate 'message toolbar' %}">
+        {% if message.receipt.0.is_archived %}
+          <button type="submit"
+                  name="_unarchive"
+                  class="btn btn-secondary"
+                  data-toggle="tooltip"
+                  title="{% translate 'Move to Inbox' %}">
+            <i class="fas fa-archive"></i>
+          </button>
+        {% else %}
+          <button type="submit"
+                  name="_archive"
+                  class="btn btn-outline-secondary"
+                  data-toggle="tooltip"
+                  title="{% translate 'Archive' %}">
+            <i class="fas fa-archive"></i>
+          </button>
+        {% endif %}
+        {% if message.receipt.0.is_deleted %}
+          <button type="submit"
+                  name="_undelete"
+                  class="btn btn-secondary"
+                  data-toggle="tooltip"
+                  title="{% translate 'Recover message' %}">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        {% else %}
+          <button type="submit"
+                  name="_delete"
+                  class="btn btn-outline-secondary"
+                  data-toggle="tooltip"
+                  title="{% translate 'Delete' %}">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        {% endif %}
+      </div>
+      {% csrf_token %}
+    </form>
+  </div>
+  {% include 'mail/partials/message.html' %}
+{% endblock message_detail %}

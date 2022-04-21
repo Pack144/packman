@@ -1,10 +1,8 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 
 {% load i18n static %}
 
-
 {% block title %}{% translate 'Delete Order' %} | {{ block.super }}{% endblock %}
-
 
 {% block content %}
   <form method="post">
@@ -21,9 +19,15 @@
             <div class="d-flex align-items-center">
               <div class="flex-shrink-0">
                 {% if item.product.image %}
-                  <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="rounded" height="80">
+                  <img src="{{ item.product.image.url }}"
+                       alt="{{ item.product.name }}"
+                       class="rounded"
+                       height="80">
                 {% else %}
-                  <img src="https://via.placeholder.com/80" alt="{{ item.product.name }}" class="rounded" height="80">
+                  <img src="https://via.placeholder.com/80"
+                       alt="{{ item.product.name }}"
+                       class="rounded"
+                       height="80">
                 {% endif %}
               </div>
               <div class="flex-grow-1 ml-3">
@@ -39,7 +43,9 @@
           </li>
         {% endfor %}
         {% if order.donation %}
-          <li class="list-group-item bg-transparent text-right"><h3>Donation: ${{ order.donation }}</h3></li>
+          <li class="list-group-item bg-transparent text-right">
+            <h3>Donation: ${{ order.donation }}</h3>
+          </li>
         {% endif %}
       </ul>
       <hr>
@@ -48,4 +54,4 @@
     </div>
     {% csrf_token %}
   </form>
-{% endblock %}
+{% endblock content %}

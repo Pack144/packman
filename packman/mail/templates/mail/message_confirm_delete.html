@@ -1,8 +1,10 @@
-{% extends 'mail/base.html' %}
+{% extends "mail/base.html" %}
 
 {% load humanize i18n %}
 
-{% block title %}{% blocktranslate %}{{ message.subject }} (confirm delete){% endblocktranslate %} | {{ block.super }}{% endblock title %}
+{% block title %}
+  {% blocktranslate %}{{ message.subject }} (confirm delete){% endblocktranslate %} | {{ block.super }}
+{% endblock title %}
 
 {% block message_detail %}
   <div class="d-flex flex-column h-100" id="message-detail">
@@ -18,14 +20,17 @@
             <div class="d-flex align-items-center justify-content-between">
               <a href="{{ message.author.get_absolute_url }}" class="h6 mb-0">{{ message.author }}</a>
               <div class="text-right">
-                <small class="text-muted">{% firstof message.receipt.0.date_received|naturalday message.date_sent|naturalday %}</small>
+                <small
+                  class="text-muted">{% firstof message.receipt.0.date_received|naturalday message.date_sent|naturalday %}</small>
               </div>
             </div>
             <div class="d-flex" id="to-line">
               {% for recipient in message.get_recipients %}
                 {% ifchanged recipient.0 %}
-                  <small class="text-secondary">{{ recipient.0|title }}:</small>{% endifchanged %}
-                <small class="badge badge-secondary badge-pill ml-1" title="{{ recipient.2 }}">{{ recipient.1 }}</small>
+                  <small class="text-secondary">{{ recipient.0|title }}:</small>
+                {% endifchanged %}
+                <small class="badge badge-secondary badge-pill ml-1"
+                       title="{{ recipient.2 }}">{{ recipient.1 }}</small>
               {% endfor %}
             </div>
             <div class="d-flex mt-2" id="subject-line">
@@ -33,7 +38,8 @@
             </div>
           </div>
         </div>
-        <div class="d-flex flex-column flex-shrink-1 pt-3 scrollarea" id="message-body">
+        <div class="d-flex flex-column flex-shrink-1 pt-3 scrollarea"
+             id="message-body">
           {{ message.body|safe|linebreaks }}
         </div>
         {% if message.attachments.exists %}
@@ -41,41 +47,46 @@
             <ul class="list-unstyled">
               {% for attachment in message.attachments.all %}
                 <li class="d-inline-block mr-3" id="attachment-{{ attachment.pk }}">
-                  <a href="{{ attachment.filename.url }}" target="popup" onclick="window.open('{{ attachment.filename.url }}','popup','width=400,height=800');return false;">
-                    <i class="far fa-file"></i> {{ attachment }}
+                  <a href="{{ attachment.filename.url }}"
+                     target="popup"
+                     onclick="window.open('{{ attachment.filename.url }}','popup','width=400,height=800');return false;">
+                    <i class="far fa-file"></i>
+                    {{ attachment }}
                   </a>
                 </li>
               {% endfor %}
             </ul>
             <small class="text-muted">
-              <span id="attachment-count">{{ message.attachments.count }}</span> attachment{{ message.attachments.count|pluralize }}
+              <span id="attachment-count">{{ message.attachments.count }}</span>
+              attachment{{ message.attachments.count|pluralize }}
             </small>
           </div>
         {% endif %}
       </div>
     </div>
   </div>
-
   <div class="modal" role="alert" id="errorModal" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="text-danger"><i class="fas fa-exclamation-circle"></i> {% translate 'Warning' %}</h1>
+          <h1 class="text-danger">
+            <i class="fas fa-exclamation-circle"></i> {% translate 'Warning' %}
+          </h1>
         </div>
         <div class="modal-body">
-            {% blocktranslate with subject=message.subject %}
-              <p>Are you really sure you want permanently delete this message?</p>
-            {% endblocktranslate %}
+          {% blocktranslate with subject=message.subject %}
+            <p>Are you really sure you want permanently delete this message?</p>
+          {% endblocktranslate %}
         </div>
       </div>
     </div>
   </div>
-{% endblock %}
+{% endblock message_detail %}
 
 {% block js %}
   {{ block.super }}
   <script>
-    var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     errorModal.show();
   </script>
-{% endblock %}
+{% endblock js %}

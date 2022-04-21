@@ -1,29 +1,40 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
+
 {% load crispy_forms_tags i18n static %}
 
-{% block title %}{% trans 'Sign In' %} — {{ block.super }}{% endblock title %}
+{% block title %}{% translate 'Sign In' %} | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="row justify-content-center mt-5">
     <div class="col-md-6">
       <div class="card border-0 shadow-sm mb-3">
         <div class="card-header text-center">
-          <img src="{% static 'img/logo.png' %}" width="64" height="36" class="d-block d-sm-none mx-auto my-4 img-thumbnail" alt="{% trans 'Pack Logo' %}">
-          <img src="{% static 'img/logo.png' %}" width="125" height="70" class="d-none d-sm-block mx-auto my-4 img-thumbnail" alt="{% trans 'Pack Logo' %}">
-          <h3 class="card-subtitle text-muted">{% trans 'Sign In' %}</h3>
+          <img src="{% static 'img/logo.png' %}"
+               width="64"
+               height="36"
+               class="d-block d-sm-none mx-auto my-4 img-thumbnail"
+               alt="{% translate 'Pack Logo' %}">
+          <img src="{% static 'img/logo.png' %}"
+               width="125"
+               height="70"
+               class="d-none d-sm-block mx-auto my-4 img-thumbnail"
+               alt="{% translate 'Pack Logo' %}">
+          <h3 class="card-subtitle text-muted">{% translate 'Sign In' %}</h3>
         </div>
         <div class="card-body">
           <form class="form" action="{{ app_path }}" method="post" id="login-form">
             {% csrf_token %}
             {{ form|crispy }}
-            <input class="btn btn-block btn-success mt-5" type="submit" value="{% trans 'Sign in' %}"/>
+            <input class="btn btn-block btn-success mt-5"
+                   type="submit"
+                   value="{% translate 'Sign in' %}"/>
           </form>
         </div>
         <div class="card-footer text-center small">
-          <a href="{% url 'password_reset' %}">{% trans 'Forgot your password?' %}</a> |
-          <a href="{% url 'pages:signup' %}">{% trans 'Not yet a member?' %}</a>
+          <a href="{% url 'password_reset' %}">{% translate "Forgot your password?" %}</a> |
+          <a href="{% url 'pages:signup' %}">{% translate "Not yet a member?" %}</a>
         </div>
       </div>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}
