@@ -13,7 +13,6 @@ curlylint = "*"
 black = "*"
 flake8 = "*"
 ipython = "*"
-djlint = "*"
 
 [packages]
 argon2-cffi = "*"
