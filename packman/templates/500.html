@@ -1,11 +1,13 @@
 {% extends "_base_wo_nav.html" %}
 
-{% block title %}Server Error — {{ block.super }}{% endblock title %}
+{% block title %}Server Error | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="alert alert-danger" role="alert">
     <h1 class="alert-heading">Server Error</h1>
-    <p>Hmm…something went wrong on our end. We track these errors automatically, but if the problem persists feel free
-      to contact us. Try starting over at <a href="{% url 'pages:home' %}" class="alert-link">the homepage</a>.</p>
+    <p>
+      Hmm…something went wrong on our end. We track these errors automatically, but if the problem persists feel free
+      to contact us. Try starting over at <a href="{% url 'pages:home' %}" class="alert-link">the homepage</a>.
+    </p>
   </div>
-{% endblock %}
+{% endblock content %}

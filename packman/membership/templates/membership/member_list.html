@@ -1,12 +1,13 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
+
 {% load i18n %}
 
-{% block title %}{% trans 'Members - Active Members' %} — {{ block.super }}{% endblock title %}
+{% block title %}{% translate 'Members - Active Members' %} | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="row">
     <div class="col">
-      <h1>{% trans 'Members' %}</h1>
+      <h1>{% translate 'Members' %}</h1>
     </div>
     {% include 'membership/snippets/search.html' %}
   </div>
@@ -14,13 +15,13 @@
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'membership:scouts' %}">{% trans 'Cubs' %}</a>
+          <a class="nav-link" href="{% url 'membership:scouts' %}">{% translate 'Cubs' %}</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'membership:parents' %}">{% trans 'Adults' %}</a>
+          <a class="nav-link" href="{% url 'membership:parents' %}">{% translate 'Adults' %}</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'membership:all' %}">{% trans 'All Members' %}</a>
+          <a class="nav-link active" href="{% url 'membership:all' %}">{% translate 'All Members' %}</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'dens:list' %}">Dens</a>
@@ -32,15 +33,14 @@
         {% for member in members %}
           {% include 'membership/snippets/list_entry.html' %}
         {% empty %}
-          <p class="text-danger">The pack has no active members. It's time to invite some to <a
-              href="{% url 'pages:signup' %}">join us</a></p>
+          <p class="text-danger">
+            The pack has no active members. It's time to invite some to <a href="{% url 'pages:signup' %}">join us</a>
+          </p>
         {% endfor %}
       </div>
     </div>
     {% if is_paginated %}
-      <div class="card-footer">
-        {% include 'pagination.html' %}
-      </div>
+      <div class="card-footer">{% include 'pagination.html' %}</div>
     {% endif %}
   </div>
-{% endblock %}
+{% endblock content %}

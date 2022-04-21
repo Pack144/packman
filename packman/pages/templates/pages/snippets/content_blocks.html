@@ -1,9 +1,10 @@
 {% load i18n %}
+
 {% for content in page.content_blocks.all %}
-    <section class="card shadow-sm mb-3">
-      <div class="container p-5">
-        {% if content.heading %}<h2>{{ content.heading }}</h2>{% endif %}
-        {{ content.body|safe }}
-      </div>
-    </section>
+  <section class="card shadow-sm mb-3">
+    <div class="container p-5">
+      {% if content.heading %}<h2>{{ content.heading }}</h2>{% endif %}
+      {{ content.body|safe }}
+    </div>
+  </section>
 {% endfor %}

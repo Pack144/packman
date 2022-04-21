@@ -1,10 +1,8 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 
 {% load humanize i18n static %}
 
-
 {% block title %}{% translate 'Orders' %} | {{ block.super }}{% endblock %}
-
 
 {% block content %}
   {% if campaigns.viewing == campaigns.current %}
@@ -12,18 +10,22 @@
       {% include 'campaigns/snippets/new_order_button.html' with campaign=campaigns.viewing %}
     </div>
   {% endif %}
-
   <div class="d-flex justify-content-between align-items-center">
     <h1>{% translate 'Orders' %}</h1>
     <div class="btn-group">
       <button type="button" class="btn btn-outline-secondary">{{ campaigns.viewing }}</button>
-      <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <button type="button"
+              class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false">
         <span class="sr-only">{% translate 'Toggle Dropdown' %}</span>
       </button>
       <div class="dropdown-menu dropdown-menu-right">
         {% for campaign in campaigns.available %}
           {% if not campaign == campaigns.viewing %}
-            <a class="dropdown-item" href="{% url 'campaigns:order_list_by_campaign' campaign=campaign.year.year %}">{{ campaign }}</a>
+            <a class="dropdown-item"
+               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign.year.year %}">{{ campaign }}</a>
           {% else %}
             <div class="dropdown-item active">{{ campaign }}</div>
           {% endif %}
@@ -31,36 +33,54 @@
       </div>
     </div>
   </div>
-
   {% regroup order_list by seller as seller_order_list %}
   {% for seller in seller_order_list %}
     {% include 'campaigns/snippets/quota_progress.html' with scout=seller.grouper %}
     <div class="list-group list-group-flush mt-3 mb-5">
       <ul class="nav nav-tabs">
         {% with campaign=campaigns.viewing.year.year %}
-        <li class="nav-item">
-          <a class="nav-link{% if not request.GET.filter %} active" aria-current="page{% endif %}" href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}">All Orders</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link{% if request.GET.filter == "undelivered" %} active" aria-current="page{% endif %}" href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=undelivered">Undelivered</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link{% if request.GET.filter == "delivered" %} active" aria-current="page{% endif %}" href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=delivered">Delivered</a>
-        </li>
+          <li class="nav-item">
+            <a class="nav-link
+                      {% if not request.GET.filter %}
+                        active" aria-current="page
+                      {% endif %}"
+               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}">All Orders</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link
+                      {% if request.GET.filter == "undelivered" %}
+                        active" aria-current="page
+                      {% endif %}"
+               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=undelivered">Undelivered</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link
+                      {% if request.GET.filter == "delivered" %}
+                        active" aria-current="page
+                      {% endif %}"
+               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=delivered">Delivered</a>
+          </li>
         {% endwith %}
       </ul>
       {% for order in seller.list %}
-        <a href="{{ order.get_absolute_url }}" class="list-group-item list-group-item-action">
+        <a href="{{ order.get_absolute_url }}"
+           class="list-group-item list-group-item-action">
           <div class="d-flex justify-content-between align-items-center">
-            <h5>{{ order.customer.name }}
+            <h5>
+              {{ order.customer.name }}
               {% if order.notes %}
-                <span class="border border-secondary rounded ml-3 px-2 py-1" data-toggle="tooltip" title="{{ order.notes }}"><i class="fas fa-align-justify fa-xs fa-fw"></i></span>
+                <span class="border border-secondary rounded ml-3 px-2 py-1"
+                      data-toggle="tooltip"
+                      title="{{ order.notes }}"><i class="fas fa-align-justify fa-xs fa-fw"></i></span>
               {% endif %}
             </h5>
             <div>
               <div class="d-flex flex-column align-items-end">
                 {% if order.is_paid %}
-                  <img src="{% static 'img/paid_stamp.svg' %}" height="43" class="position-absolute">
+                  <img src="{% static 'img/paid_stamp.svg' %}"
+                       alt="{% translate 'Order Paid' %}"
+                       height="43"
+                       class="position-absolute">
                 {% endif %}
                 <small>{{ order.date_added|naturalday }}</small>
                 <strong class="text-success">${{ order.total|intcomma }}</strong>
@@ -70,11 +90,12 @@
           <small>{{ order.customer.get_address_display }}</small>
         </a>
       {% endfor %}
-      <p class="text-right">{{ seller.list|length }} order{{ seller.list|length|pluralize }}</p>
+      <p class="text-right">
+        {{ seller.list|length }} order{{ seller.list|length|pluralize }}
+      </p>
     </div>
   {% endfor %}
-{% endblock %}
-
+{% endblock content %}
 
 {% block js %}
   {{ block.super }}
@@ -84,4 +105,4 @@
       return new bootstrap.Tooltip(tooltipTriggerEl)
     });
   </script>
-{% endblock %}
+{% endblock js %}

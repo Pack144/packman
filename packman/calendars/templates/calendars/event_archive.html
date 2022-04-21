@@ -1,45 +1,54 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 
 {% block title %}Previous Events | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center">
     <h1>Previous Events</h1>
-
     <div class="dropdown">
-      <button class="btn btn-lg btn-danger dropdown-toggle" type="button" id="calendarFeedSubscribeButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <button class="btn btn-lg btn-danger dropdown-toggle"
+              type="button"
+              id="calendarFeedSubscribeButton"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false">
         <i class="fas fa-calendar-alt"></i>
       </button>
       <div class="dropdown-menu" aria-labelledby="calendarFeedSubscribeButton">
-        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">Subscribe to this calendar</a>
-        <button class="dropdown-item" href="{% url 'calendars:feed' user.family.uuid %}" id="ical-link">Copy link to this calendar</button>
+        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">
+          Subscribe to this calendar
+        </a>
+        <button class="dropdown-item"
+                href="{% url 'calendars:feed' user.family.uuid %}"
+                id="ical-link">
+          Copy link to this calendar
+        </button>
       </div>
     </div>
   </div>
   {% if events %}
     <div class="mt-5">
-      {% include 'calendars/events_list_snippet.html' %}
+      {% include 'calendars/snippets/events_list_entry.html' %}
     </div>
     {% if is_paginated %}
       {% include 'pagination.html' %}
     {% endif %}
   {% else %}
     <div class="alert alert-secondary" role="alert">
-      <p>The pack has no previously scheduled events.</p>
+      <p>
+        The pack has no previously scheduled events.
+      </p>
     </div>
   {% endif %}
-{% endblock %}
+{% endblock content %}
 
 {% block js %}
   {{ block.super }}
-
   <script>
     $(function () {
       $('[data-toggle="tooltip"]').tooltip()
     })
   </script>
-
-
   <script type="text/javascript">
     function copy() {
       var textArea = document.createElement("textarea");
@@ -62,4 +71,4 @@
 
     document.querySelector("#ical-link").addEventListener("click", copy);
   </script>
-{% endblock %}
+{% endblock js %}

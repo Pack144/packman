@@ -1,10 +1,13 @@
 {% extends "_base.html" %}
 
-{% block title %}Not Found — {{ block.super }}{% endblock title %}
+{% block title %}Not Found | {{ block.super }}{% endblock %}
 
 {% block content %}
   <div class="alert alert-danger" role="alert">
     <h1 class="alert-heading">Not Found</h1>
-    <p>Hmm…we couldn't find what you were looking for. Try starting over at <a href="{% url 'pages:home' %}" class="alert-link">the homepage</a>.</p>
+    <p>
+      Hmm…we couldn't find what you were looking for. Try starting over at
+      <a href="{% url 'pages:home' %}" class="alert-link">the homepage</a>.
+    </p>
   </div>
-{% endblock %}
+{% endblock content %}

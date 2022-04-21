@@ -1,8 +1,8 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 
 {% load i18n %}
 
-{% block title %}{% translate 'Confirm Delete' %} | {{ block.super }}{% endblock %}
+{% block title %}{% translate 'Confirm Delete' %} | {{ block.super }}{% endblock title %}
 
 {% block content %}
   <form method="post">
@@ -12,9 +12,9 @@
         <p>You are about to delete the <strong>{{ page }}</strong> webpage. This action cannot be undone.</p>
         <p>To permanently remove this page from the database click the delete button below.</p>
       {% endblocktranslate %}
-        <hr>
-        <a href="{{ page.get_absolute_url }}" class="btn btn-primary">{% translate 'Wait! Take me back' %}</a>
-        <button type="submit" class="btn btn-danger">{% translate 'Yes, delete this page' %}</button>
+      <hr>
+      <a href="{{ page.get_absolute_url }}" class="btn btn-primary">{% translate 'Wait! Take me back' %}</a>
+      <button type="submit" class="btn btn-danger">{% translate 'Yes, delete this page' %}</button>
     </div>
     {% csrf_token %}
   </form>
