@@ -1,16 +1,14 @@
 {% load i18n static thumbnail %}
 
-
-<a class="list-group-item list-group-item-action" href="{{ member.get_absolute_url }}">
+<a class="list-group-item list-group-item-action"
+   href="{{ member.get_absolute_url }}">
   <div class="row align-items-center">
-    <div class="col-lg-2">
-      {% include "membership/snippets/headshot_thumbnail.html" %}
-    </div>
+    <div class="col-lg-2">{% include "membership/snippets/headshot_thumbnail.html" %}</div>
     <div class="col">
       <h4 class="card-title">{{ member }}</h4>
       {% if member.scout %}
         <p>
-          {% if member.scout.current_den.rank %}{{ member.scout.current_den.rank }} — {% endif %}
+          {% if member.scout.rank %}{{ member.scout.rank }} —{% endif %}
           {% if member.scout.current_den %}<small>{{ member.scout.current_den }}</small>{% endif %}
         </p>
       {% elif member.adult.role == member.adult.CONTRIBUTOR %}

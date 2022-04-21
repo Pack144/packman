@@ -1,21 +1,22 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 
 {% load i18n %}
 
-
 {% block title %}{% translate 'Prizes' %} | {{ block.super }}{% endblock %}
-
 
 {% block content %}
   <h1>{% translate 'Prizes' %}</h1>
   <div class="card-deck">
     {% for prize in prize_list %}
-
       <div class="card">
         {% if prize.image %}
-          <img src="{{ prize.image.url }}" class="card-img-top" alt="{{ prize.name }}">
+          <img src="{{ prize.image.url }}"
+               class="card-img-top"
+               alt="{{ prize.name }}">
         {% else %}
-          <img src="https://via.placeholder.com/300/515354/E9E9E4/?text={{ prize.name|urlencode }}" class="card-img-top" alt="{{ prize.name }}">
+          <img src="https://via.placeholder.com/300/515354/E9E9E4/?text={{ prize.name|urlencode }}"
+               class="card-img-top"
+               alt="{{ prize.name }}">
         {% endif %}
         <div class="card-body">
           <h5 class="card-title">{{ prize.name }}</h5>
@@ -27,4 +28,4 @@
       </div>
     {% endfor %}
   </div>
-{% endblock %}
+{% endblock content %}

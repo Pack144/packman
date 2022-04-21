@@ -1,50 +1,56 @@
-{% extends '_base.html' %}
-{% load static %}
-{% load thumbnail %}
+{% extends "_base.html" %}
+
+{% load static thumbnail %}
 
 {% block title %}{{ den }} | {{ block.super }}{% endblock %}
 
 {% block content %}
-    <div class="container p-3 bg-white rounded d-none d-sm-flex justify-content-between align-items-center" id="den-patches">
-      {% if den.patch %}
-        <img src="{{ den.patch }}" alt="Den {{ den.number }} patch" class="img-fluid h-100 rounded">
-      {% else %}
-        <h1>{{ den }}</h1>
-      {% endif %}
-      {% if den.rank.patch %}
-        <img src="{{ den.rank.patch }}" alt="{{ den.rank }} patch" class="img-fluid h-100 rounded">
-      {% elif den.rank %}
-        <h4 class="text-primary">{{ den.rank }} Den</h4>
-      {% endif %}
-    </div>
-    <div class="container bg-white rounded d-flex d-sm-none justify-content-between align-items-center" id="den-id">
+  <div class="container p-3 bg-white rounded d-none d-sm-flex justify-content-between align-items-center"
+       id="den-patches">
+    {% if den.patch %}
+      <img src="{{ den.patch }}"
+           alt="Den {{ den.number }} patch"
+           class="img-fluid h-100 rounded">
+    {% else %}
       <h1>{{ den }}</h1>
-      <h4 class="text-primary">{{ den.rank }}</h4>
-    </div>
-  <div class="card shadow-sm mt-3">
-  <div class="card-body">
-  <h2 class="card-title">Cub{{ den.active_cubs.count|pluralize }}</h2>
-  {% if den.active_cubs.count %}
-    <div class="list-group list-group-flush">
-      {% for cub in den.active_cubs.all %}
-        {% include 'membership/snippets/list_entry.html' with member=cub.scout %}
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="alert alert-light" role="alert">This den has no members</div>
-  {% endif %}
+    {% endif %}
+    {% if den.rank.patch %}
+      <img src="{{ den.rank.patch }}"
+           alt="{{ den.rank }} patch"
+           class="img-fluid h-100 rounded">
+    {% elif den.rank %}
+      <h4 class="text-primary">{{ den.rank }} Den</h4>
+    {% endif %}
   </div>
+  <div class="container bg-white rounded d-flex d-sm-none justify-content-between align-items-center"
+       id="den-id">
+    <h1>{{ den }}</h1>
+    <h4 class="text-primary">{{ den.rank }}</h4>
+  </div>
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <h2 class="card-title">Cub{{ den.active_cubs.count|pluralize }}</h2>
+      {% if den.active_cubs.count %}
+        <div class="list-group list-group-flush">
+          {% for cub in den.active_cubs.all %}
+            {% include 'membership/snippets/list_entry.html' with member=cub.scout %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-light" role="alert">This den has no members</div>
+      {% endif %}
+    </div>
   </div>
   {% if leaders.count %}
     <div class="card shadow-sm mt-3">
-    <div class="card-body">
-  <h2 class="card-title">Leader{{ leaders.count|pluralize }}</h2>
-    <div class="list-group list-group-flush">
-      {% for leader in leaders.all %}
-        {% include 'membership/snippets/list_entry.html' with member=leader.member %}
-      {% endfor %}
-    </div>
-    </div>
+      <div class="card-body">
+        <h2 class="card-title">Leader{{ leaders.count|pluralize }}</h2>
+        <div class="list-group list-group-flush">
+          {% for leader in leaders.all %}
+            {% include 'membership/snippets/list_entry.html' with member=leader.member %}
+          {% endfor %}
+        </div>
+      </div>
     </div>
   {% endif %}
-{% endblock %}
+{% endblock content %}

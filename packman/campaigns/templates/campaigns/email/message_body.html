@@ -1,74 +1,86 @@
-{% extends 'base_email.html' %}
-
+{% extends "base_email.html" %}
 
 {% load i18n static %}
 
-
 {% block title %}{% blocktranslate %}Thank You Supporting {{ site.name }}{% endblocktranslate %}{% endblock %}
 
-
-{% block heading %}{{ message.subject|safe }}{% endblock heading %}
-
+{% block heading %}
+  {{ message.subject|safe }}
+{% endblock heading %}
 
 {% block content %}
   <div>
     <div>
-      <h3>{% blocktranslate with name=site.name %}Thank You Supporting {{ name }}{% endblocktranslate %}</h3>
-      <h5>{% blocktranslate with date=order.date_added|date:"F j, Y" %}Order Placed {{ date }}{% endblocktranslate %}</h5>
+      <h3>
+        {% blocktranslate with name=site.name %}Thank You Supporting {{ name }}{% endblocktranslate %}
+      </h3>
+      <h5>
+        {% blocktranslate with date=order.date_added|date:"F j, Y" %}
+          Order Placed {{ date }}
+        {% endblocktranslate %}
+      </h5>
       <address>
-        <ul style="list-style: none; margin-left: 0;  padding-left: 0;">
+        <ul style="list-style: none; margin-left: 0; padding-left: 0;">
           {% if order.customer.get_address_display %}
-            <li>
-              {{ order.customer.get_address_display }}
-            </li>
+            <li>{{ order.customer.get_address_display }}</li>
           {% endif %}
           {% if order.customer.email %}
-            <li>
-              {{ order.customer.email }}
-            </li>
+            <li>{{ order.customer.email }}</li>
           {% endif %}
           {% if order.customer.phone_number %}
-            <li>
-              {{ order.customer.phone_number }}
-            </li>
+            <li>{{ order.customer.phone_number }}</li>
           {% endif %}
         </ul>
       </address>
     </div>
     <div>
-      {% if order.date_paid %}<img src="https://{{ site.domain }}{% static 'img/paid_stamp.svg' %}">
+      {% if order.date_paid %}
+        <img src="https://{{ site.domain }}{% static 'img/paid_stamp.svg' %}"
+             alt="{% translate 'Paid Stamp' %}">
       {% else %}
         <h6>
           {% if order.product_count %}
-            <p>Item{{ order.product_count|pluralize }}: ${{ order.annotated_items.total }}</p>
+            <p>
+              Item{{ order.product_count|pluralize }}: ${{ order.annotated_items.total }}
+            </p>
           {% endif %}
           {% if order.donation %}
-            <p>{% translate 'Donation' %} ${{ order.donation }}</p>
+            <p>
+              {% translate 'Donation' %} ${{ order.donation }}
+            </p>
           {% endif %}
         </h6>
       {% endif %}
       <h1>$ {{ order.get_total }}</h1>
     </div>
   </div>
-    <ul style="list-style: none; margin-left: 0;  padding-left: 0;">
+  <ul style="list-style: none; margin-left: 0; padding-left: 0;">
     {% for item in order.items.all %}
       {% ifchanged item.product.category %}
-        <li><h3>{{ item.product.category }}</h3></li>
+        <li>
+          <h3>{{ item.product.category }}</h3>
+        </li>
       {% endifchanged %}
       <li id="{{ item.product.pk }}">
         <div class="d-flex align-items-center">
           <div class="flex-shrink-0">
             {% if item.product.image %}
-              <img src="https://{{ site.domain }}{{ item.product.image.url }}" alt="{{ item.product.name }}" class="rounded" height="80">
+              <img src="https://{{ site.domain }}{{ item.product.image.url }}"
+                   alt="{{ item.product.name }}"
+                   class="rounded"
+                   height="80">
             {% else %}
-              <img src="https://via.placeholder.com/80" alt="{{ item.product.name }}" class="rounded" height="80">
+              <img src="https://via.placeholder.com/80"
+                   alt="{{ item.product.name }}"
+                   class="rounded"
+                   height="80">
             {% endif %}
           </div>
           <div class="flex-grow-1 ml-3">
             <div class="d-flex justify-content-between align-items-center">
               <strong>{{ item.product.name }}</strong>
               <div class="d-flex flex-column text-right">
-                <small><em class="text-muted">{{ item.quantity }} &#120; ${{ item.product.price }}/ea.</em></small>
+                <small><em class="text-muted">{{ item.quantity }} @ ${{ item.product.price }}/ea.</em></small>
                 <span class="text-muted">${{ item.get_total_item_price }}</span>
               </div>
             </div>
@@ -77,22 +89,23 @@
       </li>
     {% endfor %}
     {% if order.donation %}
-      <li><h3>Donation: ${{ order.donation }}</h3></li>
+      <li>
+        <h3>Donation: ${{ order.donation }}</h3>
+      </li>
     {% endif %}
   </ul>
-
   <h4>Thank you for supporting my Pack!</h4>
   <h3>{{ order.seller }}</h3>
-
-{% endblock %}
-
+{% endblock content %}
 
 {% block footer %}
   <p>
-    This email was sent to <a href="mailto:{{ order.customer.email }}"><<em>{{ order.customer.email }}</em>></a>.<br>
+    This email was sent to <a href="mailto:{{ order.customer.email }}"> &lt;<em>{{ order.customer.email }}</em>&gt;</a>.
+    <br>
     We sent it to you because you placed an order in support of {{ site.name }}.
   </p>
   <p>
-    You can view this message in a web browser by <a href="http://{{ site.domain }}{{ order.get_absolute_url }}">visiting our website</a>.<br>
+    You can view this message in a web browser by
+    <a href="{{ request.scheme }}://{{ site.domain }}{{ order.get_absolute_url }}">visiting our website</a>.
   </p>
-{% endblock %}
+{% endblock footer %}

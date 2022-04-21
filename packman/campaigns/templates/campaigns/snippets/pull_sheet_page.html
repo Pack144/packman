@@ -1,18 +1,18 @@
-    <table>
-    {% for product in products.quantity.all %}
-      {% ifchanged product.category %}
-        <tr>
-          <td colspan="3" class="categoryTitle">{{ product.category }}</td>
-          <td class="categoryGroups"></td>
-        </tr>
-      {% endifchanged %}
+<table>
+  {% for product in products.quantity.all %}
+    {% ifchanged product.category %}
       <tr>
-        <td class="productCheck">
-          <div class="productCheckSquare"></div>
-        </td>
-        <td class="productQty">{{ product.ordered_quantity }}</td>
-        <td class="productTitle">{{ product }}</td>
-        <td class="productGroups">{{ product. }}</td>
+        <td colspan="3" class="categoryTitle">{{ product.category }}</td>
+        <td class="categoryGroups"></td>
       </tr>
-    {% endfor %}
-  </table>
+    {% endifchanged %}
+    <tr>
+      <td class="productCheck">
+        <div class="productCheckSquare"></div>
+      </td>
+      <td class="productQty">{{ product.ordered_quantity }}</td>
+      <td class="productTitle">{{ product }}</td>
+      <td class="productGroups">{{ product.category }}</td>
+    </tr>
+  {% endfor %}
+</table>

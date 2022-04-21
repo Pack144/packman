@@ -1,38 +1,54 @@
-{% extends 'base_email.html' %}
+{% extends "base_email.html" %}
 
 {% load i18n static %}
 
-
 {% block title %}[{{ site.name }}] {{ message.subject|safe }}{% endblock %}
 
-
-{% block preheader %}{{ message.body|striptags|cut:"&nbsp;"|truncatewords:100 }}{% endblock %}
-
+{% block preheader %}{{ message.body|striptags|cut:"&nbsp;"|truncatewords:100 }}{% endblock preheader %}
 
 {% block header_top %}
-  <p>Dear {{ recipient.short_name }},<br>
-    <strong>{{ message.author }}</strong> sent the following message{% if message.distribution_lists.exist %} to {% for dl in message.distribution_lists.all %}
-      <i>{{ dl }}</i>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}:
+  <p>
+    Dear {{ recipient.short_name }},
+    <br>
+    <strong>{{ message.author }}</strong> sent the following message
+    {% if message.distribution_lists.exist %}
+      to
+      {% for dl in message.distribution_lists.all %}
+        <i>{{ dl }}</i>
+        {% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% endif %}
+    :
   </p>
-{% endblock %}
+{% endblock header_top %}
 
-
-{% block heading %}{{ message.subject|safe }}{% endblock heading %}
-
+{% block heading %}
+  {{ message.subject|safe }}
+{% endblock heading %}
 
 {% block content %}
-  <h1 style="color: #003F87; font-size: 24px; font-weight: 800; line-height: 24px; margin: 32px 0; text-align: center;">{{ message.subject|safe }}</h1>
+  <h1 style="color: #003F87;
+             font-size: 24px;
+             font-weight: 800;
+             line-height: 24px;
+             margin: 32px 0;
+             text-align: center;">
+    {{ message.subject|safe }}
+  </h1>
   {{ message.body|safe|linebreaks }}
-{% endblock %}
-
+{% endblock content %}
 
 {% block footer %}
   <p>
-    This email was sent to <a href="mailto:{{ recipient.email }}">{{ recipient }} <<em>{{ recipient.email }}</em>></a>.<br>
+    This email was sent to
+    <a href="mailto:{{ recipient.email }}">{{ recipient }} &lt;<em>{{ recipient.email }}</em>&gt;</a>.
+    <br>
     We sent it to you because you have a Cub who is an active member in {{ site.name }}.
   </p>
   <p>
-    You can view this message in a web browser by <a href="http://{{ site.domain }}{{ message.get_absolute_url }}">visiting our website</a>.<br>
+    You can view this message in a web browser by
+    <a href="{{ request.scheme }}://{{ site.domain }}{{ message.get_absolute_url }}">visiting our website</a>.
+    <br>
     While you are there, you can update your email address or adjust your preferences.
   </p>
-{% endblock %}
+{% endblock footer %}
