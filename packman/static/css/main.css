@@ -144,7 +144,7 @@ footer {
 }
 
 #mail-client #folder-sidebar {
-    max-width: 160px;
+    max-width: 240px;
 }
 
 #mail-client #message-list-column {
@@ -163,4 +163,8 @@ footer {
 
 .read-marker {
     flex: 0 0 1rem;
+}
+
+.resizer {
+    cursor: col-resize; height: 100%; width: 2px; background-color: #dee2e6;
 }
