@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -57,7 +58,9 @@ class MessageCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         if "_save" in self.request.POST:
             return reverse("mail:update", kwargs={"pk": self.object.uuid})
 
-        self.object.send()
+        self.object.date_sent = timezone.now()
+        self.object.status = Message.Status.SENDING
+        self.object.save(update_fields=("status",))
         return reverse("mail:inbox")
 
     def get_success_message(self, cleaned_data):
@@ -112,7 +115,10 @@ class MessageUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         if "_save" in self.request.POST:
             return reverse("mail:update", kwargs={"pk": self.object.uuid})
 
-        self.object.send()
+        self.object.date_sent = timezone.now()
+        self.object.status = Message.Status.SENDING
+        self.object.save(update_fields=("status",))
+
         return reverse("mail:inbox")
 
     def get_success_message(self, cleaned_data):
