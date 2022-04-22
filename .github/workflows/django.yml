@@ -27,6 +27,7 @@ jobs:
         pip install -r requirements.txt
     - name: Collect Static Files
       run: |
+        mkdir node_modules
         python manage.py collectstatic --noinput
     - name: Run Tests
       run: |
