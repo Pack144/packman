@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -19,9 +20,10 @@ def build_cart(request):
 
 
 def email_receipt(order):
+    protocol = "https" if settings.CSRF_COOKIE_SECURE else "http"
     site = Site.objects.get_current()
 
-    context = {"site": site, "order": order}
+    context = {"protocol": protocol, "site": site, "order": order}
     subject = render_to_string("campaigns/email/subject.txt", context).strip()
     plaintext = render_to_string("campaigns/email/message_body.txt", context)
     richtext = render_to_string("campaigns/email/message_body.html", context)
