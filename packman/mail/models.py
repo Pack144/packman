@@ -1,6 +1,5 @@
-
-import logging
 import html
+import logging
 from pathlib import Path
 
 from django.conf import settings
