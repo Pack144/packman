@@ -80,56 +80,32 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav mr-auto">
             {% if user.is_authenticated %}
-              <li class="nav-item
-                             {% if 'calendars' in request.resolver_match.app_names %}
-                               active
-                             {% endif %} mr-lg-3">
+              <li class="nav-item{% if 'calendars' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href="{% url 'calendars:list' %}">{% translate 'Calendar' %}</a>
               </li>
-              <li class="nav-item
-                             {% if 'membership' in request.resolver_match.app_names %}
-                               active
-                             {% endif %} mr-lg-3">
+              <li class="nav-item{% if 'membership' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href="{% url 'membership:scouts' %}">{% translate 'Members' %}</a>
               </li>
-              <li class="nav-item
-                             {% if 'committees' in request.resolver_match.app_names %}
-                               active
-                             {% endif %} mr-lg-3">
+              <li class="nav-item{% if 'committees' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href="{% url 'committees:list' %}">{% translate 'Committees' %}</a>
               </li>
-              <li class="nav-item
-                             {% if 'documents' in request.resolver_match.app_names %}
-                               active
-                             {% endif %} mr-lg-3">
+              <li class="nav-item{% if 'documents' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href="{% url 'documents:list' %}">{% translate 'Documents' %}</a>
               </li>
             {% else %}
-              <li class="nav-item
-                             {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'contact-us' %}
-                               active
-                             {% endif %} mr-lg-3">
+              <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'contact-us' %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href {% url 'pages:detail' 'contact-us' %}>{% translate 'Contact Us' %}</a>
               </li>
-              <li class="nav-item
-                             {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'about' %}
-                               active
-                             {% endif %} mr-lg-3">
+              <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'about' %} active{% endif %} mr-lg-3">
                 <a class="nav-link" href {% url 'pages:detail' 'about' %}>{% translate 'About our Pack' %}</a>
               </li>
             {% endif %}
             {% for link in navbar_links %}
-              <li class="nav-item
-                             {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == link.slug %}
-                               active
-                             {% endif %} mr-lg-3">
-                <a class="nav-link" href {% url 'pages:detail' link.slug %}>{{ link }}</a>
+              <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == link.slug %} active{% endif %} mr-lg-3">
+                <a class="nav-link" href="{% url 'pages:detail' link.slug %}">{{ link }}</a>
               </li>
             {% endfor %}
-            <li class="nav-item
-                           {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'history' %}
-                             active
-                           {% endif %} mr-lg-3">
+            <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'history' %} active{% endif %} mr-lg-3">
               <a class="nav-link" href {% url 'pages:detail' 'history' %}>{% translate 'Our History' %}</a>
             </li>
           </ul>
@@ -158,8 +134,9 @@
                           <span class="ml-1">{% translate 'Mail' %}</span>
                         </span>
                     {% if user.message_recipients.unread.exists %}
-                      <span
-                        class="badge bg-danger text-white rounded-pill">{{ user.message_recipients.unread.count }}</span>
+                      <span class="badge bg-danger text-white rounded-pill">
+                        {{ user.message_recipients.unread.count }}
+                      </span>
                     {% endif %}
                   </a>
                   <a class="dropdown-item" href="{% url 'membership:my-family' %}">
@@ -237,13 +214,12 @@
       <h1>{% translate 'Hello World!' %}</h1>
       {% lorem 6 p %}
     {% endblock content %}
-
   </main>
 {% endblock supercontent %}
 {% block footer %}
   <!-- Footer Section ------------------------------------------------------>
-  <footer class="footer text-center text-light small">
-    <div class="my-3">
+  <footer class="footer text-center text-white-50 small">
+    <div class="my-4">
       <div>
         {% blocktranslate %}
           A scout is <em>trustworthy, loyal, helpful, friendly, courteous, kind,
@@ -261,9 +237,11 @@
 {% block js %}
   <!-- Bootstrap javascript and its dependencies --------------------------->
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"
-          integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+          integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
+          crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
-          integrity="sha256-fgLAgv7fyCGopR/gBNq2iW3ZKIdqIcyshnUULC4vex8=" crossorigin="anonymous"></script>
+          integrity="sha256-fgLAgv7fyCGopR/gBNq2iW3ZKIdqIcyshnUULC4vex8="
+          crossorigin="anonymous"></script>
 {% endblock js %}
 
 </body>
