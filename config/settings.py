@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "tempus_dominus",
     "tinymce",
+    "whitenoise",
     # Local apps
     "packman.address_book",
     "packman.calendars",
@@ -76,6 +77,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
@@ -176,6 +178,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "node_modules",
     APPS_DIR / "static",
 ]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=BASE_DIR / "static_files")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=BASE_DIR / "media")
