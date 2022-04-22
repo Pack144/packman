@@ -16,7 +16,7 @@ ipython = "*"
 
 [packages]
 argon2-cffi = "*"
-django = "~=3.2"
+django = {version = "~=3.2", extras = ["argon2-cffi"]}
 django-crispy-forms = "*"
 django-debug-toolbar = "*"
 django-extensions = "*"
@@ -28,12 +28,13 @@ django-tempus-dominus = "*"
 docutils = "*"
 django-dynamic-formsets = "*"
 django-ical = "*"
-django-phonenumber-field = "*"
+django-phonenumber-field = {extras = ["phonenumberslite"], version = "*"}
 django-tinymce = "*"
 django-environ = "*"
 phonenumberslite = "*"
 pymemcache = "*"
 easy-thumbnails = "*"
+whitenoise = {extras = ["brotli"], version = "*"}
 
 [requires]
 python_version = "3.9"
