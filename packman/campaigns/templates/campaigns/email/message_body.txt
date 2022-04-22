@@ -31,4 +31,4 @@ We sent it to you because you placed an order in our annual fundraiser
 supporting {{ site.name }}.
 
 You can view this message in a web browser by visiting our website at:
-http://{{ site.domain }}{{ order.get_absolute_url }}
+{{ protocol }}://{{ site.domain }}{{ order.get_absolute_url }}
