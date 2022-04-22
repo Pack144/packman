@@ -149,6 +149,12 @@ class Message(TimeStampedUUIDModel):
         CC = "cc", _("Cc")
         # BCC = "bcc", _("Bcc")
 
+    class Status(models.TextChoices):
+        DRAFT = "DRAFT", _("Draft")
+        SENDING = "SENDING", _("Sending")
+        SENT = "SENT", _("Sent")
+        FAILED = "FAILED", _("Failed")
+
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="sent_messages", related_query_name="sent_message", blank=True
     )
@@ -163,6 +169,7 @@ class Message(TimeStampedUUIDModel):
         "self", on_delete=models.CASCADE, related_name="replies", blank=True, null=True, verbose_name=_("replying to")
     )
     date_sent = models.DateTimeField(_("sent"), blank=True, null=True)
+    status = models.CharField(_("status"), max_length=8, choices=Status.choices, default=Status.DRAFT, editable=False)
 
     objects = MessageManager()
 
@@ -197,6 +204,7 @@ class Message(TimeStampedUUIDModel):
 
         # Mark the message as sent
         self.date_sent = timezone.now()
+        self.status = Message.Status.SENT
         self.save()
 
     def _personalize_messages(self):
