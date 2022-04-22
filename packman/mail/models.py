@@ -3,6 +3,7 @@ import logging
 import html
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
@@ -202,6 +203,7 @@ class Message(TimeStampedUUIDModel):
     def _personalize_messages(self):
         messages = []
 
+        protocol = "https" if settings.CSRF_COOKIE_SECURE else "http"
         site = Site.objects.get_current()
         author_name = self.author.__str__()
         author_email = self.author.email
@@ -210,7 +212,7 @@ class Message(TimeStampedUUIDModel):
             logger.info(_("Generating an email copy for %s") % recipient)
 
             # Personalize the email for each recipient.
-            context = {"site": site, "message": self, "recipient": recipient}
+            context = {"site": site, "message": self, "recipient": recipient, "protocol": protocol}
             distros_string = ", ".join(
                 recipient.message_recipients.get(message=self).distros.values_list("name", flat=True)
             )
