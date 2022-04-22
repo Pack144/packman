@@ -206,17 +206,15 @@ class Message(TimeStampedUUIDModel):
         site = Site.objects.get_current()
         author_name = self.author.__str__()
         author_email = self.author.email
+        distros_string = ", ".join(self.distribution_lists.values_list("name", flat=True))
+        subject = f"[{distros_string}] {self.subject}"
 
         for recipient in self.recipients.all():
             logger.info(_("Generating an email copy for %s") % recipient)
 
             # Personalize the email for each recipient.
             context = {"site": site, "message": self, "recipient": recipient, "protocol": protocol}
-            distros_string = ", ".join(
-                recipient.message_recipients.get(message=self).distros.values_list("name", flat=True)
-            )
 
-            subject = f"[{distros_string}] {self.subject}"
             plaintext = render_to_string("mail/message_body.txt", context)
             richtext = render_to_string("mail/message_body.html", context)
 
