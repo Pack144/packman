@@ -192,14 +192,10 @@
 {% if messages %}
   <!-- Messages section ---------------------------------------------------->
   {% for message in messages %}
-    <div class="alert
-                    {% if message.tags %}
-                      alert-{{ message.tags }}
-                    {% endif %} alert-dismissible fade show rounded-0">
+    <div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %} alert-dismissible fade show rounded-0 mb-0">
       <button type="button"
               class="close"
               data-dismiss="alert"
-              aria-label
         {% translate 'close' %}>
         <span aria-hidden="true"><i class="fas fa-times-circle"></i></span>
       </button>
