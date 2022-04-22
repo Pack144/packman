@@ -9,6 +9,6 @@ We sent it to you because you have a Cub who is an active member in
 {{ site.name }}.
 
 You can view this message in a web browser by visiting our website at:
-http://{{ site.domain }}{{ message.get_absolute_url }}
+{{ protocol }}://{{ site.domain }}{{ message.get_absolute_url }}
 
 While there, you can update your email address or adjust your preferences.
