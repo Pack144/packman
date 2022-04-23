@@ -35,7 +35,10 @@ class MessageQuerySet(models.QuerySet):
         )
 
     def drafts(self, author):
-        return self.filter(author=author, date_sent__isnull=True)
+        return self.filter(author=author, date_sent__isnull=True).exclude(status=self.model.Status.SENDING)
+
+    def sending(self, author):
+        return self.filter(author=author, status=self.model.Status.SENDING)
 
     def sent(self, author):
         return self.filter(author=author, date_sent__isnull=False)
@@ -60,6 +63,9 @@ class MessageManager(models.Manager):
     def drafts(self, author):
         return self.get_queryset().drafts(author)
 
+    def sending(self, author):
+        return self.get_queryset().sending(author)
+
     def sent(self, author):
         return self.get_queryset().sent(author)
 
@@ -71,6 +77,8 @@ class MessageManager(models.Manager):
             return self.get_queryset().in_inbox(recipient)
         elif mailbox == "drafts":
             return self.get_queryset().drafts(recipient)
+        elif mailbox == "outbox":
+            return self.get_queryset().sending(recipient)
         elif mailbox == "sent":
             return self.get_queryset().sent(recipient)
         elif mailbox == "archives":
