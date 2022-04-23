@@ -148,7 +148,7 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.object.author == self.request.user:
-            context["mailbox"] = Mailbox.SENT if self.object.date_sent else Mailbox.DRAFTS
+            context["mailbox"] = self.object.get_mailbox()
         else:
             context["mailbox"] = self.object.message_recipients.get(recipient=self.request.user).get_mailbox()
         context["message_list"] = Message.objects.in_mailbox(self.request.user, context["mailbox"])
@@ -223,6 +223,21 @@ class MessageDraftsView(MessageListView):
         return context
 
 
+class MessageSendingView(MessageListView):
+
+    model = Message
+    template_name = "mail/message_list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().sending(author=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["mailbox"] = Mailbox.OUTBOX
+        context["mail_count"] = get_mailbox_counts(self.request.user, context["mailbox"])
+        return context
+
+
 class MessageSentView(MessageListView):
 
     model = Message
@@ -274,23 +289,33 @@ def get_mailbox_counts(user, viewing_mailbox=None):
     """
     counts = {
         "inbox": {
+            "label": Mailbox.INBOX.label,
             "total": Message.objects.in_inbox(recipient=user).count(),
             "unread": Message.objects.in_inbox(recipient=user).unread(user).count(),
         },
         "drafts": {
+            "label": Mailbox.DRAFTS.label,
             "total": Message.objects.drafts(author=user).count(),
         },
         "sent": {
+            "label": Mailbox.SENT.label,
             "total": Message.objects.sent(author=user).count(),
         },
+        "outbox": {
+            "label": Mailbox.OUTBOX.label,
+            "total": Message.objects.sending(author=user).count(),
+        },
         "archives": {
+            "label": Mailbox.ARCHIVES.label,
             "total": Message.objects.archived(recipient=user).count(),
             "unread": Message.objects.archived(recipient=user).unread(user).count(),
         },
         "trash": {
+            "label": Mailbox.TRASH.label,
             "total": Message.objects.deleted(recipient=user).count(),
             "unread": Message.objects.deleted(recipient=user).unread(user).count(),
         },
+        "outbound": Mailbox.outbound(),
     }
 
     if viewing_mailbox:
