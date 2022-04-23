@@ -39,9 +39,14 @@ def get_upload_to(instance, filename):
 class Mailbox(models.TextChoices):
     INBOX = "inbox", _("Inbox")
     DRAFTS = "drafts", _("Drafts")
+    OUTBOX = "outbox", _("Outbox")
     SENT = "sent", _("Sent")
     ARCHIVES = "archives", _("Archives")
     TRASH = "trash", _("Trash")
+
+    @classmethod
+    def outbound(cls):
+        return [cls.DRAFTS.value, cls.OUTBOX.value, cls.SENT.value]
 
 
 class DistributionList(TimeStampedModel):
@@ -189,6 +194,14 @@ class Message(TimeStampedUUIDModel):
 
     def get_absolute_url(self):
         return reverse("mail:detail", kwargs={"pk": self.pk})
+
+    def get_mailbox(self):
+        if self.status == Message.Status.SENT:
+            return Mailbox.SENT
+        elif self.status == Message.Status.DRAFT:
+            return Mailbox.DRAFTS
+        elif self.status == Message.Status.SENDING:
+            return Mailbox.OUTBOX
 
     def send(self):
         # ensure all mailboxes are expanded
@@ -365,10 +378,13 @@ class MessageRecipient(models.Model):
         return bool(self.date_deleted)
 
     def get_mailbox(self):
-        if self.message.author == self.recipient and self.message.date_sent:
-            return Mailbox.SENT
-        elif self.message.author == self.recipient:
-            return Mailbox.DRAFTS
+        if self.message.author == self.recipient:
+            if self.message.status == Message.Status.SENT:
+                return Mailbox.SENT
+            elif self.message.status == Message.Status.DRAFT:
+                return Mailbox.DRAFTS
+            elif self.message.status == Message.Status.SENDING:
+                return Mailbox.OUTBOX
         elif self.is_deleted():
             return Mailbox.TRASH
         elif self.is_archived():
