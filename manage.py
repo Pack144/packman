@@ -5,7 +5,16 @@ import sys
 
 
 def main():
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+    """Run administrative tasks."""
+    argv = sys.argv
+    try:
+        command = argv[1]
+    except IndexError:
+        command = "help"
+
+    default = "packman.settings.test" if command == "test" else "packman.settings.local"
+
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", default)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
