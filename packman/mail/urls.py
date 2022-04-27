@@ -7,10 +7,10 @@ from .views import (
     MessageDetailView,
     MessageDraftsView,
     MessageInboxView,
+    MessageSendingView,
     MessageSentView,
     MessageTrashView,
     MessageUpdateView,
-    MessageSendingView,
 )
 
 app_name = "mail"

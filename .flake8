@@ -1,4 +1,5 @@
 [flake8]
 max-line-length = 119
 extend-ignore = E203
-extend-exclude = migrations
+extend-exclude = migrations,env,venv
+per-file-ignores = */settings/*.py:E501,F403,F405
