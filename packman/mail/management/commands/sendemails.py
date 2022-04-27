@@ -5,12 +5,14 @@ from packman.mail.models import Message
 
 
 class Command(BaseCommand):
-    help = _("Sends all Messages with a status of 'SENDING'")
+    help = _("Sends all Messages with a status of 'QUEUED'")
 
     def handle(self, *args, **options):
-        messages = Message.objects.filter(status=Message.Status.SENDING)
+        messages = Message.objects.filter(status=Message.Status.QUEUED)
         success_count = 0
         for message in messages:
+            message.status = Message.Status.SENDING
+            message.save(update_fields=("status",))
             try:
                 message.send()
                 success_count += 1
