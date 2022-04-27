@@ -5,10 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
-mysql-connector = "*"
-blowfish = "*"
 isort = "*"
-django-rename-app = "*"
 curlylint = "*"
 black = "*"
 flake8 = "*"
@@ -16,8 +13,7 @@ ipython = "*"
 pre-commit = "*"
 
 [packages]
-argon2-cffi = "*"
-django = {version = "~=3.2", extras = ["argon2-cffi"]}
+django = {version = "~=3.2", extras = ["argon2"]}
 django-crispy-forms = "*"
 django-debug-toolbar = "*"
 django-extensions = "*"
@@ -32,10 +28,10 @@ django-ical = "*"
 django-phonenumber-field = {extras = ["phonenumberslite"], version = "*"}
 django-tinymce = "*"
 django-environ = "*"
-phonenumberslite = "*"
 pymemcache = "*"
 easy-thumbnails = "*"
 whitenoise = {extras = ["brotli"], version = "*"}
+uwsgi = "*"
 
 [requires]
 python_version = "3.9"
