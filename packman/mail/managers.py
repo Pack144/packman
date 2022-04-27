@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 
 
 class MessageQuerySet(models.QuerySet):
@@ -35,10 +35,12 @@ class MessageQuerySet(models.QuerySet):
         )
 
     def drafts(self, author):
-        return self.filter(author=author, date_sent__isnull=True).exclude(status=self.model.Status.SENDING)
+        return self.filter(author=author, status=self.model.Status.DRAFT)
 
     def sending(self, author):
-        return self.filter(author=author, status=self.model.Status.SENDING)
+        return self.filter(author=author).filter(
+            Q(status=self.model.Status.QUEUED) | Q(status=self.model.Status.SENDING)
+        )
 
     def sent(self, author):
         return self.filter(author=author, date_sent__isnull=False)
