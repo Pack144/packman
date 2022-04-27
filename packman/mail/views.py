@@ -59,7 +59,7 @@ class MessageCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             return reverse("mail:update", kwargs={"pk": self.object.uuid})
 
         self.object.date_sent = timezone.now()
-        self.object.status = Message.Status.SENDING
+        self.object.status = Message.Status.QUEUED
         self.object.save(update_fields=("status",))
         return reverse("mail:inbox")
 
@@ -116,7 +116,7 @@ class MessageUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             return reverse("mail:update", kwargs={"pk": self.object.uuid})
 
         self.object.date_sent = timezone.now()
-        self.object.status = Message.Status.SENDING
+        self.object.status = Message.Status.QUEUED
         self.object.save(update_fields=("status",))
 
         return reverse("mail:inbox")

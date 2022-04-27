@@ -156,6 +156,7 @@ class Message(TimeStampedUUIDModel):
 
     class Status(models.TextChoices):
         DRAFT = "DRAFT", _("Draft")
+        QUEUED = "QUEUED", _("Queued")
         SENDING = "SENDING", _("Sending")
         SENT = "SENT", _("Sent")
         FAILED = "FAILED", _("Failed")
