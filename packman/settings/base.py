@@ -9,33 +9,23 @@ https://docs.djangoproject.com/en/stable/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/stable/ref/settings/
 """
+from email.utils import getaddresses
 from pathlib import Path
 
 import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 APPS_DIR = BASE_DIR / "packman"
 
+# 12factor
+# https://www.12factor.net
+# https://django-environ.readthedocs.io/en/latest
 env = environ.Env()
-env_file = BASE_DIR / ".env"
-if env_file.is_file():
-    env.read_env(str(env_file))
+dot_env = BASE_DIR / ".env"
+if dot_env.is_file():
+    env.read_env(str(dot_env))
 
-
-# GENERAL
-# ------------------------------------------------------------------------------
-# SECURITY WARNING: keep the secret key used in production secret!
-# https://docs.djangoproject.com/en/stable/ref/settings/#secret-key
-SECRET_KEY = env(
-    "DJANGO_SECRET_KEY",
-    default="w98b46*7+i8+6$_3n(jfa6(7*j3%v*^u#at2$qknbgt4_eu_vg",
-)
-# https://docs.djangoproject.com/en/stable/ref/settings/#debug
-DEBUG = env.bool("DJANGO_DEBUG", False)
-
-# https://docs.djangoproject.com/en/stable/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
 # Application definition
 # -----------------------------------------------------------------------------
@@ -52,7 +42,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     # Third party packages
     "crispy_forms",
-    "debug_toolbar",
     "django_extensions",
     "django_ical",
     "dynamic_formsets",
@@ -80,7 +69,6 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.admindocs.middleware.XViewMiddleware",
@@ -88,7 +76,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "config.urls"
+ROOT_URLCONF = "packman.urls"
 
 TEMPLATES = [
     {
@@ -112,7 +100,7 @@ TEMPLATES = [
 # WSGI
 # https://docs.djangoproject.com/en/stable/howto/deployment/wsgi/
 # -----------------------------------------------------------------------------
-WSGI_APPLICATION = "config.wsgi.application"
+WSGI_APPLICATION = "packman.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/stable/ref/settings/#databases
@@ -157,29 +145,33 @@ AUTH_PASSWORD_VALIDATORS = [
 # -----------------------------------------------------------------------------
 SITE_ID = 1
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/stable/topics/i18n/
 # -----------------------------------------------------------------------------
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "America/Los_Angeles"
-
+LANGUAGE_CODE = env("LANGUAGE_CODE", default="en-us")
+LOCALE_PATHS = [BASE_DIR / "locale"]
+TIME_ZONE = env("TIME_ZONE", default="UTC")
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/stable/howto/static-files/
 # -----------------------------------------------------------------------------
+STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=BASE_DIR / "static_files")
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "node_modules",
     APPS_DIR / "static",
 ]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=BASE_DIR / "static_files")
+
+
+# User uploaded files
+# https://docs.djangoproject.com/en/stable/topics/files/
+# -----------------------------------------------------------------------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=BASE_DIR / "media")
 
@@ -188,11 +180,6 @@ MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=BASE_DIR / "media")
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 # -----------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "pages:home"
-LOGOUT_REDIRECT_URL = "pages:home"
 
 # Used by apps such as debug_toolbar to determine from what IP addresses requests to display
 # -----------------------------------------------------------------------------
@@ -233,39 +220,12 @@ THUMBNAIL_SUBDIR = "thumbs"
 # http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
 # -----------------------------------------------------------------------------
 CRISPY_TEMPLATE_PACK = "bootstrap4"
-CRISPY_FAIL_SILENTLY = not DEBUG
 
 # django-phonenumber-field
 # https://github.com/stefanfoulis/django-phonenumber-field
 # -----------------------------------------------------------------------------
 PHONENUMBER_DEFAULT_REGION = "US"
 PHONENUMBER_DEFAULT_FORMAT = "NATIONAL"
-
-# SECURITY
-# ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/stable/ref/settings/#session-cookie-httponly
-SESSION_COOKIE_HTTPONLY = env.bool("DJANGO_SESSION_COOKIE_HTTPONLY", default=True)
-# https://docs.djangoproject.com/en/stable/ref/settings/#csrf-cookie-httponly
-CSRF_COOKIE_HTTPONLY = env.bool("CSRF_COOKIE_HTTPONLY", default=True)
-# https://docs.djangoproject.com/en/stable/ref/settings/#secure-browser-xss-filter
-SECURE_BROWSER_XSS_FILTER = env.bool("SECURE_BROWSER_XSS_FILTER", default=True)
-# https://docs.djangoproject.com/en/stable/ref/settings/#x-frame-options
-X_FRAME_OPTIONS = "DENY"
-# https://docs.djangoproject.com/en/stable/ref/middleware/#x-content-type-options-nosniff
-SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True)
-# https://docs.djangoproject.com/en/stable/ref/settings/#secure-hsts-seconds
-# TODO: set this to 60 seconds first and then to 518400 once you prove the former works
-SECURE_HSTS_SECONDS = env.int("DJANGO_SECURE_HSTS_SECONDS", default=60)
-# https://docs.djangoproject.com/en/stable/ref/settings/#secure-hsts-include-subdomains
-SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
-# https://docs.djangoproject.com/en/stable/ref/settings/#secure-hsts-preload
-SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=True)
-# https://docs.djangoproject.com/en/stable/ref/settings/#session-cookie-secure
-SESSION_COOKIE_SECURE = env.bool("DJANGO_SESSION_COOKIE_SECURE", default=True)
-# https://docs.djangoproject.com/en/stable/ref/settings/#csrf-cookie-secure
-CSRF_COOKIE_SECURE = env.bool("DJANGO_CSRF_COOKIE_SECURE", default=True)
-# https://docs.djangoproject.com/en/stable/ref/settings/#secure-ssl-redirect
-SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=False)
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -308,6 +268,9 @@ LOGGING = {
 # https://docs.djangoproject.com/en/stable/topics/auth/customizing/#auth-custom-user
 # -----------------------------------------------------------------------------
 AUTH_USER_MODEL = "membership.Adult"
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "pages:home"
+LOGOUT_REDIRECT_URL = "pages:home"
 
 
 # Authentication Backends
@@ -330,7 +293,7 @@ TINYMCE_DEFAULT_CONFIG = {
     "default_link_target": "_blank",
     "height": "100%",
     "width": "100%",
-    "imgagetools_cors_hosts": ALLOWED_HOSTS,
+    "imgagetools_cors_hosts": env("DJANGO_ALLOWED_HOSTS", default=[]),
     "link_quicklink": True,
     "link_title": False,
     "menubar": False,
@@ -372,5 +335,5 @@ SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 # https://docs.djangoproject.com/en/stable/ref/settings/#email-subject-prefix
 EMAIL_SUBJECT_PREFIX = env("DJANGO_EMAIL_SUBJECT_PREFIX", default=f"[{PACK_SHORTNAME}] ")
 # https://django-environ.readthedocs.io/en/latest/#nested-lists
-ADMINS = [x.split(":") for x in env.list("DJANGO_ADMINS", default=[])]
+ADMINS = getaddresses([env("DJANGO_ADMINS", default="[]")])
 MANAGERS = ADMINS
