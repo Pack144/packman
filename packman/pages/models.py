@@ -157,7 +157,7 @@ class ContentBlock(TimeStampedUUIDModel):
 
     class Meta:
         indexes = [models.Index(fields=["heading", "published_on"])]
-        ordering = ["-published_on"]
+        order_with_respect_to = "page"
         verbose_name = _("Content Block")
         verbose_name_plural = _("Content Blocks")
 
