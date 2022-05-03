@@ -7,6 +7,7 @@ from .models import ContentBlock, Page
 class ContentBlockInline(admin.StackedInline):
     model = ContentBlock
     extra = 0
+    prepopulated_fields = {"bookmark": ("heading",)}
     radio_fields = {"visibility": admin.HORIZONTAL}
 
 
