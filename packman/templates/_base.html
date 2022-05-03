@@ -94,10 +94,10 @@
               </li>
             {% else %}
               <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'contact-us' %} active{% endif %} mr-lg-3">
-                <a class="nav-link" href {% url 'pages:detail' 'contact-us' %}>{% translate 'Contact Us' %}</a>
+                <a class="nav-link" href="{% url 'pages:contact' %}">{% translate 'Contact Us' %}</a>
               </li>
               <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'about' %} active{% endif %} mr-lg-3">
-                <a class="nav-link" href {% url 'pages:detail' 'about' %}>{% translate 'About our Pack' %}</a>
+                <a class="nav-link" href="{% url 'pages:about' %}">{% translate 'About our Pack' %}</a>
               </li>
             {% endif %}
             {% for link in navbar_links %}
@@ -106,7 +106,7 @@
               </li>
             {% endfor %}
             <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'history' %} active{% endif %} mr-lg-3">
-              <a class="nav-link" href {% url 'pages:detail' 'history' %}>{% translate 'Our History' %}</a>
+              <a class="nav-link" href="{% url 'pages:history' %}">{% translate 'Our History' %}</a>
             </li>
           </ul>
           <ul class="navbar-nav ml-auto">
