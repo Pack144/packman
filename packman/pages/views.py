@@ -15,7 +15,7 @@ from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupF
 from packman.membership.models import Family
 
 from .forms import ContactForm, ContentBlockFormSet, PageForm
-from .models import Image, Page
+from .models import Page
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +25,6 @@ def get_link_list(request):
     pages = Page.objects.get_visible_content(user=request.user)
     link_list = [{"title": page.title, "value": page.get_absolute_url()} for page in pages]
     return JsonResponse(link_list, safe=False)
-
-
-def get_image_list(request):
-    """Retrieves a list of images available for the current user to link to."""
-    images = Image.objects.all()
-    image_list = [{"title": image.filename(), "value": image.image.url} for image in images]
-    return JsonResponse(image_list, safe=False)
 
 
 class PageDetailView(DetailView):

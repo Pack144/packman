@@ -9,29 +9,11 @@ from django.utils.translation import gettext_lazy as _
 
 from tinymce.models import HTMLField
 
-from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
+from packman.core.models import TimeStampedUUIDModel
 
 from .managers import ContentBlockManager, PageManager
 
 logger = logging.getLogger(__name__)
-
-
-class Image(TimeStampedModel):
-    """
-    Basic image model used to store image files that can be attached to a webpage
-    """
-
-    image = models.ImageField(_("image"), upload_to="pages")
-
-    class Meta:
-        verbose_name = _("image")
-        verbose_name_plural = _("images")
-
-    def __str__(self):
-        return self.filename()
-
-    def filename(self):
-        return self.image.name.split("/")[1]
 
 
 class Page(TimeStampedUUIDModel):
@@ -159,7 +141,6 @@ class ContentBlock(TimeStampedUUIDModel):
         ),
     )
     body = HTMLField(_("section body"))
-    images = models.ManyToManyField(Image, related_name="contentblocks", blank=True)
     page = models.ForeignKey(
         Page,
         on_delete=models.CASCADE,
