@@ -1,10 +1,12 @@
 {% load i18n %}
 
 {% for content in page.content_blocks.all %}
-  <section class="card shadow-sm mb-3">
-    <div class="container p-5">
-      {% if content.heading %}<h2>{{ content.heading }}</h2>{% endif %}
-      {{ content.body|safe }}
+  <section class="card shadow-sm mb-3"{% if content.bookmark %} id="{{ content.bookmark }}"{% endif %}>
+    <div class="card-body px-md-5">
+      {% if content.heading %}<h2 class="card-title">{{ content.heading }}</h2>{% endif %}
+      <div class="card-text">
+        {{ content.body|safe }}
+      </div>
     </div>
   </section>
 {% endfor %}

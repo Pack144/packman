@@ -112,26 +112,27 @@ class ContentBlock(TimeStampedUUIDModel):
     a user is logged in and has permission.
     """
 
-    PRIVATE = "S"
-    PUBLIC = "P"
-    ANONYMOUS = "A"
-    VISIBILITY_CHOICES = [
-        (PRIVATE, _("Members Only")),
-        (PUBLIC, _("Everyone")),
-        (ANONYMOUS, _("Anonymous / Guests")),
-    ]
+    class Visibility(models.TextChoices):
+        PRIVATE = "S", _("Members Only")
+        PUBLIC = "P", _("Everyone")
+        ANONYMOUS = "A", _("Anonymous / Guests")
 
     heading = models.CharField(
         _("section heading"),
         max_length=256,
         blank=True,
-        default="",
+    )
+    bookmark = models.SlugField(
+        _("bookmark"),
+        blank=True,
+        null=True,
+        help_text=_("Bookmarks can used to allow readers to jump to specific parts of a webpage."),
     )
     visibility = models.CharField(
         _("permissions"),
         max_length=1,
-        choices=VISIBILITY_CHOICES,
-        default=PRIVATE,
+        choices=Visibility.choices,
+        default=Visibility.PRIVATE,
         help_text=(
             "'Members Only' content will only be viewable to active members "
             "or contributors. Content marked as 'Everyone' will be viewable "
@@ -156,6 +157,9 @@ class ContentBlock(TimeStampedUUIDModel):
     objects = ContentBlockManager()
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("page", "bookmark"), name="unique_bookmark_for_page"),
+        ]
         indexes = [models.Index(fields=["heading", "published_on"])]
         order_with_respect_to = "page"
         verbose_name = _("Content Block")

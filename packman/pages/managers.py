@@ -3,16 +3,16 @@ from django.db import models
 
 class ContentBlockQuerySet(models.QuerySet):
     def anonymous(self):
-        return self.filter(visibility__exact=self.model.ANONYMOUS)
+        return self.filter(visibility__exact=self.model.Visibility.ANONYMOUS)
 
     def authenticated(self):
-        return self.filter(visibility__exact=self.model.PUBLIC)
+        return self.filter(visibility__exact=self.model.Visibility.PUBLIC)
 
     def public(self):
-        return self.filter(visibility__lte=self.model.PUBLIC)
+        return self.filter(visibility__lte=self.model.Visibility.PUBLIC)
 
     def private(self):
-        return self.filter(visibility__gte=self.model.PUBLIC)
+        return self.filter(visibility__gte=self.model.Visibility.PUBLIC)
 
 
 class ContentBlockManager(models.Manager):
