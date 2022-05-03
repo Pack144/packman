@@ -3,7 +3,7 @@
 {% load humanize i18n %}
 
 {% block title %}
-  {% blocktranslate %}{{ message.subject }} (confirm delete){% endblocktranslate %} | {{ block.super }}
+  {% blocktranslate with subject=message.subject %}{{ subject }} (confirm delete){% endblocktranslate %} | {{ block.super }}
 {% endblock title %}
 
 {% block message_detail %}
@@ -77,6 +77,13 @@
           {% blocktranslate with subject=message.subject %}
             <p>Are you really sure you want permanently delete this message?</p>
           {% endblocktranslate %}
+        </div>
+        <div class="modal-footer">
+          <form method="post">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
+            <button type="submit" class="btn btn-danger">{% translate 'Delete' %}</button>
+            {% csrf_token %}
+          </form>
         </div>
       </div>
     </div>
