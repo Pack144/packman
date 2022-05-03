@@ -73,6 +73,9 @@
               </button>
             </div>
             <div class="modal-body">{{ content.body|safe }}</div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">{% translate 'Take me to the application' %}</button>
+            </div>
           {% endfor %}
         </div>
       </div>
