@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .forms import ContentBlockForm, PageForm
-from .models import ContentBlock, Image, Page
+from .models import ContentBlock, Page
 
 
 class ContentBlockInline(admin.StackedInline):
@@ -21,6 +21,3 @@ class PageAdmin(admin.ModelAdmin):
         "title",
         "published_on",
     ]
-
-
-admin.site.register(Image)
