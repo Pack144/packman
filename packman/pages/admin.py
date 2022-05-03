@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-from .forms import ContentBlockForm, PageForm
+from .forms import PageForm
 from .models import ContentBlock, Page
 
 
 class ContentBlockInline(admin.StackedInline):
     model = ContentBlock
     extra = 0
-    form = ContentBlockForm
+    radio_fields = {"visibility": admin.HORIZONTAL}
 
 
 @admin.register(Page)
