@@ -4,6 +4,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.core.mail import EmailMessage
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
 from tinymce.widgets import TinyMCE
@@ -31,7 +32,7 @@ class ContactForm(forms.Form):
     url = forms.URLField(
         # A fake field to catch spambots using the form. May also be read by screen readers.
         label=_("Webpage"),
-        help_text=_("Optionally tell give us your website"),
+        help_text=_("Optionally give us your website"),
         widget=forms.URLInput(attrs={"autocomplete": "off", "placeholder": "https://example.com"}),
         required=False,
     )
@@ -74,11 +75,9 @@ class ContactForm(forms.Form):
 class ContentBlockForm(forms.ModelForm):
     class Meta:
         model = ContentBlock
-        fields = ("heading", "visibility", "body", "images")
+        fields = ("heading", "visibility", "body")
         widgets = {
-            "body": TinyMCE(
-                mce_attrs={"link_list": "/api/v1/pages/link_list/", "image_list": "/api/v1/pages/image_list/"}
-            ),
+            "body": TinyMCE(mce_attrs={"link_list": reverse_lazy("pages:link_list")}),
             "visibility": forms.RadioSelect,
         }
 
