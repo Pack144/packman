@@ -4,7 +4,6 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.core.mail import EmailMessage
-from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 
 from tinymce.widgets import TinyMCE
@@ -75,9 +74,9 @@ class ContactForm(forms.Form):
 class ContentBlockForm(forms.ModelForm):
     class Meta:
         model = ContentBlock
-        fields = ("heading", "visibility", "body")
+        fields = ("heading", "bookmark", "visibility", "body")
         widgets = {
-            "body": TinyMCE(mce_attrs={"link_list": reverse_lazy("pages:link_list")}),
+            "body": TinyMCE(mce_attrs={"link_list": "api/v1/pages/link_list/"}),
             "visibility": forms.RadioSelect,
         }
 
@@ -87,6 +86,7 @@ ContentBlockFormSet = forms.inlineformset_factory(
     ContentBlock,
     form=ContentBlockForm,
     can_delete=True,
+    # can_order=True,
     extra=0,
     min_num=1,
 )
