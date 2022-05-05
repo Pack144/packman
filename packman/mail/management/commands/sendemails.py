@@ -19,4 +19,5 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stderr.write(self.style.ERROR(_("An unexpected error occurred: %s") % e))
 
-        self.stdout.write(self.style.SUCCESS(_("Successfully sent %d email messages") % success_count))
+        if success_count:
+            self.stdout.write(self.style.SUCCESS(_("Successfully sent %d email messages") % success_count))
