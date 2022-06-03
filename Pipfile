@@ -4,34 +4,33 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pylint = "*"
-isort = "*"
-curlylint = "*"
 black = "*"
-flake8 = "*"
+django-debug-toolbar = "*"
+django-extensions = "*"
 ipython = "*"
+isort = "*"
+flake8 = "*"
 pre-commit = "*"
 
 [packages]
 django = {version = "~=3.2", extras = ["argon2"]}
 django-crispy-forms = "*"
 django-debug-toolbar = "*"
+django-dynamic-formsets = "*"
+django-environ = "*"
 django-extensions = "*"
+django-ical = "*"
 django-localflavor = "*"
+django-phonenumber-field = {extras = ["phonenumberslite"], version = "*"}
+django-tempus-dominus = "*"
+django-tinymce = "*"
+docutils = "*"
+easy-thumbnails = "*"
 pillow = "*"
 psycopg2-binary = "*"
-pip = "*"
-django-tempus-dominus = "*"
-docutils = "*"
-django-dynamic-formsets = "*"
-django-ical = "*"
-django-phonenumber-field = {extras = ["phonenumberslite"], version = "*"}
-django-tinymce = "*"
-django-environ = "*"
 pymemcache = "*"
-easy-thumbnails = "*"
-whitenoise = {extras = ["brotli"], version = "*"}
 uwsgi = "*"
+whitenoise = {extras = ["brotli"], version = "*"}
 
 [requires]
 python_version = "3.9"
