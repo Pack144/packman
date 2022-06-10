@@ -490,7 +490,8 @@ class Scout(Member):
     @cached_property
     def rank(self):
         """A cub's rank is derived from the den they are a member of."""
-        return self.get_current_den().rank
+        den = self.get_current_den()
+        return den.rank if den else None
 
     @cached_property
     def current_den(self):
