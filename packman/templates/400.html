@@ -1,4 +1,4 @@
-{% extends "_base_wo_nav.html" %}
+{% extends "base.html" %}
 
 {% block title %}Client Error | {{ block.super }}{% endblock %}
 
@@ -11,3 +11,7 @@
     </p>
   </div>
 {% endblock content %}
+
+{# Remove unsupported blocks #}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
