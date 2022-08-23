@@ -46,7 +46,7 @@
   {% if events %}
     <div class="mt-5">{% include 'calendars/snippets/events_list_entry.html' %}</div>
     {% if is_paginated %}
-      {% include 'pagination.html' %}
+      {% include 'partials/paginator.html' %}
     {% endif %}
   {% else %}
     <div class="alert alert-warning" role="alert">
