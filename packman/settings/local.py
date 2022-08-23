@@ -14,6 +14,10 @@ DEBUG = env("DJANGO_DEBUG", default=True)
 
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
+# Django Extensions
+# https://django-extensions.readthedocs.io/en/latest/
+INSTALLED_APPS += ["django_extensions"]
+
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/
 INSTALLED_APPS += ["debug_toolbar"]

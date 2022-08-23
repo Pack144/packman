@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     # Third party packages
     "crispy_forms",
-    "django_extensions",
     "django_ical",
     "dynamic_formsets",
     "easy_thumbnails",
