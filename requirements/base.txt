@@ -1,0 +1,15 @@
+django[argon2] ~=3.2
+django-crispy-forms
+django-dynamic-formsets
+django-environ
+django-ical
+django-localflavor
+django-phonenumber-field[phonenumberslite]
+django-tempus-dominus
+django-tinymce
+docutils
+easy-thumbnails
+pillow
+psycopg2-binary
+pymemcache
+whitenoise[brotli]
