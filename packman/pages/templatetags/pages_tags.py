@@ -18,7 +18,8 @@ def get_elided_page_range(page_obj, on_each_side=3, on_ends=2):
     https://docs.djangoproject.com/en/3.2/ref/paginator/#django.core.paginator.Paginator.get_elided_page_range
     """
     paginator = page_obj.paginator
-    return paginator.get_elided_page_range(number=page_obj.number, on_each_side=on_each_side, on_ends=on_ends)
+    number = page_obj.number
+    return paginator.get_elided_page_range(number=number, on_each_side=on_each_side, on_ends=on_ends)
 
 
 @register.simple_tag(takes_context=True)
