@@ -12,7 +12,7 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false">
-        <i class="fas fa-calendar-alt"></i>
+        <i class="fa-solid fa-calendar-alt"></i>
       </button>
       <div class="dropdown-menu" aria-labelledby="calendarFeedSubscribeButton">
         <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">

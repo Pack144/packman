@@ -19,7 +19,7 @@
     {% if member_email %}
       <div class="row mb-1">
         <div class="col col-1">
-          <abbr title="{% translate 'E-mail address' %}"><i class="fas fa-envelope fa-fw"></i></abbr>
+          <abbr title="{% translate 'E-mail address' %}"><i class="fa-solid fa-envelope fa-fw"></i></abbr>
         </div>
         <div class="col card-text text-truncate">
           <a href="mailto:{{ email }}?subject=[{{ pack.shortname|urlencode }}]%20"
@@ -31,13 +31,13 @@
       <div class="row mb-1">
         <div class="col col-1">
           {% if phone_number.type == phone_number.HOME %}
-            <abbr title="{% translate 'Home phone' %}"><i class="fas fa-home fa-fw"></i></abbr>
+            <abbr title="{% translate 'Home phone' %}"><i class="fa-solid fa-home fa-fw"></i></abbr>
           {% elif phone_number.type == phone_number.MOBILE %}
-            <abbr title="{% translate 'Mobile phone' %}"><i class="fas fa-mobile fa-fw"></i></abbr>
+            <abbr title="{% translate 'Mobile phone' %}"><i class="fa-solid fa-mobile fa-fw"></i></abbr>
           {% elif phone_number.type == phone_number.WORK %}
-            <abbr title="{% translate 'Work phone' %}"><i class="fas fa-briefcase fa-fw"></i></abbr>
+            <abbr title="{% translate 'Work phone' %}"><i class="fa-solid fa-briefcase fa-fw"></i></abbr>
           {% else %}
-            <abbr title="{% translate 'Phone number' %}"><i class="fas fa-phone fa-fw"></i></abbr>
+            <abbr title="{% translate 'Phone number' %}"><i class="fa-solid fa-phone fa-fw"></i></abbr>
           {% endif %}
         </div>
         <div class="col card-text text-truncate">
@@ -49,11 +49,11 @@
       <div class="row mb-1">
         <div class="col col-1">
           {% if address.type == address.HOME %}
-            <abbr title="{% translate 'Home address' %}"><i class="fas fa-home fa-fw"></i></abbr>
+            <abbr title="{% translate 'Home address' %}"><i class="fa-solid fa-home fa-fw"></i></abbr>
           {% elif address.type == address.WORK %}
-            <abbr title="{% translate 'Work address' %}"><i class="fas fa-building fa-fw"></i></abbr>
+            <abbr title="{% translate 'Work address' %}"><i class="fa-solid fa-building fa-fw"></i></abbr>
           {% else %}
-            <abbr title="{% translate 'Address' %}"><i class="fas fa-mail-bulk fa-fw"></i></abbr>
+            <abbr title="{% translate 'Address' %}"><i class="fa-solid fa-mail-bulk fa-fw"></i></abbr>
           {% endif %}
         </div>
         <div class="col text-truncate">
@@ -70,7 +70,7 @@
     {% if member.date_of_birth and member.get_age <= 18 %}
       <div class="row mb-1">
         <div class="col col-1">
-          <abbr title="{% translate 'Age' %}"><i class="fas fa-birthday-cake fa-fw"></i></abbr>
+          <abbr title="{% translate 'Age' %}"><i class="fa-solid fa-birthday-cake fa-fw"></i></abbr>
         </div>
         <div class="col text-truncate card-text">
           {% blocktrans count age=member.get_age %}
@@ -84,7 +84,7 @@
     {% if member.school and member.status == member.ACTIVE %}
       <div class="row mb-1">
         <div class="col col-1">
-          <abbr title="{% translate 'School' %}"><i class="fa fa-school"></i></abbr>
+          <abbr title="{% translate 'School' %}"><i class="fa-solid fa-school"></i></abbr>
         </div>
         <div class="col text-truncate card-text">
           {{ member.school }}
@@ -112,13 +112,13 @@
       <a href="{% url 'membership:parent_update' member.uuid %}"
          class="btn btn-sm btn-dark"
          title="Update {{ member.get_short_name }}'s profile">
-        <i class="fas fa-user-edit"></i>
+        <i class="fa-solid fa-user-edit"></i>
       </a>
     {% else %}
       <a href="{% url 'membership:scout_update' member.uuid %}"
          class="btn btn-sm btn-dark"
          title="Update {{ member.get_short_name }}'s profile">
-        <i class="fas fa-user-edit"></i>
+        <i class="fa-solid fa-user-edit"></i>
       </a>
     {% endif %}
   {% endif %}

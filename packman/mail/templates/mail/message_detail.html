@@ -16,7 +16,7 @@
                   class="btn btn-secondary"
                   data-toggle="tooltip"
                   title="{% translate 'Move to Inbox' %}">
-            <i class="fas fa-archive"></i>
+            <i class="fa-solid fa-archive"></i>
           </button>
         {% else %}
           <button type="submit"
@@ -24,7 +24,7 @@
                   class="btn btn-outline-secondary"
                   data-toggle="tooltip"
                   title="{% translate 'Archive' %}">
-            <i class="fas fa-archive"></i>
+            <i class="fa-solid fa-archive"></i>
           </button>
         {% endif %}
         {% if message.receipt.0.is_deleted %}
@@ -33,7 +33,7 @@
                   class="btn btn-secondary"
                   data-toggle="tooltip"
                   title="{% translate 'Recover message' %}">
-            <i class="fas fa-trash-alt"></i>
+            <i class="fa-solid fa-trash-alt"></i>
           </button>
         {% else %}
           <button type="submit"
@@ -41,7 +41,7 @@
                   class="btn btn-outline-secondary"
                   data-toggle="tooltip"
                   title="{% translate 'Delete' %}">
-            <i class="fas fa-trash-alt"></i>
+            <i class="fa-solid fa-trash-alt"></i>
           </button>
         {% endif %}
       </div>

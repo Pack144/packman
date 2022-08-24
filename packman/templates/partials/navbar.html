@@ -54,7 +54,7 @@
              aria-expanded="false">
             <span class="mr-2">{{ user.get_short_name }}</span>
             <span class="fa-layers fa-fw">
-              <i class="fas fa-user-circle"></i>
+              <i class="fa-solid fa-user-circle"></i>
               {% if user.message_recipients.unread.exists %}
                 <span class="fa-layers-counter"></span>
               {% endif %}
@@ -65,7 +65,7 @@
             <a class="dropdown-item d-flex align-items-center justify-content-between"
                href="{% url 'mail:inbox' %}">
               <span>
-                <i class="fas fa-envelope fa-fw"></i>
+                <i class="fa-solid fa-envelope fa-fw"></i>
                 <span class="ml-1">{% translate 'Mail' %}</span>
               </span>
               {% if user.message_recipients.unread.exists %}
@@ -75,22 +75,22 @@
               {% endif %}
             </a>
             <a class="dropdown-item" href="{% url 'membership:my-family' %}">
-              <i class="fas fa-user-friends fa-fw"></i>
+              <i class="fa-solid fa-user-friends fa-fw"></i>
               <span class="ml-1">{% translate 'My Family' %}</span>
             </a>
             <a class="dropdown-item" href="{% url 'password_change' %}">
-              <i class="fas fa-key fa-fw"></i>
+              <i class="fa-solid fa-key fa-fw"></i>
               <span class="ml-1">{% translate 'Change My Password' %}</span>
             </a>
             {% if user.is_staff %}
               <a class="dropdown-item" href="{% url 'admin:index' %}">
-                <i class="fas fa-toolbox fa-fw"></i>
+                <i class="fa-solid fa-toolbox fa-fw"></i>
                 <span class="ml-1">{% translate 'Admin' %}</span>
               </a>
             {% endif %}
             <div class="dropdown-divider"></div>
             <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-              <i class="fas fa-sign-out-alt fa-fw"></i>
+              <i class="fa-solid fa-sign-out-alt fa-fw"></i>
               <span class="ml-1">{% translate 'Log out' %}</span>
             </a>
           </div>

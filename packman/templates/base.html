@@ -28,8 +28,8 @@
           integrity="sha256-45MEZkAkRGg+ZUL+iUP0LFI0+wrL4Ru6n0XEXs5wIHo="
           crossorigin="anonymous">
     <!-- Fontawesome compiled and minified CSS ------------------------------->
-    <script defer src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/js/all.min.js"
-            integrity="sha256-gSqw5G+Gss6YqyQlqyIkuQ0IRZUqGsDVq9c0tiF+mL8="
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/js/all.min.js"
+            integrity="sha256-tRSW1McMsPSKeyHzPzBsBtbEeBASBdV+fpafoQQyfQA="
             crossorigin="anonymous"></script>
     <!-- Our own CSS --------------------------------------------------------->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
@@ -79,7 +79,7 @@
               class="close"
               data-dismiss="alert"
         {% translate 'close' %}>
-        <span aria-hidden="true"><i class="fas fa-times-circle"></i></span>
+        <span aria-hidden="true"><i class="fa-solid fa-times-circle"></i></span>
       </button>
       {{ message|safe }}
     </div>
@@ -105,7 +105,7 @@
         {% endblocktranslate %}
       </div>
       <div>
-        <i class="far fa-copyright"></i> {% now "Y" %}
+        <i class="fa-regular fa-copyright"></i> {% now "Y" %}
         {% if pack.name %}<strong>{{ pack.name }}</strong>{% endif %}
       </div>
     </div>

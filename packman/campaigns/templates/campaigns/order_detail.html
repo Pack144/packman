@@ -8,7 +8,7 @@
   {% if request.user.family == order.seller.family %}
     <div class="d-flex justify-content-between align-items-center mb-5">
       <a href="{% url 'campaigns:order_list' %}" class="btn btn-secondary">
-        <i class="fas fa-caret-square-left"></i>
+        <i class="fa-solid fa-caret-square-left"></i>
         {% translate 'Orders List' %}
       </a>
       {% include 'campaigns/snippets/new_order_button.html' %}
@@ -21,13 +21,13 @@
         <ul class="fa-ul">
           {% if order.customer.get_address_display %}
             <li>
-              <span class="fa-li"><i class="fas fa-map-marked fa-fw"></i></span>
+              <span class="fa-li"><i class="fa-solid fa-map-marked fa-fw"></i></span>
               {{ order.customer.get_address_display }}
             </li>
           {% endif %}
           {% if order.customer.email %}
             <li>
-              <span class="fa-li"><i class="fas fa-envelope"></i></span>
+              <span class="fa-li"><i class="fa-solid fa-envelope"></i></span>
               <a
                 href="mailto:{{ order.customer.email }}?subject={% blocktranslate with name=site.name %}Your order with {{ name }}{% endblocktranslate %}">
                 {{ order.customer.email }}
@@ -36,7 +36,7 @@
           {% endif %}
           {% if order.customer.phone_number %}
             <li>
-              <span class="fa-li"><i class="fas fa-phone"></i></span>
+              <span class="fa-li"><i class="fa-solid fa-phone"></i></span>
               <a href="tel:{{ order.customer.number.as_e164 }}">{{ order.customer.phone_number }}</a>
             </li>
           {% endif %}

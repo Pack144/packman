@@ -24,7 +24,7 @@
                class="btn btn-link text-danger"
                data-toggle="tooltip"
                title="{% translate 'Delete' %}">
-              <i class="fas fa-trash-alt"></i><span class="sr-only">{% translate 'Delete' %}</span>
+              <i class="fa-solid fa-trash-alt"></i><span class="sr-only">{% translate 'Delete' %}</span>
             </a>
           {% endif %}
         </div>
@@ -36,13 +36,13 @@
                   class="btn btn-link text-decoration-none"
                   data-toggle="tooltip"
                   title="{% translate 'Save' %}">
-            <i class="fas fa-cloud-upload-alt"></i><span class="sr-only">{% translate 'Save' %}</span>
+            <i class="fa-solid fa-cloud-upload-alt"></i><span class="sr-only">{% translate 'Save' %}</span>
           </button>
           <button type="submit"
                   class="btn btn-link text-decoration-none"
                   data-toggle="tooltip"
                   title="{% translate 'Send' %}">
-            <i class="far fa-paper-plane"></i><span class="sr-only">{% translate 'Send' %}</span>
+            <i class="fa-regular fa-paper-plane"></i><span class="sr-only">{% translate 'Send' %}</span>
           </button>
         </div>
       </div>
@@ -58,7 +58,7 @@
                       data-toggle="tooltip"
                       title="{% translate 'Remove this addressee' %}"
                       onclick="deleteFormRow(this)">
-                <i class="fas fa-times-circle fs-xs"></i>
+                <i class="fa-solid fa-times-circle fs-xs"></i>
               </button>
             </div>
           {% endfor %}
@@ -70,7 +70,7 @@
                   title="{% translate 'Add a distribution list' %}"
                   onclick="addFormRow()"
                   id="{{ dl_formset.prefix }}_add_more">
-            <i class="fas fa-plus-circle"></i>
+            <i class="fa-solid fa-plus-circle"></i>
           </button>
         </div>
       </fieldset>
@@ -89,7 +89,7 @@
                   <a href="{{ attachment.filename.url }}"
                      target="popup"
                      onclick="window.open('{{ attachment.filename.url }}','popup','width=400,height=800');return false;">
-                    <i class="far fa-file"></i> {{ attachment }}
+                    <i class="fa-regular fa-file"></i> {{ attachment }}
                   </a>
                 </li>
               {% endfor %}
@@ -112,7 +112,7 @@
                   data-toggle="tooltip"
                   title="{% translate 'Remove this addressee' %}"
                   onclick="deleteFormRow(this)">
-            <i class="fas fa-times-circle fs-xs"></i>
+            <i class="fa-solid fa-times-circle fs-xs"></i>
           </button>
         </div>
       </div>

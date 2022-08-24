@@ -34,11 +34,11 @@
             <strong>{{ cub.name }}</strong>
             <br>
             Earned
-            <span class="badge badge-primary badge-pill mr-3"><i class="fas fa-ticket-alt"></i> {{ cub.points.earned }}</span>
+            <span class="badge badge-primary badge-pill mr-3"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.earned }}</span>
             Spent
-            <span class="badge badge-warning badge-pill mr-3"><i class="fas fa-ticket-alt"></i> {{ cub.points.spent }}</span>
+            <span class="badge badge-warning badge-pill mr-3"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.spent }}</span>
             Remaining
-            <span class="badge badge-success badge-pill"><i class="fas fa-ticket-alt"></i> {{ cub.points.remaining }}</span>
+            <span class="badge badge-success badge-pill"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.remaining }}</span>
           </li>
         {% endfor %}
       </ul>
@@ -69,7 +69,7 @@
                         <h5 class="text-dark">{{ prize.name }}</h5>
                       {% endif %}
                       <h4 class="text-right">
-                        <i class="fas fa-ticket-alt"></i>
+                        <i class="fa-solid fa-ticket-alt"></i>
                         <span class="font-weight-bolder text-black-50">{{ prize.points }}</span>
                       </h4>
                       <hr>
@@ -83,7 +83,7 @@
                              data-action="add"
                              data-prize="{{ prize.pk }}"
                              data-cub="{{ cub.pk }}">
-                            <i class="fas fa-plus-circle"></i> {{ cub.name }}
+                            <i class="fa-solid fa-plus-circle"></i> {{ cub.name }}
                         </a>
                       {% endfor %}
                     </div>
@@ -107,7 +107,7 @@
                        data-action="remove"
                        data-prize="{{ selection.prize.pk }}"
                        data-cub="{{ cub.pk }}">
-                      <i class="fas fa-minus-circle"></i>
+                      <i class="fa-solid fa-minus-circle"></i>
                     </a>
                   </li>
                 {% endfor %}

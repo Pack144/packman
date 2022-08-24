@@ -6,14 +6,14 @@
     {% if page_obj.has_previous %}
       <li class="page-item">
         <a class="page-link" href="?{% query_transform page=page_obj.previous_page_number %}">
-          <i class="far fa-arrow-alt-circle-left"></i>
+          <i class="fa-regular fa-arrow-alt-circle-left"></i>
           <span class="sr-only">{% translate 'Next' %}</span>
         </a>
       </li>
     {% else %}
       <li class="page-item disabled">
         <span class="page-link">
-          <i class="far fa-arrow-alt-circle-left"></i>
+          <i class="fa-regular fa-arrow-alt-circle-left"></i>
         </span>
       </li>
     {% endif %}
@@ -45,14 +45,14 @@
     {% if page_obj.has_next %}
       <li class="page-item">
         <a class="page-link" href="?{% query_transform page=page_obj.next_page_number %}">
-          <i class="far fa-arrow-alt-circle-right"></i>
+          <i class="fa-regular fa-arrow-alt-circle-right"></i>
           <span class="sr-only">{% translate 'Next' %}</span>
         </a>
       </li>
     {% else %}
       <li class="page-item disabled">
         <span class="page-link">
-          <i class="far fa-arrow-alt-circle-right"></i>
+          <i class="fa-regular fa-arrow-alt-circle-right"></i>
         </span>
       </li>
     {% endif %}

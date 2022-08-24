@@ -9,7 +9,7 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false">
-        <i class="fas fa-clipboard-list fa-fw"></i>
+        <i class="fa-solid fa-clipboard-list fa-fw"></i>
         {% translate 'Start a new order' %}
       </button>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -23,7 +23,7 @@
   {% else %}
     <a href="{% url 'campaigns:order_create' %}"
        class="btn btn-primary btn-lg">
-      <i class="fas fa-clipboard-list fa-fw"></i>
+      <i class="fa-solid fa-clipboard-list fa-fw"></i>
       {% translate 'Start a new order' %}
     </a>
   {% endif %}

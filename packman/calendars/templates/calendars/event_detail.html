@@ -14,19 +14,19 @@
               <a href="#"
                  class="btn btn-secondary btn-sm"
                  data-toggle="tooltip"
-                 title="{% translate 'Create a new event' %}"><i class="fas fa-calendar-plus"></i></a>
+                 title="{% translate 'Create a new event' %}"><i class="fa-solid fa-calendar-plus"></i></a>
             {% endif %}
             {% if perms.calendars.change_event %}
               <a href="{% url 'calendars:update' event.pk %}"
                  class="btn btn-secondary btn-sm"
                  data-toggle="tooltip"
-                 title="{% translate 'Make changes to this event' %}"><i class="fas fa-calendar-check"></i></a>
+                 title="{% translate 'Make changes to this event' %}"><i class="fa-solid fa-calendar-check"></i></a>
             {% endif %}
             {% if perms.calendars.delete_event %}
               <a href="{% url 'calendars:delete' event.pk %}"
                  class="btn btn-secondary btn-sm"
                  data-toggle="tooltip"
-                 title="{% translate 'Delete this event' %}"><i class="fas fa-calendar-minus"></i></a>
+                 title="{% translate 'Delete this event' %}"><i class="fa-solid fa-calendar-minus"></i></a>
             {% endif %}
           </div>
         </div>
@@ -53,40 +53,40 @@
           <ul class="list-inline text-muted" id="datetime-details-list">
             {% if event.end and event.end|date != event.start|date %}
               <li class="list-inline-item">
-                <i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
+                <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
             </li>
             <li class="list-inline-item">
-              <i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}
+              <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
           </li>
           <li class="list-inline-item">&ndash;</li>
           <li class="list-inline-item">
-            <i class="fas fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}
+            <i class="fa-solid fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}
         </li>
         <li class="list-inline-item">
-          <i class="fas fa-clock" aria-hidden="true"></i> {{ event.end|time }}
+          <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.end|time }}
       </li>
     {% elif event.end %}
       <li class="list-inline-item">
-        <i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
+        <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
     </li>
     <li class="list-inline-item">
-      <i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}
+      <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}
   </li>
 {% else %}
   <li class="list-inline-item">
-    <i class="fas fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
+    <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
 </li>
 <li class="list-inline-item">
-  <i class="fas fa-clock" aria-hidden="true"></i> {{ event.start|time }}
+  <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
 </li>
 {% endif %}
 {% if event.venue.address %}
   <li class="list-inline-item">
-    <i class="fas fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}
+    <i class="fa-solid fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}
 </li>
 {% elif event.get_location %}
 <li class="list-inline-item">
-  <i class="fas fa-map-marker" aria-label="location"></i> {{ event.get_location }}
+  <i class="fa-solid fa-map-marker" aria-label="location"></i> {{ event.get_location }}
 </li>
 {% endif %}
 </ul>
