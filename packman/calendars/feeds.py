@@ -32,10 +32,16 @@ class EventFeed(ICalFeed):
 
     def items(self, obj):
         """
-        Gather all calendar events applicable for the family
-        TODO: create filter for the family's events
+        Gather all calendar events applicable for the family. Based on the
+        years a family has a Scout assigned to a Den.
         """
-        return Event.objects.filter(published=True)
+        published_events = Event.objects.filter(published=True)
+        events_for_family = Event.objects.none()
+        for year in obj.years_active():
+            # Filter for events that occur within each Pack year
+            events_in_year = published_events.filter(start__range=[year.start_date, year.end_date])
+            events_for_family = events_for_family | events_in_year
+        return events_for_family
 
     def item_guid(self, item):
         return item.uuid

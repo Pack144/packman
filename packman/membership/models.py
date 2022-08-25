@@ -230,6 +230,13 @@ class Family(TimeStampedUUIDModel):
         self.name = "-".join(last_names) + " Family"
         return super().save(*args, **kwargs)
 
+    def years_active(self):
+        """
+        Returns a collection of PackYears where the family has a Scout
+        assigned to a Den.
+        """
+        return PackYear.objects.filter(den_memberships__scout__in=self.children.all())
+
 
 class Adult(AbstractBaseUser, PermissionsMixin, Member):
     """
