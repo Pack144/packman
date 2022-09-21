@@ -53,10 +53,10 @@
   {% if user.is_authenticated %}
     <div class="alert alert-danger">
       <strong>{% translate 'Note' %}:</strong>
-      {% blocktrans with user.get_absolute_url as family_url %}
+      {% blocktranslate with user.get_absolute_url as family_url %}
         You are already logged in as {{ user }}. If you want to submit an application for a new Cub or add another
         family member, please visit your <a class="alert-link" href="{{ family_url }}">My Family</a> page.
-      {% endblocktrans %}
+      {% endblocktranslate %}
     </div>
   {% else %}
     <div class="modal" id="instructionsModal" tabindex="-1">

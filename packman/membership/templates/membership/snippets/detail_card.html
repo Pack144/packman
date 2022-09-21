@@ -1,6 +1,6 @@
 {% load humanize i18n static %}
 
-{% blocktrans asvar alt_text %}{{ member }}'s profile picture{% endblocktrans %}
+{% blocktranslate asvar alt_text %}{{ member }}'s profile picture{% endblocktranslate %}
 <div class="card member-detail
             {% if request.resolver_match.kwargs.slug == member.slug and member.committees.count %}
               border-right-0
@@ -73,11 +73,11 @@
           <abbr title="{% translate 'Age' %}"><i class="fa-solid fa-birthday-cake fa-fw"></i></abbr>
         </div>
         <div class="col text-truncate card-text">
-          {% blocktrans count age=member.get_age %}
+          {% blocktranslate count age=member.get_age %}
             <strong>{{ age }}</strong> year old
           {% plural %}
             <strong>{{ age }}</strong> years old
-          {% endblocktrans %}
+          {% endblocktranslate %}
         </div>
       </div>
     {% endif %}

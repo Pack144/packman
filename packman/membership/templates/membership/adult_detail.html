@@ -15,11 +15,11 @@
       <div class="card">
         <div class="card-body">
           <h3 class="card-title">
-            {% blocktrans count assignments=member.committee_memberships.count %}
+            {% blocktranslate count assignments=member.committee_memberships.count %}
               Committee Served
             {% plural %}
               Committees Served
-            {% endblocktrans %}
+            {% endblocktranslate %}
           </h3>
           <div class="accordion" id="assignments-accordion">
             {% for year in assignments_by_year %}
@@ -79,7 +79,7 @@
   </div>
   {% if member.family.children.count or member.family.adults.count > 1 %}
     <h2>
-      {% blocktrans with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktrans %}
+      {% blocktranslate with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktranslate %}
     </h2>
     <div class="card-group" id="family-card-group">
       {% for partner in member.get_partners %}

@@ -13,7 +13,7 @@
   </div>
   {% if member.family.children.count > 1 or member.family.adults.count %}
     <h2>
-      {% blocktrans with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktrans %}
+      {% blocktranslate with short_name=member.get_short_name %}{{ short_name }}'s Family{% endblocktranslate %}
     </h2>
     <div class="card-group" id="family-card-group">
       {% for adult in member.family.adults.all %}
