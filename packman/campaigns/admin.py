@@ -119,10 +119,17 @@ class CampaignAdmin(admin.ModelAdmin):
                 product_count = 0
 
                 for p in original_campaign.products.all():
+                    # Copy all products to the newly created campaign.
                     p.pk = None
                     p.campaign = campaign
                     p.save()
                     product_count += 1
+
+                for q in original_campaign.quotas.all():
+                    # Copy the Den quotas to the newly created campaign.
+                    q.pk = None
+                    q.campaign = campaign
+                    q.save()
 
                 self.message_user(
                     request,
