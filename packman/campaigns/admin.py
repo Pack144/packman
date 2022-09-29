@@ -278,6 +278,27 @@ class PrizeAdmin(admin.ModelAdmin):
     list_display = ["name", "points", "value", "campaign"]
     list_filter = ["points", "campaign"]
 
+    @admin.display(description=_("Duplicate selected prizes for the latest campaign)"))
+    def duplicate_prizes(self, request, queryset):
+        campaign = Campaign.objects.current()
+        count = 0
+
+        for prize in queryset.objects.all():
+            prize.pk = None
+            prize.campaign = campaign
+            prize.save()
+            count += 1
+
+        self.message_user(
+            request,
+            ngettext(
+                f"Successfully copied {count} prize for the {campaign} campaign.",
+                f"Successfully copied {count} prizes for the {campaign} campaign.",
+                count,
+            ),
+            messages.SUCCESS,
+        )
+
 
 @admin.register(PrizePoint)
 class PrizePointAdmin(admin.ModelAdmin):
