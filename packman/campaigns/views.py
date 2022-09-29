@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Prefetch, Sum
+from django.db.models import Count, Prefetch, Sum, Q
 from django.db.models.functions import Coalesce, TruncDate
 from django.http import JsonResponse
 from django.urls import reverse_lazy
@@ -55,7 +55,7 @@ class OrderListView(LoginRequiredMixin, ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context["campaigns"] = {
-            "available": Campaign.objects.filter(orders__seller__family=self.request.user.family).distinct(),
+            "available": Campaign.objects.filter(Q(orders__seller__family=self.request.user.family) | Q(year=PackYear.objects.current())).distinct().order_by("-ordering_opens"),
             "current": Campaign.objects.current(),
             "viewing": (
                 Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
