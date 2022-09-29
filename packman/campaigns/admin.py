@@ -275,15 +275,16 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Prize)
 class PrizeAdmin(admin.ModelAdmin):
+    actions = ["duplicate_prizes"]
     list_display = ["name", "points", "value", "campaign"]
     list_filter = ["points", "campaign"]
 
-    @admin.display(description=_("Duplicate selected prizes for the latest campaign)"))
+    @admin.display(description=_("Duplicate selected prizes for the latest campaign"))
     def duplicate_prizes(self, request, queryset):
         campaign = Campaign.objects.current()
         count = 0
 
-        for prize in queryset.objects.all():
+        for prize in queryset.all():
             prize.pk = None
             prize.campaign = campaign
             prize.save()
