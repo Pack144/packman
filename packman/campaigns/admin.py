@@ -1,10 +1,10 @@
 import csv
 import decimal
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.utils import timezone
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, ngettext
 
 from packman.calendars.models import PackYear
 from packman.dens.models import Membership
@@ -75,6 +75,7 @@ class QuotaInline(admin.TabularInline):
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
+    actions = ["duplicate_campaign"]
     inlines = [QuotaInline]
     list_display = [
         "year",
@@ -87,6 +88,57 @@ class CampaignAdmin(admin.ModelAdmin):
         "prize_window_closes",
         "can_select_prizes",
     ]
+
+    @admin.display(description=_("Duplicate campaign, quotas, and product(s)"))
+    def duplicate_campaign(self, request, queryset):
+        year = PackYear.objects.current()
+        if queryset.count() == 1:
+            original_campaign = queryset.first()
+            campaign = queryset.first()
+            if campaign.year == year:
+                self.message_user(
+                    request,
+                    _("The selected Campaign is for the current Pack Year"),
+                    messages.ERROR,
+                )
+            elif Campaign.objects.filter(year=year).exists():
+                self.message_user(
+                    request,
+                    _("A fundraising Campaign already exists for the current Pack Year"),
+                    messages.ERROR,
+                )
+            else:
+                campaign.pk = None
+                campaign.year = year
+                campaign.ordering_opens = campaign.ordering_opens.replace(year=year.start_date.year)
+                campaign.ordering_closes = campaign.ordering_closes.replace(year=year.start_date.year)
+                campaign.delivery_available = campaign.delivery_available.replace(year=year.start_date.year)
+                campaign.prize_window_opens = campaign.prize_window_opens.replace(year=year.start_date.year)
+                campaign.prize_window_closes = campaign.prize_window_closes.replace(year=year.start_date.year)
+                campaign.save()
+                product_count = 0
+
+                for p in original_campaign.products.all():
+                    p.pk = None
+                    p.campaign = campaign
+                    p.save()
+                    product_count += 1
+
+                self.message_user(
+                    request,
+                    ngettext(
+                        f"Successfully copied {product_count} product into a new campaign for the {year} Pack Year.",
+                        f"Successfully copied {product_count} products into a new campaign for the {year} Pack Year.",
+                        product_count,
+                    ),
+                    messages.SUCCESS,
+                )
+        else:
+            self.message_user(
+                request,
+                _("Please select only 1 campaign to duplicate"),
+                messages.WARNING,
+            )
 
 
 @admin.register(Category)
