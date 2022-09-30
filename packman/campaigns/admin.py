@@ -319,6 +319,18 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ["name", "category", "price", "has_description", "has_image", "campaign"]
     list_filter = ["category", "tags", "campaign"]
 
+    def get_readonly_fields(self, request, obj=None):
+        # Disallow changing the campaign of a product with orders.
+        if obj and obj.orders.exists():
+            return self.readonly_fields + ("campaign",)
+        return super().get_readonly_fields(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        # Disallow deleting a product with orders.
+        if obj and obj.orders.exists():
+            return False
+        return super().has_delete_permission(request, obj)
+
 
 @admin.register(ProductLine)
 class ProductLineAdmin(admin.ModelAdmin):
