@@ -82,7 +82,7 @@ class OrderReportView(PermissionRequiredMixin, TemplateView):
             "viewing": (
                 Campaign.objects.get(year=PackYear.get_pack_year(int(self.kwargs["campaign"]))["end_date"].year)
                 if "campaign" in self.kwargs
-                else Campaign.objects.current()
+                else Campaign.objects.latest()
             ),
         }
         orders = Order.objects.calculate_total().filter(campaign=context["campaigns"]["viewing"])
