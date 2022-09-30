@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 
-from .models import Page
+from packman.campaigns.models import Campaign
+from packman.pages.models import Page
 
 
 def populate_navbar(request):
@@ -14,6 +15,7 @@ def populate_navbar(request):
             "tagline": settings.PACK_TAGLINE,
         },
         "site": get_current_site(request),
+        "fundraiser": Campaign.objects.current(),
     }
     for page in Page.objects.get_visible_content(user=request.user).filter(include_in_nav=True):
         if page.content_blocks.count():

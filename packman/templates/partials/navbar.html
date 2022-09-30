@@ -13,6 +13,11 @@
   <div class="collapse navbar-collapse" id="navbarCollapse">
     <ul class="navbar-nav mr-auto">
       {% if user.is_authenticated %}
+        {% if fundraiser %}
+          <li class="nav-item{% if 'campaigns' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+            <a class="nav-link" href="{% url 'campaigns:order_list' %}">Fundraiser</a>
+          </li>
+        {% endif %}
         <li class="nav-item{% if 'calendars' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
           <a class="nav-link" href="{% url 'calendars:list' %}">{% translate 'Calendar' %}</a>
         </li>
