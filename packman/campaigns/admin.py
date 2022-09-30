@@ -4,7 +4,8 @@ import decimal
 from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.utils import timezone
-from django.utils.translation import gettext as _, ngettext
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from packman.calendars.models import PackYear
 from packman.dens.models import Membership
@@ -286,16 +287,17 @@ class PrizeAdmin(admin.ModelAdmin):
     list_display = ["name", "points", "value", "campaign"]
     list_filter = ["points", "campaign"]
 
-    @admin.display(description=_("Duplicate selected prizes for the latest campaign"))
+    @admin.display(description=_("Copy selected prizes to the latest campaign"))
     def duplicate_prizes(self, request, queryset):
         campaign = Campaign.objects.current()
         count = 0
 
         for prize in queryset.all():
-            prize.pk = None
-            prize.campaign = campaign
-            prize.save()
-            count += 1
+            if prize.campaign != campaign:
+                prize.pk = None
+                prize.campaign = campaign
+                prize.save()
+                count += 1
 
         self.message_user(
             request,
@@ -315,6 +317,7 @@ class PrizePointAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    actions = ["duplicate_products"]
     filter_horizontal = ["tags"]
     list_display = ["name", "category", "price", "has_description", "has_image", "campaign"]
     list_filter = ["category", "tags", "campaign"]
@@ -330,6 +333,28 @@ class ProductAdmin(admin.ModelAdmin):
         if obj and obj.orders.exists():
             return False
         return super().has_delete_permission(request, obj)
+
+    @admin.display(description=_("Copy selected products to the latest campaign"))
+    def duplicate_products(self, request, queryset):
+        campaign = Campaign.objects.current()
+        count = 0
+
+        for product in queryset.all():
+            if product.campaign != campaign:
+                product.pk = None
+                product.campaign = campaign
+                product.save()
+                count += 1
+
+        self.message_user(
+            request,
+            ngettext(
+                f"Successfully copied {count} product for the {campaign} campaign.",
+                f"Successfully copied {count} products for the {campaign} campaign.",
+                count,
+            ),
+            messages.SUCCESS,
+        )
 
 
 @admin.register(ProductLine)
