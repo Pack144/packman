@@ -22,13 +22,8 @@
     </h1>
     <div>
       <h1 class="text-success">
-        <span id="order-total">
-          $
-          {% if order.get_total %}
-            {{ order.get_total }}
-          {% else %}
-            0.00
-          {% endif %}
+        $ <span id="order-total">
+          {% if order.get_total %}{{ order.get_total }}{% else %}0.00{% endif %}
         </span>
       </h1>
       <h4 class="text-muted text-right">
