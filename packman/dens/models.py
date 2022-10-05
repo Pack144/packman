@@ -9,37 +9,27 @@ from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
 
 class Rank(TimeStampedUUIDModel):
     """
-    All of the Cub Scout ranks are defined. Packs can specify which ranks they
-    support.
+    All the Cub Scout ranks are defined by BSA. Packs can specify which ranks
+    they support.
     """
 
-    BOBCAT = 1
-    TIGER = 2
-    WOLF = 3
-    BEAR = 4
-    JR_WEBE = 5
-    SR_WEBE = 6
-    WEBE = 7
-    ARROW = 8
-    RANK_CHOICES = (
-        (BOBCAT, _("Bobcat")),
-        (TIGER, _("Tiger")),
-        (WOLF, _("Wolf")),
-        (BEAR, _("Bear")),
-        (JR_WEBE, _("Jr. Webelo")),
-        (SR_WEBE, _("Sr. Webelo")),
-        (WEBE, _("Webelo")),
-        (ARROW, _("Arrow of Light")),
-    )
+    class RankChoices(models.IntegerChoices):
+        LION = 1, _("Lion")
+        TIGER = 2, _("Tiger")
+        WOLF = 3, _("Wolf")
+        BEAR = 4, _("Bear")
+        JR_WEBE = 5, _("Jr. Webelo")
+        SR_WEBE = 6, _("Sr. Webelo")
+        WEBE = 7, _("Webelo")
+        ARROW = 8, _("Arrow of Light")
 
     rank = models.IntegerField(
-        choices=RANK_CHOICES,
+        choices=RankChoices.choices,
         unique=True,
     )
     description = models.CharField(
         max_length=128,
         blank=True,
-        default="",
     )
 
     class Meta:
@@ -51,13 +41,13 @@ class Rank(TimeStampedUUIDModel):
         return self.get_rank_display()
 
     def category(self):
-        if self.rank < Rank.BOBCAT:
+        if self.rank < Rank.RankChoices.LION:
             # We shouldn't see this
             return None
-        elif self.rank <= Rank.BEAR:
-            # Bobcat - Bear
+        elif self.rank <= Rank.RankChoices.BEAR:
+            # Lion - Bear
             return _("Animal")
-        elif self.rank >= Rank.JR_WEBE:
+        elif self.rank >= Rank.RankChoices.JR_WEBE:
             # Jr. & Sr. Webelos
             return _("Webelos")
         else:
@@ -65,17 +55,17 @@ class Rank(TimeStampedUUIDModel):
 
     @property
     def patch(self):
-        if self.rank == Rank.BOBCAT:
-            return f"{settings.STATIC_URL}img/bobcat.png"
-        elif self.rank == Rank.TIGER:
+        if self.rank == Rank.RankChoices.LION:
+            return f"{settings.STATIC_URL}img/lion.png"
+        elif self.rank == Rank.RankChoices.TIGER:
             return f"{settings.STATIC_URL}img/tiger.png"
-        elif self.rank == Rank.WOLF:
+        elif self.rank == Rank.RankChoices.WOLF:
             return f"{settings.STATIC_URL}img/wolf.png"
-        elif self.rank == Rank.BEAR:
+        elif self.rank == Rank.RankChoices.BEAR:
             return f"{settings.STATIC_URL}img/bear.png"
-        elif Rank.JR_WEBE <= self.rank <= Rank.WEBE:
+        elif Rank.RankChoices.JR_WEBE <= self.rank <= Rank.RankChoices.WEBE:
             return f"{settings.STATIC_URL}img/webelos.png"
-        elif self.rank == Rank.ARROW:
+        elif self.rank == Rank.RankChoices.ARROW:
             return f"{settings.STATIC_URL}img/arrowoflight.png"
 
 
@@ -113,9 +103,9 @@ class Den(TimeStampedModel):
 
     def get_rank_category(self):
         if self.rank:
-            if self.rank.rank <= Rank.BEAR:
+            if self.rank.rank <= Rank.RankChoices.BEAR:
                 return _("Animals")
-            if self.rank.rank >= Rank.JR_WEBE:
+            if self.rank.rank >= Rank.RankChoices.JR_WEBE:
                 return _("Webelos")
 
     @property
@@ -125,11 +115,11 @@ class Den(TimeStampedModel):
 
     @property
     def animals(self):
-        return self.rank.rank <= Rank.BEAR
+        return self.rank.rank <= Rank.RankChoices.BEAR
 
     @property
     def webelos(self):
-        return self.rank.rank >= Rank.JR_WEBE
+        return self.rank.rank >= Rank.RankChoices.JR_WEBE
 
     count_current_members.short_description = _("# of Cubs")
     get_rank_category.admin_order_field = "rank"

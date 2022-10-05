@@ -37,7 +37,7 @@ class AnimalRankListFilter(admin.SimpleListFilter):
     parameter_name = "rank"
 
     def lookups(self, request, model_admin):
-        return Rank.RANK_CHOICES
+        return Rank.RankChoices.choices
 
     def queryset(self, request, queryset):
         """
@@ -102,7 +102,7 @@ class AdultsBasedOnCubStatusFilter(admin.SimpleListFilter):
         elif self.value() == "7":
             return queryset.filter(
                 family__children__den_memberships__year_assigned=PackYear.objects.current(),
-                family__children__den_memberships__den__rank__rank__lte=Rank.JR_WEBE,
+                family__children__den_memberships__den__rank__rank__lte=Rank.RankChoices.JR_WEBE,
                 family__children__status=models.Scout.ACTIVE,
             ).distinct()
 

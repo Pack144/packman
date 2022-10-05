@@ -119,32 +119,32 @@ class ScoutQuerySet(models.QuerySet):
             status=4,  # Scout.ACTIVE
         )
 
-    def bobcats(self):
-        return self.active().filter(den_memberships__den__rank__rank=Rank.BOBCAT)
+    def lions(self):
+        return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.LION)
 
     def tigers(self):
-        return self.active().filter(den_memberships__den__rank__rank=Rank.TIGER)
+        return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.TIGER)
 
     def wolves(self):
-        return self.active().filter(den_memberships__den__rank__rank=Rank.WOLF)
+        return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.WOLF)
 
     def bears(self):
-        return self.active().filter(den_memberships__den__rank__rank=Rank.BEAR)
+        return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.BEAR)
 
     def jr_webes(self):
-        return self.active().filter(den_memberships__den__rank__rank=Rank.JR_WEBE)
+        return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.JR_WEBE)
 
     def sr_webes(self):
-        return self.active().filter(den_memberships__den__rank__rank=Rank.SR_WEBE)
+        return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.SR_WEBE)
 
     def arrows_of_light(self):
-        return self.active().filter(den_memberships__den__rank__rank=Rank.ARROW)
+        return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.ARROW)
 
     def animal_ranks(self):
-        return self.active().filter(den_memberships__den__rank__rank__lte=Rank.BEAR)
+        return self.active().filter(den_memberships__den__rank__rank__lte=Rank.RankChoices.BEAR)
 
     def webelo_ranks(self):
-        return self.active().filter(den_memberships__den__rank__rank__gte=Rank.JR_WEBE)
+        return self.active().filter(den_memberships__den__rank__rank__gte=Rank.RankChoices.JR_WEBE)
 
 
 class ScoutManager(models.Manager):
@@ -154,8 +154,8 @@ class ScoutManager(models.Manager):
     def active(self):
         return self.get_queryset().active()
 
-    def bobcats(self):
-        return self.get_queryset().bobcats()
+    def lions(self):
+        return self.get_queryset().lions()
 
     def tigers(self):
         return self.get_queryset().tigers()

@@ -18,7 +18,7 @@ class AnimalRankListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ("bobcats", _("Bobcats")),
+            ("lions", _("Lions")),
             ("tigers", _("Tigers")),
             ("wolves", _("Wolves")),
             ("bears", _("Bears")),
@@ -34,24 +34,24 @@ class AnimalRankListFilter(admin.SimpleListFilter):
         Returns the filtered queryset based on the value provided in the query
          string and retrievable via `self.value()`.
         """
-        if self.value() == "bobcats":
-            return queryset.filter(rank__rank__exact=Rank.BOBCAT)
+        if self.value() == "lions":
+            return queryset.filter(rank__rank__exact=Rank.RankChoices.LION)
         if self.value() == "tigers":
-            return queryset.filter(rank__rank__exact=Rank.TIGER)
+            return queryset.filter(rank__rank__exact=Rank.RankChoices.TIGER)
         if self.value() == "wolves":
-            return queryset.filter(rank__rank__exact=Rank.WOLF)
+            return queryset.filter(rank__rank__exact=Rank.RankChoices.WOLF)
         if self.value() == "bears":
-            return queryset.filter(rank__rank__exact=Rank.BEAR)
+            return queryset.filter(rank__rank__exact=Rank.RankChoices.BEAR)
         if self.value() == "jr_webes":
-            return queryset.filter(rank__rank__exact=Rank.JR_WEBE)
+            return queryset.filter(rank__rank__exact=Rank.RankChoices.JR_WEBE)
         if self.value() == "sr_webes":
-            return queryset.filter(rank__rank__exact=Rank.SR_WEBE)
+            return queryset.filter(rank__rank__exact=Rank.RankChoices.SR_WEBE)
         if self.value() == "animals":
-            return queryset.filter(rank__rank__lte=Rank.BEAR)
+            return queryset.filter(rank__rank__lte=Rank.RankChoices.BEAR)
         if self.value() == "webelos":
-            return queryset.filter(rank__rank__gte=Rank.JR_WEBE)
+            return queryset.filter(rank__rank__gte=Rank.RankChoices.JR_WEBE)
         if self.value() == "arrow":
-            return queryset.filter(rank__rank__exact=Rank.ARROW)
+            return queryset.filter(rank__rank__exact=Rank.RankChoices.ARROW)
 
 
 class LeadershipAdmin(admin.TabularInline):
