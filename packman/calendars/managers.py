@@ -40,3 +40,11 @@ class PackYearManager(models.Manager):
             start_date__lte=self.current().end_date + timezone.timedelta(days=1),
             end_date__gte=self.current().start_date - timezone.timedelta(days=1),
         )
+
+    def get_by_natural_key(self, years):
+        split_years = years.split("-")
+        if len(split_years):
+            return self.get(start_date__year=split_years[0], end_date__year=split_years[1])
+        else:
+            return self.get(end_date__year=years)
+

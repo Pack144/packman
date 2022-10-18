@@ -59,6 +59,9 @@ class PackYear(models.Model):
             self.end_date = self._get_end_date(year=self.year)
         super().save(*args, **kwargs)
 
+    def natural_key(self):
+        return self.__str__(),
+
     @staticmethod
     def pack_year_is_not_calendar_year():
         return not settings.PACK_YEAR_BEGIN_MONTH == settings.PACK_YEAR_BEGIN_DAY == 1
