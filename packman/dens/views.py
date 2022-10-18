@@ -34,4 +34,4 @@ class DensListView(ActiveMemberOrContributorTest, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return Den.objects.filter(scouts__year_assigned=PackYear.get_current_pack_year()).distinct()
+        return Den.objects.filter(scouts__year_assigned=PackYear.objects.current()).distinct()

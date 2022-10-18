@@ -96,7 +96,7 @@ class Den(TimeStampedModel):
         return reverse("dens:detail", args=[int(self.number)])
 
     def active_cubs(self):
-        return self.scouts.filter(year_assigned=PackYear.get_current_pack_year())
+        return self.scouts.filter(year_assigned=PackYear.objects.current())
 
     def count_current_members(self):
         return self.active_cubs().count()
