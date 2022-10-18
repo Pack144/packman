@@ -92,11 +92,13 @@
       </div>
     </div>
     <aside class="col-md">
-      <h2>Sidebar</h2>
+      <h2>Reports</h2>
       <ul class="nav flex-column">
         <li class="nav-item"><a class="nav-link" href="#daily-order-report">Orders by Day</a></li>
         <li class="nav-item"><a class="nav-link" href="#product-order-report">Product Order Totals</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'campaigns:prize_selection_report' %}">Prize Selections</a></li>
+        <li class="nav-item"><a href="{% url 'campaigns:weekly_report' %}" class="nav-link">Weekly Report <i class="fas fa-file-csv"></i></a></li>
+        <li class="nav-item"><a href="{% url 'campaigns:turn_in_night' %}" class="nav-link">Turn-in Night <i class="fas fa-file-csv"></i></a></li>
       </ul>
       <div class="dropdown">
         <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">

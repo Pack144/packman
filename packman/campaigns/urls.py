@@ -16,6 +16,7 @@ from .views import (
     update_order,
     update_prize_selection,
 )
+from .reports import turn_in_night_report, generate_weekly_report
 
 app_name = "campaigns"
 urlpatterns = [
@@ -34,5 +35,7 @@ urlpatterns = [
     path("reports/place_markers/", PlaceMarkerTemplateView.as_view(), name="place_markers"),
     path("reports/prize_selections/", PrizeSelectionReportView.as_view(), name="prize_selection_report"),
     path("reports/pull_sheets/", PullSheetTemplateView.as_view(), name="pull_sheets"),
+    path("reports/turn_in_night/", turn_in_night_report, name="turn_in_night"),
+    path("reports/weekly/", generate_weekly_report, name="weekly_report"),
     re_path(r"^reports/(?P<campaign>[0-9]{4})/", OrderReportView.as_view(), name="order_report_by_campaign"),
 ]
