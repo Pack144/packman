@@ -137,7 +137,7 @@ class ProductQuerySet(models.QuerySet):
         return self.filter(campaign=self.model.campaign.field.related_model.objects.current())
 
     def quantity(self):
-        return self.annotate(ordered_quantity=Sum("order__quantity")).order_by("category", "sort_order", "name")
+        return self.annotate(quantity_ordered=Sum("order__quantity")).order_by("category", "sort_order", "name")
 
     def count_orders(self):
         return self.annotate(order_count=Count("order"))

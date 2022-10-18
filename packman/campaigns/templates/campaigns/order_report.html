@@ -80,10 +80,10 @@
             </tr>
             </thead>
             <tbody>
-            {% for product in campaigns.viewing.products.all.quantity.count_orders %}
+            {% for product in campaigns.viewing.products.all.quantity %}
               <tr>
                 <th scope="row">{{ product.name }}</th>
-                <td>{{ product.ordered_quantity }}</td>
+                <td>{{ product.quantity_ordered }}</td>
               </tr>
             {% endfor %}
             </tbody>
