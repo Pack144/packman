@@ -112,15 +112,15 @@ class Member(TimeStampedUUIDModel):
         if not self.slug:
             candidates = [self.get_full_name()]
             if self.middle_name and self.suffix:
-                candidates.append(
-                    f"{self.first_name} " f"{self.middle_name[0]} " f"{self.last_name} " f"{self.suffix}"
-                )
-                candidates.append(f"{self.first_name} " f"{self.middle_name} " f"{self.last_name} " f"{self.suffix}")
+                candidates.extend((f"{self.first_name} {self.middle_name[0]} {self.last_name} {self.suffix}",
+                                   f"{self.first_name} {self.middle_name} {self.last_name} {self.suffix}"))
+
             elif self.suffix:
                 candidates.append(f"{self.first_name} " f"{self.last_name} " f"{self.suffix}")
             elif self.middle_name:
-                candidates.append(f"{self.first_name} " f"{self.middle_name[0]} " f"{self.last_name}")
-                candidates.append(f"{self.first_name} " f"{self.middle_name} " f"{self.last_name}")
+                candidates.extend((f"{self.first_name} {self.middle_name[0]} {self.last_name}",
+                                   f"{self.first_name} {self.middle_name} {self.last_name}"))
+
             self.choose_slug(candidates=candidates)
             if not self.slug:
                 # None of the normal candidates seem to have worked or we would
