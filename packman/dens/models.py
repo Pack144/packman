@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
 from packman.core.models import TimeStampedModel, TimeStampedUUIDModel
+from packman.dens.managers import DenQuerySet
 
 
 class Rank(TimeStampedUUIDModel):
@@ -83,6 +84,8 @@ class Den(TimeStampedModel):
         blank=True,
         null=True,
     )
+
+    objects = DenQuerySet.as_manager()
 
     class Meta:
         ordering = ["number"]

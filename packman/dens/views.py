@@ -16,7 +16,7 @@ class DenDetailView(ActiveMemberOrContributorTest, DetailView):
         year = (
             PackYear.objects.get(year=PackYear.get_pack_year(self.kwargs["year"])["end_date"].year)
             if "year" in self.kwargs
-            else PackYear.get_current_pack_year()
+            else PackYear.objects.current()
         )
         # TODO: Look into this. Maybe we want to search for den_memberships
         all_years = PackYear.objects.filter(committee_membership__den=context["den"]).distinct()
@@ -34,4 +34,8 @@ class DensListView(ActiveMemberOrContributorTest, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return Den.objects.filter(scouts__year_assigned=PackYear.objects.current()).distinct()
+        queryset = super().get_queryset()
+        if "year" in self.kwargs:
+            Den.objects.active_in(self.kwargs["year"])
+        else:
+            return queryset.current()
