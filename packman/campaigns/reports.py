@@ -1,8 +1,8 @@
 import csv
 import decimal
 
-from django.http import StreamingHttpResponse, HttpResponse
-from django.utils import timezone, dateparse
+from django.http import HttpResponse, StreamingHttpResponse
+from django.utils import dateparse, timezone
 
 from packman.campaigns.models import Campaign, Order, PrizePoint, PrizeSelection
 from packman.dens.models import Membership
@@ -73,9 +73,9 @@ def generate_cub_row(cub, orders, campaign):
             (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100
         )
 
-    points_spent = PrizeSelection.objects.filter(
-        cub=cub.scout, campaign=campaign
-    ).calculate_total_points_spent()["spent"]
+    points_spent = PrizeSelection.objects.filter(cub=cub.scout, campaign=campaign).calculate_total_points_spent()[
+        "spent"
+    ]
     points_remaining = points_earned - points_spent
 
     # TODO: Don't hard-code the minimum if quota unmet
@@ -111,11 +111,13 @@ def generate_weekly_report(request):
     else:
         begin_date = end_date - timezone.timedelta(days=7)
 
-    report_name = f"Campaign Weekly Report (from {begin_date.month}-{begin_date.day}-{begin_date.year} to {end_date.month}-{end_date.day}-{end_date.year}).csv"
+    report_name = f"Campaign Weekly Report ({begin_date.month}-{begin_date.day}-{begin_date.year} to {end_date.month}-{end_date.day}-{end_date.year}).csv"  # noqa: E501
     field_names = ["Cub", "Den", "Order Count", "Total Sales"]
 
     orders = Order.objects.filter(date_added__gte=begin_date, date_added__lte=end_date)
-    members = Membership.objects.prefetch_related("scout", "den").filter(scout__orders__in=orders).distinct().order_by("den")
+    members = (
+        Membership.objects.prefetch_related("scout", "den").filter(scout__orders__in=orders).distinct().order_by("den")
+    )
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f"attachment; filename={report_name}"

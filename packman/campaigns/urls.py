@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 
+from .reports import generate_weekly_report, turn_in_night_report
 from .views import (
     OrderCreateView,
     OrderDeleteView,
@@ -16,7 +17,6 @@ from .views import (
     update_order,
     update_prize_selection,
 )
-from .reports import turn_in_night_report, generate_weekly_report
 
 app_name = "campaigns"
 urlpatterns = [

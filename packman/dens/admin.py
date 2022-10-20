@@ -58,7 +58,7 @@ class DenAdmin(admin.ModelAdmin):
         "rank",
         "get_rank_category",
     )
-    list_filter = (RankCategoryFilter,"rank__rank")
+    list_filter = (RankCategoryFilter, "rank__rank")
     ordering = ["number"]
     search_fields = (
         "number",

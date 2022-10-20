@@ -16,27 +16,13 @@ class DenQuerySet(models.QuerySet):
         return self.active_in(year=PackYear.objects.current())
 
     def animals(self):
-        return self.filter(
-            rank__rank__lte=self.model.rank.field.related_model.RankChoices.BEAR
-        )
+        return self.filter(rank__rank__lte=self.model.rank.field.related_model.RankChoices.BEAR)
 
     def webelos(self):
-        return self.filter(
-            rank__rank__gte=self.model.rank.field.related_model.RankChoices.JR_WEBE
-        )
+        return self.filter(rank__rank__gte=self.model.rank.field.related_model.RankChoices.JR_WEBE)
 
     def counting_members(self):
         return self.annotate(
-            current_count=Count(
-                "scouts",
-                filter=Q(
-                    scouts__year_assigned=PackYear.objects.current()
-                )
-            ),
-            upcoming_count=Count(
-                "scouts",
-                filter=Q(
-                    scouts__year_assigned=PackYear.objects.next()
-                )
-            ),
+            current_count=Count("scouts", filter=Q(scouts__year_assigned=PackYear.objects.current())),
+            upcoming_count=Count("scouts", filter=Q(scouts__year_assigned=PackYear.objects.next())),
         )

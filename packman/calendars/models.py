@@ -60,7 +60,7 @@ class PackYear(models.Model):
         super().save(*args, **kwargs)
 
     def natural_key(self):
-        return self.__str__(),
+        return (self.__str__(),)
 
     @staticmethod
     def pack_year_is_not_calendar_year():

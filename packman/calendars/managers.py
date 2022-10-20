@@ -47,4 +47,3 @@ class PackYearManager(models.Manager):
             return self.get(start_date__year=split_years[0], end_date__year=split_years[1])
         else:
             return self.get(end_date__year=years)
-
