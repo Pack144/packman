@@ -1,5 +1,5 @@
 <table>
-  {% for product in products.quantity.all %}
+  {% for product in products.quantity %}
     {% ifchanged product.category %}
       <tr>
         <td colspan="3" class="categoryTitle">{{ product.category }}</td>

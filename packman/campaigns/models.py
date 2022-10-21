@@ -88,15 +88,15 @@ class Campaign(TimeStampedModel):
 
     @admin.display(boolean=True, description=_("orders open"))
     def can_take_orders(self):
-        return bool(self.ordering_opens <= timezone.now().date() <= self.ordering_closes)
+        return self.ordering_opens <= timezone.now().date() <= self.ordering_closes
 
     @admin.display(boolean=True, description=_("prizes open"))
     def can_select_prizes(self):
-        return bool(self.prize_window_opens <= timezone.now().date() <= self.prize_window_closes)
+        return self.prize_window_opens <= timezone.now().date() <= self.prize_window_closes
 
     @admin.display(boolean=True, description=_("delivery available"))
     def can_deliver_orders(self):
-        return bool(self.delivery_available <= timezone.now().date())
+        return self.delivery_available <= timezone.now().date()
 
     @classmethod
     def get_latest(cls):
@@ -351,7 +351,7 @@ class Order(TimeStampedUUIDModel):
         verbose_name_plural = _("Orders")
 
     def __str__(self):
-        return "{}: {}".format(self.date_added.date(), self.customer or "unknown")
+        return f'{self.date_added.date()}: {self.customer or "unknown"}'
 
     def get_absolute_url(self):
         return reverse("campaigns:order_detail", args=[self.pk])

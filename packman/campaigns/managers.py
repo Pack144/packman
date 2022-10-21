@@ -72,7 +72,6 @@ class OrderQuerySet(models.QuerySet):
         return self.calculate_total().aggregate(totaled=Coalesce(Sum("total"), decimal.Decimal(0.00)))
 
     def with_total(self):
-
         return self.annotate(
             total=Sum(
                 F("donation")

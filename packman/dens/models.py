@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
@@ -123,6 +124,18 @@ class Den(TimeStampedModel):
     @property
     def webelos(self):
         return self.rank.rank >= Rank.RankChoices.JR_WEBE
+
+    def get_member_orders(self, year=None):
+        """
+        Returns a Queryset of fundraiser orders by current members
+        of the Den. Used in the packing night `pull_sheet` to aggregate
+        orders by Den.
+        """
+        if not year:
+            year = PackYear.objects.current()
+        members = self.scout_set.filter(den_memberships__den=self, den_memberships__year_assigned=year)
+        Order = apps.get_model("campaigns", "Order")
+        return Order.objects.filter(campaign__year=year, seller__in=members)
 
     count_current_members.short_description = _("# of Cubs")
     get_rank_category.admin_order_field = "rank"

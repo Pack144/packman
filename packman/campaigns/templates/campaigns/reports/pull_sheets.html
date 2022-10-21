@@ -11,7 +11,7 @@
         DEN TOTAL
         <div class="denNumber">{{ den|upper }}</div>
       </div>
-      {% include 'campaigns/snippets/pull_sheet_page.html' with products=den.campaigns.latest.products %}
+      {% include 'campaigns/snippets/pull_sheet_page.html' with products=den.get_member_orders.products %}
       {% if not request.GET.denOnly %}
         {% for cub in den.active_cubs %}
           {% with product_list=cub.scout.orders.latest_campaign.products %}
