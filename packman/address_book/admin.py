@@ -23,10 +23,9 @@ class VenueAdmin(admin.ModelAdmin):
     list_display = ("name", "get_category_list")
     search_fields = ("name",)
 
+    @admin.display(description=_("categories"))
     def get_category_list(self, obj):
         return ", ".join(category.name for category in obj.categories.all())
-
-    get_category_list.short_description = _("categories")
 
 
 class DistributionListAdmin(admin.ModelAdmin):
@@ -47,16 +46,15 @@ class DistributionListAdmin(admin.ModelAdmin):
     list_filter = ["contact_us"]
     readonly_fields = ["get_member_list"]
 
+    @admin.display(description=_("dens"))
     def get_den_list(self, obj):
         return ", ".join(str(den.number) for den in obj.dens.all())
 
-    get_den_list.short_description = _("dens")
-
+    @admin.display(description=_("committees"))
     def get_committee_list(self, obj):
         return ", ".join(committee.name for committee in obj.committees.all())
 
-    get_committee_list.short_description = _("committees")
-
+    @admin.display(description=_("members"))
     def get_member_list(self, obj):
         members = format_html_join(
             "",
@@ -64,8 +62,6 @@ class DistributionListAdmin(admin.ModelAdmin):
             ((n, a) for n, a in obj.email_addresses),
         )
         return format_html("<ul>{}</ul>", members) if members else ""
-
-    get_member_list.short_description = _("members")
 
 
 admin.site.register(Category)
