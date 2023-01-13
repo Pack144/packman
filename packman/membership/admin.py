@@ -235,11 +235,11 @@ class ScoutAdmin(admin.ModelAdmin):
         )
         return qs
 
+    @admin.display(ordering="_name")
     def name(self, obj):
         return obj._name
 
-    name.admin_order_field = "_name"
-
+    @admin.display(description=_("adults"))
     def get_adults(self, obj):
         adult_links = format_html_join(
             "",
@@ -257,8 +257,7 @@ class ScoutAdmin(admin.ModelAdmin):
         )
         return format_html("<ul>{}</ul>", adult_links) if adult_links else "-"
 
-    get_adults.short_description = _("adults")
-
+    @admin.action(description=_("Mark selected Cubs as active"))
     def make_active(self, request, queryset):
         updated = queryset.update(status=models.Scout.ACTIVE)
         self.message_user(
@@ -272,6 +271,7 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
+    @admin.action(description=_("Approve selected Cubs for membership"))
     def make_approved(self, request, queryset):
         updated = queryset.update(status=models.Scout.APPROVED)
         self.message_user(
@@ -285,6 +285,7 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
+    @admin.action(description=_("Mark selected Cubs as inactive"))
     def make_inactive(self, request, queryset):
         updated = queryset.update(status=models.Scout.INACTIVE)
         self.message_user(
@@ -298,6 +299,7 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
+    @admin.action(description=_("Graduate selected Cubs"))
     def make_graduated(self, request, queryset):
         updated = queryset.update(status=models.Scout.GRADUATED)
         self.message_user(
@@ -311,6 +313,7 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
+    @admin.action(description=_("Assign selected Cubs to the same den for the next Pack Year"))
     def continue_in_same_den_one_more_year(self, request, queryset):
         next_year, created = PackYear.objects.get_or_create(year=PackYear.get_current_pack_year_year() + 1)
         n = queryset.count()
@@ -342,6 +345,7 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
+    @admin.action(description=_("Export selected Cubs to CSV file"))
     def export_as_csv(self, request, queryset):
         # Export the selected Cubs for use in GrandPrix Race Manager
         meta = self.model._meta
@@ -387,15 +391,6 @@ class ScoutAdmin(admin.ModelAdmin):
             zip_obj.writestr("roster.csv", csv_file.getvalue())
 
         return response
-
-    make_active.short_description = _("Mark selected Cubs as active")
-    make_approved.short_description = _("Approve selected Cubs for membership")
-    make_inactive.short_description = _("Mark selected Cubs as inactive")
-    make_graduated.short_description = _("Graduate selected Cubs")
-    continue_in_same_den_one_more_year.short_description = _(
-        "Assign selected Cubs to the same den for the next Pack Year"
-    )
-    export_as_csv.short_description = _("Export selected Cubs to CSV file")
 
 
 @admin.register(models.Adult)
@@ -517,11 +512,11 @@ class AdultAdmin(UserAdmin):
         )
         return qs
 
+    @admin.display(ordering="_name")
     def name(self, obj):
         return obj._name
 
-    name.admin_order_field = "_name"
-
+    @admin.display(description=_("children"))
     def get_children(self, obj):
         children_links = format_html_join(
             "",
@@ -539,8 +534,7 @@ class AdultAdmin(UserAdmin):
         )
         return format_html("<ul>{}</ul>", children_links) if children_links else "-"
 
-    get_children.short_description = _("children")
-
+    @admin.action(description=_("Export selected Adults"))
     def export_as_csv(self, request, queryset):
 
         meta = self.model._meta
@@ -555,8 +549,6 @@ class AdultAdmin(UserAdmin):
             writer.writerow([getattr(obj, field) for field in field_names])
 
         return response
-
-    export_as_csv.short_description = _("Export selected Adults")
 
 
 @admin.register(models.Family)
@@ -586,14 +578,16 @@ class FamilyAdmin(admin.ModelAdmin):
         )
         return queryset
 
+    @admin.display(
+        description=_("Number of adults"),
+        ordering="_adults_count",
+    )
     def adults_count(self, obj):
         return obj._adults_count
 
-    adults_count.admin_order_field = "_adults_count"
-    adults_count.short_description = _("Number of adults")
-
+    @admin.display(
+        description=_("Number of children"),
+        ordering="_children_count",
+    )
     def children_count(self, obj):
         return obj._children_count
-
-    children_count.admin_order_field = "_children_count"
-    children_count.short_description = _("Number of children")

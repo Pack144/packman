@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import Category, Document
 
 
+@admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     model = Document
     list_display = (
@@ -18,4 +19,3 @@ class DocumentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Category)
-admin.site.register(Document, DocumentAdmin)

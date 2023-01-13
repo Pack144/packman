@@ -23,6 +23,10 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = ("name", "start", "end", "location", "venue__name")
     readonly_fields = ("duration",)
 
+    @admin.action(
+        description=_("Cancel selected events"),
+        permissions=("change",),
+    )
     def mark_cancelled(self, request, queryset):
         updates = queryset.update(status=Event.CANCELLED)
         self.message_user(
@@ -36,9 +40,10 @@ class EventAdmin(admin.ModelAdmin):
             messages.WARNING,
         )
 
-    mark_cancelled.short_description = _("Cancel selected events")
-    mark_cancelled.allowed_permissions = ("change",)
-
+    @admin.action(
+        description=_("Confirm selected events"),
+        permissions=("change",),
+    )
     def mark_confirmed(self, request, queryset):
         updates = queryset.update(status=Event.CONFIRMED)
         self.message_user(
@@ -52,9 +57,10 @@ class EventAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
-    mark_confirmed.short_description = _("Confirm selected events")
-    mark_confirmed.allowed_permissions = ("change",)
-
+    @admin.action(
+        description=_("Mark selected events as tentative"),
+        permissions=("change",),
+    )
     def mark_tentative(self, request, queryset):
         updates = queryset.update(status=Event.TENTATIVE)
         self.message_user(
@@ -67,9 +73,6 @@ class EventAdmin(admin.ModelAdmin):
             % updates,
             messages.INFO,
         )
-
-    mark_tentative.short_description = _("Mark selected events as tentative")
-    mark_tentative.allowed_permissions = ("change",)
 
 
 @admin.register(PackYear)
