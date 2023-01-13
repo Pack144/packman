@@ -1,3 +1,6 @@
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 from .base import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -30,3 +33,13 @@ SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=False)
 SESSION_COOKIE_HTTPONLY = env.bool("DJANGO_SESSION_COOKIE_HTTPONLY", default=True)
 # https://docs.djangoproject.com/en/stable/ref/settings/#session-cookie-secure
 SESSION_COOKIE_SECURE = env.bool("DJANGO_SESSION_COOKIE_SECURE", default=True)
+
+
+# Sentry Support
+# https://docs.sentry.io/platforms/python/guides/django/
+sentry_sdk.init(
+    dsn=env("SENTRY_DSN", default=""),
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=1.0),
+    send_default_pii=env.bool("SENTRY_SEND_DEFAULT_PII", default=True),
+)
