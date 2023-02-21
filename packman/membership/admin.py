@@ -536,7 +536,6 @@ class AdultAdmin(UserAdmin):
 
     @admin.action(description=_("Export selected Adults"))
     def export_as_csv(self, request, queryset):
-
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
 

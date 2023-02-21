@@ -438,7 +438,6 @@ class Prize(TimeStampedModel):
 
 
 class PrizeSelection(TimeStampedModel):
-
     campaign = models.ForeignKey(
         Campaign,
         on_delete=models.CASCADE,

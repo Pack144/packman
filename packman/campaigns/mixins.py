@@ -3,7 +3,6 @@ from django.utils.translation import gettext as _
 
 
 class UserIsSellerFamilyTest(UserPassesTestMixin):
-
     permission_denied_message = _(
         "You are not authorized to view this page. You must be a member of the seller's family."
     )
