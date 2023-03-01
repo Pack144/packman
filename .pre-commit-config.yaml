@@ -33,3 +33,8 @@ repos:
     hooks:
     -   id: flake8
         exclude: migrations/
+-   repo: https://github.com/pycqa/bandit
+    rev: 1.7.4
+    hooks:
+    -   id: bandit
+        additional_dependencies: ["bandit[toml]"]

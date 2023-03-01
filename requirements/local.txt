@@ -1,5 +1,6 @@
 -r base.txt
 
+bandit[toml]
 black
 coverage
 django-debug-toolbar
