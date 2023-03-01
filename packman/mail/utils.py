@@ -28,7 +28,6 @@ class ListEmailMessage(EmailMultiAlternatives):
         reply_to=None,
         settings=None,
     ):
-
         self.settings = settings
         if settings:
             site = Site.objects.get_current()

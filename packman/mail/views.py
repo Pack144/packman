@@ -12,7 +12,6 @@ from .models import Attachment, Mailbox, Message
 
 
 class MessageCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-
     model = Message
     form_class = MessageForm
     template_name = "mail/message_form.html"
@@ -126,7 +125,6 @@ class MessageUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
 
 class MessageDetailView(LoginRequiredMixin, DetailView):
-
     model = Message
     template_name = "mail/message_detail.html"
 
@@ -188,13 +186,11 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class MessageListView(LoginRequiredMixin, ListView):
-
     model = Message
     template_name = "mail/message_list.html"
 
 
 class MessageInboxView(MessageListView):
-
     model = Message
     template_name = "mail/message_list.html"
 
@@ -209,7 +205,6 @@ class MessageInboxView(MessageListView):
 
 
 class MessageDraftsView(MessageListView):
-
     model = Message
     template_name = "mail/message_list.html"
 
@@ -224,7 +219,6 @@ class MessageDraftsView(MessageListView):
 
 
 class MessageSendingView(MessageListView):
-
     model = Message
     template_name = "mail/message_list.html"
 
@@ -239,7 +233,6 @@ class MessageSendingView(MessageListView):
 
 
 class MessageSentView(MessageListView):
-
     model = Message
     template_name = "mail/message_list.html"
 
@@ -254,7 +247,6 @@ class MessageSentView(MessageListView):
 
 
 class MessageArchiveView(MessageListView):
-
     model = Message
     template_name = "mail/message_list.html"
 
@@ -269,7 +261,6 @@ class MessageArchiveView(MessageListView):
 
 
 class MessageTrashView(MessageListView):
-
     model = Message
     template_name = "mail/message_list.html"
 
