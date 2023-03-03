@@ -1,5 +1,5 @@
 django[argon2] ~=3.2
-django-crispy-forms
+django-crispy-forms ~= 1.14
 django-dynamic-formsets
 django-environ
 django-ical
