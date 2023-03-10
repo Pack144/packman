@@ -117,6 +117,7 @@ class CommitteeMember(TimeStampedUUIDModel):
                 name="unique_assignment_each_year",
             )
         ]
+        db_table = "committees_committee_members"
         ordering = ["year", "den", "position", "member"]
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
