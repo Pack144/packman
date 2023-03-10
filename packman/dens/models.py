@@ -20,9 +20,9 @@ class Rank(TimeStampedUUIDModel):
         TIGER = 2, _("Tiger")
         WOLF = 3, _("Wolf")
         BEAR = 4, _("Bear")
-        JR_WEBE = 5, _("Jr. Webelo")
-        SR_WEBE = 6, _("Sr. Webelo")
-        WEBE = 7, _("Webelo")
+        JR_WEBE = 5, _("Jr. Webelos")
+        SR_WEBE = 6, _("Sr. Webelos")
+        WEBE = 7, _("Webelos")
         ARROW = 8, _("Arrow of Light")
 
     rank = models.IntegerField(
