@@ -56,7 +56,7 @@ class DenAdmin(admin.ModelAdmin):
         "cubs_count",
         "cubs_count_next_year",
         "rank",
-        "get_rank_category",
+        "rank_category",
     )
     list_filter = (RankCategoryFilter, "rank__rank")
     ordering = ["number"]
@@ -79,6 +79,14 @@ class DenAdmin(admin.ModelAdmin):
     @admin.display(description=_("Incoming Cubs"), ordering="upcoming_count")
     def cubs_count_next_year(self, obj):
         return obj.upcoming_count
+
+    @admin.display(description=_("Rank Category"), ordering="rank")
+    def rank_category(self):
+        if self.rank:
+            if self.rank.rank <= Rank.RankChoices.BEAR:
+                return _("Animals")
+            if self.rank.rank >= Rank.RankChoices.JR_WEBE:
+                return _("Webelos")
 
 
 @admin.register(Rank)

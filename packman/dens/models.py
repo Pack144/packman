@@ -102,16 +102,6 @@ class Den(TimeStampedModel):
     def active_cubs(self):
         return self.scouts.filter(year_assigned=PackYear.objects.current())
 
-    def count_current_members(self):
-        return self.active_cubs().count()
-
-    def get_rank_category(self):
-        if self.rank:
-            if self.rank.rank <= Rank.RankChoices.BEAR:
-                return _("Animals")
-            if self.rank.rank >= Rank.RankChoices.JR_WEBE:
-                return _("Webelos")
-
     @property
     def patch(self):
         if self.number <= 10:
@@ -136,10 +126,6 @@ class Den(TimeStampedModel):
         members = self.scout_set.filter(den_memberships__den=self, den_memberships__year_assigned=year)
         Order = apps.get_model("campaigns", "Order")
         return Order.objects.filter(campaign__year=year, seller__in=members)
-
-    count_current_members.short_description = _("# of Cubs")
-    get_rank_category.admin_order_field = "rank"
-    get_rank_category.short_description = _("Rank Category")
 
 
 class Membership(TimeStampedUUIDModel):
