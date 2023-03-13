@@ -35,7 +35,9 @@ class EventFeed(ICalFeed):
         Gather all calendar events applicable for the family. Based on the
         years a family has a Scout assigned to a Den.
         """
-        published_events = Event.objects.select_related("category").filter(published=True)
+        published_events = (
+            Event.objects.select_related("category").prefetch_related("venue", "venue__address").filter(published=True)
+        )
         events_for_family = Event.objects.none()
         for year in obj.years_active():
             # Filter for events that occur within each Pack year
