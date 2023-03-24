@@ -81,11 +81,11 @@ class DenAdmin(admin.ModelAdmin):
         return obj.upcoming_count
 
     @admin.display(description=_("Rank Category"), ordering="rank")
-    def rank_category(self):
-        if self.rank:
-            if self.rank.rank <= Rank.RankChoices.BEAR:
+    def rank_category(self, obj):
+        if obj.rank:
+            if obj.rank.rank <= Rank.RankChoices.BEAR:
                 return _("Animals")
-            if self.rank.rank >= Rank.RankChoices.JR_WEBE:
+            if obj.rank.rank >= Rank.RankChoices.JR_WEBE:
                 return _("Webelos")
 
 
