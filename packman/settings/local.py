@@ -1,4 +1,4 @@
-import contextlib
+import importlib.util
 
 from .base import *
 
@@ -48,7 +48,8 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/
 
-with contextlib.suppress(ImportError):
+if (spec := importlib.util.find_spec("debug_toolbar")) is not None:
+    # https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported
     INSTALLED_APPS += ["debug_toolbar"]
     INTERNAL_IPS = env.list("INTERNAL_IPS", default=["127.0.0.1"])
     MIDDLEWARE.insert(
