@@ -7,18 +7,18 @@
   </head>
   <body>
     {% for den in den_list %}
-      <div class="cubName {% if not forloop.first %} page-break{% endif %}">
+      <div class="cub-name {% if not forloop.first %} page-break{% endif %}">
         DEN TOTAL
-        <div class="denNumber">{{ den|upper }}</div>
+        <div class="den-number">{{ den|upper }}</div>
       </div>
       {% include 'campaigns/snippets/pull_sheet_page.html' with products=den.get_member_orders.products %}
       {% if not request.GET.denOnly %}
         {% for cub in den.active_cubs %}
           {% with product_list=cub.scout.orders.latest_campaign.products %}
             {% if product_list %}
-              <div class="cubName page-break">
+              <div class="cub-name page-break">
                 {{ cub.scout }}
-                <div class="denNumber">{{ den|upper }}</div>
+                <div class="den-number">{{ den|upper }}</div>
               </div>
               {% include 'campaigns/snippets/pull_sheet_page.html' with products=product_list %}
             {% endif %}

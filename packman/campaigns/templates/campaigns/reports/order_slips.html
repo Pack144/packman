@@ -53,8 +53,8 @@
       {% if not forloop.counter|divisibleby:2 %}
         <div class="page page-break">
         {% endif %}
-        <div class="column orderSlip {% cycle 'left' 'right' %}">
-          <div class="foldOver">
+        <div class="column order-slip {% cycle 'left' 'right' %}">
+          <div class="fold-over">
             <h1>Thank You!</h1>
             <h2>For Supporting</h2>
             <h2>Cub Scout Pack 144</h2>
@@ -64,7 +64,7 @@
                    width="128"
                    alt="Cub Scouts Logo">
               <div>
-                <div class="cubSignature">
+                <div class="cub-signature">
                   <p>
                     Thanks,
                   </p>
@@ -72,7 +72,7 @@
                     {{ order.seller.short_name }}
                   </p>
                 </div>
-                <div class="cubId">
+                <div class="cub-id">
                   <p>
                     <u>pack144.org</u>
                   </p>
@@ -82,7 +82,7 @@
             <div class="page-id">{{ order.seller }}, {{ order.seller.current_den }}</div>
           </div>
           <hr class="dotted-line"/>
-          <div class="orderDetails">
+          <div class="order-details">
             <div class="customerDetails">
               <p>
                 <strong>{{ order.customer.name }}</strong>
@@ -93,19 +93,19 @@
                 {{ order.customer.get_city_state_display }}
               </p>
             </div>
-            <div class="orderItems">
+            <div class="order-items">
               {% for item in order.items.all %}
                 {% ifchanged item.product.category %}
-                  <h3 class="categoryHeader">{{ item.product.category }}</h3>
+                  <h3 class="category-header">{{ item.product.category }}</h3>
                 {% endifchanged %}
-                <div class="orderItem">
-                  <div class="orderQuantity">{{ item.quantity }}</div>
-                  <div class="orderTitle">{{ item.product }}</div>
-                  <div class="orderTotal">${{ item.get_total_item_price|floatformat:"0" }}</div>
+                <div class="order-item">
+                  <div class="order-quantity">{{ item.quantity }}</div>
+                  <div class="order-title">{{ item.product }}</div>
+                  <div class="order-total">${{ item.get_total_item_price|floatformat:"0" }}</div>
                 </div>
               {% endfor %}
             </div>
-            <div class="orderSummary">
+            <div class="order-summary">
               {% if order.is_paid %}
                 <img src="{% static 'img/paid_stamp.svg' %}" alt="Paid stamp">
               {% endif %}

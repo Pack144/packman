@@ -2,12 +2,12 @@
   <form class="form"
         action="{% url 'membership:search_results' %}"
         method="get"
-        id="memberSearchForm">
+        id="member-search-form">
     <div class="input-group">
       <input name="q"
              type="search"
              class="form-control border-light"
-             id="memberSearch"
+             id="member-search"
              placeholder="Search"
              {% if request.GET.q %}value="{{ request.GET.q }}"{% endif %}
              aria-label="Search">

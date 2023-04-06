@@ -1,7 +1,7 @@
 {% load humanize i18n %}
 
 {% include 'mail/snippets/message_list_header.html' %}
-<div class="list-group list-group-flush scrollarea">
+<div class="list-group list-group-flush scroll-area">
   {% for message in message_list %}
     <a href="{% if mailbox == mailbox.DRAFTS %}
                {% url 'mail:update' message.pk %}

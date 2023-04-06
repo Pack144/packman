@@ -1,5 +1,6 @@
 :root {
     color-scheme: light dark;
+
     /* BSA Primary Colors */
     --scouting-red: #CE1126;
     --scouting-blue: #003F87;
@@ -10,7 +11,7 @@
 
     /* BSA Secondary Colors */
     --scouting-pale-blue: #9AB3D5;
-    --scouting-dark-blue: #003366;
+    --scouting-dark-blue: #036;
     --scouting-light-tan: #E9E9E4;
     --scouting-dark-tan: #AD9D7B;
     --scouting-pale-gray: #858787;
@@ -19,34 +20,30 @@
     /* Preferred colors */
     --footer-background: var(--scouting-blue);
     --h2-color: var(--scouting-blue);
-    --navbar-background: rgba(0, 63, 135, 0.8) /* scouting-blue as rgba */
+    --navbar-background: rgb(0 63 135 / 80%) /* scouting-blue as rgba */
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
         --footer-background: var(--scouting-dark-blue);
         --h2-color: var(--scouting-pale-blue);
-        --navbar-background: rgba(0, 51, 102, 0.8) /* scouting-dark-blue as rgba */
+        --navbar-background: rgb(0 51 102 / 80%) /* scouting-dark-blue as rgba */
     }
 }
 
 
 @font-face {
-    font-family: 'Cooper';
-    src: url('/static/webfonts/CooperBlackStd.woff2') format('woff2'),
-    url('/static/webfonts/CooperBlackStd.woff') format('woff');
-    font-weight: 900;
+    font-family: Cooper;
     font-style: normal;
-}
-
-html {
-    /*height: 100%;*/
+    font-weight: 900;
+    src: url('/static/webfonts/CooperBlackStd.woff2') format('woff2'),
+         url('/static/webfonts/CooperBlackStd.woff') format('woff');
 }
 
 body {
     display: flex;
-    flex-direction: column;
     min-height: 100vh;
+    flex-direction: column;
 }
 
 h1 {
@@ -58,9 +55,9 @@ h2 {
 }
 
 footer {
+    margin-top: auto;
     background-color: var(--footer-background);
     color: var(--scouting-pale-blue);
-    margin-top: auto;
 }
 
 .card.member-detail {
@@ -68,10 +65,10 @@ footer {
 }
 
 #banner {
-    background-image: url('/static/img/jumbotron.jpg');
-    background-size: cover;
     position: relative;
     z-index: 1020;
+    background-image: url('/static/img/jumbotron.jpg');
+    background-size: cover;
 }
 
 #den-patches {
@@ -82,44 +79,41 @@ footer {
     height: 80px;
 }
 
+/* stylelint-disable-next-line selector-id-pattern */
 #contact-form #div_id_url {
     display: none;
 }
 
 .navbar {
+    backdrop-filter: blur(5px);
     background-color: var(--navbar-background);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
 }
+
 .prize-details{
-    background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    background-color: rgb(255 255 255 / 80%);
 }
 
 .navbar-brand {
-    font-family: 'Cooper', serif;
-    line-height: 1.1;
     color: var(--scouting-light-tan);
+    font-family: Cooper, serif;
+    line-height: 1.1;
     text-shadow: 0 0 0.3rem var(--scouting-dark-gray);
 }
 
 .navbar-brand #pack-name {
     color: var(--scouting-gold);
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: var(--scouting-blue);
     font-weight: bold;
+    -webkit-text-stroke-color: var(--scouting-blue);
+    -webkit-text-stroke-width: 1px;
 }
 
 .navbar-brand #pack-location, #pack-tagline {
     color: var(--scouting-light-tan);
 }
 
-.scrollarea {
+.scroll-area {
     overflow-y: auto;
-}
-
-.quantity-adjustment-btn-group {
 }
 
 .cost-display {
@@ -127,14 +121,14 @@ footer {
     margin-left: 2rem;
 }
 
-#memberSearchForm #memberSearch {
-    border-top-left-radius: 10rem;
+#member-search-form #member-search {
     border-bottom-left-radius: 10rem;
+    border-top-left-radius: 10rem;
 }
 
-#memberSearchForm button {
-    border-top-right-radius: 10rem;
+#member-search-form button {
     border-bottom-right-radius: 10rem;
+    border-top-right-radius: 10rem;
 }
 
 #mail-client {
@@ -152,10 +146,6 @@ footer {
     flex-direction: column;
 }
 
-#message-list-column #message-subject {
-
-}
-
 #message-detail-column {
     flex-basis: 66%;
     flex-direction: column;
@@ -165,6 +155,6 @@ footer {
     flex: 0 0 1rem;
 }
 
-.resizer {
-    cursor: col-resize; height: 100%; width: 2px; background-color: #dee2e6;
+.resizer { width: 2px; height: 100%; background-color: #dee2e6;
+    cursor: col-resize;
 }

@@ -11,17 +11,17 @@
         {% if not forloop.first %}<div class="page-break"></div>{% endif %}
         <table>
           <tr>
-            <td class="placeMarkerDenName">{{ cub.den|upper }}</td>
+            <td class="place-marker-den-name">{{ cub.den|upper }}</td>
           </tr>
         </table>
       {% endifchanged %}
       <div class="page-break"></div>
       <table>
         <tr>
-          <td class="placeMarkerCubName">{{ cub.scout }}</td>
+          <td class="place-marker-cub-name">{{ cub.scout }}</td>
         </tr>
         <tr>
-          <td class="placeMarkerCubDen">{{ cub.den }}</td>
+          <td class="place-marker-cub-den">{{ cub.den }}</td>
         </tr>
       </table>
     {% endfor %}
