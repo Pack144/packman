@@ -234,7 +234,10 @@ PHONENUMBER_DEFAULT_FORMAT = "NATIONAL"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
+    "filters": {
+        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+        "spam_detected": {"()": "packman.core.logging.filters.ExcludeSpamDetected"},
+    },
     "formatters": {"verbose": {"format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s"}},
     "handlers": {
         "mail_admins": {

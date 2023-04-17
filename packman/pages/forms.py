@@ -2,11 +2,12 @@ import logging
 
 from django import forms
 from django.conf import settings
-from django.core.exceptions import SuspiciousOperation
 from django.core.mail import EmailMessage
 from django.utils.translation import gettext as _
 
 from tinymce.widgets import TinyMCE
+
+from packman.core.exceptions import SpamDetected
 
 from .models import ContentBlock, Page
 
@@ -48,11 +49,10 @@ class ContactForm(forms.Form):
         required=True,
     )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        url = cleaned_data.get("url")
+    def clean_url(self):
+        url = self.cleaned_data.get("url")
         if url:
-            raise SuspiciousOperation(
+            raise SpamDetected(
                 _(
                     "Invalid input detected on this form. If you believe you received this message "
                     "in error, please you may check your query and try again."
