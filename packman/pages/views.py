@@ -175,6 +175,13 @@ class ContactPageView(SuccessMessageMixin, FormView):
     success_url = reverse_lazy("pages:home")
     template_name = "pages/contact_page.html"
 
+    def get_initial(self):
+        initial = super().get_initial()
+        if self.request.user.is_authenticated:
+            initial["from_name"] = str(self.request.user)
+            initial["from_email"] = self.request.user.email
+        return initial
+
     def form_valid(self, form):
         form.send_mail()
         return super().form_valid(form)
