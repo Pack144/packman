@@ -124,10 +124,7 @@ class Address(TimeStampedUUIDModel):
         verbose_name_plural = _("Addresses")
 
     def __str__(self):
-        if self.member:
-            return f"{self.member}: {self.single_line_display()}"
-        else:
-            return self.single_line_display()
+        return self.single_line_display()
 
     def single_line_display(self):
         if self.street2:
