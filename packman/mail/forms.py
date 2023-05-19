@@ -5,7 +5,7 @@ from .models import Message, MessageDistribution, MessageRecipient
 
 
 class AttachmentForm(forms.Form):
-    attachments = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={"multiple": True}))
+    attachments = forms.FileField(required=False, widget=forms.ClearableFileInput())
 
 
 class MessageForm(forms.ModelForm):
