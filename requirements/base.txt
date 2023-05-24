@@ -9,6 +9,7 @@ django-tempus-dominus
 django-tinymce
 docutils
 easy-thumbnails
+factory_boy
 pillow
 psycopg2-binary
 pymemcache
