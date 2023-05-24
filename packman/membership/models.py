@@ -166,6 +166,7 @@ class Member(TimeStampedUUIDModel):
                 break
         return self.slug
 
+    # TODO: breakout function and property
     def age(self):
         """If we have a birthday, calculate the current age of the member."""
         if self.date_of_birth:

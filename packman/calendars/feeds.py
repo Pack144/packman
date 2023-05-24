@@ -41,7 +41,7 @@ class EventFeed(ICalFeed):
         events_for_family = Event.objects.none()
         for year in obj.years_active():
             # Filter for events that occur within each Pack year
-            events_in_year = published_events.filter(start__range=[year.start_date, year.end_date])
+            events_in_year = published_events.filter(start__date__range=[year.start_date, year.end_date])
             events_for_family = events_for_family | events_in_year
         return events_for_family
 

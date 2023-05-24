@@ -26,7 +26,7 @@ class EventListView(ActiveMemberOrContributorTest, generic.ListView):
         Return a queryset containing all future events for the current Pack Year
         """
         return (
-            Event.objects.filter(start__lte=PackYear.objects.current().end_date)
+            Event.objects.filter(start__date__lte=PackYear.objects.current().end_date)
             .filter(start__gte=timezone.now() - timezone.timedelta(hours=8))
             .order_by("start")
         )

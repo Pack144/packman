@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from packman.membership.models import Adult
+
 User = get_user_model()
 
 
@@ -26,3 +28,15 @@ class AdultManagersTests(TestCase):
         self.assertTrue(admin_user.is_superuser)
         with self.assertRaises(ValueError):
             User.objects.create_superuser(email="super@user.com", password="foo", is_superuser=False)  # nosec B106
+
+    def test_get_by_natural_key_is_case_insensitive(self):
+        member = Adult.objects.create_user(
+            email="member@example.com",
+            password="Be Prepared",  # nosec: B106
+        )
+
+        self.assertEqual(Adult.objects.get_by_natural_key(username="member@example.com"), member)
+        self.assertEqual(Adult.objects.get_by_natural_key(username="MEMBER@example.com"), member)
+        self.assertEqual(Adult.objects.get_by_natural_key(username="member@EXAMPLE.COM"), member)
+        self.assertEqual(Adult.objects.get_by_natural_key(username="MEMBER@EXAMPLE.COM"), member)
+        self.assertEqual(Adult.objects.get_by_natural_key(username="Member@Example.com"), member)

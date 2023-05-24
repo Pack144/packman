@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .models import Address, Category, PhoneNumber, Venue
+from packman.address_book.models import Address, Category, PhoneNumber, Venue
 
 
 class AddressModelTests(TestCase):
