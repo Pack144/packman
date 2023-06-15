@@ -2,7 +2,9 @@
 
 {% load humanize i18n static %}
 
-{% block title %}{% translate 'Orders Report' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Orders Report' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <div class="row">
@@ -43,27 +45,27 @@
           <table class="table table-hover" id="order_report_by_date_table">
             <caption>{% translate "Orders received by day" %}</caption>
             <thead class="thead-dark">
-            <tr>
-              <th scope="col">{% translate 'Date' %}</th>
-              <th scope="col">{% translate 'Orders Received' %}</th>
-              <th scope="col">{% translate 'Total' %}</th>
-            </tr>
+              <tr>
+                <th scope="col">{% translate 'Date' %}</th>
+                <th scope="col">{% translate 'Orders Received' %}</th>
+                <th scope="col">{% translate 'Total' %}</th>
+              </tr>
             </thead>
             <tbody>
-            {% for day in report.days %}
-              <tr>
-                <th scope="row">{{ day.date|naturalday|capfirst }}</th>
-                <td>{{ day.count|intcomma }}</td>
-                <td>${{ day.order_total|intcomma }}</td>
-              </tr>
-            {% endfor %}
+              {% for day in report.days %}
+                <tr>
+                  <th scope="row">{{ day.date|naturalday|capfirst }}</th>
+                  <td>{{ day.count|intcomma }}</td>
+                  <td>${{ day.order_total|intcomma }}</td>
+                </tr>
+              {% endfor %}
             </tbody>
             <tfoot>
-            <tr>
-              <th scope="row">{% translate "Total" %}</th>
-              <td>{{ report.count|intcomma }}</td>
-              <td>${{ report.total|intcomma }}</td>
-            </tr>
+              <tr>
+                <th scope="row">{% translate "Total" %}</th>
+                <td>{{ report.count|intcomma }}</td>
+                <td>${{ report.total|intcomma }}</td>
+              </tr>
             </tfoot>
           </table>
         </div>
@@ -74,18 +76,18 @@
           <table class="table table-hover" id="products_ordered_table">
             <caption>{% translate 'Products Ordered' %}</caption>
             <thead class="thead-dark">
-            <tr>
-              <th scope="col">{% translate 'Product' %}</th>
-              <th scope="col">{% translate 'Quantity Ordered' %}</th>
-            </tr>
+              <tr>
+                <th scope="col">{% translate 'Product' %}</th>
+                <th scope="col">{% translate 'Quantity Ordered' %}</th>
+              </tr>
             </thead>
             <tbody>
-            {% for product in campaigns.viewing.products.quantity %}
-              <tr>
-                <th scope="row">{{ product.name }}</th>
-                <td>{{ product.quantity_ordered }}</td>
-              </tr>
-            {% endfor %}
+              {% for product in campaigns.viewing.products.quantity %}
+                <tr>
+                  <th scope="row">{{ product.name }}</th>
+                  <td>{{ product.quantity_ordered }}</td>
+                </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -94,26 +96,43 @@
     <aside class="col-md">
       <h2>Reports</h2>
       <ul class="nav flex-column">
-        <li class="nav-item"><a class="nav-link" href="#daily-order-report">Orders by Day</a></li>
-        <li class="nav-item"><a class="nav-link" href="#product-order-report">Product Order Totals</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'campaigns:prize_selection_report' %}">Prize Selections</a></li>
-        <li class="nav-item"><a href="{% url 'campaigns:weekly_report' %}" class="nav-link">Weekly Report <i class="fas fa-file-csv"></i></a></li>
-        <li class="nav-item"><a href="{% url 'campaigns:turn_in_night' %}" class="nav-link">Turn-in Night <i class="fas fa-file-csv"></i></a></li>
+        <li class="nav-item">
+          <a class="nav-link" href="#daily-order-report">Orders by Day</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#product-order-report">Product Order Totals</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'campaigns:prize_selection_report' %}">Prize Selections</a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'campaigns:weekly_report' %}" class="nav-link">Weekly Report <i class="fas fa-file-csv"></i></a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'campaigns:turn_in_night' %}" class="nav-link">Turn-in Night <i class="fas fa-file-csv"></i></a>
+        </li>
       </ul>
       <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
-          Packing Night Materials
-        </button>
+        <button class="btn btn-secondary dropdown-toggle"
+                type="button"
+                data-toggle="dropdown"
+                aria-expanded="false">Packing Night Materials</button>
         <div class="dropdown-menu">
-          <a class="dropdown-item d-flex flex-column" href="{% url 'campaigns:place_markers' %}" target="_blank">
+          <a class="dropdown-item d-flex flex-column"
+             href="{% url 'campaigns:place_markers' %}"
+             target="_blank">
             <span>Place Markers</span>
             <small class="text-muted">Placeholder cards for packing night</small>
           </a>
-          <a class="dropdown-item d-flex flex-column" href="{% url 'campaigns:pull_sheets' %}" target="_blank">
+          <a class="dropdown-item d-flex flex-column"
+             href="{% url 'campaigns:pull_sheets' %}"
+             target="_blank">
             <span>Pull Sheets</span>
             <small class="text-muted">List of products divided by Den</small>
           </a>
-          <a class="dropdown-item d-flex flex-column" href="{% url 'campaigns:order_slips' %}" target="_blank">
+          <a class="dropdown-item d-flex flex-column"
+             href="{% url 'campaigns:order_slips' %}"
+             target="_blank">
             <span>Order Slips</span>
             <small class="text-muted">Receipt slips to attach to individual orders</small>
           </a>

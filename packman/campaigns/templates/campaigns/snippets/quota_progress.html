@@ -46,32 +46,28 @@
            style="width:{{ quota_percentage }}%"
            aria-valuenow="{{ total }}"
            aria-valuemin="0"
-           aria-valuemax="{{ quota }}">
-      </div>
+           aria-valuemax="{{ quota }}"></div>
       <div class="progress-bar"
            role="progressbar"
            style="width:{{ bronze_percentage }}%;
-                  background-color: #CD7F32;"
+                  background-color: #CD7F32"
            aria-valuenow="{{ total }}"
            aria-valuemin="0"
-           aria-valuemax="{{ quota }}">
-      </div>
+           aria-valuemax="{{ quota }}"></div>
       <div class="progress-bar bg-secondary"
            role="progressbar"
            style="width:{{ silver_percentage }}%;
-                  background-color: #C0C0C0;"
+                  background-color: #C0C0C0"
            aria-valuenow="{{ total }}"
            aria-valuemin="0"
-           aria-valuemax="{{ quota }}">
-      </div>
+           aria-valuemax="{{ quota }}"></div>
       <div class="progress-bar bg-warning"
            role="progressbar"
            style="width:{{ gold_percentage }}%;
-                  background-color: #FFD700;"
+                  background-color: #FFD700"
            aria-valuenow="{{ total }}"
            aria-valuemin="0"
-           aria-valuemax="{{ quota }}">
-      </div>
+           aria-valuemax="{{ quota }}"></div>
     </div>
     {% if quota %}{% endif %}
     <table class="table">

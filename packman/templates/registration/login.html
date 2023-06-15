@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
-{% load crispy_forms_tags i18n static %}
+{% load crispy_forms_filters i18n static %}
 
-{% block title %}{% translate 'Sign In' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Sign In' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <div class="row justify-content-center mt-5">
@@ -27,7 +29,7 @@
             {{ form|crispy }}
             <input class="btn btn-block btn-success mt-5"
                    type="submit"
-                   value="{% translate 'Sign in' %}"/>
+                   value="{% translate 'Sign in' %}" />
           </form>
         </div>
         <div class="card-footer text-center small">

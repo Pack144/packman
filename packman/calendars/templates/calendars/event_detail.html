@@ -54,60 +54,56 @@
             {% if event.end and event.end|date != event.start|date %}
               <li class="list-inline-item">
                 <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
-            </li>
-            <li class="list-inline-item">
-              <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
-          </li>
-          <li class="list-inline-item">&ndash;</li>
-          <li class="list-inline-item">
-            <i class="fa-solid fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}
-        </li>
-        <li class="list-inline-item">
-          <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.end|time }}
-      </li>
-    {% elif event.end %}
-      <li class="list-inline-item">
-        <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
-    </li>
-    <li class="list-inline-item">
-      <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}
-  </li>
-{% else %}
-  <li class="list-inline-item">
-    <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
-</li>
-<li class="list-inline-item">
-  <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
-</li>
-{% endif %}
-{% if event.venue.address %}
-  <li class="list-inline-item">
-    <i class="fa-solid fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}
-</li>
-{% elif event.get_location %}
-<li class="list-inline-item">
-  <i class="fa-solid fa-map-marker" aria-label="location"></i> {{ event.get_location }}
-</li>
-{% endif %}
-</ul>
-{% if event.description %}
-  <p>
-    {{ event.description|safe }}
-  </p>
-{% endif %}
-{% if event.attachments.count %}
-  <ul class="list-group">
-    {% for attachment in event.attachments.all %}
-      <a href="{{ attachment.file.url }}" target="_blank">
-        <li class="list-group-item">{{ attachment }}</li>
-      </a>
-    {% endfor %}
-  </ul>
-{% endif %}
-</div>
-</div>
-</div>
-</div>
+              </li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
+              </li>
+              <li class="list-inline-item">&ndash;</li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}
+              </li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.end|time }}
+              </li>
+            {% elif event.end %}
+              <li class="list-inline-item">
+                <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
+              </li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}
+              </li>
+            {% else %}
+              <li class="list-inline-item">
+                <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
+              </li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
+              </li>
+            {% endif %}
+            {% if event.venue.address %}
+              <li class="list-inline-item">
+                <i class="fa-solid fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}
+              </li>
+            {% elif event.get_location %}
+              <li class="list-inline-item">
+                <i class="fa-solid fa-map-marker" aria-label="location"></i> {{ event.get_location }}
+              </li>
+            {% endif %}
+          </ul>
+          {% if event.description %}<p>{{ event.description|safe }}</p>{% endif %}
+          {% if event.attachments.count %}
+            <ul class="list-group">
+              {% for attachment in event.attachments.all %}
+                <a href="{{ attachment.file.url }}" target="_blank">
+                  <li class="list-group-item">{{ attachment }}</li>
+                </a>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock content %}
 
 {% block js %}

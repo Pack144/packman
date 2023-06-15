@@ -5,6 +5,7 @@ black
 coverage
 django-debug-toolbar
 django-extensions
+djlint
 isort
 flake8
 factory_boy

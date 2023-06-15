@@ -2,7 +2,9 @@
 
 {% load i18n %}
 
-{% block title %}{% translate 'Prizes' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Prizes' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <h1>{% translate 'Prizes' %}</h1>

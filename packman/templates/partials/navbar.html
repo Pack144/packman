@@ -1,4 +1,5 @@
 {% load i18n %}
+
 <nav class="navbar navbar-expand-lg navbar-dark m-0">
   <button class="navbar-toggler"
           type="button"
@@ -7,43 +8,43 @@
           aria-controls="navbarCollapse"
           aria-expanded="false"
           aria-label
-    {% translate 'Toggle Naviation' %}>
+          {% translate 'Toggle Naviation' %}>
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarCollapse">
     <ul class="navbar-nav mr-auto">
       {% if user.is_authenticated %}
         {% if fundraiser %}
-          <li class="nav-item{% if 'campaigns' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+          <li class="nav-item {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %} mr-lg-3">
             <a class="nav-link" href="{% url 'campaigns:order_list' %}">Fundraiser</a>
           </li>
         {% endif %}
-        <li class="nav-item{% if 'calendars' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+        <li class="nav-item {% if 'calendars' in request.resolver_match.app_names %}active{% endif %} mr-lg-3">
           <a class="nav-link" href="{% url 'calendars:list' %}">{% translate 'Calendar' %}</a>
         </li>
-        <li class="nav-item{% if 'membership' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+        <li class="nav-item {% if 'membership' in request.resolver_match.app_names %}active{% endif %} mr-lg-3">
           <a class="nav-link" href="{% url 'membership:scouts' %}">{% translate 'Members' %}</a>
         </li>
-        <li class="nav-item{% if 'committees' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+        <li class="nav-item {% if 'committees' in request.resolver_match.app_names %}active{% endif %} mr-lg-3">
           <a class="nav-link" href="{% url 'committees:list' %}">{% translate 'Committees' %}</a>
         </li>
-        <li class="nav-item{% if 'documents' in request.resolver_match.app_names %} active{% endif %} mr-lg-3">
+        <li class="nav-item {% if 'documents' in request.resolver_match.app_names %}active{% endif %} mr-lg-3">
           <a class="nav-link" href="{% url 'documents:list' %}">{% translate 'Documents' %}</a>
         </li>
       {% else %}
-        <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'contact-us' %} active{% endif %} mr-lg-3">
+        <li class="nav-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'contact-us' %} active {% endif %} mr-lg-3">
           <a class="nav-link" href="{% url 'pages:contact' %}">{% translate 'Contact Us' %}</a>
         </li>
-        <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'about' %} active{% endif %} mr-lg-3">
+        <li class="nav-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'about' %}active{% endif %} mr-lg-3">
           <a class="nav-link" href="{% url 'pages:about' %}">{% translate 'About our Pack' %}</a>
         </li>
       {% endif %}
       {% for link in navbar_links %}
-        <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == link.slug %} active{% endif %} mr-lg-3">
+        <li class="nav-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == link.slug %} active {% endif %} mr-lg-3">
           <a class="nav-link" href="{% url 'pages:detail' link.slug %}">{{ link }}</a>
         </li>
       {% endfor %}
-      <li class="nav-item{% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'history' %} active{% endif %} mr-lg-3">
+      <li class="nav-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'history' %} active {% endif %} mr-lg-3">
         <a class="nav-link" href="{% url 'pages:history' %}">{% translate 'Our History' %}</a>
       </li>
     </ul>
@@ -60,9 +61,7 @@
             <span class="mr-2">{{ user.get_short_name }}</span>
             <span class="fa-layers fa-fw">
               <i class="fa-solid fa-user-circle"></i>
-              {% if user.message_recipients.unread.exists %}
-                <span class="fa-layers-counter"></span>
-              {% endif %}
+              {% if user.message_recipients.unread.exists %}<span class="fa-layers-counter"></span>{% endif %}
             </span>
           </a>
           <div class="dropdown-menu dropdown-menu-right"
@@ -74,9 +73,7 @@
                 <span class="ml-1">{% translate 'Mail' %}</span>
               </span>
               {% if user.message_recipients.unread.exists %}
-                <span class="badge bg-danger text-white rounded-pill">
-                  {{ user.message_recipients.unread.count }}
-                </span>
+                <span class="badge bg-danger text-white rounded-pill">{{ user.message_recipients.unread.count }}</span>
               {% endif %}
             </a>
             <a class="dropdown-item" href="{% url 'membership:my-family' %}">
@@ -105,14 +102,10 @@
           <div class="btn-group"
                role="group"
                aria-label="{% translate 'Sign up or login' %}">
-            <a class="btn btn-outline-success btn-sm{% if request.resolver_match.url_name == 'signup' %} active{% endif %}"
-               href="{% url 'pages:signup' %}">
-              {% translate 'Join Us' %}
-            </a>
-            <a class="btn btn-outline-success btn-sm{% if request.resolver_match.url_name == 'login' %} active{% endif %}"
-               href="{% url 'login' %}?next={{ request.path }}">
-              {% translate 'Sign In' %}
-            </a>
+            <a class="btn btn-outline-success btn-sm {% if request.resolver_match.url_name == 'signup' %}active{% endif %}"
+               href="{% url 'pages:signup' %}">{% translate 'Join Us' %}</a>
+            <a class="btn btn-outline-success btn-sm {% if request.resolver_match.url_name == 'login' %}active{% endif %}"
+               href="{% url 'login' %}?next={{ request.path }}">{% translate 'Sign In' %}</a>
           </div>
         </li>
       {% endif %}

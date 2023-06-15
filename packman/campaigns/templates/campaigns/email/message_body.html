@@ -2,7 +2,9 @@
 
 {% load i18n static %}
 
-{% block title %}{% blocktranslate %}Thank You Supporting {{ site.name }}{% endblocktranslate %}{% endblock %}
+{% block title %}
+  {% blocktranslate %}Thank You Supporting {{ site.name }}{% endblocktranslate %}
+{% endblock %}
 
 {% block heading %}
   {{ message.subject|safe }}
@@ -21,32 +23,23 @@
       </h5>
       <address>
         <ul style="list-style: none; margin-left: 0; padding-left: 0;">
-          {% if order.customer.get_address_display %}
-            <li>{{ order.customer.get_address_display }}</li>
-          {% endif %}
-          {% if order.customer.email %}
-            <li>{{ order.customer.email }}</li>
-          {% endif %}
-          {% if order.customer.phone_number %}
-            <li>{{ order.customer.phone_number }}</li>
-          {% endif %}
+          {% if order.customer.get_address_display %}<li>{{ order.customer.get_address_display }}</li>{% endif %}
+          {% if order.customer.email %}<li>{{ order.customer.email }}</li>{% endif %}
+          {% if order.customer.phone_number %}<li>{{ order.customer.phone_number }}</li>{% endif %}
         </ul>
       </address>
     </div>
     <div>
       {% if order.date_paid %}
-        <img src="https://{{ site.domain }}{% static 'img/paid_stamp.svg' %}" alt="{% translate 'Paid Stamp' %}">
+        <img src="https://{{ site.domain }}{% static 'img/paid_stamp.svg' %}"
+             alt="{% translate 'Paid Stamp' %}">
       {% else %}
         <h6>
           {% if order.product_count %}
-            <p>
-              Item{{ order.product_count|pluralize }}: ${{ order.annotated_items.total }}
-            </p>
+            <p>Item{{ order.product_count|pluralize }}: ${{ order.annotated_items.total }}</p>
           {% endif %}
           {% if order.donation %}
-            <p>
-              {% translate 'Donation' %} ${{ order.donation }}
-            </p>
+            <p>{% translate 'Donation' %} ${{ order.donation }}</p>
           {% endif %}
         </h6>
       {% endif %}

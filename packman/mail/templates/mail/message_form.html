@@ -78,9 +78,7 @@
         {% for field in form.visible_fields %}{{ field|as_crispy_field }}{% endfor %}
       </fieldset>
       <fieldset id="message_attachments">
-        <legend>
-          {% translate 'Attachments' %}
-        </legend>
+        <legend>{% translate 'Attachments' %}</legend>
         {% if message.attachments.exists %}
           <div class="mt-3">
             <ul class="list-unstyled">

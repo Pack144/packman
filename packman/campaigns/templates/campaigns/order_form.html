@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load crispy_forms_tags i18n static %}
+{% load crispy_forms_filters i18n static %}
 
 {% block title %}
   {% if order.pk %}
@@ -23,214 +23,210 @@
     <div>
       <h1 class="text-success">
         $ <span id="order-total">
-          {% if order.get_total %}{{ order.get_total }}{% else %}0.00{% endif %}
-        </span>
-      </h1>
-      <h4 class="text-muted text-right">
-        <span id="order-product-count">
-          {% if order.product_count %}
-            {{ order.product_count }}
-          {% else %}
-            0
-          {% endif %}
-        </span> items
-      </h4>
-    </div>
+        {% if order.get_total %}
+          {{ order.get_total }}
+        {% else %}
+          0.00
+        {% endif %}
+      </span>
+    </h1>
+    <h4 class="text-muted text-right">
+      <span id="order-product-count">
+        {% if order.product_count %}
+          {{ order.product_count }}
+        {% else %}
+          0
+        {% endif %}
+      </span> items
+    </h4>
   </div>
-  <form method="post" id="order-form">
-    <div class="row">
-      {% regroup product_list by category as cateogrized_products %}
-      <div class="col-md-8">
-        <fieldset class="accordion mb-5" id="product-categories">
-          <legend>
-            {% translate 'Products' %}
-          </legend>
-          {% for category in cateogrized_products %}
-            <div class="card">
-              <div class="card-header" id="heading-{{ category.grouper.pk }}">
-                <h2 class="mb-0">
-                  <button class="d-flex justify-content-between align-items-center btn btn-link btn-block card-link collapsed"
-                          type="button"
-                          data-toggle="collapse"
-                          data-target="#collapse-{{ category.grouper.pk }}"
-                          aria-expanded="true"
-                          aria-controls="collapse-{{ category.grouper.pk }}">
-                    <span class="font-weight-bold">{{ category.grouper }}</span>
-                    <div class="d-flex flex-column">
-                      <span class="badge badge-primary badge-pill">{{ category.list|length }}</span>
-                    </div>
-                  </button>
-                </h2>
-              </div>
-              <div id="collapse-{{ category.grouper.pk }}"
-                   class="collapse show"
-                   aria-labelledby="heading-{{ category.grouper.pk }}"
-                   data-parent="#product-categories">
-                <div class="card-body">
-                  <ul class="list-group list-group-flush">
-                    {% for product in category.list %}
-                      <li class="list-group-item" id="{{ product.pk }}">
-                        <div class="d-flex">
-                          <div class="flex-shrink-0 d-none d-md-block">
-                            {% if product.image %}
-                              <img src="{{ product.image.url }}"
-                                   alt="{{ product.name }}"
-                                   class="rounded"
-                                   height="80">
-                            {% else %}
-                              <img src="https://via.placeholder.com/80"
-                                   alt="{{ product.name }}"
-                                   class="rounded"
-                                   height="80">
-                            {% endif %}
-                          </div>
-                          <div class="flex-grow-1 ml-md-3">
-                            <div class="d-flex justify-content-between">
-                              <strong>{{ product.name }}</strong>
-                              <span class="text-muted">$<span id="{{ product.pk }}-price">{{ product.price }}</span></span>
-                            </div>
-                            <p class="font-weight-lighter d-none d-lg-block">
-                              {{ product.description }}
-                            </p>
-                            {% with ordered=product.orders.first %}
-                              <div class="btn-toolbar justify-content-between align-items-center"
-                                   role="toolbar">
-                                <div class="btn-group quantity-adjustment-btn-group" role="group">
-                                  <button type="button"
-                                          class="btn btn-secondary product-remove"
-                                          data-product="{{ product.id }}"
-                                          onclick="removeProduct(this)"
-                                          {% if order.pk and not ordered or not order.pk %} disabled{% endif %}>
-                                    <i class="fa-solid fa-minus"></i>
-                                  </button>
-                                  <button type="button"
-                                          class="btn btn-outline-secondary product-quantity"
-                                          id="{{ product.id }}-quantity"
-                                          disabled>
-                                    {% if order.pk and ordered %}
-                                      {{ ordered.quantity }}
-                                    {% else %}
-                                      0
-                                    {% endif %}
-                                  </button>
-                                  <button type="button"
-                                          class="btn btn-secondary product-add"
-                                          data-product="{{ product.id }}"
-                                          onclick="addProduct(this)">
-                                    <i class="fa-solid fa-plus"></i>
-                                  </button>
-                                </div>
-                                <div class="input-group cost-display">
-                                  <div class="input-group-prepend">
-                                    <div class="input-group-text" id="{{ product.pk }}-subtotal-addon">$</div>
-                                  </div>
-                                  <input type="text"
-                                         class="form-control product-subtotal"
-                                         id="{{ product.pk }}-subtotal"
-                                         aria-describedby="{{ product.pk }}-subtotal-addon"
-                                         readonly
-                                         {% if order.pk and ordered %} value="{{ ordered.get_total_item_price }}"{% endif %}>
-                                </div>
-                              </div>
-                            {% endwith %}
-                          </div>
-                        </div>
-                      </li>
-                    {% endfor %}
-                  </ul>
-                </div>
-              </div>
+</div>
+<form method="post" id="order-form">
+  <div class="row">
+    {% regroup product_list by category as cateogrized_products %}
+    <div class="col-md-8">
+      <fieldset class="accordion mb-5" id="product-categories">
+        <legend>{% translate 'Products' %}</legend>
+        {% for category in cateogrized_products %}
+          <div class="card">
+            <div class="card-header" id="heading-{{ category.grouper.pk }}">
+              <h2 class="mb-0">
+                <button class="d-flex justify-content-between align-items-center btn btn-link btn-block card-link collapsed"
+                        type="button"
+                        data-toggle="collapse"
+                        data-target="#collapse-{{ category.grouper.pk }}"
+                        aria-expanded="true"
+                        aria-controls="collapse-{{ category.grouper.pk }}">
+                  <span class="font-weight-bold">{{ category.grouper }}</span>
+                  <div class="d-flex flex-column">
+                    <span class="badge badge-primary badge-pill">{{ category.list|length }}</span>
+                  </div>
+                </button>
+              </h2>
             </div>
-          {% endfor %}
-        </fieldset>
-      </div>
-      <div class="col-md-4">
-        <fieldset class="mb-5" id="customer-fieldset">
-          <legend>
-            {% translate 'Customer' %}
-          </legend>
-          {{ customer_form|crispy }}
-          <button type="button"
-                  onclick="getLocation()"
-                  class="btn btn-primary btn-sm btn-block">
-            <i class="fa-regular fa-compass"></i>
-          </button>
-          <span class="text-danger" id="location-feedback"></span>
-        </fieldset>
-        <fieldset class="mb-5" id="order-details">
-          <legend>
-            {% translate 'Order Details' %}
-          </legend>
-          {{ form|crispy }}
-        </fieldset>
-      </div>
-    </div>
-    <div id="{{ items_formset.prefix }}_form_set" class="d-none">
-      {% for form in items_formset %}
-        <div class="{{ items_formset.prefix }}_form-row d-flex justify-content-between align-items-center">
-          {{ form|crispy }}
-        </div>
-      {% endfor %}
-    </div>
-    <div id="{{ items_formset.prefix }}_empty_form" class="d-none">
-      <div class="{{ items_formset.prefix }}_form-row d-flex justify-content-between align-items-center">
-        {{ items_formset.empty_form|crispy }}
-      </div>
-    </div>
-    {{ items_formset.management_form }}
-    {% csrf_token %}
-    <button type="button"
-            class="btn btn-success btn-block mt-5"
-            onclick="nudgeDonation()">
-      {% if order.pk %}
-        {% translate 'Update' %}
-      {% else %}
-        {% translate 'Complete Order' %}
-      {% endif %}
-    </button>
-    <a href="{% url 'campaigns:order_list' %}"
-       class="btn btn-secondary btn-sm btn-block mt-3">{% translate 'Cancel' %}</a>
-    <div class="modal" tabindex="-1" id="donation-round-up-modal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <div>
-              <h4 class="modal-title">{% translate 'Thank You for Your Order' %}</h4>
-              <h6 class="modal-title">{% translate 'Would You Like to Make a Donation?' %}</h6>
+            <div id="collapse-{{ category.grouper.pk }}"
+                 class="collapse show"
+                 aria-labelledby="heading-{{ category.grouper.pk }}"
+                 data-parent="#product-categories">
+              <div class="card-body">
+                <ul class="list-group list-group-flush">
+                  {% for product in category.list %}
+                    <li class="list-group-item" id="{{ product.pk }}">
+                      <div class="d-flex">
+                        <div class="flex-shrink-0 d-none d-md-block">
+                          {% if product.image %}
+                            <img src="{{ product.image.url }}"
+                                 alt="{{ product.name }}"
+                                 class="rounded"
+                                 height="80">
+                          {% else %}
+                            <img src="https://via.placeholder.com/80"
+                                 alt="{{ product.name }}"
+                                 class="rounded"
+                                 height="80">
+                          {% endif %}
+                        </div>
+                        <div class="flex-grow-1 ml-md-3">
+                          <div class="d-flex justify-content-between">
+                            <strong>{{ product.name }}</strong>
+                            <span class="text-muted">$<span id="{{ product.pk }}-price">{{ product.price }}</span></span>
+                          </div>
+                          <p class="font-weight-lighter d-none d-lg-block">{{ product.description }}</p>
+                          {% with ordered=product.orders.first %}
+                            <div class="btn-toolbar justify-content-between align-items-center"
+                                 role="toolbar">
+                              <div class="btn-group quantity-adjustment-btn-group" role="group">
+                                <button type="button"
+                                        class="btn btn-secondary product-remove"
+                                        data-product="{{ product.id }}"
+                                        onclick="removeProduct(this)"
+                                        {% if order.pk and not ordered or not order.pk %}disabled{% endif %}>
+                                  <i class="fa-solid fa-minus"></i>
+                                </button>
+                                <button type="button"
+                                        class="btn btn-outline-secondary product-quantity"
+                                        id="{{ product.id }}-quantity"
+                                        disabled>
+                                  {% if order.pk and ordered %}
+                                    {{ ordered.quantity }}
+                                  {% else %}
+                                    0
+                                  {% endif %}
+                                </button>
+                                <button type="button"
+                                        class="btn btn-secondary product-add"
+                                        data-product="{{ product.id }}"
+                                        onclick="addProduct(this)">
+                                  <i class="fa-solid fa-plus"></i>
+                                </button>
+                              </div>
+                              <div class="input-group cost-display">
+                                <div class="input-group-prepend">
+                                  <div class="input-group-text" id="{{ product.pk }}-subtotal-addon">$</div>
+                                </div>
+                                <input type="text"
+                                       class="form-control product-subtotal"
+                                       id="{{ product.pk }}-subtotal"
+                                       aria-describedby="{{ product.pk }}-subtotal-addon"
+                                       readonly
+                                       {% if order.pk and ordered %}value="{{ ordered.get_total_item_price }}"{% endif %}>
+                              </div>
+                            </div>
+                          {% endwith %}
+                        </div>
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
             </div>
           </div>
-          <div class="modal-body">
-            <p class="my-5">
-              {% blocktranslate %}
+        {% endfor %}
+      </fieldset>
+    </div>
+    <div class="col-md-4">
+      <fieldset class="mb-5" id="customer-fieldset">
+        <legend>{% translate 'Customer' %}</legend>
+        {{ customer_form|crispy }}
+        <button type="button"
+                onclick="getLocation()"
+                class="btn btn-primary btn-sm btn-block">
+          <i class="fa-regular fa-compass"></i>
+        </button>
+        <span class="text-danger" id="location-feedback"></span>
+      </fieldset>
+      <fieldset class="mb-5" id="order-details">
+        <legend>{% translate 'Order Details' %}</legend>
+        {{ form|crispy }}
+      </fieldset>
+    </div>
+  </div>
+  <div id="{{ items_formset.prefix }}_form_set" class="d-none">
+    {% for form in items_formset %}
+      <div class="{{ items_formset.prefix }}_form-row d-flex justify-content-between align-items-center">
+        {{ form|crispy }}
+      </div>
+    {% endfor %}
+  </div>
+  <div id="{{ items_formset.prefix }}_empty_form" class="d-none">
+    <div class="{{ items_formset.prefix }}_form-row d-flex justify-content-between align-items-center">
+      {{ items_formset.empty_form|crispy }}
+    </div>
+  </div>
+  {{ items_formset.management_form }}
+  {% csrf_token %}
+  <button type="button"
+          class="btn btn-success btn-block mt-5"
+          onclick="nudgeDonation()">
+    {% if order.pk %}
+      {% translate 'Update' %}
+    {% else %}
+      {% translate 'Complete Order' %}
+    {% endif %}
+  </button>
+  <a href="{% url 'campaigns:order_list' %}"
+     class="btn btn-secondary btn-sm btn-block mt-3">{% translate 'Cancel' %}</a>
+  <div class="modal" tabindex="-1" id="donation-round-up-modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h4 class="modal-title">{% translate 'Thank You for Your Order' %}</h4>
+            <h6 class="modal-title">{% translate 'Would You Like to Make a Donation?' %}</h6>
+          </div>
+        </div>
+        <div class="modal-body">
+          <p class="my-5">
+            {% blocktranslate %}
                   You are only $<strong id="round-up-amount"></strong> away from making it an even $<strong id="rounded-order-total"></strong>.
                   Would you like to round up your order with a donation to the Pack?
                 {% endblocktranslate %}
-            </p>
-          </div>
-          <div class="modal-footer d-flex flex-column align-items-center">
-            <button class="btn btn-primary btn-block" formnovalidate>{% translate 'Complete Order without a donation' %}</button>
-            <div class="input-group mt-5">
-              <div class="input-group-prepend">
-                <span class="input-group-text">$</span>
-              </div>
-              <input type="number"
-                     min="0"
-                     step="5"
-                     class="form-control"
-                     id="donation-round-up-input">
-              <div class="input-group-append">
-                <span class="input-group-text font-weight-light">{% translate 'Donation Amount' %}</span>
-              </div>
+          </p>
+        </div>
+        <div class="modal-footer d-flex flex-column align-items-center">
+          <button class="btn btn-primary btn-block" formnovalidate>{% translate 'Complete Order without a donation' %}</button>
+          <div class="input-group mt-5">
+            <div class="input-group-prepend">
+              <span class="input-group-text">$</span>
             </div>
-            <button class="btn btn-success btn-block btn-lg"
-                    onclick="updateDonationAndSubmit(document.getElementById('donation-round-up-input').value)">
-              {% translate 'Add a donation to the order and submit' %}
-            </button>
+            <input type="number"
+                   min="0"
+                   step="5"
+                   class="form-control"
+                   id="donation-round-up-input">
+            <div class="input-group-append">
+              <span class="input-group-text font-weight-light">{% translate 'Donation Amount' %}</span>
+            </div>
           </div>
+          <button class="btn btn-success btn-block btn-lg"
+                  onclick="updateDonationAndSubmit(document.getElementById('donation-round-up-input').value)">
+            {% translate 'Add a donation to the order and submit' %}
+          </button>
         </div>
       </div>
     </div>
-  </form>
+  </div>
+</form>
 {% endblock content %}
 
 {% block js %}

@@ -2,7 +2,9 @@
 
 {% load i18n static %}
 
-{% block title %}{% translate 'Delete Order' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Delete Order' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <form method="post">

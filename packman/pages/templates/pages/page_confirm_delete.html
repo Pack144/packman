@@ -2,7 +2,9 @@
 
 {% load i18n %}
 
-{% block title %}{% translate 'Confirm Delete' %} | {{ block.super }}{% endblock title %}
+{% block title %}
+  {% translate 'Confirm Delete' %} | {{ block.super }}
+{% endblock title %}
 
 {% block content %}
   <form method="post">

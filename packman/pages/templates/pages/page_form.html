@@ -61,14 +61,14 @@
       }
     })
   </script>
-  <script src="/static/admin/js/jquery.init.js"></script>
-  <script src="/static/admin/js/urlify.js"></script>
-  <script src="/static/admin/js/prepopulate.js"></script>
-  <script id="django-admin-prepopulated-fields-constants" src="{% static 'admin/js/prepopulate_init.js' %}"
-          data-prepopulated-fields="[{&quot;id&quot;: &quot;#id_slug&quot;, &quot;name&quot;: &quot;slug&quot;, &quot;dependency_ids&quot;: [&quot;#id_title&quot;], &quot;dependency_list&quot;: [&quot;title&quot;], &quot;maxLength&quot;: 50, &quot;allowUnicode&quot;: false}]">
+  <script src="{% static 'admin/js/jquery.init.js' %}"></script>
+  <script src="{% static 'admin/js/urlify.js' %}"></script>
+  <script src="{% static 'admin/js/prepopulate.js' %}"></script>
+  <script id="django-admin-prepopulated-fields-constants" src="{% static 'admin/js/prepopulate_init.js' %}" data-prepopulated-fields="[{&quot;id&quot;: &quot;#id_slug&quot;, &quot;name&quot;: &quot;slug&quot;, &quot;dependency_ids&quot;: [&quot;#id_title&quot;], &quot;dependency_list&quot;: [&quot;title&quot;], &quot;maxLength&quot;: 50, &quot;allowUnicode&quot;: false}]">
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" integrity="sha256-ipiJrswvAR4VAx/th+6zWsdeYmVae0iJuiR+6OqHJHQ=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"
+          integrity="sha256-ipiJrswvAR4VAx/th+6zWsdeYmVae0iJuiR+6OqHJHQ="
+          crossorigin="anonymous"></script>
   <script>
     const blocks = document.getElementById("{{ contentblock_formset.prefix }}");
     let sortable = Sortable.create(blocks, {});

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load crispy_forms_tags i18n static %}
+{% load crispy_forms_filters i18n static %}
 
 {% block title %}
   {% if page %}
@@ -74,7 +74,9 @@
             </div>
             <div class="modal-body">{{ content.body|safe }}</div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-dismiss="modal">{% translate 'Take me to the application' %}</button>
+              <button type="button" class="btn btn-primary" data-dismiss="modal">
+                {% translate 'Take me to the application' %}
+              </button>
             </div>
           {% endfor %}
         </div>
@@ -94,18 +96,14 @@
         {% crispy form %}
       </fieldset>
       <fieldset class="mt-5" id="{{ address_formset.prefix }}">
-        <legend>
-          Address{{ address_formset.total_form_count|pluralize:'es' }}
-        </legend>
+        <legend>Address{{ address_formset.total_form_count|pluralize:'es' }}</legend>
         {{ address_formset.management_form|crispy }}
         {% for form in address_formset.forms %}
           {% crispy form %}
         {% endfor %}
       </fieldset>
       <fieldset class="mt-5" id="{{ phonenumber_formset.prefix }}">
-        <legend>
-          Phone Number{{ phonenumber_formset.total_form_count|pluralize }}
-        </legend>
+        <legend>Phone Number{{ phonenumber_formset.total_form_count|pluralize }}</legend>
         {{ phonenumber_formset.management_form|crispy }}
         {% for form in phonenumber_formset.forms %}
           {% crispy form %}
@@ -114,7 +112,7 @@
       <div class="row justify-content-end mt-5">
         <input type="submit"
                value="{% translate 'Create my account' %}"
-               class="btn btn-success btn-lg btn-block"/>
+               class="btn btn-success btn-lg btn-block" />
       </div>
     </form>
   {% endif %}

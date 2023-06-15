@@ -26,36 +26,23 @@
               <div class="card">
                 <div class="card-header" id="heading-{{ year.grouper.year }}">
                   <h2 class="mb-0">
-                    <button class="btn btn-link btn-block text-left card-link
-                                   {% if not forloop.first %}
-                                     collapsed
-                                   {% endif %}"
+                    <button class="btn btn-link btn-block text-left card-link {% if not forloop.first %}collapsed{% endif %}"
                             type="button"
                             data-toggle="collapse"
                             data-target="#collapse-{{ year.grouper.year }}"
-                            aria-expanded="{% if forloop.first %}
-                                             true
-                                           {% else %}
-                                             false
-                                           {% endif %}"
-                            aria-controls="collapse-{{ year.grouper.year }}">
-                      {{ year.grouper }}
-                    </button>
+                            aria-expanded="{% if forloop.first %} true {% else %} false {% endif %}"
+                            aria-controls="collapse-{{ year.grouper.year }}">{{ year.grouper }}</button>
                   </h2>
                 </div>
                 <div id="collapse-{{ year.grouper.year }}"
-                     class="collapse
-                            {% if forloop.first %}
-                              show
-                            {% endif %}"
+                     class="collapse {% if forloop.first %}show{% endif %}"
                      aria-labelledby="heading-{{ year.grouper.year }}"
                      data-parent="#assignments-accordion">
                   <div class="card-body">
                     <div class="list-group list-group-flush">
                       {% for assignment in year.list %}
-                        <a
-                          href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}"
-                          class="list-group-item list-group-item-action border-bottom-0">
+                        <a href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}"
+                           class="list-group-item list-group-item-action border-bottom-0">
                           <strong>{{ assignment.committee }}</strong>
                           <small class="ml-1">
                             {% if assignment.den %}

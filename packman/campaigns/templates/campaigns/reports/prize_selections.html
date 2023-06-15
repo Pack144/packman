@@ -2,7 +2,9 @@
 
 {% load i18n %}
 
-{% block title %}{% translate 'Prize Selection Report' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Prize Selection Report' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <h1 class="mb-5">{% translate 'Prize Selection Report' %}</h1>

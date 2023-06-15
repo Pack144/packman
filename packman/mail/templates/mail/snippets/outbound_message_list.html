@@ -3,15 +3,8 @@
 {% include 'mail/snippets/message_list_header.html' %}
 <div class="list-group list-group-flush scroll-area">
   {% for message in message_list %}
-    <a href="{% if mailbox == mailbox.DRAFTS %}
-               {% url 'mail:update' message.pk %}
-             {% else %}
-               {{ message.get_absolute_url }}
-             {% endif %}"
-       class="list-group-item list-group-item-action py-3
-              {% if message.pk == object.pk %}
-                active
-              {% endif %}">
+    <a href="{% if mailbox == mailbox.DRAFTS %} {% url 'mail:update' message.pk %} {% else %} {{ message.get_absolute_url }} {% endif %}"
+       class="list-group-item list-group-item-action py-3 {% if message.pk == object.pk %}active{% endif %}">
       <div class="d-flex align-items-center justify-content-between">
         <strong>
           {% for dl in message.distribution_lists.all %}

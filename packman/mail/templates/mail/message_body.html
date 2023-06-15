@@ -4,7 +4,9 @@
 
 {% block title %}[{{ site.name }}] {{ message.subject|safe }}{% endblock %}
 
-{% block preheader %}{{ message.body|striptags|cut:"&nbsp;"|truncatewords:100 }}{% endblock preheader %}
+{% block preheader %}
+  {{ message.body|striptags|cut:"&nbsp;"|truncatewords:100 }}
+{% endblock preheader %}
 
 {% block header_top %}
   <p>
@@ -27,14 +29,13 @@
 {% endblock heading %}
 
 {% block content %}
+  {# djlint:off H021 #}
   <h1 style="color: #003F87;
              font-size: 24px;
              font-weight: 800;
              line-height: 24px;
              margin: 32px 0;
-             text-align: center;">
-    {{ message.subject|safe }}
-  </h1>
+             text-align: center">{{ message.subject|safe }}</h1>
   {{ message.body|safe|linebreaks }}
 {% endblock content %}
 

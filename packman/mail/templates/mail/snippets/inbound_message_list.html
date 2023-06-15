@@ -4,10 +4,7 @@
 <div class="list-group list-group-flush scroll-area d-flex">
   {% for message in message_list %}
     <a href="{{ message.get_absolute_url }}"
-       class="list-group-item list-group-item-action d-flex justify-content-between py-3
-              {% if message.pk == object.pk %}
-                active
-              {% endif %}">
+       class="list-group-item list-group-item-action d-flex justify-content-between py-3 {% if message.pk == object.pk %}active{% endif %}">
       <span class="read-marker">
         {% if not message.receipt.0.date_read %}
           <span class="text-primary">
@@ -16,10 +13,7 @@
         {% endif %}
       </span>
       <div class="d-flex flex-column flex-grow-1 mt-1 overflow-hidden">
-        <div class="ml-2
-                    {% if not message.receipt.0.date_read %}
-                      font-weight-bold
-                    {% endif %}">
+        <div class="ml-2 {% if not message.receipt.0.date_read %}font-weight-bold{% endif %}">
           <div class="d-flex align-items-center justify-content-between">
             <strong>{{ message.author }}</strong>
             <small>{% firstof message.receipt.0.date_received|naturalday message.date_sent|naturalday message.last_updated|naturalday %}</small>
