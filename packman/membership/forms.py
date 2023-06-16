@@ -246,7 +246,7 @@ class ScoutForm(forms.ModelForm):
             ),
             Row(
                 Column(
-                    Field("school", css_class="custom-select"),
+                    Field("school"),
                     css_class="col-md-8",
                 ),
                 Column(
