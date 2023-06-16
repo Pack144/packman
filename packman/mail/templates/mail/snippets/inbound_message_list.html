@@ -13,7 +13,7 @@
         {% endif %}
       </span>
       <div class="d-flex flex-column flex-grow-1 mt-1 overflow-hidden">
-        <div class="ms-2 {% if not message.receipt.0.date_read %}font-weight-bold{% endif %}">
+        <div class="ms-2 {% if not message.receipt.0.date_read %}fw-bold{% endif %}">
           <div class="d-flex align-items-center justify-content-between">
             <strong>{{ message.author }}</strong>
             <small>{% firstof message.receipt.0.date_received|naturalday message.date_sent|naturalday message.last_updated|naturalday %}</small>

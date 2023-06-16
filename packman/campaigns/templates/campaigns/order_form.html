@@ -57,7 +57,7 @@
                         data-bs-target="#collapse-{{ category.grouper.pk }}"
                         aria-expanded="true"
                         aria-controls="collapse-{{ category.grouper.pk }}">
-                  <span class="font-weight-bold">{{ category.grouper }}</span>
+                  <span class="fw-bold">{{ category.grouper }}</span>
                   <div class="d-flex flex-column">
                     <span class="badge bg-primary rounded-pill">{{ category.list|length }}</span>
                   </div>
@@ -91,7 +91,7 @@
                             <strong>{{ product.name }}</strong>
                             <span class="text-muted">$<span id="{{ product.pk }}-price">{{ product.price }}</span></span>
                           </div>
-                          <p class="font-weight-lighter d-none d-lg-block">{{ product.description }}</p>
+                          <p class="fw-lighter d-none d-lg-block">{{ product.description }}</p>
                           {% with ordered=product.orders.first %}
                             <div class="btn-toolbar justify-content-between align-items-center"
                                  role="toolbar">
@@ -210,7 +210,7 @@
                    step="5"
                    class="form-control"
                    id="donation-round-up-input">
-            <span class="input-group-text font-weight-light">{% translate 'Donation Amount' %}</span>
+            <span class="input-group-text fw-light">{% translate 'Donation Amount' %}</span>
           </div>
           <button class="btn btn-success btn-block btn-lg"
                   onclick="updateDonationAndSubmit(document.getElementById('donation-round-up-input').value)">

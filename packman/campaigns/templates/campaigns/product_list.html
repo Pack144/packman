@@ -25,11 +25,11 @@
           {% endif %}
           <div class="card-body">
             <h3 class="card-title">{{ product.name }}</h3>
-            <p class="card-text font-weight-lighter d-none d-lg-block">{{ product.description }}</p>
+            <p class="card-text fw-lighter d-none d-lg-block">{{ product.description }}</p>
             <hr>
             <div class="d-flex flex-column align-items-end">
-              <span class="font-weight-bolder text-black-50">${{ product.price|intcomma }}</span>
-              <small class="font-weight-light text-black-50">{{ product.weight|floatformat }} {{ product.get_unit_display }}</small>
+              <span class="fw-bolder text-black-50">${{ product.price|intcomma }}</span>
+              <small class="fw-light text-black-50">{{ product.weight|floatformat }} {{ product.get_unit_display }}</small>
             </div>
           </div>
         </div>
