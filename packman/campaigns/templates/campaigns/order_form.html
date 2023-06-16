@@ -121,9 +121,7 @@
                                 </button>
                               </div>
                               <div class="input-group cost-display">
-                                <div class="input-group-prepend">
-                                  <div class="input-group-text" id="{{ product.pk }}-subtotal-addon">$</div>
-                                </div>
+                                <div class="input-group-text" id="{{ product.pk }}-subtotal-addon">$</div>
                                 <input type="text"
                                        class="form-control product-subtotal"
                                        id="{{ product.pk }}-subtotal"
@@ -206,17 +204,13 @@
         <div class="modal-footer d-flex flex-column align-items-center">
           <button class="btn btn-primary btn-block" formnovalidate>{% translate 'Complete Order without a donation' %}</button>
           <div class="input-group mt-5">
-            <div class="input-group-prepend">
-              <span class="input-group-text">$</span>
-            </div>
+            <span class="input-group-text">$</span>
             <input type="number"
                    min="0"
                    step="5"
                    class="form-control"
                    id="donation-round-up-input">
-            <div class="input-group-append">
-              <span class="input-group-text font-weight-light">{% translate 'Donation Amount' %}</span>
-            </div>
+            <span class="input-group-text font-weight-light">{% translate 'Donation Amount' %}</span>
           </div>
           <button class="btn btn-success btn-block btn-lg"
                   onclick="updateDonationAndSubmit(document.getElementById('donation-round-up-input').value)">

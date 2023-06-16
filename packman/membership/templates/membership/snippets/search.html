@@ -11,11 +11,9 @@
              placeholder="Search"
              {% if request.GET.q %}value="{{ request.GET.q }}"{% endif %}
              aria-label="Search">
-      <div class="input-group-append">
-        <button type="submit" class="btn btn-light">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-      </div>
+      <button type="submit" class="btn btn-light">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
     </div>
     <div class="form-check form-control-sm text-right">
       <input class="form-check-input"
