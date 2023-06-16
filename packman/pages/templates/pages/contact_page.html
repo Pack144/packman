@@ -23,9 +23,5 @@
 
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-bs-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/tooltip.js' %}"></script>
 {% endblock js %}

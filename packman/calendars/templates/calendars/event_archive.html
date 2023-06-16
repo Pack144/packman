@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}Previous Events | {{ block.super }}{% endblock %}
 
 {% block content %}
@@ -40,11 +42,7 @@
 
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-bs-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/tooltip.js' %}"></script>
   <script type="text/javascript">
     function copy() {
       var textArea = document.createElement("textarea");

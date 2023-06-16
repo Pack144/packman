@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load humanize i18n %}
+{% load humanize i18n static %}
 
 {% block title %}{{ event }} | {{ block.super }}{% endblock %}
 
@@ -108,9 +108,5 @@
 
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-bs-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/tooltip.js' %}"></script>
 {% endblock js %}

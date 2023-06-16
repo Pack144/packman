@@ -62,7 +62,7 @@
             <h5>
               {{ order.customer.name }}
               {% if order.notes %}
-                <span class="border border-secondary rounded ml-3 px-2 py-1"
+                <span class="border border-secondary rounded ms-3 px-2 py-1"
                       data-bs-toggle="tooltip"
                       title="{{ order.notes }}"><i class="fa-solid fa-align-justify fa-xs fa-fw"></i></span>
               {% endif %}
@@ -90,10 +90,5 @@
 
 {% block js %}
   {{ block.super }}
-  <script>
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-  </script>
+  <script src="{% static 'js/tooltip.js' %}"></script>
 {% endblock js %}

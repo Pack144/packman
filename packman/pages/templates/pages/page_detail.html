@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}
   {% if page %}
@@ -26,6 +26,7 @@
           <a href="{% url 'pages:create' %}"
              class="btn btn-outline-secondary"
              data-bs-toggle="tooltip"
+             data-bs-placement="bottom"
              title="{% translate 'Add a new webpage' %}"><i class="fa-regular fa-plus-square"></i></a>
         {% endif %}
         {% if perms.pages.change_page %}
@@ -48,9 +49,5 @@
 
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-bs-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/tooltip.js' %}"></script>
 {% endblock js %}

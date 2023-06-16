@@ -120,6 +120,7 @@
 
 {% block js %}
   {{ block.super }}
+  <script src="{% static 'js/tooltip.js' %}"></script>
   <script type="text/javascript">
     $(window).on('load', function () {
       $('#instructionsModal').modal('show');
@@ -151,10 +152,5 @@
         removePrompt: "<i class=\"fas fa-trash-alt\"></i>"
       },
     });
-  </script>
-  <script>
-    $(function () {
-      $('[data-bs-toggle="tooltip"]').tooltip()
-    })
   </script>
 {% endblock js %}

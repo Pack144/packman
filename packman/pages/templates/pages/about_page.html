@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}
   {% if page %}
@@ -46,11 +46,8 @@
   {% include 'pages/snippets/content_blocks.html' %}
 {% endblock content %}
 
+
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-bs-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/tooltip.js' %}"></script>
 {% endblock js %}

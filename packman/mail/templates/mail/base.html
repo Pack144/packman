@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n humanize %}
+{% load humanize i18n static %}
 
 {% block body_extra_class %}vh-100{% endblock %}
 
@@ -41,13 +41,8 @@
 
 {% block js %}
   {{ block.super }}
+  <script src="{% static 'js/tooltip.js' %}"></script>
   <script>
-    /* Enable tooltips on this page */
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-
     /* Allow the message list and body to be resized */
             document.addEventListener('DOMContentLoaded', function () {
                 // Query the element
