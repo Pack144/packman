@@ -35,45 +35,42 @@
 {% block js %}
   {{ block.super }}
   <script type="text/javascript">
-    $(document).ready(function () {
-      bsCustomFileInput.init()
-    })
+    let startedSchoolInput = document.getElementById("id_started_school")
+    let schoolGradeText = startedSchoolInput.nextElementSibling
 
-    function getGrade(staringYear) {
+    window.addEventListener("load", (event) => {
+      updateGradeDisplay(startedSchoolInput.value)
+    });
+
+    startedSchoolInput.addEventListener("change", (event) => {
+      updateGradeDisplay(event.target.value)
+    });
+
+    function updateGradeDisplay(yearStartedSchool) {
       let now = new Date();
       let gradeString = '';
 
       if (now.getMonth() < 7) {
-        staringYear++
+        yearStartedSchool++
       }
 
-      let grade = now.getFullYear() - staringYear;
+      let grade = now.getFullYear() - yearStartedSchool;
 
       if (grade < 0) {
-        gradeString = 'Not yet in school'
-      } else if (grade == 0) {
-        gradeString = 'Kindergaden'
-      } else if (grade == 1) {
-        gradeString = grade + '<sup>st</sup> Grade'
-      } else if (grade == 2) {
-        gradeString = grade + '<sup>nd</sup> Grade'
-      } else if (grade == 3) {
-        gradeString = grade + '<sup>rd</sup> Grade'
+        gradeString = 'Not in school'
+      } else if (grade === 0) {
+        gradeString = 'Kindergarten'
+      } else if (grade === 1) {
+        gradeString = `${grade}<sup>st</sup> grade`
+      } else if (grade === 2) {
+        gradeString = `${grade}<sup>nd</sup> grade`
+      } else if (grade === 3) {
+        gradeString = `${grade}<sup>rd</sup> grade`
       } else if (grade <= 12) {
-        gradeString = grade + '<sup>th</sup> Grade'
+        gradeString = `${grade}<sup>th</sup> grade`
       } else gradeString = ''
 
-      return gradeString
+      schoolGradeText.innerHTML = gradeString
     }
-
-    $('#div_id_started_school .input-group-text').html(getGrade(
-      $('#div_id_started_school :input').val()
-    ));
-
-    $('#div_id_started_school :input').change(function () {
-      $('#div_id_started_school .input-group-text').html(getGrade(
-        $('#div_id_started_school :input').val()
-      ))
-    });
   </script>
 {% endblock js %}
