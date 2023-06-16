@@ -64,7 +64,7 @@
                 {% if user.message_recipients.unread.exists %}<span class="fa-layers-counter"></span>{% endif %}
               </span>
             </a>
-            <div class="dropdown-menu dropdown-menu-right"
+            <div class="dropdown-menu dropdown-menu-end"
                  aria-labelledby="navbarMemberDropdown">
               <a class="dropdown-item d-flex align-items-center justify-content-between"
                  href="{% url 'mail:inbox' %}">

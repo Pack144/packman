@@ -23,7 +23,7 @@
               aria-expanded="false">
         <span class="sr-only">{% translate 'Toggle Dropdown' %}</span>
       </button>
-      <div class="dropdown-menu dropdown-menu-right">
+      <div class="dropdown-menu dropdown-menu-end">
         {% for campaign in campaigns.available %}
           {% if not campaign == campaigns.viewing %}
             <a class="dropdown-item"
@@ -83,7 +83,7 @@
           <small>{{ order.customer.get_address_display }}</small>
         </a>
       {% endfor %}
-      <p class="text-right">{{ seller.list|length }} order{{ seller.list|length|pluralize }}</p>
+      <p class="text-end">{{ seller.list|length }} order{{ seller.list|length|pluralize }}</p>
     </div>
   {% endfor %}
 {% endblock content %}

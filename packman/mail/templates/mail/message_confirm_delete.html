@@ -19,7 +19,7 @@
           <div class="d-flex flex-column flex-grow-1 p-3" id="message-metadata">
             <div class="d-flex align-items-center justify-content-between">
               <a href="{{ message.author.get_absolute_url }}" class="h6 mb-0">{{ message.author }}</a>
-              <div class="text-right">
+              <div class="text-end">
                 <small class="text-muted">{% firstof message.receipt.0.date_received|naturalday message.date_sent|naturalday %}</small>
               </div>
             </div>

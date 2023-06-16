@@ -1,7 +1,7 @@
 {% load humanize i18n static %}
 
 {% blocktranslate asvar alt_text %}{{ member }}'s profile picture{% endblocktranslate %}
-<div class="card member-detail {% if request.resolver_match.kwargs.slug == member.slug and member.committees.count %}border-right-0{% endif %}"
+<div class="card member-detail {% if request.resolver_match.kwargs.slug == member.slug and member.committees.count %}border-end-0{% endif %}"
      id="{{ member.slug }}-details">
   <a href="{{ member.get_absolute_url }}">{% include 'membership/snippets/headshot.html' %}</a>
   <div class="card-body">

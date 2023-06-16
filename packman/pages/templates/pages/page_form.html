@@ -32,7 +32,7 @@
       {% endfor %}
     </fieldset>
     {% csrf_token %}
-    <div class="text-right">
+    <div class="text-end">
       {% if page.pk %}
         <a class="btn btn-secondary" href="{{ page.get_absolute_url }}">{% translate 'Cancel' %}</a>
         <button type="submit" class="btn btn-success">

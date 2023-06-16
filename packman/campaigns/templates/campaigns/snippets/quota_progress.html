@@ -7,20 +7,20 @@
     {# TODO: don't hard code incentive values #}
     {% if total < quota %}
       {% widthratio total quota 100 as quota_percentage %}
-      <div class="text-right">
+      <div class="text-end">
         <strong>quota: ${{ quota }}</strong>
       </div>
     {% elif total < 1000 %}
       {% widthratio quota quota 65 as quota_percentage %}
       {% widthratio total 1000 35 as bronze_percentage %}
-      <div class="text-right">
+      <div class="text-end">
         <strong>bronze medal: $1,000</strong>
       </div>
     {% elif total < 1500 %}
       {% widthratio quota quota 44 as quota_percentage %}
       {% widthratio 1000 1000 28 as bronze_percentage %}
       {% widthratio total 1500 28 as silver_percentage %}
-      <div class="text-right">
+      <div class="text-end">
         <strong>silver medal: $1,500</strong>
       </div>
     {% elif total <= 2000 %}
@@ -28,7 +28,7 @@
       {% widthratio 1000 1000 23 as bronze_percentage %}
       {% widthratio 1500 1500 22 as silver_percentage %}
       {% widthratio total 2000 22 as gold_percentage %}
-      <div class="text-right">
+      <div class="text-end">
         <strong>gold medal: $2,000</strong>
       </div>
     {% else %}
@@ -36,7 +36,7 @@
       {% widthratio 1000 1000 23 as bronze_percentage %}
       {% widthratio 1500 1500 22 as silver_percentage %}
       {% widthratio 2000 2000 22 as gold_percentage %}
-      <div class="text-right">
+      <div class="text-end">
         <strong>golden nugget contender</strong>
       </div>
     {% endif %}
