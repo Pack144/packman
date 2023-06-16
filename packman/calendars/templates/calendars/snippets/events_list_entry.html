@@ -7,13 +7,13 @@
         {% if perms.calendars.change_event %}
           <a href="{% url 'calendars:update' event.pk %}"
              class="btn btn-secondary btn-sm"
-             data-toggle="tooltip"
+             data-bs-toggle="tooltip"
              title="{% translate 'Make changes to this event' %}"><i class="fa-solid fa-calendar-check"></i></a>
         {% endif %}
         {% if perms.calendars.delete_event %}
           <a href="{% url 'calendars:delete' event.pk %}"
              class="btn btn-secondary btn-sm"
-             data-toggle="tooltip"
+             data-bs-toggle="tooltip"
              title="{% translate 'Delete this event' %}"><i class="fa-solid fa-calendar-minus"></i></a>
         {% endif %}
       </div>

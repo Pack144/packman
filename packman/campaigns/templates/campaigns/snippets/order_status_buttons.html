@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<div class="btn-group btn-group-toggle mt-3" data-toggle="buttons">
+<div class="btn-group btn-group-toggle mt-3" data-bs-toggle="buttons">
   <label class="btn btn-outline-success {% if order.is_paid %}active{% endif %}">
     <input type="checkbox"
            {% if order.is_paid %}checked{% endif %}

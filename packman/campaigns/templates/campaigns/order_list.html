@@ -18,7 +18,7 @@
       <button type="button" class="btn btn-outline-secondary">{{ campaigns.viewing }}</button>
       <button type="button"
               class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
-              data-toggle="dropdown"
+              data-bs-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false">
         <span class="sr-only">{% translate 'Toggle Dropdown' %}</span>
@@ -63,7 +63,7 @@
               {{ order.customer.name }}
               {% if order.notes %}
                 <span class="border border-secondary rounded ml-3 px-2 py-1"
-                      data-toggle="tooltip"
+                      data-bs-toggle="tooltip"
                       title="{{ order.notes }}"><i class="fa-solid fa-align-justify fa-xs fa-fw"></i></span>
               {% endif %}
             </h5>
@@ -91,7 +91,7 @@
 {% block js %}
   {{ block.super }}
   <script>
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
       return new bootstrap.Tooltip(tooltipTriggerEl)
     });

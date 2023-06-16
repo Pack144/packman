@@ -25,19 +25,19 @@
         {% if perms.pages.add_page %}
           <a href="{% url 'pages:create' %}"
              class="btn btn-outline-secondary"
-             data-toggle="tooltip"
+             data-bs-toggle="tooltip"
              title="{% translate 'Add a new webpage' %}"><i class="fa-regular fa-plus-square"></i></a>
         {% endif %}
         {% if perms.pages.change_page %}
           <a href="{% url 'pages:update' page.pk %}"
              class="btn btn-outline-secondary"
-             data-toggle="tooltip"
+             data-bs-toggle="tooltip"
              title="{% translate 'Edit this page' %}"><i class="fa-regular fa-pen-to-square"></i></a>
         {% endif %}
         {% if perms.pages.delete_page and not page.page %}
           <a href="{% url 'pages:delete' page.pk %}"
              class="btn btn-outline-danger"
-             data-toggle="tooltip"
+             data-bs-toggle="tooltip"
              title="{% translate 'Delete this webpage' %}"><i class="fa-regular fa-minus-square"></i></a>
         {% endif %}
       </div>
@@ -56,7 +56,7 @@
   {{ block.super }}
   <script>
     $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
+      $('[data-bs-toggle="tooltip"]').tooltip()
     })
   </script>
 {% endblock js %}

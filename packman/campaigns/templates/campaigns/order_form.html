@@ -53,8 +53,8 @@
               <h2 class="mb-0">
                 <button class="d-flex justify-content-between align-items-center btn btn-link btn-block card-link collapsed"
                         type="button"
-                        data-toggle="collapse"
-                        data-target="#collapse-{{ category.grouper.pk }}"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapse-{{ category.grouper.pk }}"
                         aria-expanded="true"
                         aria-controls="collapse-{{ category.grouper.pk }}">
                   <span class="font-weight-bold">{{ category.grouper }}</span>
@@ -67,7 +67,7 @@
             <div id="collapse-{{ category.grouper.pk }}"
                  class="collapse show"
                  aria-labelledby="heading-{{ category.grouper.pk }}"
-                 data-parent="#product-categories">
+                 data-bs-parent="#product-categories">
               <div class="card-body">
                 <ul class="list-group list-group-flush">
                   {% for product in category.list %}

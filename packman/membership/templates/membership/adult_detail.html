@@ -28,8 +28,8 @@
                   <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left card-link {% if not forloop.first %}collapsed{% endif %}"
                             type="button"
-                            data-toggle="collapse"
-                            data-target="#collapse-{{ year.grouper.year }}"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse-{{ year.grouper.year }}"
                             aria-expanded="{% if forloop.first %} true {% else %} false {% endif %}"
                             aria-controls="collapse-{{ year.grouper.year }}">{{ year.grouper }}</button>
                   </h2>
@@ -37,7 +37,7 @@
                 <div id="collapse-{{ year.grouper.year }}"
                      class="collapse {% if forloop.first %}show{% endif %}"
                      aria-labelledby="heading-{{ year.grouper.year }}"
-                     data-parent="#assignments-accordion">
+                     data-bs-parent="#assignments-accordion">
                   <div class="card-body">
                     <div class="list-group list-group-flush">
                       {% for assignment in year.list %}
@@ -83,7 +83,7 @@
          href="#"
          role="button"
          id="addFamilyMenuLink"
-         data-toggle="dropdown"
+         data-bs-toggle="dropdown"
          aria-haspopup="true"
          aria-expanded="true">{% translate 'Add Family Members' %}</a>
       <div class="dropdown-menu" aria-labelledby="addFamilyMenuLink">

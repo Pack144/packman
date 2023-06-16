@@ -22,7 +22,7 @@
           {% if message.pk %}
             <a href="{% url 'mail:delete' message.pk %}"
                class="btn btn-link text-danger"
-               data-toggle="tooltip"
+               data-bs-toggle="tooltip"
                title="{% translate 'Delete' %}">
               <i class="fa-solid fa-trash-alt"></i><span class="sr-only">{% translate 'Delete' %}</span>
             </a>
@@ -34,13 +34,13 @@
           <button type="submit"
                   name="_save"
                   class="btn btn-link text-decoration-none"
-                  data-toggle="tooltip"
+                  data-bs-toggle="tooltip"
                   title="{% translate 'Save' %}">
             <i class="fa-solid fa-cloud-upload-alt"></i><span class="sr-only">{% translate 'Save' %}</span>
           </button>
           <button type="submit"
                   class="btn btn-link text-decoration-none"
-                  data-toggle="tooltip"
+                  data-bs-toggle="tooltip"
                   title="{% translate 'Send' %}">
             <i class="fa-regular fa-paper-plane"></i><span class="sr-only">{% translate 'Send' %}</span>
           </button>
@@ -55,7 +55,7 @@
               <div class="d-flex justify-content-start align-items-end">{{ form|crispy }}</div>
               <button type="button"
                       class="btn btn-link text-danger mb-3"
-                      data-toggle="tooltip"
+                      data-bs-toggle="tooltip"
                       title="{% translate 'Remove this addressee' %}"
                       onclick="deleteFormRow(this)">
                 <i class="fa-solid fa-times-circle fs-xs"></i>
@@ -66,7 +66,7 @@
         <div class="text-right">
           <button type="button"
                   class="btn btn-link text-success"
-                  data-toggle="tooltip"
+                  data-bs-toggle="tooltip"
                   title="{% translate 'Add a distribution list' %}"
                   onclick="addFormRow()"
                   id="{{ dl_formset.prefix }}_add_more">
@@ -107,7 +107,7 @@
           <div class="d-flex justify-content-start align-items-end">{{ dl_formset.empty_form|crispy }}</div>
           <button type="button"
                   class="btn btn-link text-danger mb-3"
-                  data-toggle="tooltip"
+                  data-bs-toggle="tooltip"
                   title="{% translate 'Remove this addressee' %}"
                   onclick="deleteFormRow(this)">
             <i class="fa-solid fa-times-circle fs-xs"></i>
