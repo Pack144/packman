@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     # Third party packages
     "crispy_forms",
+    "crispy_bootstrap5",
     "django_ical",
     "dynamic_formsets",
     "easy_thumbnails",
@@ -218,7 +219,8 @@ THUMBNAIL_SUBDIR = "thumbs"
 # django-crispy-forms
 # http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
 # -----------------------------------------------------------------------------
-CRISPY_TEMPLATE_PACK = "bootstrap4"
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # django-phonenumber-field
 # https://github.com/stefanfoulis/django-phonenumber-field
