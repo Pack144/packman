@@ -22,15 +22,15 @@ class AddressFormHelper(FormHelper):
                     Row(
                         Column(Field("city"), css_class="col-md-6"),
                         Column(
-                            Field("state", css_class="custom-select"),
+                            Field("state", css_class="form-select"),
                             css_class="col-md-3",
                         ),
                         Column(Field("zip_code"), css_class="col-md-3"),
                         css_class="mb-0",
                     ),
                     Row(
-                        Column(Field("type", css_class="custom-select")),
-                        Column(Field("published", css_class="custom-control custom-checkbox")),
+                        Column(Field("type", css_class="form-select")),
+                        Column(Field("published", css_class="form-check")),
                     ),
                     Field("uuid", type="hidden"),
                     Field("member", type="hidden"),
@@ -68,12 +68,12 @@ class PhoneNumberFormHelper(FormHelper):
                 Column(
                     Row(
                         Column(
-                            Field("type", css_class="custom-select"),
+                            Field("type", css_class="form-select"),
                             css_class="col-md-3",
                         ),
                         Column(Field("number")),
                     ),
-                    Field("published", css_class="custom-control custom-checkbox"),
+                    Field("published", css_class="form-check"),
                     Field("uuid", type="hidden"),
                     Field("member", type="hidden"),
                 ),
