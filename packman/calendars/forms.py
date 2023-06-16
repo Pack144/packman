@@ -3,7 +3,6 @@ from django.urls import reverse
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Field, Layout, Row
-from tempus_dominus.widgets import DateTimePicker
 from tinymce.widgets import TinyMCE
 
 from .models import Event
@@ -26,8 +25,8 @@ class EventForm(forms.ModelForm):
         ]
         widgets = {
             "description": TinyMCE(mce_attrs={"link_list ": reverse("link_list", urlconf="packman.pages.urls")}),
-            "start": DateTimePicker(attrs={"append": "fa fa-calendar"}),
-            "end": DateTimePicker(attrs={"append": "fa fa-calendar"}),
+            "start": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "end": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "status": forms.RadioSelect,
         }
 

@@ -6,7 +6,6 @@ django-environ
 django-ical
 django-localflavor
 django-phonenumber-field[phonenumberslite]
-django-tempus-dominus
 django-tinymce
 docutils
 easy-thumbnails

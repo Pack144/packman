@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     "easy_thumbnails",
     "localflavor",
     "phonenumber_field",
-    "tempus_dominus",
     "tinymce",
     "whitenoise",
     # Local apps

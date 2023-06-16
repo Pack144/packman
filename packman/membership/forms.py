@@ -10,7 +10,6 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.bootstrap import AppendedText, FormActions, InlineRadios
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Field, Fieldset, Layout, Row, Submit
-from tempus_dominus.widgets import DatePicker
 
 from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
@@ -213,17 +212,12 @@ class ScoutForm(forms.ModelForm):
             "member_comments",
         )
         widgets = {
-            "date_of_birth": DatePicker(
-                options={
-                    "maxDate": str(timezone.now()),
-                    "minDate": str(timezone.now().replace(year=timezone.now().year - 13)),
-                    "defaultDate": str(timezone.now().replace(year=timezone.now().year - 6)),
-                },
+            "date_of_birth": widgets.DateInput(
                 attrs={
-                    "append": "far fa-calendar-alt",
-                    "icon_toggle": True,
-                    "placeholder": _("Birthday"),
-                },
+                    "type": "date",
+                    "min": str(timezone.now().replace(year=timezone.now().year - 18).date()),
+                    "max": str(timezone.now().date()),
+                }
             ),
             "gender": widgets.RadioSelect,
             "photo": widgets.FileInput,
@@ -258,6 +252,8 @@ class ScoutForm(forms.ModelForm):
                 Column(
                     AppendedText("started_school", "grade"),
                     css_class="col-md-4",
+                    min=timezone.now().year - 18,
+                    max=timezone.now().year,
                 ),
             ),
             "reference",
