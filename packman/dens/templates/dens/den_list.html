@@ -40,7 +40,7 @@
                 {% if den.patch %}
                   <img src="{{ den.patch }}"
                        alt="Den {{ den.number }} patch"
-                       class="img-fluid h-100 rounded mr-5">
+                       class="img-fluid h-100 rounded me-5">
                 {% else %}
                   <h1>{{ den }}</h1>
                 {% endif %}
@@ -55,7 +55,7 @@
                 {% endif %}
               </div>
               <div class="col-md-1">
-                <span class="badge rounded-pill bg-warning p-3"><i class="fa-solid fa-user mr-2"></i>{{ den.active_cubs.count }}</span>
+                <span class="badge rounded-pill bg-warning p-3"><i class="fa-solid fa-user me-2"></i>{{ den.active_cubs.count }}</span>
               </div>
             </div>
           </a>

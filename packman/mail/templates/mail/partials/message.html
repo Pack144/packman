@@ -18,7 +18,7 @@
                   {% ifchanged recipient.0 %}
                     <small class="text-secondary">{{ recipient.0|title }}:</small>
                   {% endifchanged %}
-                  <small class="badge bg-secondary rounded-pill ml-1"
+                  <small class="badge bg-secondary rounded-pill ms-1"
                          title="{{ recipient.2 }}">{{ recipient.1 }}</small>
                 {% endfor %}
               </div>
@@ -42,7 +42,7 @@
         <div class="mt-3">
           <ul class="list-unstyled">
             {% for attachment in message.attachments.all %}
-              <li class="d-inline-block mr-3" id="attachment-{{ attachment.pk }}">
+              <li class="d-inline-block me-3" id="attachment-{{ attachment.pk }}">
                 <a href="{{ attachment.filename.url }}"
                    target="popup"
                    onclick="window.open('{{ attachment.filename.url }}','popup','width=400,height=800');return false;">

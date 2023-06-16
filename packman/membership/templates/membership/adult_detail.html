@@ -44,7 +44,7 @@
                         <a href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}"
                            class="list-group-item list-group-item-action border-bottom-0">
                           <strong>{{ assignment.committee }}</strong>
-                          <small class="ml-1">
+                          <small class="ms-1">
                             {% if assignment.den %}
                               {{ assignment.den }}
                             {% elif 'Akela' in assignment.committee.name %}
@@ -89,11 +89,11 @@
       <div class="dropdown-menu" aria-labelledby="addFamilyMenuLink">
         <a href="{% url 'membership:parent_create' %}" class="dropdown-item">
           {% translate 'Add an adult' %}
-          <span class="ml-3 px-2 badge bg-light"><i class="fa-solid fa-male"></i></span>
+          <span class="ms-3 px-2 badge bg-light"><i class="fa-solid fa-male"></i></span>
         </a>
         <a href="{% url 'membership:scout_create' %}" class="dropdown-item">
           {% translate 'Submit a Cub application' %}
-          <span class="ml-3 badge bg-light"><i class="fa-solid fa-child"></i></span>
+          <span class="ms-3 badge bg-light"><i class="fa-solid fa-child"></i></span>
         </a>
       </div>
     </div>
