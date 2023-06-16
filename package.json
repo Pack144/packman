@@ -9,13 +9,11 @@
     "tempusdominus-core": "^5.19.0"
   },
   "devDependencies": {
-    "stylelint": "^15.4.0",
-    "stylelint-config-idiomatic-order": "^9.0.0",
-    "stylelint-config-standard": "^32.0.0"
+    "stylelint": "^15.7.0",
+    "stylelint-config-standard": "^33.0.0"
   },
   "stylelint": {
     "extends": [
-      "stylelint-config-idiomatic-order",
       "stylelint-config-standard"
     ]
   }
