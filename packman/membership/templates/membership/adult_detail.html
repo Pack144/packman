@@ -23,22 +23,22 @@
           </h3>
           <div class="accordion" id="assignments-accordion">
             {% for year in assignments_by_year %}
-              <div class="card">
-                <div class="card-header" id="heading-{{ year.grouper.year }}">
+              <div class="accordion-item">
+                <div class="accordion-header" id="heading-{{ year.grouper.year }}">
                   <h2 class="mb-0">
-                    <button class="btn btn-link btn-block text-start card-link {% if not forloop.first %}collapsed{% endif %}"
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
                             type="button"
                             data-bs-toggle="collapse"
                             data-bs-target="#collapse-{{ year.grouper.year }}"
-                            aria-expanded="{% if forloop.first %} true {% else %} false {% endif %}"
+                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
                             aria-controls="collapse-{{ year.grouper.year }}">{{ year.grouper }}</button>
                   </h2>
                 </div>
                 <div id="collapse-{{ year.grouper.year }}"
-                     class="collapse {% if forloop.first %}show{% endif %}"
+                     class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
                      aria-labelledby="heading-{{ year.grouper.year }}"
                      data-bs-parent="#assignments-accordion">
-                  <div class="card-body">
+                  <div class="accordion-body">
                     <div class="list-group list-group-flush">
                       {% for assignment in year.list %}
                         <a href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}"
