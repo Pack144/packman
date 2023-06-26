@@ -17,27 +17,26 @@ class AddressFormHelper(FormHelper):
         self.layout = Layout(
             Row(
                 Column(
-                    Field("street"),
-                    Field("street2"),
+                    Row(
+                        Column("type", css_class="col-md-3"),
+                    ),
+                    "street",
+                    "street2",
                     Row(
                         Column(Field("city"), css_class="col-md-6"),
                         Column(
-                            Field("state", css_class="form-select"),
+                            Field("state"),
                             css_class="col-md-3",
                         ),
                         Column(Field("zip_code"), css_class="col-md-3"),
-                        css_class="mb-0",
                     ),
-                    Row(
-                        Column(Field("type", css_class="form-select")),
-                        Column(Field("published", css_class="form-check")),
-                    ),
+                    "published",
                     Field("uuid", type="hidden"),
                     Field("member", type="hidden"),
+                    Field("DELETE", type="hidden"),
                 ),
-                Column(Field("DELETE"), css_class="col-0"),
-                css_class="address-dynamic-form mb-5",
-            )
+                css_class="address-dynamic-form mb-3",
+            ),
         )
         self.render_required_fields = True
 
@@ -73,11 +72,11 @@ class PhoneNumberFormHelper(FormHelper):
                         ),
                         Column(Field("number")),
                     ),
-                    Field("published", css_class="form-check"),
+                    "published",
                     Field("uuid", type="hidden"),
                     Field("member", type="hidden"),
+                    Field("DELETE", type="hidden"),
                 ),
-                Column(Field("DELETE"), css_class="col-0"),
                 css_class="phonenumber-dynamic-form mb-3",
             ),
         )

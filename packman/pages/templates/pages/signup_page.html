@@ -125,26 +125,30 @@
       instructionsModal.show()
     });
   </script>
-  <script src="{% static "dynamic_formsets/jquery.formset.js" %}" type="text/javascript"></script>
-  <script type="text/javascript">
+  <!-- jQuery based formsets -->
+  <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"
+          integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE="
+          crossorigin="anonymous"></script>
+  <script src="{% static "dynamic_formsets/jquery.formset.js" %}"></script>
+  <script>
     $('#{{ address_formset.prefix }}').formset({
-      addCssClass: "btn btn-primary btn-sm",
-      deleteCssClass: 'btn btn-danger align-self-start',
+      prefix: '{{ address_formset.prefix }}',
+      addCssClass: 'btn btn-sm btn-primary',
+      deleteCssClass: 'btn btn-sm btn-outline-secondary col-md-1 d-flex align-items-center justify-content-center',
       formCssClass: 'address-dynamic-form',
-      prefix: "{{ address_formset.prefix }}",
       uiText: {
-        addPrompt: "<i class=\"fas fa-plus-circle me-1\"></i> address",
-        removePrompt: "<i class=\"fas fa-trash-alt\"></i>"
+        addPrompt: '<i class="fas fa-plus-circle me-1"></i> address',
+        removePrompt: '<i class="fas fa-trash-alt"></i>'
       },
     });
     $('#{{ phonenumber_formset.prefix }}').formset({
-      addCssClass: "btn btn-primary btn-sm",
-      deleteCssClass: 'btn btn-danger align-self-start',
+      prefix: '{{ phonenumber_formset.prefix }}',
+      addCssClass: 'btn btn-primary btn-sm',
+      deleteCssClass: 'btn btn-sm btn-outline-secondary col-md-1 d-flex align-items-center justify-content-center',
       formCssClass: 'phonenumber-dynamic-form',
-      prefix: "{{ phonenumber_formset.prefix }}",
       uiText: {
-        addPrompt: "<i class=\"fas fa-plus-circle me-1\"></i> phone number",
-        removePrompt: "<i class=\"fas fa-trash-alt\"></i>"
+        addPrompt: '<i class="fas fa-plus-circle me-1"></i> phone number',
+        removePrompt: '<i class="fas fa-trash-alt"></i>'
       },
     });
   </script>

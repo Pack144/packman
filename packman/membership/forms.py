@@ -21,14 +21,17 @@ AddressFormSet = inlineformset_factory(
     Address,
     form=AddressForm,
     can_delete=True,
-    extra=1,
+    min_num=1,
+    extra=0,
 )
+
 PhoneNumberFormSet = inlineformset_factory(
     Adult,
     PhoneNumber,
     form=PhoneNumberForm,
     can_delete=True,
-    extra=1,
+    min_num=1,
+    extra=0,
 )
 
 
@@ -364,7 +367,7 @@ class SignupForm(UserCreationForm):
         self.helper.form_show_labels = False
         self.helper.layout = Layout(
             Fieldset(
-                "Your Details",
+                _("Your Details"),
                 Row(
                     Column("first_name", css_class="col-md-4"),
                     Column("middle_name", css_class="col-md-2 text-truncate"),
@@ -375,17 +378,26 @@ class SignupForm(UserCreationForm):
                     Column("nickname", css_class="col-md-4"),
                 ),
                 Row(
-                    Column("email"),
-                    Column("is_published"),
-                ),
-                Row(
-                    Column("password1", autocomplete="off"),
-                    Column("password2", autocomplete="off"),
-                ),
-                Row(
                     Column(InlineRadios("gender")),
                     Column(InlineRadios("role")),
                 ),
+            ),
+            Fieldset(
+                _("Email"),
+                Row(
+                    Column("email"),
+                    Column("is_published"),
+                ),
+            ),
+            Fieldset(
+                _("Password"),
+                Row(
+                    Column("password1"),
+                    Column("password2"),
+                ),
+            ),
+            Fieldset(
+                _("Photo"),
                 Row(
                     Column("photo", css_class="col-md-6"),
                 ),
