@@ -86,11 +86,13 @@ footer {
 
 .navbar {
     backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     background-color: var(--navbar-background);
 }
 
 .prize-details{
     backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     background-color: rgb(255 255 255 / 80%);
 }
 
