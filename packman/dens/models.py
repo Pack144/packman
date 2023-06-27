@@ -151,6 +151,7 @@ class Membership(TimeStampedUUIDModel):
     )
 
     class Meta:
+        constraints = [models.UniqueConstraint(fields=["scout", "year_assigned"], name="unique_membership_year")]
         ordering = ["year_assigned", "den", "scout"]
         verbose_name = _("Member")
         verbose_name_plural = _("Members")
