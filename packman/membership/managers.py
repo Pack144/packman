@@ -115,8 +115,8 @@ class MemberManager(UserManager):
 class ScoutQuerySet(models.QuerySet):
     def active(self):
         return self.filter(
-            den_memberships__year_assigned=PackYear.get_current_pack_year(),
-            status=4,  # Scout.ACTIVE
+            den_memberships__year_assigned=PackYear.objects.current(),
+            status=self.model.ACTIVE,
         )
 
     def lions(self):
