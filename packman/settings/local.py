@@ -1,9 +1,9 @@
+# Development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/stable/howto/deployment/checklist/
+
 import importlib.util
 
 from .base import *
-
-# Development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/stable/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env(
@@ -17,6 +17,7 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
 # Logging
 # https://docs.djangoproject.com/en/stable/topics/logging/
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -48,7 +49,7 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/
 
-if (spec := importlib.util.find_spec("debug_toolbar")) is not None:
+if importlib.util.find_spec("debug_toolbar") is not None:
     # https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported
     INSTALLED_APPS += ["debug_toolbar"]
     INTERNAL_IPS = env.list("INTERNAL_IPS", default=["127.0.0.1"])
@@ -61,7 +62,8 @@ if (spec := importlib.util.find_spec("debug_toolbar")) is not None:
 # Django Extensions
 # https://django-extensions.readthedocs.io/en/latest/
 
-INSTALLED_APPS += ["django_extensions"]
+if importlib.util.find_spec("django_extensions") is not None:
+    INSTALLED_APPS += ["django_extensions"]
 
 
 # Whitenoise
