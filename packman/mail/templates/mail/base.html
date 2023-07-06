@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% load i18n humanize %}
+{% load humanize i18n static %}
 
-{% block body_extra_class %}vh-100{% endblock body_extra_class %}
+{% block body_extra_class %}vh-100{% endblock %}
 
 {% block supercontent %}
   <div id="mail-client">
@@ -10,12 +10,7 @@
       {% include "mail/partials/folder_sidebar.html" %}
       {% if mailbox %}
         <!--  Begin message list  -------------------------------------------------->
-        <div class="{% if view.template_name == 'mail/message_list.html' %}
-                      d-flex
-                    {% else %}
-                      d-none d-lg-flex
-                    {% endif %}
-                    flex-grow-1 overflow-hidden"
+        <div class="{% if view.template_name == 'mail/message_list.html' %} d-flex {% else %} d-none d-lg-flex {% endif %} flex-grow-1 overflow-hidden"
              id="message-list-column">
           {% if mailbox in mailbox.outbound %}
             {% include 'mail/snippets/outbound_message_list.html' %}
@@ -24,24 +19,15 @@
           {% endif %}
         </div>
         <!--  End message list  ---------------------------------------------------->
-
         <div class="resizer" id="dragMe"></div>
       {% endif %}
       <!--  Begin message detail  ------------------------------------------------>
-      <main class="border-left
-                   {% if view.template_name != 'mail/message_list.html' %}
-                     d-flex
-                   {% else %}
-                     d-none d-lg-flex
-                   {% endif %}
-                   flex-grow-1 overflow-hidden"
+      <main class="border-left {% if view.template_name != 'mail/message_list.html' %} d-flex {% else %} d-none d-lg-flex {% endif %} flex-grow-1 overflow-hidden"
             id="message-detail-column">
         {% block message_detail %}
           <div class="d-flex flex-column align-items-center justify-content-center text-light h-100">
             <span class="display-1"><i class="fa-regular fa-envelope"></i></span>
-            <p>
-              No Message Selected
-            </p>
+            <p>No Message Selected</p>
           </div>
         {% endblock message_detail %}
 
@@ -55,13 +41,8 @@
 
 {% block js %}
   {{ block.super }}
+  <script src="{% static 'js/show_tooltips.js' %}"></script>
   <script>
-    /* Enable tooltips on this page */
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-
     /* Allow the message list and body to be resized */
             document.addEventListener('DOMContentLoaded', function () {
                 // Query the element

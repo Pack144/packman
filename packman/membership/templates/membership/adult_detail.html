@@ -23,41 +23,28 @@
           </h3>
           <div class="accordion" id="assignments-accordion">
             {% for year in assignments_by_year %}
-              <div class="card">
-                <div class="card-header" id="heading-{{ year.grouper.year }}">
+              <div class="accordion-item">
+                <div class="accordion-header" id="heading-{{ year.grouper.year }}">
                   <h2 class="mb-0">
-                    <button class="btn btn-link btn-block text-left card-link
-                                   {% if not forloop.first %}
-                                     collapsed
-                                   {% endif %}"
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
                             type="button"
-                            data-toggle="collapse"
-                            data-target="#collapse-{{ year.grouper.year }}"
-                            aria-expanded="{% if forloop.first %}
-                                             true
-                                           {% else %}
-                                             false
-                                           {% endif %}"
-                            aria-controls="collapse-{{ year.grouper.year }}">
-                      {{ year.grouper }}
-                    </button>
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse-{{ year.grouper.year }}"
+                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                            aria-controls="collapse-{{ year.grouper.year }}">{{ year.grouper }}</button>
                   </h2>
                 </div>
                 <div id="collapse-{{ year.grouper.year }}"
-                     class="collapse
-                            {% if forloop.first %}
-                              show
-                            {% endif %}"
+                     class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
                      aria-labelledby="heading-{{ year.grouper.year }}"
-                     data-parent="#assignments-accordion">
-                  <div class="card-body">
+                     data-bs-parent="#assignments-accordion">
+                  <div class="accordion-body">
                     <div class="list-group list-group-flush">
                       {% for assignment in year.list %}
-                        <a
-                          href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}"
-                          class="list-group-item list-group-item-action border-bottom-0">
+                        <a href="{% url 'committees:detail_by_year' slug=assignment.committee.slug year=assignment.year.year %}"
+                           class="list-group-item list-group-item-action border-bottom-0">
                           <strong>{{ assignment.committee }}</strong>
-                          <small class="ml-1">
+                          <small class="ms-1">
                             {% if assignment.den %}
                               {{ assignment.den }}
                             {% elif 'Akela' in assignment.committee.name %}
@@ -96,17 +83,17 @@
          href="#"
          role="button"
          id="addFamilyMenuLink"
-         data-toggle="dropdown"
+         data-bs-toggle="dropdown"
          aria-haspopup="true"
          aria-expanded="true">{% translate 'Add Family Members' %}</a>
       <div class="dropdown-menu" aria-labelledby="addFamilyMenuLink">
         <a href="{% url 'membership:parent_create' %}" class="dropdown-item">
           {% translate 'Add an adult' %}
-          <span class="ml-3 px-2 badge badge-light"><i class="fa-solid fa-male"></i></span>
+          <span class="ms-3 px-2 badge text-bg-light"><i class="fa-solid fa-male"></i></span>
         </a>
         <a href="{% url 'membership:scout_create' %}" class="dropdown-item">
           {% translate 'Submit a Cub application' %}
-          <span class="ml-3 badge badge-light"><i class="fa-solid fa-child"></i></span>
+          <span class="ms-3 badge text-bg-light"><i class="fa-solid fa-child"></i></span>
         </a>
       </div>
     </div>

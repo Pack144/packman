@@ -2,7 +2,9 @@
 
 {% load i18n %}
 
-{% block title %}{% translate 'Members - Search' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Members - Search' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <div class="row">
@@ -17,9 +19,7 @@
         {% for member in members %}
           {% include 'membership/snippets/list_entry.html' %}
         {% empty %}
-          <p class="text-danger">
-            {% translate 'We could not find any members matching your search.' %}
-          </p>
+          <p class="text-danger">{% translate 'We could not find any members matching your search.' %}</p>
         {% endfor %}
       </div>
     </div>

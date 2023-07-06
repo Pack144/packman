@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}Upcoming Events | {{ block.super }}{% endblock %}
 
@@ -11,14 +11,16 @@
       <button class="btn btn-lg btn-danger dropdown-toggle"
               type="button"
               id="calendarFeedSubscribeButton"
-              data-toggle="dropdown"
+              data-bs-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false">
         <i class="fa-solid fa-calendar-alt"></i>
       </button>
-      <div class="dropdown-menu dropdown-menu-right"
+      <div class="dropdown-menu dropdown-menu-end"
            aria-labelledby="calendarFeedSubscribeButton">
-        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">
+        {# djlint:off D018 #}
+        <a class="dropdown-item"
+           href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">
           <i class="fa-regular fa-calendar fa-fw"></i>
           {% translate 'Subscribe to this calendar' %}
         </a>
@@ -62,11 +64,7 @@
 
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/show_tooltips.js' %}"></script>
   <script type="text/javascript">
     function copy() {
       var textArea = document.createElement("textarea");

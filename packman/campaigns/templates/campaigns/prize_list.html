@@ -2,7 +2,9 @@
 
 {% load i18n %}
 
-{% block title %}{% translate 'Prizes' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Prizes' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <h1>{% translate 'Prizes' %}</h1>
@@ -22,7 +24,7 @@
           <h5 class="card-title">{{ prize.name }}</h5>
           <hr>
           <p class="card-text">
-            <i class="fab fa-pied-piper-pp"></i> <span class="font-weight-bolder text-black-50">{{ prize.points }}</span>
+            <i class="fab fa-pied-piper-pp"></i> <span class="fw-bolder text-black-50">{{ prize.points }}</span>
           </p>
         </div>
       </div>

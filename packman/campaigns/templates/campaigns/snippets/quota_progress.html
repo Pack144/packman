@@ -6,90 +6,77 @@
   {% with quota=scout.current_den.quotas.current.target products_total=scout.orders.current_campaign.products_total.total donations_total=scout.orders.current_campaign.donations_total.total total=scout.orders.current_campaign.products_total.total|add:scout.orders.current_campaign.donations_total.total %}
     {# TODO: don't hard code incentive values #}
     {% if total < quota %}
-      {% widthratio total quota 100 as quota_percentage %}
-      <div class="text-right">
+      {% widthratio total quota 100 as quota_progress %}
+      <div class="text-end">
         <strong>quota: ${{ quota }}</strong>
       </div>
     {% elif total < 1000 %}
-      {% widthratio quota quota 65 as quota_percentage %}
-      {% widthratio total 1000 35 as bronze_percentage %}
-      <div class="text-right">
+      {% widthratio quota quota 65 as quota_progress %}
+      {% widthratio total 1000 35 as bronze_progress %}
+      <div class="text-end">
         <strong>bronze medal: $1,000</strong>
       </div>
     {% elif total < 1500 %}
-      {% widthratio quota quota 44 as quota_percentage %}
-      {% widthratio 1000 1000 28 as bronze_percentage %}
-      {% widthratio total 1500 28 as silver_percentage %}
-      <div class="text-right">
+      {% widthratio quota quota 44 as quota_progress %}
+      {% widthratio 1000 1000 28 as bronze_progress %}
+      {% widthratio total 1500 28 as silver_progress %}
+      <div class="text-end">
         <strong>silver medal: $1,500</strong>
       </div>
     {% elif total <= 2000 %}
-      {% widthratio quota quota 33 as quota_percentage %}
-      {% widthratio 1000 1000 23 as bronze_percentage %}
-      {% widthratio 1500 1500 22 as silver_percentage %}
-      {% widthratio total 2000 22 as gold_percentage %}
-      <div class="text-right">
+      {% widthratio quota quota 33 as quota_progress %}
+      {% widthratio 1000 1000 23 as bronze_progress %}
+      {% widthratio 1500 1500 22 as silver_progress %}
+      {% widthratio total 2000 22 as gold_progress %}
+      <div class="text-end">
         <strong>gold medal: $2,000</strong>
       </div>
     {% else %}
-      {% widthratio quota quota 33 as quota_percentage %}
-      {% widthratio 1000 1000 23 as bronze_percentage %}
-      {% widthratio 1500 1500 22 as silver_percentage %}
-      {% widthratio 2000 2000 22 as gold_percentage %}
-      <div class="text-right">
+      {% widthratio quota quota 33 as quota_progress %}
+      {% widthratio 1000 1000 23 as bronze_progress %}
+      {% widthratio 1500 1500 22 as silver_progress %}
+      {% widthratio total 2000 22 as gold_progress %}
+      <div class="text-end">
         <strong>golden nugget contender</strong>
       </div>
     {% endif %}
-    <div class="progress">
-      <div class="progress-bar bg-success"
-           role="progressbar"
-           style="width:{{ quota_percentage }}%"
-           aria-valuenow="{{ total }}"
-           aria-valuemin="0"
-           aria-valuemax="{{ quota }}">
+    <div class="progress-stacked">
+      <div class="progress" role="progressbar" aria-label="{% translate 'Progress towards quota' %}" aria-valuenow="{{ quota_progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ quota_progress }}%">
+        <div class="progress-bar"></div>
       </div>
-      <div class="progress-bar"
-           role="progressbar"
-           style="width:{{ bronze_percentage }}%;
-                  background-color: #CD7F32;"
-           aria-valuenow="{{ total }}"
-           aria-valuemin="0"
-           aria-valuemax="{{ quota }}">
-      </div>
-      <div class="progress-bar bg-secondary"
-           role="progressbar"
-           style="width:{{ silver_percentage }}%;
-                  background-color: #C0C0C0;"
-           aria-valuenow="{{ total }}"
-           aria-valuemin="0"
-           aria-valuemax="{{ quota }}">
-      </div>
-      <div class="progress-bar bg-warning"
-           role="progressbar"
-           style="width:{{ gold_percentage }}%;
-                  background-color: #FFD700;"
-           aria-valuenow="{{ total }}"
-           aria-valuemin="0"
-           aria-valuemax="{{ quota }}">
-      </div>
+      {% if bronze_progress %}
+        <div class="progress" role="progressbar" aria-label="{% translate 'Progress towards a Bronze metal' %}" aria-valuenow="{{ bronze_progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bronze_progress }}%">
+          <div class="progress-bar" style="background-color: #CD7F32"></div>
+        </div>
+      {% endif %}
+      {% if silver_progress %}
+        <div class="progress" role="progressbar" aria-label="{% translate 'Progress towards a Silver metal' %}" aria-valuenow="{{ silver_progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ silver_progress }}%">
+          <div class="progress-bar" style="background-color: #C0C0C0"></div>
+        </div>
+      {% endif %}
+      {% if gold_progress %}
+        <div class="progress" role="progressbar" aria-label="{% translate 'Progress towards a Gold metal' %}" aria-valuenow="{{ gold_progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ gold_progress }}%">
+          <div class="progress-bar" style="background-color: #FFD700"></div>
+        </div>
+      {% endif %}
     </div>
     {% if quota %}{% endif %}
     <table class="table">
       <thead>
-        <tr>
-          <th scope="col">{% translate 'Product Orders' %}</th>
-          <th scope="col">{% translate 'Donations' %}</th>
-          <th scope="col">{% translate 'Total' %}</th>
-        </tr>
+      <tr>
+        <th scope="col">{% translate 'Product Orders' %}</th>
+        <th scope="col">{% translate 'Donations' %}</th>
+        <th scope="col">{% translate 'Total' %}</th>
+      </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>$ {{ products_total|intcomma }}</td>
-          <td>$ {{ donations_total|intcomma }}</td>
-          <td>
-            <strong>$ {{ total|intcomma }}</strong>
-          </td>
-        </tr>
+      <tr>
+        <td>$ {{ products_total|intcomma }}</td>
+        <td>$ {{ donations_total|intcomma }}</td>
+        <td>
+          <strong>$ {{ total|intcomma }}</strong>
+        </td>
+      </tr>
       </tbody>
     </table>
   {% endwith %}

@@ -2,7 +2,9 @@
 
 {% load humanize i18n static %}
 
-{% block title %}{% translate 'Orders' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Orders' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   {% if campaigns.viewing == campaigns.current %}
@@ -16,12 +18,12 @@
       <button type="button" class="btn btn-outline-secondary">{{ campaigns.viewing }}</button>
       <button type="button"
               class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
-              data-toggle="dropdown"
+              data-bs-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false">
-        <span class="sr-only">{% translate 'Toggle Dropdown' %}</span>
+        <span class="visually-hidden">{% translate 'Toggle Dropdown' %}</span>
       </button>
-      <div class="dropdown-menu dropdown-menu-right">
+      <div class="dropdown-menu dropdown-menu-end">
         {% for campaign in campaigns.available %}
           {% if not campaign == campaigns.viewing %}
             <a class="dropdown-item"
@@ -40,25 +42,16 @@
       <ul class="nav nav-tabs">
         {% with campaign=campaigns.viewing.year.year %}
           <li class="nav-item">
-            <a class="nav-link
-                      {% if not request.GET.filter %}
-                        active" aria-current="page
-                      {% endif %}"
-               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}">All Orders</a>
+            <a class="nav-link {% if not request.GET.filter %}active" aria-current="page{% endif %}"
+               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}">{% translate 'All Orders' %}</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link
-                      {% if request.GET.filter == "undelivered" %}
-                        active" aria-current="page
-                      {% endif %}"
-               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=undelivered">Undelivered</a>
+            <a class="nav-link {% if request.GET.filter == "undelivered" %}active" aria-current="page{% endif %}"
+               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=undelivered">{% translate 'Undelivered' %}</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link
-                      {% if request.GET.filter == "delivered" %}
-                        active" aria-current="page
-                      {% endif %}"
-               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=delivered">Delivered</a>
+            <a class="nav-link {% if request.GET.filter == "delivered" %}active" aria-current="page{% endif %}"
+               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=delivered">{% translate 'Delivered' %}</a>
           </li>
         {% endwith %}
       </ul>
@@ -69,8 +62,8 @@
             <h5>
               {{ order.customer.name }}
               {% if order.notes %}
-                <span class="border border-secondary rounded ml-3 px-2 py-1"
-                      data-toggle="tooltip"
+                <span class="border border-secondary rounded ms-3 px-2 py-1"
+                      data-bs-toggle="tooltip"
                       title="{{ order.notes }}"><i class="fa-solid fa-align-justify fa-xs fa-fw"></i></span>
               {% endif %}
             </h5>
@@ -90,19 +83,12 @@
           <small>{{ order.customer.get_address_display }}</small>
         </a>
       {% endfor %}
-      <p class="text-right">
-        {{ seller.list|length }} order{{ seller.list|length|pluralize }}
-      </p>
+      <p class="text-end">{{ seller.list|length }} order{{ seller.list|length|pluralize }}</p>
     </div>
   {% endfor %}
 {% endblock content %}
 
 {% block js %}
   {{ block.super }}
-  <script>
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-  </script>
+  <script src="{% static 'js/show_tooltips.js' %}"></script>
 {% endblock js %}

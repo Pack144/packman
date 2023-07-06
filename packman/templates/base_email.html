@@ -1,11 +1,16 @@
-{% load i18n static %}{% get_current_language as LANGUAGE_CODE %}
-<!doctype html>
+{% load i18n static %}
+
+{% get_current_language as LANGUAGE_CODE %}
+<!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:"en-US" }}">
-<head>
-  <meta name="viewport" content="width=device-width">
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>{% block title %}{% endblock %}</title>
-  <style>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>
+      {% block title %}{% endblock %}
+
+    </title>
+    <style>
     /* -------------------------------------
         INLINED WITH htmlemail.io/inline
     ------------------------------------- */
@@ -106,9 +111,10 @@
         border-color: #34495e !important;
       }
     }
-  </style>
-</head>
-<body style="background-color: #E9E9E4;
+    </style>
+  </head>
+  {# djlint:off H021 #}
+  <body style="background-color: #E9E9E4;
                font-family: sans-serif;
                -webkit-font-smoothing: antialiased;
                font-size: 14px;
@@ -116,9 +122,9 @@
                margin: 0;
                padding: 0;
                -ms-text-size-adjust: 100%;
-               -webkit-text-size-adjust: 100%;">
-<span class="preheader"
-      style="color: transparent;
+               -webkit-text-size-adjust: 100%">
+    <span class="preheader"
+          style="color: transparent;
                  display: none;
                  height: 0;
                  max-height: 0;
@@ -127,126 +133,121 @@
                  overflow: hidden;
                  mso-hide: all;
                  visibility: hidden;
-                 width: 0;">
+                 width: 0">
       {% block preheader %}{% endblock %}
+
     </span>
-<table role="presentation"
-       border="0"
-       cellpadding="0"
-       cellspacing="0"
-       class="body"
-       style="border-collapse: separate;
+    <table role="presentation"
+           border="0"
+           cellpadding="0"
+           cellspacing="0"
+           class="body"
+           style="border-collapse: separate;
                   mso-table-lspace: 0pt;
                   mso-table-rspace: 0pt;
                   width: 100%;
-                  background-color: #E9E9E4;">
-  <tr>
-    <td style="font-family: sans-serif;
-                   font-size: 14px;
-                   vertical-align: top;">&nbsp;
-    </td>
-    <td class="container"
-        style="font-family: sans-serif;
+                  background-color: #E9E9E4">
+      <tr>
+        <td style="font-family: sans-serif; font-size: 14px; vertical-align: top">&nbsp;</td>
+        <td class="container"
+            style="font-family: sans-serif;
                    font-size: 14px;
                    vertical-align: top;
                    display: block;
                    Margin: 0 auto;
                    max-width: 580px;
                    padding: 10px;
-                   width: 580px;">
-      <div class="content"
-           style="box-sizing: border-box;
+                   width: 580px">
+          <div class="content"
+               style="box-sizing: border-box;
                       display: block;
                       Margin: 0 auto;
                       max-width: 580px;
-                      padding: 10px;">
-        <!-- START CENTERED WHITE CONTAINER -->
-        <table role="presentation"
-               class="main"
-               style="border-collapse: separate;
+                      padding: 10px">
+            <!-- START CENTERED WHITE CONTAINER -->
+            <table role="presentation"
+                   class="main"
+                   style="border-collapse: separate;
                           mso-table-lspace: 0pt;
                           mso-table-rspace: 0pt;
                           width: 100%;
                           background: #ffffff;
-                          border-radius: 3px;">
-          <!-- START MAIN CONTENT AREA -->
-          <tr>
-            <td class="wrapper"
-                style="font-family: sans-serif;
+                          border-radius: 3px">
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class="wrapper"
+                    style="font-family: sans-serif;
                            font-size: 14px;
                            vertical-align: top;
                            box-sizing: border-box;
-                           padding: 20px;">
+                           padding: 20px">
+                  <table role="presentation"
+                         border="0"
+                         cellpadding="0"
+                         cellspacing="0"
+                         style="border-collapse: separate;
+                                mso-table-lspace: 0pt;
+                                mso-table-rspace: 0pt;
+                                width: 100%">
+                    <tr>
+                      <td style="font-family: sans-serif; font-size: 14px; vertical-align: top">
+                        <p style="text-align: center;">
+                          <a href="{{ protocol }}://{{ site.domain }}{{ message.get_absolute_url }}">
+                            <img src="{{ protocol }}://{{ site.domain }}{% static 'img/logo.png' %}"
+                                 width="125"
+                                 height="70"
+                                 alt="{% blocktranslate with name=site.name %} {{ name }} Logo {% endblocktranslate %}">
+                          </a>
+                        </p>
+                        {% block content %}{% endblock %}
+
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!-- END MAIN CONTENT AREA -->
+            </table>
+            <!-- START FOOTER -->
+            <div class="footer"
+                 style="clear: both;
+                        Margin-top: 10px;
+                        text-align: center;
+                        width: 100%">
               <table role="presentation"
                      border="0"
                      cellpadding="0"
                      cellspacing="0"
                      style="border-collapse: separate;
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                                width: 100%;">
-                <tr>
-                  <td style="font-family: sans-serif;
-                                 font-size: 14px;
-                                 vertical-align: top;">
-                    <p style="text-align: center;">
-                      <a href="{{ protocol }}://{{ site.domain }}{{ message.get_absolute_url }}">
-                        <img src="{{ protocol }}://{{ site.domain }}{% static 'img/logo.png' %}"
-                             width="125"
-                             height="70"
-                             alt="{% blocktranslate with name=site.name %}{{ name }} Logo{% endblocktranslate %}">
-                      </a>
-                    </p>
-                    {% block content %}{% endblock %}
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <!-- END MAIN CONTENT AREA -->
-        </table>
-        <!-- START FOOTER -->
-        <div class="footer"
-             style="clear: both;
-                        Margin-top: 10px;
-                        text-align: center;
-                        width: 100%;">
-          <table role="presentation"
-                 border="0"
-                 cellpadding="0"
-                 cellspacing="0"
-                 style="border-collapse: separate;
                             mso-table-lspace: 0pt;
                             mso-table-rspace: 0pt;
-                            width: 100%;">
-            <tr>
-              <td class="content-block"
-                  style="font-family: sans-serif;
+                            width: 100%">
+                <tr>
+                  <td class="content-block"
+                      style="font-family: sans-serif;
                              vertical-align: top;
                              padding-bottom: 10px;
                              padding-top: 10px;
                              font-size: 12px;
                              color: #858787;
-                             text-align: center;">
+                             text-align: center">
                     <span class="apple-link"
                           style="color: #858787;
                                  font-size: 12px;
-                                 text-align: center;">
+                                 text-align: center">
                       {% block footer %}{% endblock %}
+
                     </span>
-              </td>
-            </tr>
-          </table>
-          <!-- END FOOTER -->
-        </div>
-        <!-- END CENTERED WHITE CONTAINER -->
-      </div>
-    </td>
-    <td style="font-family: sans-serif;
-                   font-size: 14px;
-                   vertical-align: top;">&nbsp;
-    </td>
-  </tr>
-</table>
-</body>
+                  </td>
+                </tr>
+              </table>
+              <!-- END FOOTER -->
+            </div>
+            <!-- END CENTERED WHITE CONTAINER -->
+          </div>
+        </td>
+        <td style="font-family: sans-serif; font-size: 14px; vertical-align: top">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
 </html>

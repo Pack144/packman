@@ -7,7 +7,7 @@
   </head>
   <body>
     {% for den in den_list %}
-      <div class="cub-name {% if not forloop.first %} page-break{% endif %}">
+      <div class="cub-name {% if not forloop.first %}page-break{% endif %}">
         DEN TOTAL
         <div class="den-number">{{ den|upper }}</div>
       </div>

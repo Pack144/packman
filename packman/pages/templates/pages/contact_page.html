@@ -23,9 +23,5 @@
 
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/show_tooltips.js' %}"></script>
 {% endblock js %}

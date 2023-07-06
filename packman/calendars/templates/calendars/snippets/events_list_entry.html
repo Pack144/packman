@@ -1,73 +1,77 @@
 {% load humanize i18n %}
 
-{% for event in events %}
-  {% if perms.calendars %}
-    <div class="row justify-content-end mt-5 mb-n3">
-      <div class="btn-group">
-        {% if perms.calendars.change_event %}
-          <a href="{% url 'calendars:update' event.pk %}"
-             class="btn btn-secondary btn-sm"
-             data-toggle="tooltip"
-             title="{% translate 'Make changes to this event' %}"><i class="fa-solid fa-calendar-check"></i></a>
-        {% endif %}
-        {% if perms.calendars.delete_event %}
-          <a href="{% url 'calendars:delete' event.pk %}"
-             class="btn btn-secondary btn-sm"
-             data-toggle="tooltip"
-             title="{% translate 'Delete this event' %}"><i class="fa-solid fa-calendar-minus"></i></a>
-        {% endif %}
-      </div>
-    </div>
-  {% endif %}
-  <a href="{% url 'calendars:detail' event.uuid %}"
-     class="btn btn-block btn{% if not forloop.first or page_obj.number > 1 %}-outline{% endif %}{% if event.category.color %}-{{ event.category.color }}{% else %}-dark{% endif %} p-3">
-    <div class="row">
-      <div class="col-md-4">
-        <h3 class="text-reset">
-          {% if event.category.icon %}
-            <span class="display-2">{{ event.category.icon|safe }}</span>
-            <br>
-          {% endif %}
-          {% if event.status == 'CANCELLED' %}
-            <del>{{ event.name }}</del>
-          {% else %}
-            {{ event.name }}
-          {% endif %}
-        </h3>
-      </div>
-      <div class="col-md-8 text-left">
-        <h5>
-          {{ event.start|naturalday:'l, F jS'|capfirst }}
-          {% if event.end and event.end|date != event.start|date %}
-            &ndash;
-            {{ event.end|naturalday:'F jS'|capfirst }}
-          {% endif %}
-        </h5>
-        {% if event.start|time != 'midnight' %}
-          <p class="font-weight-bold">
-            {{ event.start|time:'g:i a' }}
-            {% if event.end and event.end != event.start and event.end|time != '11:59 p.m.' %}
-              &mdash;
-              {{ event.end|time:'g:i a' }}
+<div class="d-grid gap-4">
+  {% for event in events %}
+    <div class="position-relative mb-3">
+      {% if perms.calendars %}
+        <div class="position-absolute top-0 end-0">
+          <div class="btn-group border border-{{ event.category.color }} rounded">
+            {% if perms.calendars.change_event %}
+              <a href="{% url 'calendars:update' event.pk %}"
+                 class="btn btn-secondary btn-sm"
+                 data-bs-toggle="tooltip"
+                 title="{% translate 'Make changes to this event' %}">
+                <i class="fa-solid fa-calendar-check"></i>
+              </a>
             {% endif %}
-          </p>
-        {% endif %}
-        {% if event.get_location %}
-          <p>
-            <strong>Where:</strong>
-            {{ event.get_location }}
-            {% if event.venue.address %}
-              <br>
-              {{ event.venue.address }}
+            {% if perms.calendars.delete_event %}
+              <a href="{% url 'calendars:delete' event.pk %}"
+                 class="btn btn-secondary btn-sm"
+                 data-bs-toggle="tooltip"
+                 title="{% translate 'Delete this event' %}">
+                <i class="fa-solid fa-calendar-minus"></i>
+              </a>
             {% endif %}
-          </p>
-        {% endif %}
-        {% if event.description %}
-          <p>
-            {{ event.plain_text_description|linebreaks|truncatewords_html:50 }}
-          </p>
-        {% endif %}
-      </div>
+          </div>
+        </div>
+      {% endif %}
+      <a href="{% url 'calendars:detail' event.uuid %}"
+         class="btn btn{% if not forloop.first or page_obj.number > 1 %}-outline{% endif %}{% if event.category.color %}-{{ event.category.color }}{% else %}-dark{% endif %} w-100 p-3">
+        <div class="row">
+          <div class="col-md-4">
+            <h3 class="text-reset">
+              {% if event.category.icon %}
+                <span class="display-2">{{ event.category.icon|safe }}</span>
+                <br>
+              {% endif %}
+              {% if event.status == event.CANCELLED %}
+                <del>{{ event.name }}</del>
+              {% else %}
+                {{ event.name }}
+              {% endif %}
+            </h3>
+          </div>
+          <div class="col-md-8 text-start">
+            <h5>
+              {{ event.start|naturalday:'l, F jS'|capfirst }}
+              {% if event.end and event.end|date != event.start|date %}
+                &ndash;
+                {{ event.end|naturalday:'F jS'|capfirst }}
+              {% endif %}
+            </h5>
+            {% if event.start|time != 'midnight' %}
+              <p class="fw-bold">
+                {{ event.start|time:'g:i a' }}
+                {% if event.end and event.end != event.start and event.end|time != '11:59 p.m.' %}
+                  &mdash;
+                  {{ event.end|time:'g:i a' }}
+                {% endif %}
+              </p>
+            {% endif %}
+            {% if event.get_location %}
+              <p>
+                <strong>Where:</strong>
+                {{ event.get_location }}
+                {% if event.venue.address %}
+                  <br>
+                  {{ event.venue.address }}
+                {% endif %}
+              </p>
+            {% endif %}
+            {% if event.description %}<p>{{ event.plain_text_description|linebreaks|truncatewords_html:50 }}</p>{% endif %}
+          </div>
+        </div>
+      </a>
     </div>
-  </a>
-{% endfor %}
+  {% endfor %}
+</div>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load humanize i18n %}
+{% load humanize i18n static %}
 
 {% block title %}{{ event }} | {{ block.super }}{% endblock %}
 
@@ -8,25 +8,31 @@
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       {% if perms.calendars %}
-        <div class="row justify-content-end">
+        <div class="d-flex justify-content-end">
           <div class="btn-group">
             {% if perms.calendars.add_event %}
-              <a href="#"
+              <a href="{% url 'calendars:create' %}"
                  class="btn btn-secondary btn-sm"
-                 data-toggle="tooltip"
-                 title="{% translate 'Create a new event' %}"><i class="fa-solid fa-calendar-plus"></i></a>
+                 data-bs-toggle="tooltip"
+                 title="{% translate 'Create a new event' %}">
+                <i class="fa-solid fa-calendar-plus"></i>
+              </a>
             {% endif %}
             {% if perms.calendars.change_event %}
               <a href="{% url 'calendars:update' event.pk %}"
                  class="btn btn-secondary btn-sm"
-                 data-toggle="tooltip"
-                 title="{% translate 'Make changes to this event' %}"><i class="fa-solid fa-calendar-check"></i></a>
+                 data-bs-toggle="tooltip"
+                 title="{% translate 'Make changes to this event' %}">
+                <i class="fa-solid fa-calendar-check"></i>
+              </a>
             {% endif %}
             {% if perms.calendars.delete_event %}
               <a href="{% url 'calendars:delete' event.pk %}"
                  class="btn btn-secondary btn-sm"
-                 data-toggle="tooltip"
-                 title="{% translate 'Delete this event' %}"><i class="fa-solid fa-calendar-minus"></i></a>
+                 data-bs-toggle="tooltip"
+                 title="{% translate 'Delete this event' %}">
+                <i class="fa-solid fa-calendar-minus"></i>
+              </a>
             {% endif %}
           </div>
         </div>
@@ -34,10 +40,10 @@
       <div class="row">
         <div class="d-none d-lg-inline col-lg-3">
           <div class="card text-center">
-            <div class="card-header text-white bg-danger py-2">
+            <div class="card-header text-bg-danger py-2">
               <h3 class="text-white">{{ event.start|date:'M' }}</h3>
             </div>
-            <div class="card-body border-success bg-white py-2">
+            <div class="card-body border-success bg-body py-2">
               <h1 class="display-4 text-dark py-4">{{ event.start|date:'j' }}</h1>
             </div>
           </div>
@@ -50,71 +56,63 @@
               {{ event.name }}
             {% endif %}
           </h1>
-          <ul class="list-inline text-muted" id="datetime-details-list">
+          <ul class="list-inline text-body-secondary" id="datetime-details-list">
             {% if event.end and event.end|date != event.start|date %}
               <li class="list-inline-item">
                 <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
-            </li>
-            <li class="list-inline-item">
-              <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
-          </li>
-          <li class="list-inline-item">&ndash;</li>
-          <li class="list-inline-item">
-            <i class="fa-solid fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}
-        </li>
-        <li class="list-inline-item">
-          <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.end|time }}
-      </li>
-    {% elif event.end %}
-      <li class="list-inline-item">
-        <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
-    </li>
-    <li class="list-inline-item">
-      <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}
-  </li>
-{% else %}
-  <li class="list-inline-item">
-    <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
-</li>
-<li class="list-inline-item">
-  <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
-</li>
-{% endif %}
-{% if event.venue.address %}
-  <li class="list-inline-item">
-    <i class="fa-solid fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}
-</li>
-{% elif event.get_location %}
-<li class="list-inline-item">
-  <i class="fa-solid fa-map-marker" aria-label="location"></i> {{ event.get_location }}
-</li>
-{% endif %}
-</ul>
-{% if event.description %}
-  <p>
-    {{ event.description|safe }}
-  </p>
-{% endif %}
-{% if event.attachments.count %}
-  <ul class="list-group">
-    {% for attachment in event.attachments.all %}
-      <a href="{{ attachment.file.url }}" target="_blank">
-        <li class="list-group-item">{{ attachment }}</li>
-      </a>
-    {% endfor %}
-  </ul>
-{% endif %}
-</div>
-</div>
-</div>
-</div>
+              </li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
+              </li>
+              <li class="list-inline-item">&ndash;</li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-calendar" aria-label="end"></i> {{ event.end|naturalday|capfirst }}
+              </li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.end|time }}
+              </li>
+            {% elif event.end %}
+              <li class="list-inline-item">
+                <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
+              </li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}&ndash;{{ event.end|time }}
+              </li>
+            {% else %}
+              <li class="list-inline-item">
+                <i class="fa-solid fa-calendar" aria-label="start"></i> {{ event.start|naturalday|capfirst }}
+              </li>
+              <li class="list-inline-item">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i> {{ event.start|time }}
+              </li>
+            {% endif %}
+            {% if event.venue.address %}
+              <li class="list-inline-item">
+                <i class="fa-solid fa-map-marked" aria-label="location"></i> {{ event.get_location_with_address }}
+              </li>
+            {% elif event.get_location %}
+              <li class="list-inline-item">
+                <i class="fa-solid fa-map-marker" aria-label="location"></i> {{ event.get_location }}
+              </li>
+            {% endif %}
+          </ul>
+          {% if event.description %}<p>{{ event.description|safe }}</p>{% endif %}
+          {% if event.attachments.count %}
+            <ul class="list-group">
+              {% for attachment in event.attachments.all %}
+                <a href="{{ attachment.file.url }}" target="_blank">
+                  <li class="list-group-item">{{ attachment }}</li>
+                </a>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock content %}
 
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/show_tooltips.js' %}"></script>
 {% endblock js %}

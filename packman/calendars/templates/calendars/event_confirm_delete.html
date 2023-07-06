@@ -6,10 +6,17 @@
   <form method="post" action=".">
     <div class="alert alert-danger" role="alert">
       <h4 class="alert-heading">Are you sure!</h4>
-      <p>You are about to permanently delete {{ event.name }}. This action will <strong>not</strong> notify members and cannot be undone.</p>
-      <p>You may want to consider <a href="{% url 'calendars:update' event.pk %}" class="alert-link">updating this event</a> and changing the status to <em>cancelled</em> instead.</p>
+      <p>
+        You are about to permanently delete {{ event.name }}. This action will <strong>not</strong> notify members and cannot be undone.
+      </p>
+      <p>
+        You may want to consider <a href="{% url 'calendars:update' event.pk %}" class="alert-link">updating this event</a> and changing the status to <em>cancelled</em> instead.
+      </p>
       <hr>
-      <p>To confirm this change and permanently remove this event from the database click <button type="submit" class="btn btn-danger">Delete</button></p>
+      <p>
+        To confirm this change and permanently remove this event from the database click
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </p>
     </div>
     {% csrf_token %}
   </form>

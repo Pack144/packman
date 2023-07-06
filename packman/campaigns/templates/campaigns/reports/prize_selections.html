@@ -2,7 +2,9 @@
 
 {% load i18n %}
 
-{% block title %}{% translate 'Prize Selection Report' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Prize Selection Report' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <h1 class="mb-5">{% translate 'Prize Selection Report' %}</h1>
@@ -11,7 +13,7 @@
       <h2 class="card-header">{% translate 'All Prizes Selected' %}</h2>
       <table class="table table-hover">
         <caption>{% translate 'All Prizes Selected' %}</caption>
-        <thead class="thead-dark">
+        <thead class="table-dark">
           <tr>
             <th scope="col">{% translate 'Prize' %}</th>
             <th scope="col">{% translate 'Quantity' %}</th>
@@ -45,7 +47,7 @@
           <col span="2" class="table-active">
           <col span="2">
         </colgroup>
-        <thead class="thead-dark">
+        <thead class="table-dark">
           <tr>
             <th scope="col">{% translate 'Den' %}</th>
             <th scope="col">{% translate 'Cub' %}</th>

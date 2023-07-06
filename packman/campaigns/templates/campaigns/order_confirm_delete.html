@@ -2,7 +2,9 @@
 
 {% load i18n static %}
 
-{% block title %}{% translate 'Delete Order' %} | {{ block.super }}{% endblock %}
+{% block title %}
+  {% translate 'Delete Order' %} | {{ block.super }}
+{% endblock %}
 
 {% block content %}
   <form method="post">
@@ -30,12 +32,12 @@
                        height="80">
                 {% endif %}
               </div>
-              <div class="flex-grow-1 ml-3">
+              <div class="flex-grow-1 ms-3">
                 <div class="d-flex justify-content-between align-items-center">
                   <strong>{{ item.product.name }}</strong>
-                  <div class="d-flex flex-column text-right">
-                    <small><em class="text-muted">{{ item.quantity }} &times; ${{ item.product.price }}/ea.</em></small>
-                    <span class="text-muted">${{ item.get_total_item_price }}</span>
+                  <div class="d-flex flex-column text-end">
+                    <small><em class="text-body-secondary">{{ item.quantity }} &times; ${{ item.product.price }}/ea.</em></small>
+                    <span class="text-body-secondary">${{ item.get_total_item_price }}</span>
                   </div>
                 </div>
               </div>
@@ -43,7 +45,7 @@
           </li>
         {% endfor %}
         {% if order.donation %}
-          <li class="list-group-item bg-transparent text-right">
+          <li class="list-group-item bg-transparent text-end">
             <h3>Donation: ${{ order.donation }}</h3>
           </li>
         {% endif %}

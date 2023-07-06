@@ -30,6 +30,13 @@ exclude = '''
 )
 '''
 
+[tool.djlint]
+blank_line_after_tag="load,extends,endblock"
+ignore="H030,H031,T002,T003"
+indent=2
+max_line_length=120
+profile="django"
+
 [tool.curlylint.rules]
 aria_role = true
 django_forms_rendering = 'as_p'

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}Previous Events | {{ block.super }}{% endblock %}
 
 {% block content %}
@@ -9,46 +11,38 @@
       <button class="btn btn-lg btn-danger dropdown-toggle"
               type="button"
               id="calendarFeedSubscribeButton"
-              data-toggle="dropdown"
+              data-bs-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false">
         <i class="fa-solid fa-calendar-alt"></i>
       </button>
       <div class="dropdown-menu" aria-labelledby="calendarFeedSubscribeButton">
-        <a class="dropdown-item" href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">
+        {# djlint:off D018 #}
+        <a class="dropdown-item"
+           href="webcal://{{ request.META.HTTP_HOST }}{% url 'calendars:feed' user.family.uuid %}">
           Subscribe to this calendar
         </a>
         <button class="dropdown-item"
                 href="{% url 'calendars:feed' user.family.uuid %}"
-                id="ical-link">
-          Copy link to this calendar
-        </button>
+                id="ical-link">Copy link to this calendar</button>
       </div>
     </div>
   </div>
   {% if events %}
-    <div class="mt-5">
-      {% include 'calendars/snippets/events_list_entry.html' %}
-    </div>
+    <div class="mt-5">{% include 'calendars/snippets/events_list_entry.html' %}</div>
     {% if is_paginated %}
       {% include 'partials/paginator.html' %}
     {% endif %}
   {% else %}
     <div class="alert alert-secondary" role="alert">
-      <p>
-        The pack has no previously scheduled events.
-      </p>
+      <p>The pack has no previously scheduled events.</p>
     </div>
   {% endif %}
 {% endblock content %}
 
 {% block js %}
   {{ block.super }}
-  <script>
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+  <script src="{% static 'js/show_tooltips.js' %}"></script>
   <script type="text/javascript">
     function copy() {
       var textArea = document.createElement("textarea");

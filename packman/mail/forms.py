@@ -19,8 +19,8 @@ class MessageDistributionForm(forms.ModelForm):
         model = MessageDistribution
         fields = ("delivery", "distribution_list")
         widgets = {
-            "delivery": forms.Select(attrs={"class": "custom-select"}),
-            "distribution_list": forms.Select(attrs={"class": "custom-select"}),
+            "delivery": forms.Select(attrs={"class": "form-select"}),
+            "distribution_list": forms.Select(attrs={"class": "form-select"}),
         }
 
 

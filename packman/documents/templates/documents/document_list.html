@@ -19,7 +19,7 @@
                   {{ document.description }}
                   <br>
                 {% endif %}
-                <small class="text-muted ">Last updated: {{ document.last_updated }}</small>
+                <small class="text-body-secondary ">Last updated: {{ document.last_updated }}</small>
               </dd>
             {% endfor %}
           </dl>
@@ -28,9 +28,7 @@
     </div>
   {% else %}
     <div class="alert alert-light" role="alert">
-      <p>
-        The pack has no uploaded documents to display
-      </p>
+      <p>The pack has no uploaded documents to display</p>
     </div>
   {% endif %}
 {% endblock content %}
