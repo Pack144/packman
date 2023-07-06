@@ -8,25 +8,31 @@
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       {% if perms.calendars %}
-        <div class="row justify-content-end">
+        <div class="d-flex justify-content-end">
           <div class="btn-group">
             {% if perms.calendars.add_event %}
-              <a href="#"
+              <a href="{% url 'calendars:create' %}"
                  class="btn btn-secondary btn-sm"
                  data-bs-toggle="tooltip"
-                 title="{% translate 'Create a new event' %}"><i class="fa-solid fa-calendar-plus"></i></a>
+                 title="{% translate 'Create a new event' %}">
+                <i class="fa-solid fa-calendar-plus"></i>
+              </a>
             {% endif %}
             {% if perms.calendars.change_event %}
               <a href="{% url 'calendars:update' event.pk %}"
                  class="btn btn-secondary btn-sm"
                  data-bs-toggle="tooltip"
-                 title="{% translate 'Make changes to this event' %}"><i class="fa-solid fa-calendar-check"></i></a>
+                 title="{% translate 'Make changes to this event' %}">
+                <i class="fa-solid fa-calendar-check"></i>
+              </a>
             {% endif %}
             {% if perms.calendars.delete_event %}
               <a href="{% url 'calendars:delete' event.pk %}"
                  class="btn btn-secondary btn-sm"
                  data-bs-toggle="tooltip"
-                 title="{% translate 'Delete this event' %}"><i class="fa-solid fa-calendar-minus"></i></a>
+                 title="{% translate 'Delete this event' %}">
+                <i class="fa-solid fa-calendar-minus"></i>
+              </a>
             {% endif %}
           </div>
         </div>
