@@ -45,7 +45,7 @@
       </address>
     </div>
     <div>
-      <h6 class="text-muted d-flex flex-column">
+      <h6 class="text-body-secondary d-flex flex-column">
         {% if order.is_paid %}
           <img src="{% static 'img/paid_stamp.svg' %}"
                height="134"
@@ -110,8 +110,8 @@
             <div class="d-flex justify-content-between align-items-center">
               <strong>{{ item.product.name }}</strong>
               <div class="d-flex flex-column text-end">
-                <small><em class="text-muted">{{ item.quantity }} &times; ${{ item.product.price }}/ea.</em></small>
-                <span class="text-muted">${{ item.get_total_item_price|intcomma }}</span>
+                <small><em class="text-body-secondary">{{ item.quantity }} &times; ${{ item.product.price }}/ea.</em></small>
+                <span class="text-body-secondary">${{ item.get_total_item_price|intcomma }}</span>
               </div>
             </div>
           </div>

@@ -24,10 +24,10 @@
               </div>
             </div>
             <div class="d-flex flex-column">
-              <small class="text-muted">
+              <small class="text-body-secondary">
                 {% firstof message.receipt.0.date_received|naturalday|title message.date_sent|naturalday|title %}
               </small>
-              <small class="text-muted">
+              <small class="text-body-secondary">
                 {% firstof message.receipt.0.date_received|time:"g:i a" message.date_sent|time:"g:i a" %}
               </small>
             </div>
@@ -52,7 +52,7 @@
               </li>
             {% endfor %}
           </ul>
-          <small class="text-muted">
+          <small class="text-body-secondary">
             <span id="attachment-count">{{ message.attachments.count }}</span>
             attachment{{ message.attachments.count|pluralize }}
           </small>

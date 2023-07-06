@@ -29,7 +29,7 @@
         </div>
       </div>
     </div>
-    {% if committee.description %}<p class="text-muted">{{ committee.description }}</p>{% endif %}
+    {% if committee.description %}<p class="text-body-secondary">{{ committee.description }}</p>{% endif %}
   </div>
   <div class="container">
     {% if members.count %}
@@ -43,7 +43,7 @@
               <div class="col">
                 <strong>{{ member.member }}</strong>
                 <br>
-                <span class="text-muted">
+                <span class="text-body-secondary">
                   {% if member.position == member.DEN_LEADER %}
                     {{ member.den }}
                   {% else %}

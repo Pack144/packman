@@ -30,7 +30,7 @@
         {% endif %}
       </span>
     </h1>
-    <h4 class="text-muted text-end">
+    <h4 class="text-body-secondary text-end">
       <span id="order-product-count">
         {% if order.product_count %}
           {{ order.product_count }}
@@ -85,7 +85,7 @@
                         <div class="flex-grow-1 ms-md-3">
                           <div class="d-flex justify-content-between">
                             <strong>{{ product.name }}</strong>
-                            <span class="text-muted">$<span id="{{ product.pk }}-price">{{ product.price }}</span></span>
+                            <span class="text-body-secondary">$<span id="{{ product.pk }}-price">{{ product.price }}</span></span>
                           </div>
                           <p class="fw-lighter d-none d-lg-block">{{ product.description }}</p>
                           {% with ordered=product.orders.first %}
