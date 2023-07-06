@@ -1,16 +1,22 @@
 {% load i18n %}
 
 <div class="btn-group btn-group-toggle mt-3" data-bs-toggle="buttons">
-  <label class="btn btn-outline-success {% if order.is_paid %}active{% endif %}">
-    <input type="checkbox"
-           {% if order.is_paid %}checked{% endif %}
-           oninput="updateOrder(this, '{{ order.pk }}', 'paid')">
+  <input class="btn-check"
+         id="id_order_paid"
+         type="checkbox"
+         {% if order.is_paid %}checked{% endif %}
+         oninput="updateOrder(this, '{{ order.pk }}', 'paid')">
+  <label class="btn btn-outline-success"
+         for="id_order_paid">
     {% translate 'Paid' %}
   </label>
-  <label class="btn btn-outline-success {% if order.is_delivered %}active{% endif %} {% if not order.campaign.can_deliver_orders %}disabled{% endif %}">
-    <input type="checkbox"
-           {% if order.is_delivered %}checked{% endif %}
-           oninput="updateOrder(this, '{{ order.pk }}', 'delivered')">
+  <input class="btn-check"
+         id="id_order_delivered"
+         type="checkbox"
+         {% if order.is_delivered %}checked{% endif %}
+         oninput="updateOrder(this, '{{ order.pk }}', 'delivered')">
+  <label class="btn btn-outline-success {% if not order.campaign.can_deliver_orders %}disabled{% endif %}"
+         for="id_order_delivered">
     {% translate 'Delivered' %}
   </label>
 </div>
