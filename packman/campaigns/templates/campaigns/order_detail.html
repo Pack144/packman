@@ -78,7 +78,7 @@
   </div>
   {% if order.notes and request.user.family == order.seller.family %}
     <div class="card">
-      <div class="card-header text-white bg-secondary">
+      <div class="card-header text-bg-secondary">
         <strong class="card-title">Notes</strong>
       </div>
       <div class="card-body">{{ order.notes|linebreaks }}</div>

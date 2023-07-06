@@ -39,11 +39,11 @@
               <strong>{{ cub.name }}</strong>
               <br>
               Earned
-              <span class="badge bg-primary rounded-pill me-3"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.earned }}</span>
+              <span class="badge text-bg-primary rounded-pill me-3"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.earned }}</span>
               Spent
-              <span class="badge bg-warning rounded-pill me-3"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.spent }}</span>
+              <span class="badge text-bg-warning rounded-pill me-3"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.spent }}</span>
               Remaining
-              <span class="badge bg-success rounded-pill"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.remaining }}</span>
+              <span class="badge text-bg-success rounded-pill"><i class="fa-solid fa-ticket-alt"></i> {{ cub.points.remaining }}</span>
             </li>
           {% endfor %}
         </ul>
@@ -52,7 +52,7 @@
             <ul class="list-group list-group-flush">
               {% for prize in prize_list %}
                 <li class="list-group-item">
-                  <div class="row bg-white">
+                  <div class="row bg-body">
                     <div class="col-4 text-center">
                       {% if prize.image %}
                         <img src="{{ prize.image.url }}"

@@ -34,8 +34,14 @@
          aria-haspopup="true"
          aria-expanded="true">{% translate 'Add Family Members' %}</a>
       <div class="dropdown-menu" aria-labelledby="addFamilyMenuLink">
-        <a href="{% url 'membership:parent_create' %}" class="dropdown-item">{% translate 'Add an adult' %}<span class="ms-3 px-2 badge bg-light"><i class="fa-solid fa-male"></i></span></a>
-        <a href="{% url 'membership:scout_create' %}" class="dropdown-item">{% translate 'Submit a Cub application' %}<span class="ms-3 badge bg-light"><i class="fa-solid fa-child"></i></span></a>
+        <a href="{% url 'membership:parent_create' %}" class="dropdown-item">
+          {% translate 'Add an adult' %}
+          <span class="badge text-bg-light ms-3 px-2"><i class="fa-solid fa-male"></i></span>
+        </a>
+        <a href="{% url 'membership:scout_create' %}" class="dropdown-item">
+          {% translate 'Submit a Cub application' %}
+          <span class="badge text-bg-light ms-3"><i class="fa-solid fa-child"></i></span>
+        </a>
       </div>
     </div>
   {% endif %}

@@ -5,7 +5,7 @@
 {% block title %}{{ den }} | {{ block.super }}{% endblock %}
 
 {% block content %}
-  <div class="container p-3 bg-white rounded d-none d-sm-flex justify-content-between align-items-center"
+  <div class="container p-3 bg-body rounded d-none d-sm-flex justify-content-between align-items-center"
        id="den-patches">
     {% if den.patch %}
       <img src="{{ den.patch }}"
@@ -22,7 +22,7 @@
       <h4 class="text-primary">{{ den.rank }} Den</h4>
     {% endif %}
   </div>
-  <div class="container bg-white rounded d-flex d-sm-none justify-content-between align-items-center"
+  <div class="container bg-body rounded d-flex d-sm-none justify-content-between align-items-center"
        id="den-id">
     <h1>{{ den }}</h1>
     <h4 class="text-primary">{{ den.rank }}</h4>
