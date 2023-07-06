@@ -15,7 +15,7 @@
   <form method="post" enctype="multipart/form-data">
     <div class="container row">
       <div class="col-md-3" id="headshot">
-        {% include 'membership/snippets/headshot.html' with scout="True" %}
+        {% include 'membership/snippets/headshot.html' %}
         {{ form.photo|as_crispy_field }}
       </div>
       <div class="col-md-9" id="profile">

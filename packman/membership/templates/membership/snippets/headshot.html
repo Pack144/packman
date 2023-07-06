@@ -15,7 +15,7 @@
   {% static 'img/avatar_generic_320x320.png' as fallback %}
   {% static 'img/avatar_generic.png' as fallback_2x %}
 {% endif %}
-<img class="card-img-top"
+<img class="card-img-top img-fluid"
      id="{{ member.slug }}_headshot"
      src="{{ thumb.url }}{{ fallback }}"
      height="320"
