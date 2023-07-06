@@ -1,29 +1,25 @@
 {% load i18n static thumbnail %}
-
-{% blocktranslate asvar alt_text %}{{ member }}'s profile picture{% endblocktranslate %}
 {% if member.photo %}
-  <img src="{{ member.photo|thumbnail_url:'80x80' }}"
-       class="img-fluid rounded"
-       id="{{ member.slug }}_thumbnail"
-       alt="{{ alt_text }}">
+  {% thumbnail member.photo 80x80 as thumb %}
+  {% thumbnail member.photo 160x160 as thumb_2x %}
 {% elif member.scout %}
-  <img src="{% static 'img/avatar_cub_80x80.png' %}"
-       class="img-fluid rounded"
-       id="{{ member.slug }}_thumbnail"
-       alt="{{ alt_text }}">
+  {% static 'img/avatar_cub_80x80.png' as fallback %}
+  {% static 'img/avatar_cub.png' as fallback_2x %}
 {% elif member.gender == member.MALE %}
-  <img src="{% static 'img/avatar_man_80x80.png' %}"
-       class="img-fluid rounded"
-       id="{{ member.slug }}_thumbnail"
-       alt="{{ alt_text }}">
+  {% static 'img/avatar_man_80x80.png' as fallback %}
+  {% static 'img/avatar_man.png' as fallback_2x %}
 {% elif member.gender == member.FEMALE %}
-  <img src="{% static 'img/avatar_woman_80x80.png' %}"
-       class="img-fluid rounded"
-       id="{{ member.slug }}_thumbnail"
-       alt="{{ alt_text }}">
+  {% static 'img/avatar_woman_80x80.png' as fallback %}
+  {% static 'img/avatar_woman.png' as fallback_2x %}
 {% else %}
-  <img src="{% static 'img/avatar_generic_80x80.png' %}"
-       class="img-fluid rounded"
-       id="{{ member.slug }}_thumbnail"
-       alt="{{ alt_text }}">
+  {% static 'img/avatar_generic_80x80.png' as fallback %}
+  {% static 'img/avatar_generic.png' as fallback_2x %}
 {% endif %}
+<img class="img-fluid rounded"
+     id="{{ member.slug }}_thumbnail"
+     src="{{ thumb.url }}{{ fallback }}"
+     height="80"
+     width="80"
+     srcset="{{ thumb.url }}{{ fallback }} 1x,
+             {{ thumb_2x.url }}{{ fallback_2x }} 2x"
+     alt="{% blocktranslate %}{{ member }}'s profile picture{% endblocktranslate %}">

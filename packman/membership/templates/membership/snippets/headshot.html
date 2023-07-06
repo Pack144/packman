@@ -1,7 +1,25 @@
 {% load i18n static thumbnail %}
-
-{# djlint:off H006 #}
+{% if member.photo %}
+  {% thumbnail member.photo 320x320 as thumb %}
+  {% thumbnail member.photo 640x640 as thumb_2x %}
+{% elif member.scout %}
+  {% static 'img/avatar_cub_320x320.png' as fallback %}
+  {% static 'img/avatar_cub.png' as fallback_2x %}
+{% elif member.gender == member.MALE %}
+  {% static 'img/avatar_man_320x320.png' as fallback %}
+  {% static 'img/avatar_man.png' as fallback_2x %}
+{% elif member.gender == member.FEMALE %}
+  {% static 'img/avatar_woman_320x320.png' as fallback %}
+  {% static 'img/avatar_woman.png' as fallback_2x %}
+{% else %}
+  {% static 'img/avatar_generic_320x320.png' as fallback %}
+  {% static 'img/avatar_generic.png' as fallback_2x %}
+{% endif %}
 <img class="card-img-top"
      id="{{ member.slug }}_headshot"
-     {% if member.photo %} src="{{ member.photo|thumbnail_url:'320x320' }}" {% elif member.scout %} src="{% static 'img/avatar_cub_320x320.png' %}" {% elif member.gender == member.MALE %} src="{% static 'img/avatar_man_320x320.png' %}" {% elif member.gender == member.FEMALE %} src="{% static 'img/avatar_woman_320x320.png' %}" {% else %} src="{% static 'img/avatar_generic_320x320.png' %}" {% endif %}
-     alt="{% blocktranslate %} {{ member }}'s profile picture {% endblocktranslate %}">
+     src="{{ thumb.url }}{{ fallback }}"
+     height="320"
+     width="320"
+     srcset="{{ thumb.url }}{{ fallback }} 1x,
+             {{ thumb_2x.url }}{{ fallback_2x }} 2x"
+     alt="{% blocktranslate %}{{ member }}'s profile picture{% endblocktranslate %}">
