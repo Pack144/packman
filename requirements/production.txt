@@ -1,4 +1,4 @@
 -r base.txt
 
 uwsgi
-sentry-sdk
+sentry-sdk[django]
