@@ -27,7 +27,7 @@
           <form class="form" action="{{ app_path }}" method="post" id="login-form">
             {% csrf_token %}
             {{ form|crispy }}
-            <input class="btn btn-block btn-success mt-5"
+            <input class="btn btn-success w-100 mt-5"
                    type="submit"
                    value="{% translate 'Sign in' %}" />
           </form>

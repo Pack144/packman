@@ -131,7 +131,7 @@
              role="group"
              aria-label="Order Editing tools">
           <a href="{% url 'campaigns:order_update' order.pk %}"
-             class="btn btn-outline-secondary btn-block {% if order.is_paid or order.is_delivered %}disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Make changes' %}</a>
+             class="btn btn-outline-secondary w-100 {% if order.is_paid or order.is_delivered %}disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Make changes' %}</a>
           <a href="{% url 'campaigns:order_delete' order.pk %}"
              class="btn btn-outline-danger {% if order.is_paid or order.is_delivered %}disabled" tabindex="-1" aria-disabled="true{% endif %}">{% translate 'Delete' %}</a>
         </div>

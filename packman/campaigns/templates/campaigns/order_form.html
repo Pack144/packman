@@ -144,7 +144,7 @@
         {{ customer_form|crispy }}
         <button type="button"
                 onclick="getLocation()"
-                class="btn btn-primary btn-sm btn-block">
+                class="btn btn-primary btn-sm w-100">
           <i class="fa-regular fa-compass"></i>
           <span class="d-none d-md-inline ms-md-1">{% translate 'Use current location' %}</span>
         </button>
@@ -171,7 +171,7 @@
   {{ items_formset.management_form }}
   {% csrf_token %}
   <button type="button"
-          class="btn btn-success btn-block mt-5"
+          class="btn btn-success w-100 mt-5"
           onclick="nudgeDonation()">
     {% if order.pk %}
       {% translate 'Update' %}
@@ -180,7 +180,7 @@
     {% endif %}
   </button>
   <a href="{% url 'campaigns:order_list' %}"
-     class="btn btn-secondary btn-sm btn-block mt-3">{% translate 'Cancel' %}</a>
+     class="btn btn-secondary btn-sm w-100 mt-3">{% translate 'Cancel' %}</a>
   <div class="modal" tabindex="-1" id="donation-round-up-modal">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -200,7 +200,7 @@
           </p>
         </div>
         <div class="modal-footer d-flex flex-column align-items-center">
-          <button class="btn btn-primary btn-block" formnovalidate>{% translate 'Complete Order without a donation' %}</button>
+          <button class="btn btn-primary w-100" formnovalidate>{% translate 'Complete Order without a donation' %}</button>
           <div class="input-group mt-5">
             <span class="input-group-text">$</span>
             <input type="number"
@@ -210,7 +210,7 @@
                    id="donation-round-up-input">
             <span class="input-group-text fw-light">{% translate 'Donation Amount' %}</span>
           </div>
-          <button class="btn btn-success btn-block btn-lg"
+          <button class="btn btn-success btn-lg w-100"
                   onclick="updateDonationAndSubmit(document.getElementById('donation-round-up-input').value)">
             {% translate 'Add a donation to the order and submit' %}
           </button>
