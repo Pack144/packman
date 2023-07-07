@@ -1,16 +1,16 @@
-django[argon2] ~=3.2
-django-crispy-forms ~= 2.0
-crispy-bootstrap5
-django-dynamic-formsets
-django-environ
-django-ical
-django-localflavor
-django-phonenumber-field[phonenumberslite]
-django-tinymce
-docutils
-easy-thumbnails
-factory_boy
-pillow
-psycopg2-binary
-pymemcache
-whitenoise[brotli]
+django[argon2]~=4.2
+django-crispy-forms~=2.0
+crispy-bootstrap5~=0.7
+django-dynamic-formsets~=0.0.8
+django-environ>=0.10.0
+django-ical>=1.9.2
+django-localflavor~=4.0
+django-phonenumber-field[phonenumberslite]~=7.1.0
+django-tinymce~=3.6.1
+docutils>=0.20.1
+easy-thumbnails~=2.8.5
+factory_boy~=3.2.1
+pillow~=10.0.0
+psycopg-binary~=3.1.9
+pymemcache~=4.0.0
+whitenoise[brotli]~=6.5.0

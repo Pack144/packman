@@ -1,12 +1,12 @@
 {
   "name": "packman",
-  "version": "1.0.0",
+  "version": "2023.07.07",
   "repository": "https://github.com/Pack144/packman.git",
   "author": "John Lawrence <thirdjal@users.noreply.github.com>",
   "license": "MIT",
   "devDependencies": {
-    "stylelint": "^7.13.0",
-    "stylelint-config-standard": "^16.0.0"
+    "stylelint": "^15.10.1",
+    "stylelint-config-standard": "^34.0.0"
   },
   "stylelint": {
     "extends": [

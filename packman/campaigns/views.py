@@ -189,10 +189,10 @@ class OrderDeleteView(UserIsSellerFamilyTest, DeleteView):
     template_name = "campaigns/order_confirm_delete.html"
     success_url = reverse_lazy("campaigns:order_list")
 
-    def delete(self, request, *args, **kwargs):
-        message = _("The order has been successfully deleted.") % {"page": self.get_object()}
-        messages.success(request, message, "danger")
-        return super().delete(request, *args, **kwargs)
+    def form_valid(self, form):
+        message = _("The order has been successfully deleted.") % {"page": self.object}
+        messages.success(self.request, message, "danger")
+        return super().form_valid(form)
 
 
 class OrderDetailView(DetailView):

@@ -1,4 +1,4 @@
 -r base.txt
 
-uwsgi
-sentry-sdk[django]
+uwsgi ~= 2.0
+sentry-sdk[django] >= 1.26.0
