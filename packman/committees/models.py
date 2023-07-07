@@ -21,7 +21,6 @@ class Committee(TimeStampedUUIDModel):
     )
     description = models.TextField(
         blank=True,
-        default="",
     )
     members = models.ManyToManyField(
         "membership.Adult",
