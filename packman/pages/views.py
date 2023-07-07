@@ -73,10 +73,10 @@ class PageDeleteView(PermissionRequiredMixin, SuccessMessageMixin, DeleteView):
     permission_required = "pages.delete_page"
     success_url = reverse_lazy("pages:home")
 
-    def delete(self, request, *args, **kwargs):
-        success_message = _("The page: '%(page)s' has been successfully deleted.") % {"page": self.get_object()}
-        messages.success(request, success_message, "danger")
-        return super().delete(request, *args, **kwargs)
+    def form_valid(self, form):
+        success_message = _("The page: '%(page)s' has been successfully deleted.") % {"page": self.object}
+        messages.success(self.request, success_message, "danger")
+        return super().form_valid(form)
 
 
 class PageUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
