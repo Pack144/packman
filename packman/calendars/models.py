@@ -130,20 +130,6 @@ class PackYear(models.Model):
         warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
         return cls.get_current().pk
 
-    @staticmethod
-    def get_latest():
-        try:
-            return PackYear.objects.latest()
-        except PackYear.DoesNotExist:
-            pass
-
-    @classmethod
-    def get_latest_id(cls):
-        try:
-            return cls.objects.latest().pk
-        except cls.DoesNotExist:
-            pass
-
 
 class Category(TimeStampedUUIDModel):
     """
