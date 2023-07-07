@@ -1,5 +1,6 @@
 import html as python_html
 from datetime import datetime
+from warnings import warn
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -107,11 +108,13 @@ class PackYear(models.Model):
 
     @staticmethod
     def get_current_pack_year():
+        warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
         year, created = PackYear.objects.get_or_create(year=PackYear.get_pack_year()["end_date"].year)
         return year
 
     @staticmethod
     def get_current_pack_year_year():
+        warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
         year_obj = PackYear.get_current_pack_year()
         return year_obj.end_date.year
 
@@ -124,6 +127,7 @@ class PackYear(models.Model):
 
     @classmethod
     def get_current_id(cls):
+        warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
         return cls.get_current().pk
 
     @staticmethod
