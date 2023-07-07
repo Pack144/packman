@@ -22,7 +22,7 @@ class CommitteesList(LoginRequiredMixin, generic.ListView):
         year = (
             PackYear.objects.get(year=PackYear.get_pack_year(self.kwargs["year"])["end_date"].year)
             if "year" in self.kwargs
-            else PackYear.get_current_pack_year()
+            else PackYear.objects.current()
         )
         return Committee.objects.filter(committee_member__year=year).distinct()
 
@@ -36,7 +36,7 @@ class CommitteeDetail(ActiveMemberOrContributorTest, generic.DetailView):
         year = (
             PackYear.objects.get(year=PackYear.get_pack_year(self.kwargs["year"])["end_date"].year)
             if "year" in self.kwargs
-            else PackYear.get_current_pack_year()
+            else PackYear.objects.current()
         )
         all_years = PackYear.objects.filter(committee_membership__committee=context["committee"]).distinct()
         context["current_year"] = year

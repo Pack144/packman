@@ -146,7 +146,7 @@ class Membership(TimeStampedUUIDModel):
     year_assigned = models.ForeignKey(
         PackYear,
         on_delete=models.CASCADE,
-        default=PackYear.get_current_pack_year_year,
+        default=PackYear.get_current,
         related_name="den_memberships",
     )
 

@@ -41,7 +41,6 @@ class Venue(TimeStampedUUIDModel):
     url = models.URLField(
         _("Website"),
         blank=True,
-        default="",
     )
 
     class Meta:
@@ -79,7 +78,6 @@ class Address(TimeStampedUUIDModel):
         _("Unit / Apartment / Suite"),
         max_length=128,
         blank=True,
-        default="",
     )
     city = models.CharField(
         _("City"),
@@ -95,7 +93,6 @@ class Address(TimeStampedUUIDModel):
         max_length=1,
         choices=TYPE_CHOICES,
         blank=True,
-        default="",
     )
     published = models.BooleanField(
         default=True,
@@ -161,7 +158,6 @@ class PhoneNumber(TimeStampedUUIDModel):
         max_length=1,
         choices=TYPE_CHOICES,
         blank=True,
-        default="",
     )
     published = models.BooleanField(
         default=True,

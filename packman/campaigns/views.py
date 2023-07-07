@@ -343,7 +343,7 @@ class PullSheetTemplateView(PermissionRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["den_list"] = (
             Den.objects.prefetch_related("campaigns")
-            .filter(scouts__year_assigned=PackYear.get_current_pack_year())
+            .filter(scouts__year_assigned=PackYear.objects.current())
             .distinct()
         )
         return context

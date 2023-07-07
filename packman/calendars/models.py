@@ -1,5 +1,6 @@
 import html as python_html
 from datetime import datetime
+from warnings import warn
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -107,11 +108,13 @@ class PackYear(models.Model):
 
     @staticmethod
     def get_current_pack_year():
+        warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
         year, created = PackYear.objects.get_or_create(year=PackYear.get_pack_year()["end_date"].year)
         return year
 
     @staticmethod
     def get_current_pack_year_year():
+        warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
         year_obj = PackYear.get_current_pack_year()
         return year_obj.end_date.year
 
@@ -124,21 +127,8 @@ class PackYear(models.Model):
 
     @classmethod
     def get_current_id(cls):
+        warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
         return cls.get_current().pk
-
-    @staticmethod
-    def get_latest():
-        try:
-            return PackYear.objects.latest()
-        except PackYear.DoesNotExist:
-            pass
-
-    @classmethod
-    def get_latest_id(cls):
-        try:
-            return cls.objects.latest().pk
-        except cls.DoesNotExist:
-            pass
 
 
 class Category(TimeStampedUUIDModel):
@@ -216,21 +206,18 @@ class Category(TimeStampedUUIDModel):
     description = models.CharField(
         max_length=256,
         blank=True,
-        default="",
         help_text=_("Give a little more detail about the kinds of events in this " "category"),
     )
     icon = models.CharField(
         max_length=64,
         choices=ICON_CHOICES,
         blank=True,
-        default="",
         help_text=_("Optionally choose an icon to display with these events"),
     )
     color = models.CharField(
         max_length=16,
         choices=COLOR_CHOICES,
         blank=True,
-        default="",
         help_text=_("Optionally choose a color to display these event in."),
     )
 
@@ -269,7 +256,6 @@ class Event(TimeStampedUUIDModel):
     location = models.CharField(
         max_length=128,
         blank=True,
-        default="",
     )
 
     start = models.DateTimeField()

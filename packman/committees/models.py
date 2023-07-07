@@ -21,7 +21,6 @@ class Committee(TimeStampedUUIDModel):
     )
     description = models.TextField(
         blank=True,
-        default="",
     )
     members = models.ManyToManyField(
         "membership.Adult",
@@ -80,7 +79,7 @@ class CommitteeMember(TimeStampedUUIDModel):
     year = models.ForeignKey(
         PackYear,
         on_delete=models.CASCADE,
-        default=PackYear.get_current_pack_year_year,
+        default=PackYear.get_current,
         related_name="committee_memberships",
         related_query_name="committee_membership",
         verbose_name=_("year served"),

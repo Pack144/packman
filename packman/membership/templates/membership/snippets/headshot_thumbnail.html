@@ -5,10 +5,10 @@
 {% elif member.scout %}
   {% static 'img/avatar_cub_80x80.png' as fallback %}
   {% static 'img/avatar_cub.png' as fallback_2x %}
-{% elif member.gender == member.MALE %}
+{% elif member.gender == member.Gender.MALE %}
   {% static 'img/avatar_man_80x80.png' as fallback %}
   {% static 'img/avatar_man.png' as fallback_2x %}
-{% elif member.gender == member.FEMALE %}
+{% elif member.gender == member.Gender.FEMALE %}
   {% static 'img/avatar_woman_80x80.png' as fallback %}
   {% static 'img/avatar_woman.png' as fallback_2x %}
 {% else %}

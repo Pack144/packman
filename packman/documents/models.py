@@ -30,7 +30,6 @@ class Document(TimeStampedUUIDModel):
     )
     description = models.TextField(
         blank=True,
-        default="",
         help_text=_("Brief description of what the document is."),
     )
     file = models.FileField(

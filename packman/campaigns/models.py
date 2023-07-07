@@ -42,7 +42,7 @@ class Campaign(TimeStampedModel):
     """
 
     year = models.ForeignKey(
-        PackYear, on_delete=models.CASCADE, related_name="campaigns", default=PackYear.get_current_id
+        PackYear, on_delete=models.CASCADE, related_name="campaigns", default=PackYear.get_current
     )
 
     ordering_opens = models.DateField(_("sales open"), help_text=_("The date when members can start taking orders."))
