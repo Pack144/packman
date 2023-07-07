@@ -1,15 +1,14 @@
 {% load i18n %}
 
 <!--  Begin folder list  --------------------------------------------------->
-<section class="d-flex flex-column p-3 text-bg-dark align-items-stretch collapse-horizontal show"
+<section class="d-flex flex-column p-3 text-bg-dark align-items-stretch"
          id="folder-sidebar">
   <a href="{% url 'mail:inbox' %}"
      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ms-3 ms-md-0 me-md-auto text-white text-decoration-none">
     <i class="fa-solid fa-envelope fa-2x me-2 me-2"></i>
     <span class="d-none d-md-inline fs-4 h4 mb-0">{% translate "Mail" %}</span>
   </a>
-  <hr>
-  <ul class="nav nav-pills flex-column mb-auto">
+  <ul class="nav nav-pills flex-column mt-4 mb-auto">
     <li class="nav-item text-nowrap">
       <a href="{% url 'mail:inbox' %}"
          class="d-flex align-items-center justify-content-between nav-link {% if mailbox == mailbox.INBOX %} active" aria-current="page {% else %} text-white {% endif %}">
@@ -18,7 +17,7 @@
           <span class="d-none d-md-inline ms-2">{{ mailbox.INBOX.label }}</span>
         </div>
         {% if mail_count.inbox.unread %}
-          <span class="badge rounded-pill text-bg-light text-dark ms-1">{{ mail_count.inbox.unread }}</span>
+          <span class="badge rounded-pill text-bg-light ms-1">{{ mail_count.inbox.unread }}</span>
         {% endif %}
       </a>
     </li>

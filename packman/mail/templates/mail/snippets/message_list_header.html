@@ -1,18 +1,9 @@
 {% load i18n %}
 
-<div class="border-bottom d-flex align-items-center justify-content-between p-3"
+<div class="d-flex align-items-center justify-content-between border-bottom p-3"
      id="message-list-heading">
-  <a href="#folder-sidebar"
-     role="button"
-     data-bs-toggle="collapse"
-     data-bs-target="#folder-sidebar"
-     aria-expanded="true"
-     aria-controls="folder-sidebar"
-     class="text-decoration-none">
-    <i class="fa-regular fa-caret-square-left"></i>
-    <strong class="text-primary">{{ mailbox.label }}</strong>
-  </a>
-  <a href="{% url 'mail:create' %}" class="link-dark text-decoration-none">
+  <h3 class="text-primary">{{ mailbox.label }}</h3>
+  <a href="{% url 'mail:create' %}" class="text-decoration-none fs-5">
     <span data-bs-toggle="tooltip"
           title="{% translate 'Compose a new message' %}">
       <i class="fa-regular fa-pen-to-square"></i>
