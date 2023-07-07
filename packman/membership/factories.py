@@ -19,13 +19,13 @@ class MemberFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Member
 
-    gender = factory.Iterator(Member.GENDER_CHOICES, getter=lambda c: c[0])
+    gender = factory.Iterator(Member.Gender.values)
 
     @factory.lazy_attribute
     def first_name(self):
-        if self.gender == Member.MALE:
+        if self.gender == Member.Gender.MALE:
             return fake.first_name_male()
-        elif self.gender == Member.FEMALE:
+        elif self.gender == Member.Gender.FEMALE:
             return fake.first_name_female()
         else:
             return fake.first_name_nonbinary()

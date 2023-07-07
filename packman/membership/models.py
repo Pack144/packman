@@ -29,15 +29,11 @@ class Member(TimeStampedUUIDModel):
     Used by the later models, Adult and Scout, to populate common fields used.
     """
 
-    # Define static options for gender
-    MALE = "M"
-    FEMALE = "F"
-    OTHER = "O"
-    GENDER_CHOICES = (
-        (MALE, _("Male")),
-        (FEMALE, _("Female")),
-        (OTHER, _("Prefer not to say")),
-    )
+    class Gender(models.TextChoices):
+        # Define static options for gender
+        MALE = "M", _("Male")
+        FEMALE = "F", _("Female")
+        OTHER = "O", _("Prefer not to say")
 
     # Personal information
     first_name = models.CharField(_("First Name"), max_length=30)
@@ -64,7 +60,7 @@ class Member(TimeStampedUUIDModel):
     gender = models.CharField(
         _("Gender"),
         max_length=1,
-        choices=GENDER_CHOICES,
+        choices=Gender.choices,
     )
     photo = ThumbnailerImageField(
         _("Headshot Photo"),
