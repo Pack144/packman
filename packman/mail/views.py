@@ -175,14 +175,13 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("mail:drafts")
     template_name = "mail/message_confirm_delete.html"
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
+    def form_valid(self, form):
         if self.request.user == self.object.author and not self.object.date_sent:
             success_message = _("Your message <strong>%(subject)s</strong> was deleted successfully.") % {
-                "subject": self.get_object()
+                "subject": self.object
             }
-            messages.success(request, success_message, "danger")
-            return super().delete(request, *args, **kwargs)
+            messages.success(self.request, success_message, "danger")
+            return super().form_valid(form)
 
 
 class MessageListView(LoginRequiredMixin, ListView):

@@ -76,7 +76,7 @@ class EventDeleteView(PermissionRequiredMixin, generic.DeleteView):
     permission_required = "calendars.delete_event"
     success_url = reverse_lazy("calendars:list")
 
-    def delete(self, request, *args, **kwargs):
-        success_message = _("The event '%(event)s' has been successfully deleted.") % {"event": self.get_object()}
-        messages.success(request, success_message, "danger")
-        return super().delete(request, *args, **kwargs)
+    def form_valid(self, form):
+        success_message = _("The event '%(event)s' has been successfully deleted.") % {"event": self.object}
+        messages.success(self.request, success_message, "danger")
+        return super().form_valid(form)
