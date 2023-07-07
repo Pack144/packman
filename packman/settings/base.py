@@ -176,10 +176,7 @@ USE_TZ = True
 
 STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=BASE_DIR / "static_files")
 STATIC_URL = "static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "node_modules",
-    APPS_DIR / "static",
-]
+STATICFILES_DIRS = [APPS_DIR / "static"]
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
