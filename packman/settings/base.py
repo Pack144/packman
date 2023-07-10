@@ -305,14 +305,6 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 
 
-# django-tempus-dominus
-# https://tempusdominus.github.io/bootstrap-4/
-# https://github.com/FlipperPA/django-tempus-dominus
-# -----------------------------------------------------------------------------
-
-TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
-
-
 # When does the site start a new year of scouting? Typically, this would be when
 # cubs advance to the next rank.
 # -----------------------------------------------------------------------------
