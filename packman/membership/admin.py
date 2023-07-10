@@ -315,7 +315,7 @@ class ScoutAdmin(admin.ModelAdmin):
 
     @admin.action(description=_("Assign selected Cubs to the same den for the next Pack Year"))
     def continue_in_same_den_one_more_year(self, request, queryset):
-        next_year, created = PackYear.objects.get_or_create(year=PackYear.get_current().id + 1)
+        next_year, created = PackYear.objects.get_or_create(year=PackYear.get_current().pk + 1)
         n = queryset.count()
         if n:
             for obj in queryset:
