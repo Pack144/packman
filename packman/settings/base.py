@@ -284,12 +284,9 @@ AUTHENTICATION_BACKENDS = [
 
 
 # django-tinymce
-# https://django-tinymce.readthedocs.io/en/3.2/installation.html#configuration
+# https://django-tinymce.readthedocs.io/en/stable/installation.html#configuration
 # -----------------------------------------------------------------------------
 
-TINYMCE_INCLUDE_JQUERY = False
-TINYMCE_JS_URL = "https://cdn.jsdelivr.net/npm/tinymce@5/tinymce.min.js"
-TINYMCE_COMPRESSOR = False
 TINYMCE_DEFAULT_CONFIG = {
     "convert_urls": False,
     "default_link_target": "_blank",
