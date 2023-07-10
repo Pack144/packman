@@ -259,7 +259,7 @@ class ScoutAdmin(admin.ModelAdmin):
 
     @admin.action(description=_("Mark selected Cubs as active"))
     def make_active(self, request, queryset):
-        updated = queryset.update(status=models.Scout.ACTIVE)
+        updated = queryset.order_by().update(status=models.Scout.ACTIVE)
         self.message_user(
             request,
             ngettext(
@@ -273,7 +273,7 @@ class ScoutAdmin(admin.ModelAdmin):
 
     @admin.action(description=_("Approve selected Cubs for membership"))
     def make_approved(self, request, queryset):
-        updated = queryset.update(status=models.Scout.APPROVED)
+        updated = queryset.order_by().update(status=models.Scout.APPROVED)
         self.message_user(
             request,
             ngettext(
@@ -287,7 +287,7 @@ class ScoutAdmin(admin.ModelAdmin):
 
     @admin.action(description=_("Mark selected Cubs as inactive"))
     def make_inactive(self, request, queryset):
-        updated = queryset.update(status=models.Scout.INACTIVE)
+        updated = queryset.order_by().update(status=models.Scout.INACTIVE)
         self.message_user(
             request,
             ngettext(
@@ -301,7 +301,7 @@ class ScoutAdmin(admin.ModelAdmin):
 
     @admin.action(description=_("Graduate selected Cubs"))
     def make_graduated(self, request, queryset):
-        updated = queryset.update(status=models.Scout.GRADUATED)
+        updated = queryset.order_by().update(status=models.Scout.GRADUATED)
         self.message_user(
             request,
             ngettext(
