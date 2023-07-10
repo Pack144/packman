@@ -2,10 +2,10 @@
 Django settings for packman project.
 
 For more information on this file, see
-https://docs.djangoproject.com/en/4.2/topics/settings/
+https://docs.djangoproject.com/en/3.2/topics/settings/
 
 For the full list of settings and their values, see
-https://docs.djangoproject.com/en/4.2/ref/settings/
+https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 from email.utils import getaddresses
 from pathlib import Path
@@ -64,7 +64,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # https://whitenoise.readthedocs.io/en/4.2/django.html#enable-whitenoise
+    # https://whitenoise.readthedocs.io/en/stable/django.html#enable-whitenoise
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -98,21 +98,21 @@ TEMPLATES = [
 
 
 # WSGI
-# https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
+# https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/
 # -----------------------------------------------------------------------------
 
 WSGI_APPLICATION = "packman.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 # -----------------------------------------------------------------------------
 
 DATABASES = {"default": env.db("DATABASE_URL", default="sqlite:///db.sqlite3")}
 
 
 # CACHES
-# https://docs.djangoproject.com/en/4.2/ref/settings/#caches
+# https://docs.djangoproject.com/en/3.2/ref/settings/#caches
 # ------------------------------------------------------------------------------
 
 CACHES = {
@@ -121,11 +121,11 @@ CACHES = {
 
 
 # Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 # -----------------------------------------------------------------------------
 
 PASSWORD_HASHERS = [
-    # https://docs.djangoproject.com/en/4.2/topics/auth/passwords/#using-argon2-with-django
+    # https://docs.djangoproject.com/en/3.2/topics/auth/passwords/#using-argon2-with-django
     "django.contrib.auth.hashers.Argon2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
@@ -149,14 +149,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Sites Framework
-# https://docs.djangoproject.com/en/4.2/ref/contrib/sites/#enabling-the-sites-framework
+# https://docs.djangoproject.com/en/3.2/ref/contrib/sites/#enabling-the-sites-framework
 # -----------------------------------------------------------------------------
 
 SITE_ID = 1
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
+# https://docs.djangoproject.com/en/3.2/topics/i18n/
 # -----------------------------------------------------------------------------
 
 LANGUAGE_CODE = env("LANGUAGE_CODE", default="en-us")
@@ -167,43 +167,38 @@ TIME_ZONE = env("TIME_ZONE", default="UTC")
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
+# https://docs.djangoproject.com/en/3.2/howto/static-files/
 # -----------------------------------------------------------------------------
 
 STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=BASE_DIR / "static_files")
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [APPS_DIR / "static"]
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # User uploaded files
-# https://docs.djangoproject.com/en/4.2/topics/files/
+# https://docs.djangoproject.com/en/3.2/topics/files/
 # -----------------------------------------------------------------------------
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=BASE_DIR / "media")
 
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 # -----------------------------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Easy Thumbnails
-# https://easy-thumbnails.readthedocs.io/en/4.2/usage/#thumbnail-aliases
+# https://easy-thumbnails.readthedocs.io/en/3.2/usage/#thumbnail-aliases
 # -----------------------------------------------------------------------------
 # THUMBNAIL_ALIASES = {
 #     "": {
@@ -243,7 +238,7 @@ THUMBNAIL_SUBDIR = "thumbs"
 
 
 # django-crispy-forms
-# http://django-crispy-forms.readthedocs.io/en/4.2/install.html#template-packs
+# http://django-crispy-forms.readthedocs.io/en/3.2/install.html#template-packs
 # -----------------------------------------------------------------------------
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -259,8 +254,8 @@ PHONENUMBER_DEFAULT_FORMAT = "NATIONAL"
 
 
 # LOGGING
-# https://docs.djangoproject.com/en/4.2/ref/settings/#logging
-# See https://docs.djangoproject.com/en/4.2/topics/logging for
+# https://docs.djangoproject.com/en/3.2/ref/settings/#logging
+# See https://docs.djangoproject.com/en/3.2/topics/logging for
 # more details on how to customize your logging configuration.
 # ------------------------------------------------------------------------------
 
@@ -301,7 +296,7 @@ LOGGING = {
 
 
 # Custom User Model
-# https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#auth-custom-user
+# https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#auth-custom-user
 # -----------------------------------------------------------------------------
 
 AUTH_USER_MODEL = "membership.Adult"
@@ -311,7 +306,7 @@ LOGOUT_REDIRECT_URL = "pages:home"
 
 
 # Authentication Backends
-# https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#specifying-authentication-backends
+# https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#specifying-authentication-backends
 # -----------------------------------------------------------------------------
 
 AUTHENTICATION_BACKENDS = [
@@ -321,7 +316,7 @@ AUTHENTICATION_BACKENDS = [
 
 
 # django-tinymce
-# https://django-tinymce.readthedocs.io/en/4.2/installation.html#configuration
+# https://django-tinymce.readthedocs.io/en/3.2/installation.html#configuration
 # -----------------------------------------------------------------------------
 
 TINYMCE_INCLUDE_JQUERY = False
@@ -364,22 +359,22 @@ PACK_LOCATION = env("PACK_LOCATION", default="United States of America")
 
 
 # EMAIL
-# https://docs.djangoproject.com/en/4.2/ref/settings/#email-backend
-# https://django-environ.readthedocs.io/en/4.2/#email-settings
+# https://docs.djangoproject.com/en/3.2/ref/settings/#email-backend
+# https://django-environ.readthedocs.io/en/3.2/#email-settings
 # ------------------------------------------------------------------------------
 
 EMAIL_CONFIG = env.email_url("DJANGO_EMAIL_URL", default="consolemail://")
 vars().update(EMAIL_CONFIG)
 
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-from-email
+# https://docs.djangoproject.com/en/3.2/ref/settings/#default-from-email
 DEFAULT_FROM_EMAIL = env("DJANGO_DEFAULT_FROM_EMAIL", default=f"{PACK_NAME} <noreply@{PACK_DOMAIN_NAME}>")
 
-# https://docs.djangoproject.com/en/4.2/ref/settings/#server-email
+# https://docs.djangoproject.com/en/3.2/ref/settings/#server-email
 SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 
-# https://docs.djangoproject.com/en/4.2/ref/settings/#email-subject-prefix
+# https://docs.djangoproject.com/en/3.2/ref/settings/#email-subject-prefix
 EMAIL_SUBJECT_PREFIX = env("DJANGO_EMAIL_SUBJECT_PREFIX", default=f"[{PACK_SHORTNAME}] ")
 
-# https://django-environ.readthedocs.io/en/4.2/#nested-lists
+# https://django-environ.readthedocs.io/en/3.2/#nested-lists
 ADMINS = getaddresses([env("DJANGO_ADMINS", default="[]")])
 MANAGERS = ADMINS

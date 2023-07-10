@@ -1,4 +1,4 @@
-django[argon2]~=4.2
+django[argon2]~=3.2
 django-crispy-forms~=2.0
 crispy-bootstrap5~=0.7
 django-dynamic-formsets~=0.0.8
@@ -11,6 +11,6 @@ docutils>=0.20.1
 easy-thumbnails~=2.8.5
 factory_boy~=3.2.1
 pillow~=10.0.0
-psycopg-binary~=3.1.9
+psycopg2-binary~=2.9.6
 pymemcache~=4.0.0
 whitenoise[brotli]~=6.5.0

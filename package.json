@@ -12,5 +12,10 @@
     "extends": [
       "stylelint-config-standard"
     ]
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.4.0",
+    "bootstrap": "^5.3.0",
+    "jquery": "^3.7.0"
   }
 }

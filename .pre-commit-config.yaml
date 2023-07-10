@@ -1,8 +1,5 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
-default_language_version:
-    python: python3.9
-
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -17,7 +14,7 @@ repos:
     rev: 1.14.0
     hooks:
     -   id: django-upgrade
-        args: [--target-version, "4.2"]
+        args: [--target-version, "3.2"]
 -   repo: https://github.com/psf/black
     rev: 23.3.0
     hooks:

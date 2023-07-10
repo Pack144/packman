@@ -1,5 +1,5 @@
 # Development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/stable/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 import importlib.util
 
@@ -19,7 +19,7 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
 
 # Logging
-# https://docs.djangoproject.com/en/4.2/topics/logging/
+# https://docs.djangoproject.com/en/3.2/topics/logging/
 # ------------------------------------------------------------------------------
 
 LOGGING = {
@@ -45,7 +45,7 @@ LOGGING = {
 
 
 # Crispy Forms
-# https://django-crispy-forms.readthedocs.io/en/latest/crispy_tag_forms.html#make-crispy-forms-fail-loud
+# https://django-crispy-forms.readthedocs.io/en/stable/crispy_tag_forms.html#make-crispy-forms-fail-loud
 # ------------------------------------------------------------------------------
 
 CRISPY_FAIL_SILENTLY = not DEBUG
@@ -74,7 +74,7 @@ if importlib.util.find_spec("django_extensions") is not None:
 
 
 # Whitenoise
-# http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
+# http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
 # ------------------------------------------------------------------------------
 
 INSTALLED_APPS += ["whitenoise.runserver_nostatic"]
