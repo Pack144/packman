@@ -200,39 +200,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Easy Thumbnails
 # https://easy-thumbnails.readthedocs.io/en/3.2/usage/#thumbnail-aliases
 # -----------------------------------------------------------------------------
-# THUMBNAIL_ALIASES = {
-#     "": {
-#         "80x80": {
-#             "size": (80, 80),
-#             "crop": "smart",
-#         },
-#         "160x160": {
-#             "size": (160, 160),
-#             "crop": "smart",
-#         },
-#         "320x320": {
-#             "size": (320, 320),
-#             "crop": "smart",
-#         },
-#         "640x640": {
-#             "size": (640, 640),
-#             "crop": "smart",
-#         },
-#     },
-#     "membership": {
-#         "thumbnail": {
-#             "size": (80, 80),
-#             "crop": "smart",
-#             "quality": 90,
-#         },
-#         "card": {
-#             "size": (320, 320),
-#             "crop": "smart",
-#             "quality": 90,
-#         },
-#     },
-# }
-#
+
 THUMBNAIL_DEFAULT_OPTIONS = {"crop": "smart"}
 THUMBNAIL_SUBDIR = "thumbs"
 
@@ -316,12 +284,9 @@ AUTHENTICATION_BACKENDS = [
 
 
 # django-tinymce
-# https://django-tinymce.readthedocs.io/en/3.2/installation.html#configuration
+# https://django-tinymce.readthedocs.io/en/stable/installation.html#configuration
 # -----------------------------------------------------------------------------
 
-TINYMCE_INCLUDE_JQUERY = False
-TINYMCE_JS_URL = "https://cdn.jsdelivr.net/npm/tinymce@5/tinymce.min.js"
-TINYMCE_COMPRESSOR = False
 TINYMCE_DEFAULT_CONFIG = {
     "convert_urls": False,
     "default_link_target": "_blank",
@@ -335,14 +300,6 @@ TINYMCE_DEFAULT_CONFIG = {
     "statusbar": False,
     "toolbar": "formatselect | bold italic underline strikethrough | alignleft aligncenter alignright | bullist numlist outdent indent | image media table | link unlink | removeformat",
 }
-
-
-# django-tempus-dominus
-# https://tempusdominus.github.io/bootstrap-4/
-# https://github.com/FlipperPA/django-tempus-dominus
-# -----------------------------------------------------------------------------
-
-TEMPUS_DOMINUS_INCLUDE_ASSETS = False  # We'll use Yarn for this
 
 
 # When does the site start a new year of scouting? Typically, this would be when

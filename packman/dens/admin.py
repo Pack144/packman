@@ -63,9 +63,9 @@ class DenAdmin(admin.ModelAdmin):
     search_fields = (
         "number",
         "rank__rank",
-        "scouts__first_name",
-        "scouts__nickname",
-        "scouts__last_name",
+        "scout__first_name",
+        "scout__nickname",
+        "scout__last_name",
     )
 
     def get_queryset(self, request):

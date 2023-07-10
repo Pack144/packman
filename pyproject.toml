@@ -1,6 +1,6 @@
 [project]
 name = "packman"
-version = "2023.07.07"
+version = "2023.07.10"
 description = "A Cub Scouts Pack management platform built on Python and Django."
 authors = [
     "John Lawrence <john@cjvn.net>"
