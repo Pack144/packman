@@ -126,10 +126,8 @@
     });
   </script>
   <!-- jQuery based formsets -->
-  <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"
-          integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE="
-          crossorigin="anonymous"></script>
-  <script src="{% static "dynamic_formsets/jquery.formset.js" %}"></script>
+  <script src="{% static 'js/jquery.slim.min.js' %}"></script>
+  <script src="{% static 'dynamic_formsets/jquery.formset.js' %}"></script>
   <script>
     $('#{{ address_formset.prefix }}').formset({
       prefix: '{{ address_formset.prefix }}',
