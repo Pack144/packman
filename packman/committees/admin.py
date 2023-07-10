@@ -26,7 +26,6 @@ class CommitteeAdmin(admin.ModelAdmin):
     search_fields = (
         "name",
         "description",
-        "membership__den__number",
         "members__first_name",
         "members__nickname",
         "members__last_name",

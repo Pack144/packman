@@ -20,5 +20,7 @@ class PageAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     search_fields = [
         "title",
-        "published_on",
+        "slug",
+        "content_blocks__heading",
+        "content_blocks__body",
     ]
