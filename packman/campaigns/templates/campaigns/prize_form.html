@@ -26,7 +26,7 @@
           The campaign is now over. You worked hard and now it is time to collect your reward!
         </p>
         <p>
-          {% blocktranslate with contribution=total|intcomma|default:"0" counter=cub_list.count %}
+          {% blocktranslate with contribution=total|intcomma|default:"0" count counter=cub_list|length %}
             You have brought in <em>${{ contribution }}</em> to help make the pack go!
           {% plural %}
             Together, you have brought in <em>${{ contribution }}</em> to help make the pack go!
