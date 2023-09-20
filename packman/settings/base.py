@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "packman.mail",
     "packman.membership",
     "packman.pages",
+    "packman.attendance",
 ]
 
 MIDDLEWARE = [
