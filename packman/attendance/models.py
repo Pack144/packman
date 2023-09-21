@@ -6,19 +6,19 @@ from packman.calendars.models import Event
 from packman.membership.models import Member
 from packman.committees.models import Committee
 
+
 class Attendance(TimeStampedUUIDModel):
     event = models.OneToOneField(
         Event,
         on_delete=models.CASCADE,
     )
-    member = models.ManyToManyField(Member)
+    members = models.ManyToManyField(Member)
     committee = models.ForeignKey(
         Committee,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
     )
-
 
     class Meta:
         # indexes = [models.Index(fields=["name"])]

@@ -151,7 +151,9 @@ class ScoutAdmin(admin.ModelAdmin):
         "get_grade",
         "age",
         "status",
+        "rank",
         "current_den",
+        "last_attended_event_date",
         "pack_comments",
         "date_added",
     )
@@ -405,6 +407,7 @@ class AdultAdmin(UserAdmin):
         "active",
         "is_staff",
         "is_superuser",
+        "last_attended_event_date",
         "last_login",
         "date_added",
     )
