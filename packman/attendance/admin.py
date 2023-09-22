@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
-from django.utils.html import format_html, format_html_join
-from django.utils.translation import gettext_lazy as _
+# from django.utils.html import format_html, format_html_join
+# from django.utils.translation import gettext_lazy as _
 
 from .models import Attendance
 from ..calendars.models import Event
@@ -20,7 +20,7 @@ class AttendanceAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # limit choices on add screen to events not yet selected
-        if db_field.name == "event" and str(request).find('/add/') > -1: 
+        if db_field.name == "event" and str(request).find("/add/") > -1:
             kwargs["queryset"] = Event.objects.filter(attendance__event=None)
         return super(AttendanceAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -35,7 +35,3 @@ class AttendanceAdmin(admin.ModelAdmin):
 
     def cubs(self, obj):
         return obj.members.filter(adult=None).count()
-
-
-    
-    

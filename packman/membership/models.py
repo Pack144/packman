@@ -155,7 +155,7 @@ class Member(TimeStampedUUIDModel):
         last_attended_event = Attendance.objects.filter(members=self).order_by("event__start").last()  # .event.start
         try:
             last_attended_event = last_attended_event.event.start
-        except:
+        except AttributeError:
             last_attended_event = None
         return last_attended_event
 
