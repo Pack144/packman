@@ -1,10 +1,10 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from packman.core.models import TimeStampedUUIDModel
 from packman.calendars.models import Event
-from packman.membership.models import Member
 from packman.committees.models import Committee
+from packman.core.models import TimeStampedUUIDModel
+from packman.membership.models import Member
 
 
 class Attendance(TimeStampedUUIDModel):

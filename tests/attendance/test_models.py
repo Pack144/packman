@@ -3,9 +3,9 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 
+from packman.attendance.models import Attendance
 from packman.calendars.models import Category, Event
 from packman.membership.models import Member
-from packman.attendance.models import Attendance
 
 
 class AttendanceTestCase(TestCase):
