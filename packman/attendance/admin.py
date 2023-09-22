@@ -1,10 +1,12 @@
 from django import forms
 from django.contrib import admin
+
+from ..calendars.models import Event
+from .models import Attendance
+
 # from django.utils.html import format_html, format_html_join
 # from django.utils.translation import gettext_lazy as _
 
-from .models import Attendance
-from ..calendars.models import Event
 
 
 class AttendanceAdminForm(forms.ModelForm):
