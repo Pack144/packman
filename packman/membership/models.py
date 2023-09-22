@@ -77,6 +77,8 @@ class Member(TimeStampedUUIDModel):
     )
     date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
 
+    bsa_member_id = models.PositiveIntegerField(_("BSA Member ID"), blank=True, null=True)
+
     # Administrative
     slug = models.SlugField(
         unique=True,
