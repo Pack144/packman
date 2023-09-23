@@ -2,6 +2,8 @@ from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
+import modelclone
+
 from .models import Category, Event, PackYear
 
 
@@ -15,13 +17,14 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Event)
-class EventAdmin(admin.ModelAdmin):
+class EventAdmin(modelclone.ClonableModelAdmin):
     actions = ["mark_cancelled", "mark_confirmed", "mark_tentative"]
     date_hierarchy = "start"
     list_display = ("name", "get_location", "start", "end", "category", "status")
     list_filter = ("category", "status", "start")
     search_fields = ("name", "start", "end", "location", "venue__name")
     readonly_fields = ("duration",)
+    save_as = False  # Unable to use this feature due to schema violations.
 
     @admin.action(
         description=_("Cancel selected events"),

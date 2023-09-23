@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "tinymce",
     "whitenoise",
+    "modelclone",
     # Local apps
     "packman.address_book",
     "packman.calendars",
