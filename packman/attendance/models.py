@@ -18,6 +18,7 @@ class Attendance(TimeStampedUUIDModel):
         on_delete=models.CASCADE,
         blank=True,
         null=True,
+        related_name="attendance",
     )
 
     class Meta:

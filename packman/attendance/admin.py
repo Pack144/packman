@@ -23,7 +23,7 @@ class AttendanceAdmin(admin.ModelAdmin):
         # limit choices on add screen to events not yet selected
         if db_field.name == "event" and str(request).find("/add/") > -1:
             kwargs["queryset"] = Event.objects.filter(attendance__event=None)
-        return super(AttendanceAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def start(self, obj):
         return (Event.objects.get(attendance=obj)).start
