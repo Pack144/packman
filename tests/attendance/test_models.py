@@ -9,7 +9,7 @@ from packman.membership.models import Member
 
 
 class AttendanceTestCase(TestCase):
-    def test_empty_create(self):
+    def test_create_event_and_attendance(self):
         event = Event.objects.create(
             name="Test Event1",
             start=datetime.datetime(
@@ -22,9 +22,9 @@ class AttendanceTestCase(TestCase):
             event=event,
         )
         self.assertEqual(str(event), "Test Event1")
-        self.assertEqual(str(attendance), "2020-09-01 18:00:00-04:56 Test Event1")
+        self.assertEqual(str(attendance), "2020-09-01 18:00:00+00:00 Test Event1")
 
-    def test_member_create(self):
+    def test_add_members_attendance(self):
         Member.objects.create(first_name="Test1", last_name="Member")
         Member.objects.create(first_name="Test2", last_name="Member")
         Member.objects.create(first_name="Test3", last_name="Member")
