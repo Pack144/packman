@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     -   id: check-added-large-files
     -   id: check-ast
@@ -11,12 +11,12 @@ repos:
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
 -   repo: https://github.com/adamchainz/django-upgrade
-    rev: 1.14.0
+    rev: 1.15.0
     hooks:
     -   id: django-upgrade
         args: [--target-version, "3.2"]
 -   repo: https://github.com/psf/black
-    rev: 23.7.0
+    rev: 23.9.1
     hooks:
     -   id: black
         exclude: migrations/
@@ -26,7 +26,7 @@ repos:
     -   id: isort
         exclude: migrations/
 -   repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
     -   id: flake8
         exclude: migrations/
