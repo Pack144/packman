@@ -18,6 +18,9 @@
             <li class="nav-item {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
               <a class="nav-link" href="{% url 'campaigns:order_list' %}">Fundraiser</a>
             </li>
+            <li class="nav-item {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
+              <a class="nav-link" href="{% url 'campaigns:order_leaderboard' %}">NCC Leaderboard</a>
+            </li>
           {% endif %}
           <li class="nav-item {% if 'calendars' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
             <a class="nav-link" href="{% url 'calendars:list' %}">{% translate 'Calendar' %}</a>

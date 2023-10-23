@@ -160,3 +160,31 @@ footer {
 .resizer { width: 2px; height: 100%; background-color: #dee2e6;
     cursor: col-resize;
 }
+
+table.sortable {
+    counter-reset: rowNumber;
+}
+
+table.sortable tr:not(:first-child) {
+    counter-increment: rowNumber;
+}
+
+table.sortable tr td:first-child::before {
+    content: counter(rowNumber);
+    min-width: 1em;
+    margin-right: 0.5em;
+}
+
+table.sortable th[aria-sort="descending"] span::after {
+    content: " ▼";
+    color: currentcolor;
+    font-size: 100%;
+    top: 0;
+}
+  
+table.sortable th[aria-sort="ascending"] span::after {
+    content: " ▲";
+    color: currentcolor;
+    font-size: 100%;
+    top: 0;
+}

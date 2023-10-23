@@ -1,6 +1,7 @@
 import decimal
 import json
 
+from datetime import date
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -70,7 +71,7 @@ class OrderListView(LoginRequiredMixin, ListView):
         return context
 
 
-class OrderReportView(PermissionRequiredMixin, TemplateView):
+class OrderReportView(LoginRequiredMixin, TemplateView):
     permission_required = "campaigns.generate_order_report"
     template_name = "campaigns/order_report.html"
 
@@ -95,6 +96,88 @@ class OrderReportView(PermissionRequiredMixin, TemplateView):
             .annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00)))
             .values("date", "count", "order_total"),
         }
+        return context
+    
+
+class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
+    template_name = "campaigns/order_leaderboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["campaigns"] = {
+            "available": Campaign.objects.all(),
+            "current": Campaign.objects.current(),
+            "viewing": (
+                Campaign.objects.get(year=PackYear.get_pack_year(int(self.kwargs["campaign"]))["end_date"].year)
+                if "campaign" in self.kwargs
+                else Campaign.objects.latest()
+            ),
+        }
+
+        orders = Order.objects.calculate_total().filter(campaign=context["campaigns"]["viewing"])
+        cubs = Membership.objects.prefetch_related("scout", "den").filter(
+            year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE
+        )
+        dens = Den.objects.filter(scouts__year_assigned=PackYear.objects.current()).distinct()
+
+        # get all order totals for each cub
+        all_cubs = []
+        for cub in cubs:
+            total = orders.filter(seller=cub.scout).totaled()["totaled"]
+            all_cubs.append({ 
+                "name": cub.scout.get_full_name(), 
+                "den": cub.den.number,
+                "orders": orders.filter(seller=cub.scout).count(),
+                "total": total,
+                })
+            
+        # remove hidden sellers from Den 6
+        all_cubs = [cub for cub in all_cubs if cub["den"] != 6]
+            
+        # sort cubs in descending order of orders and output the top 10
+        all_cubs.sort(key=lambda x: x["orders"], reverse=True)
+        context["top_orders"] = all_cubs[:10]
+
+        # sort cubs in descending order of total and output the top 10
+        all_cubs.sort(key=lambda x: x["total"], reverse=True)
+        context["top_sellers"] = all_cubs[:10]
+
+        # add all cubs with > 0 orders and not in Den 6m and sort in descending order of total
+        all_cubs.sort(key=lambda x: x["total"], reverse=True)
+
+        # in final week, show all sellers, else obfuscate $0 sellers
+        if ((Campaign.objects.current().ordering_closes - date.today()).days < 7):
+            context["all_sellers"] = all_cubs
+        else:
+            context["all_sellers"] = [cub for cub in all_cubs if cub["orders"] > 0]
+             
+        # hide leaderboard in final days, to keep the surprise of the winner
+        if ((Campaign.objects.current().ordering_closes - date.today()).days < 5):
+            context["hide_leaderboard"] = True
+            context["days_left"] = (Campaign.objects.current().ordering_closes - date.today()).days 
+
+        # total up orders for each den from all_cubs and sort from most to least
+        all_dens = []
+        for den in dens:
+            # skip Den 6 for hidden orders and special pack sponsors
+            if (den.number == 6):
+                continue
+
+            # find the top seller for this den
+            top_seller = max([cub for cub in all_cubs if cub["den"] == den.number], key=lambda x: x["total"])
+            
+            # get all den totals
+            total = sum([cub["total"] for cub in all_cubs if cub["den"] == den.number])
+            all_dens.append({
+                "name": den.number,
+                "orders": sum([cub["orders"] for cub in all_cubs if cub["den"] == den.number]),
+                "total": total,
+                "top_seller": top_seller["name"],
+                })
+        all_dens.sort(key=lambda x: x["total"], reverse=True)
+        
+        context["dens"] = all_dens
+
         return context
 
 

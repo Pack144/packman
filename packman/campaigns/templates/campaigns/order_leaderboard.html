@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% load humanize i18n static %}
+
+{% block title %}
+  {% translate 'Orders Report' %} | {{ block.super }}
+{% endblock %}
+
+{% block content %}
+
+  {% if hide_leaderboard %}
+  <div class="row">
+    <div class="card mb-5">
+      <div class="card-body" style="text-align: center; padding-top: 20px;">
+        <h2 class="card-header">{% translate 'Golden Peanut Leaderboard' %}</h2>
+        <h3>Only {{ days_left }} days to go!</h3>
+        <h3>Who will win the coveted Golden Peanut award?</h3>
+        <img src="{% static 'img/golden_peanut.jpeg' %}"
+                 alt="{% translate 'Golden Peanut' %}">
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="row">
+      <div class="card mb-5">
+        <div class="card-body">
+          <h2 class="card-header">{% translate 'Golden Peanut Leaderboard' %}</h2>
+          <table class="table table-hover sortable" id="sales_ordered_table">
+            <caption>{% translate 'Top Sellers by $' %}</caption>
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">{% translate 'Cub' %}</th>
+                <th scope="col">{% translate 'Den' %}</th>
+                <th scope="col" onclick="sortTable('sales_ordered_table', 0, 2)">{% translate 'Total Orders' %}<span aria-hidden="true"></span></th>
+                <th scope="col" onclick="sortTable('sales_ordered_table', 1, 3)" aria-sort="descending">{% translate 'Total Sales' %}<span aria-hidden="true"></span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cub in top_sellers %}
+                <tr>
+                  <th scope="row">{{ cub.name }}</th>
+                  <th scope="row">{{ cub.den }}</th>
+                  <td>{{ cub.orders }}</td>
+                  <td>${{ cub.total }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <h2 class="card-header">{% translate 'Top Seller Leaderboard' %}</h2>
+          <table class="table table-hover sortable" id="orders_ordered_table">
+            <caption>{% translate 'Top Sellers by Orders' %}</caption>
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">{% translate 'Cub' %}</th>
+                <th scope="col">{% translate 'Den' %}</th>
+                <th scope="col" onclick="sortTable('orders_ordered_table', 0, 2)" aria-sort="descending">{% translate 'Total Orders' %}<span aria-hidden="true"></span></th>
+                <th scope="col" onclick="sortTable('orders_ordered_table', 1, 3)">{% translate 'Total Sales' %}<span aria-hidden="true"></span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cub in top_orders %}
+                <tr>
+                  <th scope="row">{{ cub.name }}</th>
+                  <th scope="row">{{ cub.den }}</th>
+                  <td>{{ cub.orders }}</td>
+                  <td>${{ cub.total }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card mb-5">
+        <div class="card-body">
+          <h2 class="card-header">{% translate 'Den Leaderboard' %}</h2>
+          <table class="table table-hover sortable" id="den_ordered_table">
+            <caption>{% translate 'Den Leaderboard' %}</caption>
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">{% translate 'Den' %}</th>
+                <th scope="col">{% translate 'Top Seller ($)' %}</th>
+                <th scope="col" onclick="sortTable('den_ordered_table', 0, 2)">{% translate 'Total Orders' %}<span aria-hidden="true"></span></th>
+                <th scope="col" onclick="sortTable('den_ordered_table', 1, 3)" aria-sort="descending">{% translate 'Total Sales' %}<span aria-hidden="true"></span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for den in dens %}
+                <tr>
+                  <th scope="row">{{ den.name }}</th>
+                  <th scope="row">{{ den.top_seller }}</th>
+                  <td>{{ den.orders }}</td>
+                  <td>${{ den.total }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card mb-5">
+        <div class="card-body">
+          <h2 class="card-header">{% translate 'All Sellers' %}</h2>
+          <table class="table table-hover sortable" id="all_sellers_table">
+            <caption>{% translate 'All Sellers' %}</caption>
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">{% translate 'Cub' %}</th>
+                <th scope="col">{% translate 'Den' %}</th>
+                <th scope="col" onclick="sortTable('all_sellers_table', 0, 2)">{% translate 'Total Orders' %}<span aria-hidden="true"></span></th>
+                <th scope="col" onclick="sortTable('all_sellers_table', 1, 3)" aria-sort="descending">{% translate 'Total Sales' %}<span aria-hidden="true"></span></th>
+              </tr>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cub in all_sellers %}
+                <tr>
+                  <th scope="row">{{ cub.name }}</th>
+                  <th scope="row">{{ cub.den }}</th>
+                  <td>{{ cub.orders }}</td>
+                  <td>${{ cub.total }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+{% endblock content %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    function sortTable(tableName, n, chIndex) {
+      var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+      table = document.getElementById(tableName);
+
+      // remove all sort indicators in table columnHeaders
+      table.columnHeaders = table.getElementsByTagName("th");
+      for (i = 0; i < table.columnHeaders.length; i++) {
+        table.columnHeaders[i].setAttribute('aria-sort', 'none');
+      }
+      
+      switching = true;
+      // Set the sorting direction to ascending:
+      dir = "asc";
+      table.columnHeaders[chIndex].setAttribute('aria-sort', 'ascending');
+      /* Make a loop that will continue until
+      no switching has been done: */
+      while (switching) {
+        // Start by saying: no switching is done:
+        switching = false;
+        rows = table.rows;
+        /* Loop through all table rows (except the
+        first, which contains table headers): */
+        for (i = 1; i < (rows.length - 1); i++) {
+          // Start by saying there should be no switching:
+          shouldSwitch = false;
+          /* Get the two elements you want to compare,
+          one from current row and one from the next: */
+          x = rows[i].getElementsByTagName("td")[n];
+          y = rows[i + 1].getElementsByTagName("td")[n];
+          /* Check if the two rows should switch place,
+          based on the direction, asc or desc: */
+          if (dir == "asc") {
+            if (Number.parseFloat(x.innerHTML.replace('$', '')) > Number.parseFloat(y.innerHTML.replace('$', ''))) {
+              // If so, mark as a switch and break the loop:
+              shouldSwitch = true;
+              break;
+            }
+          } else if (dir == "desc") {
+            if (Number.parseFloat(x.innerHTML.replace('$', '')) < Number.parseFloat(y.innerHTML.replace('$', ''))) {
+              // If so, mark as a switch and break the loop:
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          /* If a switch has been marked, make the switch
+          and mark that a switch has been done: */
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          // Each time a switch is done, increase this count by 1:
+          switchcount ++;
+        } else {
+          /* If no switching has been done AND the direction is "asc",
+          set the direction to "desc" and run the while loop again. */
+          if (switchcount == 0 && dir == "asc") {
+            dir = "desc";
+            table.columnHeaders[chIndex].setAttribute('aria-sort', 'descending');
+            switching = true;
+          }
+        }
+      }
+    }
+
+    </script>
+
+{% endblock js %}
