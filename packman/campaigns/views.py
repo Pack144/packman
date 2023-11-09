@@ -130,10 +130,10 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
                 "orders": orders.filter(seller=cub.scout).count(),
                 "total": total,
                 })
-            
+
         # remove hidden sellers from Den 6
         all_cubs = [cub for cub in all_cubs if cub["den"] != 6]
-            
+
         # sort cubs in descending order of orders and output the top 10
         all_cubs.sort(key=lambda x: x["orders"], reverse=True)
         context["top_orders"] = all_cubs[:10]
@@ -150,7 +150,7 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
             context["all_sellers"] = all_cubs
         else:
             context["all_sellers"] = [cub for cub in all_cubs if cub["orders"] > 0]
-             
+
         # hide leaderboard in final days, to keep the surprise of the winner
         if ((Campaign.objects.current().ordering_closes - date.today()).days < 5):
             context["hide_leaderboard"] = True
@@ -164,18 +164,27 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
                 continue
 
             # find the top seller for this den
-            top_seller = max([cub for cub in all_cubs if cub["den"] == den.number], key=lambda x: x["total"])
-            
+            top_seller = max(
+                (cub for cub in all_cubs if cub["den"] == den.number),
+                key=lambda x: x["total"],
+            )
+
             # get all den totals
-            total = sum([cub["total"] for cub in all_cubs if cub["den"] == den.number])
-            all_dens.append({
-                "name": den.number,
-                "orders": sum([cub["orders"] for cub in all_cubs if cub["den"] == den.number]),
-                "total": total,
-                "top_seller": top_seller["name"],
-                })
+            total = sum(cub["total"] for cub in all_cubs if cub["den"] == den.number)
+            all_dens.append(
+                {
+                    "name": den.number,
+                    "orders": sum(
+                        cub["orders"]
+                        for cub in all_cubs
+                        if cub["den"] == den.number
+                    ),
+                    "total": total,
+                    "top_seller": top_seller["name"],
+                }
+            )
         all_dens.sort(key=lambda x: x["total"], reverse=True)
-        
+
         context["dens"] = all_dens
 
         return context
