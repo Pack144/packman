@@ -451,12 +451,17 @@ class OrderSlipView(PermissionRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         campaign = Campaign.objects.latest()
-        context["order_list"] = (
+        order_list = (
             Order.objects.filter(campaign=campaign, item__isnull=False)
             .distinct()
             .calculate_total()
             .select_related("seller", "customer")
             .prefetch_related("items", "items__product")
-            .order_by("seller")
+            .order_by("seller__current_den")
         )
+
+        # sort the order list by seller current_den
+        context["order_list"] = list(order_list.all())
+        context["order_list"].sort(key=lambda x: x.seller.current_den.number)
+
         return context
