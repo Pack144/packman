@@ -181,7 +181,7 @@ table.sortable th[aria-sort="descending"] span::after {
     font-size: 100%;
     top: 0;
 }
-  
+
 table.sortable th[aria-sort="ascending"] span::after {
     content: " ▲";
     color: currentcolor;
