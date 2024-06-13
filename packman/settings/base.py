@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "tinymce",
     "whitenoise",
+    "modelclone",
     # Local apps
     "packman.address_book",
     "packman.calendars",
@@ -60,6 +61,7 @@ INSTALLED_APPS = [
     "packman.mail",
     "packman.membership",
     "packman.pages",
+    "packman.attendance",
 ]
 
 MIDDLEWARE = [

@@ -151,7 +151,9 @@ class ScoutAdmin(admin.ModelAdmin):
         "get_grade",
         "age",
         "status",
+        "rank",
         "current_den",
+        "last_attended_event_date",
         "pack_comments",
         "date_added",
     )
@@ -175,6 +177,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "family__adults__first_name",
         "family__adults__nickname",
         "family__adults__last_name",
+        "bsa_member_id",
     )
     formfield_overrides = {
         ThumbnailerImageField: {"widget": ImageClearableFileInput},
@@ -185,7 +188,7 @@ class ScoutAdmin(admin.ModelAdmin):
             None,
             {
                 "fields": (
-                    ("first_name", "middle_name", "last_name", "suffix"),
+                    ("first_name", "middle_name", "last_name", "suffix", "bsa_member_id"),
                     ("nickname", "gender"),
                     "photo",
                     "status",
@@ -405,6 +408,7 @@ class AdultAdmin(UserAdmin):
         "active",
         "is_staff",
         "is_superuser",
+        "last_attended_event_date",
         "last_login",
         "date_added",
     )
@@ -438,7 +442,7 @@ class AdultAdmin(UserAdmin):
             None,
             {
                 "fields": (
-                    ("first_name", "middle_name", "last_name", "suffix"),
+                    ("first_name", "middle_name", "last_name", "suffix", "bsa_member_id"),
                     ("nickname", "gender"),
                     "photo",
                     "role",
