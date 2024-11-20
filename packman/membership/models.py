@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
@@ -76,6 +77,8 @@ class Member(TimeStampedUUIDModel):
     )
     date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
 
+    bsa_member_id = models.CharField(_("BSA Member ID"), max_length=30, blank=True)
+
     # Administrative
     slug = models.SlugField(
         unique=True,
@@ -149,6 +152,15 @@ class Member(TimeStampedUUIDModel):
         """Return either the first_name or nickname for the member."""
         return self.nickname or self.first_name
 
+    def get_last_attendance(self):
+        Attendance = apps.get_model("attendance", "Attendance")
+        last_attended_event = Attendance.objects.filter(members=self).order_by("event__start").last()  # .event.start
+        try:
+            last_attended_event = last_attended_event.event.start
+        except AttributeError:
+            last_attended_event = None
+        return last_attended_event
+
     def choose_slug(self, candidates):
         for candidate in candidates:
             if not Member.objects.filter(slug=slugify(candidate)):
@@ -176,6 +188,10 @@ class Member(TimeStampedUUIDModel):
     @cached_property
     def short_name(self):
         return self.get_short_name()
+
+    @cached_property
+    def last_attended_event_date(self):
+        return self.get_last_attendance()
 
 
 class Family(TimeStampedUUIDModel):
