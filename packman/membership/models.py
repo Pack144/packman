@@ -356,6 +356,7 @@ class Scout(Member):
     ACTIVE = 4
     INACTIVE = 5
     GRADUATED = 6
+    WAITLIST = 7
     STATUS_CHOICES = (
         (WITHDRAWN, _("Application Withdrawn")),
         (APPLIED, _("Applied")),
@@ -364,6 +365,7 @@ class Scout(Member):
         (ACTIVE, _("Active")),
         (INACTIVE, _("Inactive")),
         (GRADUATED, _("Graduated")),
+        (WAITLIST, _("Waitlist")),
     )
 
     school = models.ForeignKey(
