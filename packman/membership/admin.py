@@ -539,13 +539,28 @@ class AdultAdmin(UserAdmin):
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
 
+        # Add phone number columns
+        phone_fields = ["phone_home", "phone_mobile", "phone_work", "phone_other"]
+        field_names.extend(phone_fields)
+
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={meta}.csv"
         writer = csv.writer(response)
 
         writer.writerow(field_names)
         for obj in queryset:
-            writer.writerow([getattr(obj, field) for field in field_names])
+            # Get basic fields
+            row = [getattr(obj, field.name) for field in meta.fields]
+
+            # Get the phone numbers and add to row
+            phone_numbers = obj.phone_numbers.all()
+            phone_data = {"H": "", "M": "", "W": "", "O": ""}
+            for phone in phone_numbers:
+                if phone.type in phone_data:
+                    phone_data[phone.type] = str(phone.number)
+            row.extend([phone_data["H"], phone_data["M"], phone_data["W"], phone_data["O"]])
+
+            writer.writerow(row)
 
         return response
 
