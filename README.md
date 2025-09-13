@@ -36,6 +36,19 @@ importantly understandable.  That means that even members who do not live web de
 day to day should be able to pick it up and continue to maintain the site.
 
 ## How do I get started?
+To help manage the proper Python versions and dependencies, we recommend using [pyenv](https://github.com/pyenv/pyenv) to manage your Python versions.  You can install pyenv using your favorite package manager or by following the instructions in the link above.
+
+Once you have pyenv installed, install the required Python version:
+```bash
+pyenv install
+```
+
+Then set the local Python version for this project:
+
+```bash
+pyenv local
+```
+
 As with any Python and Django project, it is highly recommended that you install
 Packman in its own virtual environment. You can choose which virtual environment
 you want to use. Both pip and pipenv files are provided for installing project
@@ -56,28 +69,53 @@ pipenv install
 
 Once you have the project downloaded and a virtual environment running you can set
 up Packman for your own needs. Many of the project settings are available in
-`config/settings.py`. Adjust them there or, to have your own settings that are
+`config/settings/*.py`. Adjust them there or, to have your own settings that are
 not overridden by source updates, create a separate `.env`
 file and put your custom settings there. Anything made in this file will overwrite
 the project settings file. Use this to configure your own database, secret key,
 email, etc.
 
-After you've updated the settings for your own environment, it's time to populate
-the database and run Django.
+### Optional Environment Setup
+Copy the example environment file to a new file named `.env` in the root of the
+project directory.
+```bash
+cp .env.example .env
 ```
+
+And you can modify the settings in `.env` to suit your own environment. 
+
+After you've updated the settings for your own environment, it's time to enter the virtual environment and set up the database.
+
+#### Enter the virtual environment
+```bash
 pipenv shell
+```
 
+#### Set up the database
+```bash
 python manage.py migrate
+```
 
+#### Create a superuser
+```bash
+# Create a superuser so you can log into the admin interface
+python manage.py createsuperuser
+```
+
+#### Run the development server
+```bash
 python manage.py runserver
 ```
 
+You should now be able to access the development server at http://localhost:8000
+
+If you want to exit the virtual environment, just type `exit` at the command prompt.
 
 
 ## Requirements
 Review the included requirements.txt for detailed package requirements.  Our
 application is using:
 
-* [Python 3.6](https://python.org)
-* [Django 3.2](https://djangoproject.com)
-* [Yarn](https://yarnpkg.com/)
+* [Python 3.10](https://python.org)
+* [Django 5.2.6](https://djangoproject.com)
+* [Npm](https://www.npmjs.com/)
