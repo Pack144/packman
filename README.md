@@ -82,7 +82,7 @@ project directory.
 cp .env.example .env
 ```
 
-And you can modify the settings in `.env` to suit your own environment. 
+And you can modify the settings in `.env` to suit your own environment.
 
 After you've updated the settings for your own environment, it's time to enter the virtual environment and set up the database.
 
