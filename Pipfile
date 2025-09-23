@@ -39,7 +39,7 @@ djlint = ">=1.31.1"
 isort = ">=5.12.0"
 flake8 = ">=6.0.0"
 pre-commit = ">=3.3.3"
-bandit = {extras = ["toml"], version = ">=1.7.5"}
+bandit = {extras = ["toml"], version = ">=1.8.6"}
 
 [requires]
 python_version = "3.10"

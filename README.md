@@ -40,7 +40,7 @@ To help manage the proper Python versions and dependencies, we recommend using [
 
 Once you have pyenv installed, install the required Python version:
 ```bash
-pyenv install
+pyenv install 3.13
 ```
 
 Then set the local Python version for this project:
@@ -119,3 +119,21 @@ application is using:
 * [Python 3.10](https://python.org)
 * [Django 5.2.6](https://djangoproject.com)
 * [Npm](https://www.npmjs.com/)
+
+
+## How to run tests
+
+To run the tests, first ensure that you are in the virtual environment.  Then run:
+```bash
+python manage.py test
+```
+
+
+## How to run pre-commit hooks
+
+To run the pre-commit hooks, first ensure that you are in the virtual environment.
+Then run:
+```bash
+pre-commit install
+pre-commit run --all-files
+```
