@@ -18,6 +18,7 @@ django-phonenumber-field = "==8.1.0"
 django-recurrence = "==1.11.1"
 django-tinymce = "==4.1.0"
 easy-thumbnails = "==2.10.1"
+factory-boy = ">=3.2.1"
 icalendar = "==6.3.1"
 phonenumbers = "==9.0.13"
 pillow = "==11.3.0"
@@ -26,6 +27,7 @@ python-stdnum = "==2.1"
 six = "==1.17.0"
 sqlparse = "==0.5.3"
 tzdata = "==2025.2"
+unittest-parametrize = "==1.8.0"
 whitenoise = "==6.9.0"
 
 [dev-packages]
@@ -36,7 +38,6 @@ django-extensions = ">=3.2"
 djlint = ">=1.31.1"
 isort = ">=5.12.0"
 flake8 = ">=6.0.0"
-factory-boy = ">=3.2.1"
 pre-commit = ">=3.3.3"
 bandit = {extras = ["toml"], version = ">=1.7.5"}
 
