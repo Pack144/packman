@@ -22,7 +22,7 @@ ${{ item.get_total_item_price }}
 {% if order.donation %}{% translate 'Donation' %}: ${{ order.donation }}{% endif %}
 
 Thank you for supporting my Pack!
-{{ order.seller }}
+{{ order.seller.first_name }}
 
 _______________________________________________________________________________
 

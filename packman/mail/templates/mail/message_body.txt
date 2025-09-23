@@ -2,7 +2,6 @@
 
 {{ message.get_plaintext_body|safe|cut:"&nbsp;"|wordwrap:80 }}
 
-
 -------------------------------------------------------------------------------
 This email was sent to {{ recipient }} <{{ recipient.email }}>.
 We sent it to you because you have a Cub who is an active member in
