@@ -211,10 +211,23 @@ class OrderAdmin(admin.ModelAdmin):
 
     @admin.display(description=_("Generate Campaign Report"))
     def generate_campaign_report(self, request, queryset):
-        campaign = Campaign.objects.current()
+        # campaign = Campaign.objects.current()
+        # Determine campaign from the selected orders
+        campaign_ids = set(queryset.values_list('campaign', flat=True))
+        if len(campaign_ids) != 1:
+            self.message_user(
+                request,
+                _(f"Please select orders from a single campaign (found {len(campaign_ids)} campaigns: {campaign_ids})"),
+                messages.ERROR,
+            )
+            return
+        campaign = Campaign.objects.get(pk=list(campaign_ids)[0])
+
         report_date = timezone.now()
-        orders = Order.objects.filter(campaign=campaign)
-        report_name = f"Campaign Report ({report_date.month}-{report_date.day}-{report_date.year}).csv"
+        #orders = Order.objects.filter(campaign=campaign)
+        #report_name = f"Campaign Report ({report_date.month}-{report_date.day}-{report_date.year}).csv"
+        orders = queryset  # Use the selected orders instead of filtering again
+        report_name = f"Campaign Report - {campaign.year} ({report_date.month}-{report_date.day}-{report_date.year}).csv"
 
         field_names = [
             "Cub",
@@ -240,7 +253,11 @@ class OrderAdmin(admin.ModelAdmin):
         for cub in cubs:
             cub_orders = orders.filter(seller__den_memberships=cub)
             total = cub_orders.totaled()["totaled"]
-            quota = cub.den.quotas.current().target
+            #quota = cub.den.quotas.current().target
+            try:
+                quota = cub.den.quotas.filter(campaign=campaign).first().target
+            except (Quota.DoesNotExist, AttributeError):
+                quota = 0  # Default to 0 if no quota is set for this den
 
             # calculate points earned
             if total < quota:

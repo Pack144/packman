@@ -5,6 +5,7 @@ from .views import (
     OrderCreateView,
     OrderDeleteView,
     OrderDetailView,
+    OrderLeaderboardView,
     OrderListView,
     OrderReportView,
     OrderSlipView,
@@ -31,6 +32,7 @@ urlpatterns = [
     path("<uuid:pk>/edit/", OrderUpdateView.as_view(), name="order_update"),
     path("<uuid:pk>/delete/", OrderDeleteView.as_view(), name="order_delete"),
     path("reports/", OrderReportView.as_view(), name="order_report"),
+    path("leaderboard/", OrderLeaderboardView.as_view(), name="order_leaderboard"),
     path("reports/order_slips/", OrderSlipView.as_view(), name="order_slips"),
     path("reports/place_markers/", PlaceMarkerTemplateView.as_view(), name="place_markers"),
     path("reports/prize_selections/", PrizeSelectionReportView.as_view(), name="prize_selection_report"),
@@ -39,3 +41,4 @@ urlpatterns = [
     path("reports/weekly/", generate_weekly_report, name="weekly_report"),
     re_path(r"^reports/(?P<campaign>[0-9]{4})/", OrderReportView.as_view(), name="order_report_by_campaign"),
 ]
+

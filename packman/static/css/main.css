@@ -160,3 +160,17 @@ footer {
 .resizer { width: 2px; height: 100%; background-color: #dee2e6;
     cursor: col-resize;
 }
+
+table.sortable th[aria-sort="descending"] span::after {
+    content: " ▼";
+    color: currentcolor;
+    font-size: 100%;
+    top: 0;
+}
+  
+table.sortable th[aria-sort="ascending"] span::after {
+    content: " ▲";
+    color: currentcolor;
+    font-size: 100%;
+    top: 0;
+}

@@ -200,7 +200,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Easy Thumbnails
 # https://easy-thumbnails.readthedocs.io/en/3.2/usage/#thumbnail-aliases
 # -----------------------------------------------------------------------------
-
+THUMBNAIL_ALIASES = {
+    "": {
+        "320x320": {
+            "size": (320, 320),
+            "crop": "smart",
+        },
+    },
+}
 THUMBNAIL_DEFAULT_OPTIONS = {"crop": "smart"}
 THUMBNAIL_SUBDIR = "thumbs"
 

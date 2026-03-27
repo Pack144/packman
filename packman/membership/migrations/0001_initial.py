@@ -270,6 +270,7 @@ class Migration(migrations.Migration):
                             (4, "Active"),
                             (5, "Inactive"),
                             (6, "Graduated"),
+                            (7, "Waitlist"),
                         ],
                         default=1,
                         help_text="What is the Cub's current status? A new cub who has not been reviewed will start as 'Applied'. Membership can choose then to approve or decline the application, or make them active. Once a Cub is no longer active in the pack, either through graduation or attrition, note that change' here. Any adult member connected to this Cub will get access only once the Cub's status is 'Active' or 'Approved'.",
