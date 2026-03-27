@@ -212,18 +212,20 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.display(description=_("Generate Campaign Report"))
     def generate_campaign_report(self, request, queryset):
         # Determine campaign from the selected orders
-        campaign_ids = set(queryset.values_list('campaign', flat=True))
+        campaign_ids = set(queryset.values_list("campaign", flat=True))
         if len(campaign_ids) != 1:
             self.message_user(
                 request,
-                _(f"Please select orders from a single campaign (found {len(campaign_ids)} campaigns: {campaign_ids})"),
+                _(f"Please select orders from a single campaign (found {len(campaign_ids)} campaigns: {campaign_ids})"),  # nosec B608
                 messages.ERROR,
             )
             return
         campaign = Campaign.objects.get(pk=list(campaign_ids)[0])
 
         report_date = timezone.now()
-        report_name = f"Campaign Report - {campaign.year} ({report_date.month}-{report_date.day}-{report_date.year}).csv"
+        report_name = (
+            f"Campaign Report - {campaign.year} ({report_date.month}-{report_date.day}-{report_date.year}).csv"
+        )
 
         field_names = [
             "Cub",
