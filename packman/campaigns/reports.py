@@ -4,6 +4,7 @@ import decimal
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import dateparse, timezone
 
+from packman.calendars.models import PackYear
 from packman.campaigns.models import Campaign, Order, PrizePoint, PrizeSelection
 from packman.dens.models import Membership
 
@@ -115,9 +116,7 @@ def generate_weekly_report(request):
     field_names = ["Cub", "Den", "Order Count", "Total Sales"]
 
     orders = Order.objects.filter(date_added__gte=begin_date, date_added__lte=end_date)
-    members = (
-        Membership.objects.prefetch_related("scout", "den").filter(scout__orders__in=orders).distinct().order_by("den")
-    )
+    members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f"attachment; filename={report_name}"
@@ -126,6 +125,6 @@ def generate_weekly_report(request):
 
     for cub in members:
         cub_orders = orders.filter(seller__den_memberships=cub)
-        writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
+        writer.writerow([cub.scout, cub.scout.get_current_den(), cub_orders.count(), cub_orders.totaled()["totaled"]])
 
     return response
