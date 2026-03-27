@@ -115,7 +115,6 @@ def generate_weekly_report(request):
     report_name = f"Campaign Weekly Report ({begin_date.month}-{begin_date.day}-{begin_date.year} to {end_date.month}-{end_date.day}-{end_date.year}).csv"  # noqa: E501
     field_names = ["Cub", "Den", "Order Count", "Total Sales"]
 
-
     orders = Order.objects.filter(date_added__gte=begin_date, date_added__lte=end_date)
     members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
 
