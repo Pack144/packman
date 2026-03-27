@@ -216,7 +216,10 @@ class OrderAdmin(admin.ModelAdmin):
         if len(campaign_ids) != 1:
             self.message_user(
                 request,
-                _(f"Please select orders from a single campaign (found {len(campaign_ids)} campaigns: {campaign_ids})"),  # nosec B608
+                _(
+                    "Please select orders from a single campaign"  # nosec B608
+                    f" (found {len(campaign_ids)} campaigns: {campaign_ids})"
+                ),
                 messages.ERROR,
             )
             return
@@ -251,10 +254,8 @@ class OrderAdmin(admin.ModelAdmin):
         for cub in cubs:
             cub_orders = queryset.filter(seller__den_memberships=cub)
             total = cub_orders.totaled()["totaled"]
-            try:
-                quota = cub.den.quotas.filter(campaign=campaign).first().target
-            except (Quota.DoesNotExist, AttributeError):
-                quota = 0  # Default to 0 if no quota is set for this den
+            quota_obj = cub.den.quotas.filter(campaign=campaign).first()
+            quota = quota_obj.target if quota_obj is not None else 0
 
             # calculate points earned
             if total < quota:
