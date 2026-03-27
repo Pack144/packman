@@ -466,6 +466,6 @@ class OrderSlipView(PermissionRequiredMixin, TemplateView):
 
         # sort the order list by seller current_den
         context["order_list"] = list(order_list.all())
-        context["order_list"].sort(key=lambda x: x.seller.current_den.number)
+        context["order_list"].sort(key=lambda x: x.seller.current_den.number if x.seller.current_den else 666)
 
         return context
