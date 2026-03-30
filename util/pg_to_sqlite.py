@@ -658,7 +658,7 @@ def main():
     else:
         sqlite_path = dump_path.parent / f"{stem}.sqlite3"
 
-    header(f"PostgreSQL dump → SQLite")
+    header("PostgreSQL dump → SQLite")
     info(f"Input  : {dump_path}  ({dump_path.stat().st_size / 1024 / 1024:.1f} MB)")
     info(f"Output : {sqlite_path}")
 
