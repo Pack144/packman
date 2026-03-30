@@ -725,7 +725,7 @@ def main():
     header("Done")
     success(f"SQLite database saved to: {sqlite_path}")
     info(f"To use with Django, set DATABASE_URL=sqlite:///{sqlite_path}")
-    info(f"Or copy to db.sqlite3 in the project root.")
+    info("Or copy to db.sqlite3 in the project root.")
 
 
 if __name__ == "__main__":
