@@ -39,92 +39,242 @@ ROOT = Path(__file__).parent.parent
 # ── SQLite reserved words that are legal PostgreSQL column names ──────────────
 # These must be double-quoted when used as identifiers in SQLite.
 SQLITE_RESERVED = {
-    'abort', 'action', 'add', 'after', 'all', 'alter', 'always', 'analyze',
-    'and', 'as', 'asc', 'attach', 'autoincrement', 'before', 'begin',
-    'between', 'by', 'cascade', 'case', 'cast', 'check', 'collate', 'column',
-    'commit', 'conflict', 'constraint', 'create', 'cross', 'current',
-    'current_date', 'current_time', 'current_timestamp', 'database', 'default',
-    'deferrable', 'deferred', 'delete', 'detach', 'distinct', 'do', 'drop',
-    'each', 'else', 'end', 'escape', 'except', 'exclude', 'exclusive',
-    'exists', 'explain', 'fail', 'filter', 'first', 'following', 'for',
-    'foreign', 'from', 'full', 'generated', 'glob', 'group', 'groups',
-    'having', 'if', 'ignore', 'immediate', 'in', 'index', 'indexed',
-    'initially', 'inner', 'insert', 'instead', 'intersect', 'into', 'is',
-    'isnull', 'join', 'key', 'last', 'left', 'like', 'limit', 'match',
-    'materialized', 'natural', 'no', 'not', 'nothing', 'notnull', 'null',
-    'nulls', 'of', 'offset', 'on', 'or', 'order', 'others', 'outer', 'over',
-    'partition', 'plan', 'pragma', 'preceding', 'primary', 'query', 'raise',
-    'range', 'recursive', 'references', 'regexp', 'reindex', 'release',
-    'rename', 'replace', 'restrict', 'returning', 'right', 'rollback', 'row',
-    'rows', 'savepoint', 'select', 'set', 'table', 'temp', 'temporary',
-    'then', 'ties', 'to', 'transaction', 'trigger', 'unbounded', 'union',
-    'unique', 'update', 'using', 'vacuum', 'values', 'view', 'virtual',
-    'when', 'where', 'window', 'with', 'without',
+    "abort",
+    "action",
+    "add",
+    "after",
+    "all",
+    "alter",
+    "always",
+    "analyze",
+    "and",
+    "as",
+    "asc",
+    "attach",
+    "autoincrement",
+    "before",
+    "begin",
+    "between",
+    "by",
+    "cascade",
+    "case",
+    "cast",
+    "check",
+    "collate",
+    "column",
+    "commit",
+    "conflict",
+    "constraint",
+    "create",
+    "cross",
+    "current",
+    "current_date",
+    "current_time",
+    "current_timestamp",
+    "database",
+    "default",
+    "deferrable",
+    "deferred",
+    "delete",
+    "detach",
+    "distinct",
+    "do",
+    "drop",
+    "each",
+    "else",
+    "end",
+    "escape",
+    "except",
+    "exclude",
+    "exclusive",
+    "exists",
+    "explain",
+    "fail",
+    "filter",
+    "first",
+    "following",
+    "for",
+    "foreign",
+    "from",
+    "full",
+    "generated",
+    "glob",
+    "group",
+    "groups",
+    "having",
+    "if",
+    "ignore",
+    "immediate",
+    "in",
+    "index",
+    "indexed",
+    "initially",
+    "inner",
+    "insert",
+    "instead",
+    "intersect",
+    "into",
+    "is",
+    "isnull",
+    "join",
+    "key",
+    "last",
+    "left",
+    "like",
+    "limit",
+    "match",
+    "materialized",
+    "natural",
+    "no",
+    "not",
+    "nothing",
+    "notnull",
+    "null",
+    "nulls",
+    "of",
+    "offset",
+    "on",
+    "or",
+    "order",
+    "others",
+    "outer",
+    "over",
+    "partition",
+    "plan",
+    "pragma",
+    "preceding",
+    "primary",
+    "query",
+    "raise",
+    "range",
+    "recursive",
+    "references",
+    "regexp",
+    "reindex",
+    "release",
+    "rename",
+    "replace",
+    "restrict",
+    "returning",
+    "right",
+    "rollback",
+    "row",
+    "rows",
+    "savepoint",
+    "select",
+    "set",
+    "table",
+    "temp",
+    "temporary",
+    "then",
+    "ties",
+    "to",
+    "transaction",
+    "trigger",
+    "unbounded",
+    "union",
+    "unique",
+    "update",
+    "using",
+    "vacuum",
+    "values",
+    "view",
+    "virtual",
+    "when",
+    "where",
+    "window",
+    "with",
+    "without",
     # Common column names that collide
-    'position', 'name', 'type', 'status', 'level', 'role', 'year',
+    "position",
+    "name",
+    "type",
+    "status",
+    "level",
+    "role",
+    "year",
 }
 
 # ── Colour helpers ────────────────────────────────────────────────────────────
-GREEN  = "\033[32m"
+GREEN = "\033[32m"
 YELLOW = "\033[33m"
-RED    = "\033[31m"
-CYAN   = "\033[36m"
-RESET  = "\033[0m"
-BOLD   = "\033[1m"
+RED = "\033[31m"
+CYAN = "\033[36m"
+RESET = "\033[0m"
+BOLD = "\033[1m"
 
-def info(msg):    print(f"  {msg}")
-def success(msg): print(f"{GREEN}✅ {msg}{RESET}")
-def warn(msg):    print(f"{YELLOW}⚠️  {msg}{RESET}")
-def error(msg):   print(f"{RED}❌ {msg}{RESET}", file=sys.stderr); sys.exit(1)
-def header(msg):  print(f"\n{BOLD}{CYAN}{'─'*56}\n  {msg}\n{'─'*56}{RESET}")
-def step(msg):    print(f"\n{BOLD}▶ {msg}{RESET}")
+
+def info(msg):
+    print(f"  {msg}")
+
+
+def success(msg):
+    print(f"{GREEN}✅ {msg}{RESET}")
+
+
+def warn(msg):
+    print(f"{YELLOW}⚠️  {msg}{RESET}")
+
+
+def error(msg):
+    print(f"{RED}❌ {msg}{RESET}", file=sys.stderr)
+    sys.exit(1)
+
+
+def header(msg):
+    print(f"\n{BOLD}{CYAN}{'─'*56}\n  {msg}\n{'─'*56}{RESET}")
+
+
+def step(msg):
+    print(f"\n{BOLD}▶ {msg}{RESET}")
 
 
 # ── PostgreSQL → SQLite type map ──────────────────────────────────────────────
 # Maps PostgreSQL type strings (lower-cased, regex patterns) to SQLite affinity.
 PG_TO_SQLITE_TYPES = [
     # Integers / serials
-    (r"\bsmallint\b",                  "INTEGER"),
-    (r"\bbigint\b",                    "INTEGER"),
-    (r"\binteger\b",                   "INTEGER"),
-    (r"\bint\b",                       "INTEGER"),
-    (r"\bsmallserial\b",               "INTEGER"),
-    (r"\bserial\b",                    "INTEGER"),
-    (r"\bbigserial\b",                 "INTEGER"),
+    (r"\bsmallint\b", "INTEGER"),
+    (r"\bbigint\b", "INTEGER"),
+    (r"\binteger\b", "INTEGER"),
+    (r"\bint\b", "INTEGER"),
+    (r"\bsmallserial\b", "INTEGER"),
+    (r"\bserial\b", "INTEGER"),
+    (r"\bbigserial\b", "INTEGER"),
     # Booleans → stored as 0/1 in SQLite
-    (r"\bboolean\b",                   "INTEGER"),
+    (r"\bboolean\b", "INTEGER"),
     # Floats / numerics
-    (r"\bdouble precision\b",          "REAL"),
-    (r"\breal\b",                      "REAL"),
-    (r"\bnumeric(\s*\([^)]*\))?",      "REAL"),
-    (r"\bdecimal(\s*\([^)]*\))?",      "REAL"),
-    (r"\bfloat(\s*\([^)]*\))?",        "REAL"),
+    (r"\bdouble precision\b", "REAL"),
+    (r"\breal\b", "REAL"),
+    (r"\bnumeric(\s*\([^)]*\))?", "REAL"),
+    (r"\bdecimal(\s*\([^)]*\))?", "REAL"),
+    (r"\bfloat(\s*\([^)]*\))?", "REAL"),
     # Strings
     (r"\bcharacter varying(\s*\([^)]*\))?", "TEXT"),
-    (r"\bvarchar(\s*\([^)]*\))?",      "TEXT"),
-    (r"\bcharacter(\s*\([^)]*\))?",    "TEXT"),
-    (r"\bchar(\s*\([^)]*\))?",         "TEXT"),
-    (r"\btext\b",                      "TEXT"),
-    (r"\bcitext\b",                    "TEXT"),
+    (r"\bvarchar(\s*\([^)]*\))?", "TEXT"),
+    (r"\bcharacter(\s*\([^)]*\))?", "TEXT"),
+    (r"\bchar(\s*\([^)]*\))?", "TEXT"),
+    (r"\btext\b", "TEXT"),
+    (r"\bcitext\b", "TEXT"),
     # UUIDs
-    (r"\buuid\b",                      "TEXT"),
+    (r"\buuid\b", "TEXT"),
     # Dates / times → store as ISO text
-    (r"\btimestamp with time zone\b",  "TEXT"),
-    (r"\btimestamp without time zone\b","TEXT"),
-    (r"\btimestamptz\b",               "TEXT"),
-    (r"\btimestamp\b",                 "TEXT"),
-    (r"\bdate\b",                      "TEXT"),
-    (r"\btime with time zone\b",       "TEXT"),
-    (r"\btime without time zone\b",    "TEXT"),
-    (r"\btime\b",                      "TEXT"),
-    (r"\binterval\b",                  "TEXT"),
+    (r"\btimestamp with time zone\b", "TEXT"),
+    (r"\btimestamp without time zone\b", "TEXT"),
+    (r"\btimestamptz\b", "TEXT"),
+    (r"\btimestamp\b", "TEXT"),
+    (r"\bdate\b", "TEXT"),
+    (r"\btime with time zone\b", "TEXT"),
+    (r"\btime without time zone\b", "TEXT"),
+    (r"\btime\b", "TEXT"),
+    (r"\binterval\b", "TEXT"),
     # Binary
-    (r"\bbytea\b",                     "BLOB"),
+    (r"\bbytea\b", "BLOB"),
     # JSON
-    (r"\bjsonb?\b",                    "TEXT"),
+    (r"\bjsonb?\b", "TEXT"),
     # Catch-all
-    (r"\barray\b",                     "TEXT"),
+    (r"\barray\b", "TEXT"),
 ]
+
 
 def convert_type(pg_type: str) -> str:
     t = pg_type.strip().lower()
@@ -135,6 +285,7 @@ def convert_type(pg_type: str) -> str:
 
 
 # ── Line-level transformations ────────────────────────────────────────────────
+
 
 def transform_create_table(sql: str) -> str:
     """
@@ -148,53 +299,50 @@ def transform_create_table(sql: str) -> str:
       - Drops: CONSTRAINT ... EXCLUDE, DEFERRABLE, INITIALLY DEFERRED, WITH (...), TABLESPACE
     """
     # Remove PostgreSQL storage options at end of statement
-    sql = re.sub(r'\bWITH\s*\([^)]*\)', '', sql)
-    sql = re.sub(r'\bTABLESPACE\s+\w+', '', sql)
-    sql = re.sub(r'\bDEFERRABLE\b', '', sql, flags=re.IGNORECASE)
-    sql = re.sub(r'\bINITIALLY\s+\w+\b', '', sql, flags=re.IGNORECASE)
+    sql = re.sub(r"\bWITH\s*\([^)]*\)", "", sql)
+    sql = re.sub(r"\bTABLESPACE\s+\w+", "", sql)
+    sql = re.sub(r"\bDEFERRABLE\b", "", sql, flags=re.IGNORECASE)
+    sql = re.sub(r"\bINITIALLY\s+\w+\b", "", sql, flags=re.IGNORECASE)
 
     # Remove EXCLUDE constraints (no SQLite equivalent)
-    sql = re.sub(r',?\s*CONSTRAINT\s+\w+\s+EXCLUDE\b[^,)]*', '', sql, flags=re.IGNORECASE)
+    sql = re.sub(r",?\s*CONSTRAINT\s+\w+\s+EXCLUDE\b[^,)]*", "", sql, flags=re.IGNORECASE)
 
     # Detect serial/sequence columns BEFORE stripping nextval defaults.
     # These will become INTEGER PRIMARY KEY in SQLite (auto-increment rowid alias).
-    serial_cols = set(re.findall(
-        r'^\s+(\w+)\s+\S.*?DEFAULT\s+nextval\s*\(',
-        sql, flags=re.MULTILINE | re.IGNORECASE
-    ))
+    serial_cols = set(re.findall(r"^\s+(\w+)\s+\S.*?DEFAULT\s+nextval\s*\(", sql, flags=re.MULTILINE | re.IGNORECASE))
 
     # Remove DEFAULT nextval(...) — SQLite uses INTEGER PRIMARY KEY instead
-    sql = re.sub(r"DEFAULT\s+nextval\s*\([^)]*\)\s*(::\s*\w+)?", '', sql, flags=re.IGNORECASE)
+    sql = re.sub(r"DEFAULT\s+nextval\s*\([^)]*\)\s*(::\s*\w+)?", "", sql, flags=re.IGNORECASE)
 
     # Remove PostgreSQL casts in DEFAULT values e.g. DEFAULT ''::text → DEFAULT ''
-    sql = re.sub(r"::\s*[\w\s]+(\[\])?", '', sql)
+    sql = re.sub(r"::\s*[\w\s]+(\[\])?", "", sql)
 
     # Convert column types: match "col_name TYPE" patterns inside the column list
     def replace_col_type(m):
-        prefix = m.group(1)   # column name + whitespace
+        prefix = m.group(1)  # column name + whitespace
         pg_type = m.group(2)  # the type string
-        suffix = m.group(3)   # rest of the line
+        suffix = m.group(3)  # rest of the line
         return f"{prefix}{convert_type(pg_type)}{suffix}"
 
     # Match column definitions: word boundary, identifier, whitespace, then a type phrase
     type_pattern = (
-        r'(\b(\w+)\s+)'  # column name
-        r'('             # start type group
-        r'character varying(?:\s*\(\d+\))?'
-        r'|timestamp\s+with\s+time\s+zone'
-        r'|timestamp\s+without\s+time\s+zone'
-        r'|time\s+with\s+time\s+zone'
-        r'|time\s+without\s+time\s+zone'
-        r'|double\s+precision'
-        r'|(?:small|big)?(?:int(?:eger)?|serial)'
-        r'|varchar(?:\s*\(\d+\))?'
-        r'|char(?:acter)?(?:\s*\(\d+\))?'
-        r'|numeric(?:\s*\(\d+(?:,\s*\d+)?\))?'
-        r'|decimal(?:\s*\(\d+(?:,\s*\d+)?\))?'
-        r'|float(?:\s*\(\d+\))?'
-        r'|boolean|text|citext|uuid|bytea|jsonb?|date|interval|real|array'
-        r')'             # end type group
-        r'(\b)'          # word boundary or end
+        r"(\b(\w+)\s+)"  # column name
+        r"("  # start type group
+        r"character varying(?:\s*\(\d+\))?"
+        r"|timestamp\s+with\s+time\s+zone"
+        r"|timestamp\s+without\s+time\s+zone"
+        r"|time\s+with\s+time\s+zone"
+        r"|time\s+without\s+time\s+zone"
+        r"|double\s+precision"
+        r"|(?:small|big)?(?:int(?:eger)?|serial)"
+        r"|varchar(?:\s*\(\d+\))?"
+        r"|char(?:acter)?(?:\s*\(\d+\))?"
+        r"|numeric(?:\s*\(\d+(?:,\s*\d+)?\))?"
+        r"|decimal(?:\s*\(\d+(?:,\s*\d+)?\))?"
+        r"|float(?:\s*\(\d+\))?"
+        r"|boolean|text|citext|uuid|bytea|jsonb?|date|interval|real|array"
+        r")"  # end type group
+        r"(\b)"  # word boundary or end
     )
     sql = re.sub(
         type_pattern,
@@ -212,14 +360,11 @@ def transform_create_table(sql: str) -> str:
             indent, col, rest = m.group(1), m.group(2), m.group(3)
             if col.lower() in serial_lower:
                 # Strip NOT NULL — PRIMARY KEY is implicitly not null
-                rest = re.sub(r'\s+NOT\s+NULL\b', '', rest, flags=re.IGNORECASE)
+                rest = re.sub(r"\s+NOT\s+NULL\b", "", rest, flags=re.IGNORECASE)
                 return f'{indent}"{col}" INTEGER PRIMARY KEY{rest}'
             return m.group(0)
 
-        sql = re.sub(
-            r'^([ \t]+)(\w+)(\s+INTEGER\b[^,\n]*)',
-            make_primary_key, sql, flags=re.MULTILINE | re.IGNORECASE
-        )
+        sql = re.sub(r"^([ \t]+)(\w+)(\s+INTEGER\b[^,\n]*)", make_primary_key, sql, flags=re.MULTILINE | re.IGNORECASE)
 
     # Quote any unquoted column names that are SQLite reserved words.
     # Match: start-of-line whitespace + bare word + space (column definition context).
@@ -228,11 +373,13 @@ def transform_create_table(sql: str) -> str:
         rest = m.group(2)
         if word.lower() in SQLITE_RESERVED:
             return f'    "{word}"{rest}'
-        return f'    {word}{rest}'
+        return f"    {word}{rest}"
 
     sql = re.sub(
-        r'^    (\w+)(\s+(?:INTEGER|TEXT|REAL|BLOB|NUMERIC)\b)',
-        quote_reserved_col, sql, flags=re.MULTILINE | re.IGNORECASE
+        r"^    (\w+)(\s+(?:INTEGER|TEXT|REAL|BLOB|NUMERIC)\b)",
+        quote_reserved_col,
+        sql,
+        flags=re.MULTILINE | re.IGNORECASE,
     )
 
     return sql
@@ -241,28 +388,30 @@ def transform_create_table(sql: str) -> str:
 # Django's SQLite backend stores UUIDs as 32-char hex WITHOUT hyphens.
 # pg_dump emits them WITH hyphens (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
 _UUID_RE = re.compile(
-    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     re.IGNORECASE,
 )
 
+
 def pg_value_to_sqlite(value: str) -> str:
     """Convert a single tab-separated COPY value to a SQLite-ready Python object."""
-    if value == r'\N':
+    if value == r"\N":
         return None
-    if value == r'\\.':
+    if value == r"\\.":
         return None
     # Unescape PostgreSQL backslash sequences
-    value = value.replace(r'\\', '\\')
-    value = value.replace(r'\n', '\n')
-    value = value.replace(r'\r', '\r')
-    value = value.replace(r'\t', '\t')
+    value = value.replace(r"\\", "\\")
+    value = value.replace(r"\n", "\n")
+    value = value.replace(r"\r", "\r")
+    value = value.replace(r"\t", "\t")
     # Normalise UUIDs: Django's SQLite backend expects 32-char hex without hyphens
     if _UUID_RE.match(value):
-        value = value.replace('-', '')
+        value = value.replace("-", "")
     return value
 
 
 # ── SQL dump parser / converter ───────────────────────────────────────────────
+
 
 class PgDumpConverter:
     """
@@ -276,31 +425,31 @@ class PgDumpConverter:
     """
 
     SKIP_PREFIXES = (
-        '--',             # comments
-        'SET ',           # pg config
-        'SELECT pg_',     # sequence resets
-        'CREATE SEQUENCE',
-        'ALTER SEQUENCE',
-        'REVOKE ',
-        'GRANT ',
-        'CREATE EXTENSION',
-        'COMMENT ON',
-        'CREATE SCHEMA',
-        'ALTER SCHEMA',
-        'CREATE TYPE',    # enum types — handle separately if needed
-        'ALTER TYPE',
-        'CREATE AGGREGATE',
-        'CREATE FUNCTION',
-        'CREATE OPERATOR',
-        'CREATE TRIGGER',
-        'CREATE VIEW',
-        'ALTER TABLE ONLY',  # constraints / ownership (handled below)
-        'ALTER TABLE',
-        'ALTER DATABASE',
-        'BEGIN;',
-        'COMMIT;',
-        r'\connect',
-        'pg_restore:',
+        "--",  # comments
+        "SET ",  # pg config
+        "SELECT pg_",  # sequence resets
+        "CREATE SEQUENCE",
+        "ALTER SEQUENCE",
+        "REVOKE ",
+        "GRANT ",
+        "CREATE EXTENSION",
+        "COMMENT ON",
+        "CREATE SCHEMA",
+        "ALTER SCHEMA",
+        "CREATE TYPE",  # enum types — handle separately if needed
+        "ALTER TYPE",
+        "CREATE AGGREGATE",
+        "CREATE FUNCTION",
+        "CREATE OPERATOR",
+        "CREATE TRIGGER",
+        "CREATE VIEW",
+        "ALTER TABLE ONLY",  # constraints / ownership (handled below)
+        "ALTER TABLE",
+        "ALTER DATABASE",
+        "BEGIN;",
+        "COMMIT;",
+        r"\connect",
+        "pg_restore:",
     )
 
     def __init__(self, lines, verbose=False):
@@ -323,17 +472,17 @@ class PgDumpConverter:
         copy_rows = []
 
         for raw in self.lines:
-            line = raw.rstrip('\n')
+            line = raw.rstrip("\n")
 
             # ── Inside a COPY data block ───────────────────────────────────
             if copy_table is not None:
-                if line == '\\.':
-                    yield ('insert', (copy_table, copy_cols, copy_rows))
+                if line == "\\.":
+                    yield ("insert", (copy_table, copy_cols, copy_rows))
                     copy_table = None
                     copy_cols = []
                     copy_rows = []
                 else:
-                    values = [pg_value_to_sqlite(v) for v in line.split('\t')]
+                    values = [pg_value_to_sqlite(v) for v in line.split("\t")]
                     copy_rows.append(values)
                 continue
 
@@ -343,18 +492,15 @@ class PgDumpConverter:
                 continue
 
             # ── COPY statement ─────────────────────────────────────────────
-            copy_match = re.match(
-                r'COPY\s+(?:\w+\.)?(\w+)\s*\(([^)]+)\)\s+FROM\s+stdin',
-                stripped, re.IGNORECASE
-            )
+            copy_match = re.match(r"COPY\s+(?:\w+\.)?(\w+)\s*\(([^)]+)\)\s+FROM\s+stdin", stripped, re.IGNORECASE)
             if copy_match:
                 copy_table = copy_match.group(1)
-                copy_cols = [c.strip().strip('"') for c in copy_match.group(2).split(',')]
+                copy_cols = [c.strip().strip('"') for c in copy_match.group(2).split(",")]
                 copy_rows = []
                 continue
 
             # ── Detect start of CREATE TABLE ───────────────────────────────
-            if re.match(r'CREATE TABLE\b', stripped, re.IGNORECASE):
+            if re.match(r"CREATE TABLE\b", stripped, re.IGNORECASE):
                 buffer = [line]
                 in_statement = True
                 continue
@@ -362,46 +508,50 @@ class PgDumpConverter:
             # ── Collect CREATE TABLE body ──────────────────────────────────
             if in_statement:
                 buffer.append(line)
-                if stripped.endswith(';'):
-                    full = '\n'.join(buffer)
+                if stripped.endswith(";"):
+                    full = "\n".join(buffer)
                     # Remove schema qualifiers: public.tablename → tablename
-                    full = re.sub(r'\bpublic\.(\w+)', r'\1', full)
-                    yield ('create_table', transform_create_table(full))
+                    full = re.sub(r"\bpublic\.(\w+)", r"\1", full)
+                    yield ("create_table", transform_create_table(full))
                     buffer = []
                     in_statement = False
                 continue
 
             # ── CREATE INDEX ───────────────────────────────────────────────
-            if re.match(r'CREATE\s+(UNIQUE\s+)?INDEX\b', stripped, re.IGNORECASE):
-                idx = re.sub(r'\bpublic\.(\w+)', r'\1', stripped)
+            if re.match(r"CREATE\s+(UNIQUE\s+)?INDEX\b", stripped, re.IGNORECASE):
+                idx = re.sub(r"\bpublic\.(\w+)", r"\1", stripped)
                 # Strip CONCURRENTLY (not supported in SQLite)
-                idx = re.sub(r'\bCONCURRENTLY\b\s*', '', idx, flags=re.IGNORECASE)
+                idx = re.sub(r"\bCONCURRENTLY\b\s*", "", idx, flags=re.IGNORECASE)
                 # Strip USING <method> (btree, hash, gist, gin, brin, spgist)
-                idx = re.sub(r'\bUSING\s+\w+\s*', '', idx, flags=re.IGNORECASE)
+                idx = re.sub(r"\bUSING\s+\w+\s*", "", idx, flags=re.IGNORECASE)
                 # Strip PostgreSQL operator classes inside index column list
                 # e.g. (email varchar_pattern_ops) → (email)
                 idx = re.sub(
-                    r'\b(varchar|text|bpchar|integer|float|date|timestamptz?)_pattern_ops\b',
-                    '', idx, flags=re.IGNORECASE
+                    r"\b(varchar|text|bpchar|integer|float|date|timestamptz?)_pattern_ops\b",
+                    "",
+                    idx,
+                    flags=re.IGNORECASE,
                 )
-                idx = re.sub(r'\b\w+_ops\b', '', idx)  # catch any remaining _ops
+                idx = re.sub(r"\b\w+_ops\b", "", idx)  # catch any remaining _ops
                 # Strip NULLS FIRST/LAST
-                idx = re.sub(r'\bNULLS\s+(FIRST|LAST)\b', '', idx, flags=re.IGNORECASE)
+                idx = re.sub(r"\bNULLS\s+(FIRST|LAST)\b", "", idx, flags=re.IGNORECASE)
                 # Clean up any double spaces left behind
-                idx = re.sub(r'  +', ' ', idx).strip()
+                idx = re.sub(r"  +", " ", idx).strip()
+
                 # Quote reserved words appearing as column names in index column list
                 def quote_idx_col(m):
                     col = m.group(1)
                     if col.lower() in SQLITE_RESERVED:
                         return f'"{col}"'
                     return col
-                idx = re.sub(r'\b([a-zA-Z_]\w*)\b(?=\s*[,)])', quote_idx_col, idx)
-                yield ('index', idx)
+
+                idx = re.sub(r"\b([a-zA-Z_]\w*)\b(?=\s*[,)])", quote_idx_col, idx)
+                yield ("index", idx)
                 continue
 
             # ── ADD CONSTRAINT (FK / UNIQUE / PK from ALTER TABLE) ─────────
-            if re.match(r'ALTER TABLE\b.*ADD CONSTRAINT\b', stripped, re.IGNORECASE):
-                yield ('constraint', stripped)  # logged but not applied
+            if re.match(r"ALTER TABLE\b.*ADD CONSTRAINT\b", stripped, re.IGNORECASE):
+                yield ("constraint", stripped)  # logged but not applied
                 continue
 
             # ── Everything else: skip ──────────────────────────────────────
@@ -410,6 +560,7 @@ class PgDumpConverter:
 
 # ── SQLite writer ─────────────────────────────────────────────────────────────
 
+
 class SQLiteWriter:
     def __init__(self, db_path: Path, verbose: bool = False):
         self.db_path = db_path
@@ -417,14 +568,14 @@ class SQLiteWriter:
         self.conn = sqlite3.connect(str(db_path))
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("PRAGMA foreign_keys=OFF")  # disable during load
-        self.conn.execute("PRAGMA synchronous=OFF")   # faster bulk insert
+        self.conn.execute("PRAGMA synchronous=OFF")  # faster bulk insert
         self.tables_created = 0
         self.rows_inserted = 0
         self.errors = []
 
     def execute(self, sql: str):
         if self.verbose:
-            preview = sql[:120].replace('\n', ' ')
+            preview = sql[:120].replace("\n", " ")
             info(f"SQL: {preview}{'…' if len(sql) > 120 else ''}")
         try:
             self.conn.execute(sql)
@@ -435,18 +586,18 @@ class SQLiteWriter:
 
     def create_table(self, sql: str):
         # Strip any remaining PostgreSQL-isms that slipped through
-        sql = re.sub(r'\bpublic\.(\w+)', r'\1', sql)
+        sql = re.sub(r"\bpublic\.(\w+)", r"\1", sql)
         # SQLite doesn't support some constraint syntax
         # Remove NOT VALID
-        sql = re.sub(r'\bNOT VALID\b', '', sql, flags=re.IGNORECASE)
+        sql = re.sub(r"\bNOT VALID\b", "", sql, flags=re.IGNORECASE)
         self.execute(sql)
         self.tables_created += 1
 
     def insert_rows(self, table: str, columns: list, rows: list):
         if not rows:
             return
-        placeholders = ', '.join(['?'] * len(columns))
-        cols = ', '.join(f'"{c}"' for c in columns)
+        placeholders = ", ".join(["?"] * len(columns))
+        cols = ", ".join(f'"{c}"' for c in columns)
         sql = f'INSERT OR IGNORE INTO "{table}" ({cols}) VALUES ({placeholders})'
 
         try:
@@ -470,16 +621,18 @@ class SQLiteWriter:
 
 # ── Open dump file ────────────────────────────────────────────────────────────
 
+
 def open_dump(path: Path):
     """Return an iterator of decoded text lines from a .sql or .sql.gz file."""
-    if path.suffix == '.gz':
-        f = gzip.open(path, 'rt', encoding='utf-8', errors='replace')
+    if path.suffix == ".gz":
+        f = gzip.open(path, "rt", encoding="utf-8", errors="replace")
     else:
-        f = open(path, 'r', encoding='utf-8', errors='replace')
+        f = open(path, "r", encoding="utf-8", errors="replace")
     return f
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -489,8 +642,9 @@ def main():
     )
     parser.add_argument("dump_file", help="Path to .sql or .sql.gz pg_dump file")
     parser.add_argument("--output", help="SQLite output path (default: <stem>.sqlite3)")
-    parser.add_argument("--django", action="store_true",
-                        help="Run Django migrations after load (merges schema + data)")
+    parser.add_argument(
+        "--django", action="store_true", help="Run Django migrations after load (merges schema + data)"
+    )
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -498,7 +652,7 @@ def main():
     if not dump_path.exists():
         error(f"Dump file not found: {dump_path}")
 
-    stem = dump_path.name.replace('.sql.gz', '').replace('.sql', '')
+    stem = dump_path.name.replace(".sql.gz", "").replace(".sql", "")
     if args.output:
         sqlite_path = Path(args.output).expanduser().resolve()
     else:
@@ -516,18 +670,18 @@ def main():
     writer = SQLiteWriter(sqlite_path, verbose=args.verbose)
 
     step("Parsing and converting dump…")
-    counts = {'create_table': 0, 'insert': 0, 'index': 0, 'constraint': 0}
+    counts = {"create_table": 0, "insert": 0, "index": 0, "constraint": 0}
 
     with open_dump(dump_path) as fh:
         converter = PgDumpConverter(fh, verbose=args.verbose)
         for kind, payload in converter.parse():
             counts[kind] = counts.get(kind, 0) + 1
-            if kind == 'create_table':
+            if kind == "create_table":
                 writer.create_table(payload)
-            elif kind == 'insert':
+            elif kind == "insert":
                 table, cols, rows = payload
                 writer.insert_rows(table, cols, rows)
-            elif kind == 'index':
+            elif kind == "index":
                 writer.execute(payload)
             # 'constraint' (FK / UNIQUE from ALTER TABLE) — logged, not applied
             # SQLite enforces them via CREATE TABLE definitions instead
@@ -560,7 +714,8 @@ def main():
 
         result = subprocess.run(
             [*python_cmd, "manage.py", "migrate", "--run-syncdb"],
-            env=env, cwd=ROOT,
+            env=env,
+            cwd=ROOT,
         )
         if result.returncode == 0:
             success("Django migrations complete")
