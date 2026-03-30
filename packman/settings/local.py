@@ -78,3 +78,6 @@ if importlib.util.find_spec("django_extensions") is not None:
 # ------------------------------------------------------------------------------
 
 INSTALLED_APPS += ["whitenoise.runserver_nostatic"]
+
+# Use simple static file storage in dev — no collectstatic needed
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
