@@ -657,7 +657,8 @@ def prescan_pks(path: Path) -> dict:
             # Single-line form: ALTER TABLE ... ADD CONSTRAINT ... PRIMARY KEY (...)
             combined_m = re.search(
                 r"ALTER TABLE\s+(?:ONLY\s+)?(?:\w+\.)?(\w+)\s+ADD CONSTRAINT\s+\w+\s+PRIMARY KEY\s*\(([^)]+)\)",
-                line, re.IGNORECASE,
+                line,
+                re.IGNORECASE,
             )
             if combined_m:
                 table = combined_m.group(1)
