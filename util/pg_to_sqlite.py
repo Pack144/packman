@@ -287,7 +287,7 @@ def convert_type(pg_type: str) -> str:
 # ── Line-level transformations ────────────────────────────────────────────────
 
 
-def transform_create_table(sql: str) -> str:
+def transform_create_table(sql: str, pk_col: str = None) -> str:
     """
     Convert a full CREATE TABLE statement from PostgreSQL to SQLite-compatible SQL.
     Handles:
@@ -309,7 +309,10 @@ def transform_create_table(sql: str) -> str:
 
     # Detect serial/sequence columns BEFORE stripping nextval defaults.
     # These will become INTEGER PRIMARY KEY in SQLite (auto-increment rowid alias).
+    # Falls back to pk_col if the dump sets the default via ALTER TABLE instead of inline.
     serial_cols = set(re.findall(r"^\s+(\w+)\s+\S.*?DEFAULT\s+nextval\s*\(", sql, flags=re.MULTILINE | re.IGNORECASE))
+    if not serial_cols and pk_col:
+        serial_cols = {pk_col}
 
     # Remove DEFAULT nextval(...) — SQLite uses INTEGER PRIMARY KEY instead
     sql = re.sub(r"DEFAULT\s+nextval\s*\([^)]*\)\s*(::\s*\w+)?", "", sql, flags=re.IGNORECASE)
@@ -359,7 +362,9 @@ def transform_create_table(sql: str) -> str:
         def make_primary_key(m):
             indent, col, rest = m.group(1), m.group(2), m.group(3)
             if col.lower() in serial_lower:
-                # Strip NOT NULL — PRIMARY KEY is implicitly not null
+                # rest starts with \s+INTEGER (captured by the regex) — strip it
+                # since we're replacing the whole type with INTEGER PRIMARY KEY.
+                rest = re.sub(r"^\s+\w+", "", rest)
                 rest = re.sub(r"\s+NOT\s+NULL\b", "", rest, flags=re.IGNORECASE)
                 return f'{indent}"{col}" INTEGER PRIMARY KEY{rest}'
             return m.group(0)
@@ -452,10 +457,11 @@ class PgDumpConverter:
         "pg_restore:",
     )
 
-    def __init__(self, lines, verbose=False):
+    def __init__(self, lines, verbose=False, pks=None):
         self.lines = iter(lines)
         self.verbose = verbose
         self._peeked = None
+        self.pks = pks or {}
 
     def _next_line(self):
         if self._peeked is not None:
@@ -512,7 +518,10 @@ class PgDumpConverter:
                     full = "\n".join(buffer)
                     # Remove schema qualifiers: public.tablename → tablename
                     full = re.sub(r"\bpublic\.(\w+)", r"\1", full)
-                    yield ("create_table", transform_create_table(full))
+                    tbl_match = re.match(r"CREATE TABLE\s+(?:\w+\.)?(\w+)\b", full, re.IGNORECASE)
+                    tbl_name = tbl_match.group(1) if tbl_match else None
+                    pk_col = self.pks.get(tbl_name) if tbl_name else None
+                    yield ("create_table", transform_create_table(full, pk_col=pk_col))
                     buffer = []
                     in_statement = False
                 continue
@@ -631,6 +640,50 @@ def open_dump(path: Path):
     return f
 
 
+def prescan_pks(path: Path) -> dict:
+    """
+    Quick first-pass scan to collect single-column primary keys from
+    ALTER TABLE ... ADD CONSTRAINT ... PRIMARY KEY (...) statements.
+    Handles both single-line and two-line forms (pg_dump splits them).
+    Returns {table_name: pk_col_name}.  Multi-column PKs are ignored
+    (they can't be INTEGER PRIMARY KEY in SQLite).
+    """
+    pks = {}
+    alter_re = re.compile(r"ALTER TABLE\s+(?:ONLY\s+)?(?:\w+\.)?(\w+)\s*$", re.IGNORECASE)
+    pk_re = re.compile(r"ADD CONSTRAINT\s+\w+\s+PRIMARY KEY\s*\(([^)]+)\)", re.IGNORECASE)
+    last_table = None
+    with open_dump(path) as fh:
+        for line in fh:
+            # Single-line form: ALTER TABLE ... ADD CONSTRAINT ... PRIMARY KEY (...)
+            combined_m = re.search(
+                r"ALTER TABLE\s+(?:ONLY\s+)?(?:\w+\.)?(\w+)\s+ADD CONSTRAINT\s+\w+\s+PRIMARY KEY\s*\(([^)]+)\)",
+                line, re.IGNORECASE,
+            )
+            if combined_m:
+                table = combined_m.group(1)
+                cols = [c.strip().strip('"') for c in combined_m.group(2).split(",")]
+                if len(cols) == 1:
+                    pks[table] = cols[0]
+                last_table = None
+                continue
+
+            # Two-line form: track ALTER TABLE line, then match ADD CONSTRAINT on next
+            alter_m = alter_re.search(line)
+            if alter_m:
+                last_table = alter_m.group(1)
+                continue
+
+            if last_table:
+                pk_m = pk_re.search(line)
+                if pk_m:
+                    cols = [c.strip().strip('"') for c in pk_m.group(1).split(",")]
+                    if len(cols) == 1:
+                        pks[last_table] = cols[0]
+                last_table = None
+
+    return pks
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 
@@ -662,18 +715,24 @@ def main():
     info(f"Input  : {dump_path}  ({dump_path.stat().st_size / 1024 / 1024:.1f} MB)")
     info(f"Output : {sqlite_path}")
 
-    # Remove old DB so we start fresh
-    if sqlite_path.exists():
-        warn(f"Removing existing {sqlite_path.name}")
-        sqlite_path.unlink()
+    # Remove old DB and any WAL/shm files so we start fresh
+    for suffix in ("", "-shm", "-wal"):
+        p = sqlite_path.parent / (sqlite_path.name + suffix)
+        if p.exists():
+            warn(f"Removing existing {p.name}")
+            p.unlink()
 
     writer = SQLiteWriter(sqlite_path, verbose=args.verbose)
+
+    step("Pre-scanning dump for primary keys…")
+    pks = prescan_pks(dump_path)
+    info(f"Found {len(pks)} single-column primary key(s)")
 
     step("Parsing and converting dump…")
     counts = {"create_table": 0, "insert": 0, "index": 0, "constraint": 0}
 
     with open_dump(dump_path) as fh:
-        converter = PgDumpConverter(fh, verbose=args.verbose)
+        converter = PgDumpConverter(fh, verbose=args.verbose, pks=pks)
         for kind, payload in converter.parse():
             counts[kind] = counts.get(kind, 0) + 1
             if kind == "create_table":
