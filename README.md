@@ -179,8 +179,15 @@ able to access the site at http://localhost:8000 with production data.
 ## How to run tests
 
 To run the tests, first ensure that you are in the virtual environment.  Then run:
+
 ```bash
 python manage.py test
+```
+
+or
+
+```bash
+pipenv run python manage.py test
 ```
 
 
@@ -188,7 +195,16 @@ python manage.py test
 
 To run the pre-commit hooks, first ensure that you are in the virtual environment.
 Then run:
+
 ```bash
 pre-commit install
 pre-commit run --all-files
 ```
+
+or
+
+```base
+pipenv run pre-commit run --all-files
+```
+
+While pre-commit hooks will automatically run in github after you've created a PR, it is of course best to run these locally first.
