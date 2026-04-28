@@ -25,12 +25,11 @@ Examples:
 
 import argparse
 import gzip
-import io
 import os
 import re
 import shutil
 import sqlite3
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -772,7 +771,7 @@ def main():
         else:
             python_cmd = ["python"]
 
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603
             [*python_cmd, "manage.py", "migrate", "--run-syncdb"],
             env=env,
             cwd=ROOT,
