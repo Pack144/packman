@@ -64,6 +64,15 @@ if command -v pipenv &>/dev/null; then
 
     if [ "$RUN_INSTALL" = true ]; then
         info "Checking dependencies..."
+        if pipenv install --dev; then
+            success "Dependencies up to date"
+        else
+            warn "pipenv install failed — see output above for details"
+        fi
+    fi
+
+    if [ "$RUN_INSTALL" = true ]; then
+        info "Checking dependencies..."
         pipenv install --dev 2>/dev/null \
             && success "Dependencies up to date" \
             || warn "pipenv install had warnings — continuing anyway"
