@@ -378,11 +378,14 @@ def transform_create_table(sql: str, pk_col: str = None) -> str:
     #   1) leading indentation (spaces/tabs),
     #   2) the column name (bare word),
     #   3) the following type token (first word of the type declaration).
+    # These are table-constraint starters, not column names — never quote them.
+    _TABLE_CONSTRAINT_STARTERS = {"constraint", "primary", "unique", "check", "foreign", "references"}
+
     def quote_reserved_col(m):
         indent = m.group(1)
         word = m.group(2)
         rest = m.group(3)
-        if word.lower() in SQLITE_RESERVED:
+        if word.lower() in SQLITE_RESERVED and word.lower() not in _TABLE_CONSTRAINT_STARTERS:
             return f'{indent}"{word}"{rest}'
         return f"{indent}{word}{rest}"
 
