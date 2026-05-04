@@ -372,18 +372,23 @@ def transform_create_table(sql: str, pk_col: str = None) -> str:
 
     # Quote any unquoted column names that are SQLite reserved words.
     # Match: start-of-line whitespace + bare word + space (column definition context).
+    # Quote any unquoted column names that are SQLite reserved words.
+    # Match: start-of-line whitespace + bare word + space (column definition context).
+    # The pattern captures:
+    #   1) leading indentation (spaces/tabs),
+    #   2) the column name (bare word),
+    #   3) the following type token (first word of the type declaration).
     def quote_reserved_col(m):
-        word = m.group(1)
-        rest = m.group(2)
+        indent = m.group(1)
+        word = m.group(2)
+        rest = m.group(3)
         if word.lower() in SQLITE_RESERVED:
-            return f'    "{word}"{rest}'
-        return f"    {word}{rest}"
+            return f'{indent}"{word}"{rest}'
+        return f'{indent}{word}{rest}'
 
     sql = re.sub(
-        r"^    (\w+)(\s+(?:INTEGER|TEXT|REAL|BLOB|NUMERIC)\b)",
-        quote_reserved_col,
-        sql,
-        flags=re.MULTILINE | re.IGNORECASE,
+        r'^(\s+)(\w+)(\s+\w+\b)',
+        quote_reserved_col, sql, flags=re.MULTILINE | re.IGNORECASE
     )
 
     return sql
