@@ -121,7 +121,7 @@ application is using:
 * [Npm](https://www.npmjs.com/)
 
 
-## Running locally with a backup of production postgres on SQLite
+## Running locally with a backup of production Postgres on SQLite
 
 You can run the site locally against a copy of the production PostgreSQL database,
 converted to SQLite — no local Postgres installation required.
