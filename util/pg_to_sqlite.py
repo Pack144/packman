@@ -384,12 +384,9 @@ def transform_create_table(sql: str, pk_col: str = None) -> str:
         rest = m.group(3)
         if word.lower() in SQLITE_RESERVED:
             return f'{indent}"{word}"{rest}'
-        return f'{indent}{word}{rest}'
+        return f"{indent}{word}{rest}"
 
-    sql = re.sub(
-        r'^(\s+)(\w+)(\s+\w+\b)',
-        quote_reserved_col, sql, flags=re.MULTILINE | re.IGNORECASE
-    )
+    sql = re.sub(r"^(\s+)(\w+)(\s+\w+\b)", quote_reserved_col, sql, flags=re.MULTILINE | re.IGNORECASE)
 
     return sql
 
