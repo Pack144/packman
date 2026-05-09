@@ -142,7 +142,8 @@ class ScoutAdmin(admin.ModelAdmin):
         "make_inactive",
         "make_graduated",
         "continue_in_same_den_one_more_year",
-        "export_as_csv",
+        "export_roster_csv",
+        "export_for_grandprix",
     ]
     list_display = (
         "name",
@@ -345,8 +346,42 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
-    @admin.action(description=_("Export selected Cubs to CSV file"))
-    def export_as_csv(self, request, queryset):
+    @admin.action(description=_("Export selected Cubs to CSV (roster)"))
+    def export_roster_csv(self, request, queryset):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename=scout_roster.csv"
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "First Name",
+                "Last Name",
+                "School",
+                "School Grade",
+                "Age",
+                "Status",
+                "Current Den",
+                "Pack Comments",
+                "Created",
+            ]
+        )
+        for obj in queryset:
+            writer.writerow(
+                [
+                    obj.get_short_name(),
+                    obj.last_name,
+                    obj.school,
+                    obj.get_grade(),
+                    obj.age(),
+                    obj.get_status_display(),
+                    obj.current_den,
+                    obj.pack_comments,
+                    obj.date_added,
+                ]
+            )
+        return response
+
+    @admin.action(description=_("Export selected Cubs for GrandPrix Race Manager (CSV and photos)"))
+    def export_for_grandprix(self, request, queryset):
         # Export the selected Cubs for use in GrandPrix Race Manager
         meta = self.model._meta
         field_names = [
