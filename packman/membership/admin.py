@@ -351,29 +351,33 @@ class ScoutAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = "attachment; filename=scout_roster.csv"
         writer = csv.writer(response)
-        writer.writerow([
-            "First Name",
-            "Last Name",
-            "School",
-            "School Grade",
-            "Age",
-            "Status",
-            "Current Den",
-            "Pack Comments",
-            "Created",
-        ])
+        writer.writerow(
+            [
+                "First Name",
+                "Last Name",
+                "School",
+                "School Grade",
+                "Age",
+                "Status",
+                "Current Den",
+                "Pack Comments",
+                "Created",
+            ]
+        )
         for obj in queryset:
-            writer.writerow([
-                obj.get_short_name(),
-                obj.last_name,
-                obj.school,
-                obj.get_grade(),
-                obj.age(),
-                obj.get_status_display(),
-                obj.current_den,
-                obj.pack_comments,
-                obj.date_added,
-            ])
+            writer.writerow(
+                [
+                    obj.get_short_name(),
+                    obj.last_name,
+                    obj.school,
+                    obj.get_grade(),
+                    obj.age(),
+                    obj.get_status_display(),
+                    obj.current_den,
+                    obj.pack_comments,
+                    obj.date_added,
+                ]
+            )
         return response
 
     @admin.action(description=_("Export selected Cubs for GrandPrix Race Manager (CSV and photos)"))
