@@ -2,3 +2,4 @@
 
 uwsgi ~= 2.0
 sentry-sdk[django] >= 1.28.0
+pylibmc >= 1.6
