@@ -23,7 +23,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
     - name: Install System Dependencies
-      run: sudo apt-get install -y libmemcached-dev
+      run: sudo apt-get install -y libmemcached-dev libpq-dev
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
