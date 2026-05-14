@@ -1,0 +1,19 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+  <div class="app-packman module">
+    <table>
+      <caption>{% trans "System" %}</caption>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="{% url 'admin_system_info' %}">{% trans "System Information" %}</a></th>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+</div>
+{% endblock %}

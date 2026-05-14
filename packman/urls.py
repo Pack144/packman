@@ -18,13 +18,17 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import include, path
 from django.views import defaults as default_views
 from django.views.generic import RedirectView
 
+from packman.core.views import system_info
+
 urlpatterns = [
     # Django admin
     path("administration/doc/", include("django.contrib.admindocs.urls")),
+    path("administration/system-info/", staff_member_required(system_info), name="admin_system_info"),
     path("administration/", admin.site.urls),
     # Account management
     path("members/", include("django.contrib.auth.urls")),
