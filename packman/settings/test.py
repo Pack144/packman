@@ -13,7 +13,14 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 # https://docs.djangoproject.com/en/3.2/ref/contrib/staticfiles/
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 # http://whitenoise.evans.io/en/stable/django.html#whitenoise-makes-my-tests-run-slow
 WHITENOISE_AUTOREFRESH = True

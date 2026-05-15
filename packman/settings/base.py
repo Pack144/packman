@@ -168,7 +168,6 @@ TIME_ZONE = env("TIME_ZONE", default="UTC")
 
 USE_I18N = True
 
-USE_L10N = True
 
 USE_TZ = True
 
@@ -180,7 +179,14 @@ USE_TZ = True
 STATIC_ROOT = env("DJANGO_STATIC_ROOT", default=BASE_DIR / "static_files")
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [APPS_DIR / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 
 # User uploaded files
