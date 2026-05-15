@@ -165,20 +165,34 @@ uv run pre-commit run --all-files
 ```
 
 While pre-commit hooks will automatically run on GitHub after you've created a PR,
-it is best to run these locally first.
+it is of course best practice to run these locally first.
 
 
 ## Production deployment
 
-On the server, create the virtualenv at the expected path and sync production dependencies:
+### First-time setup
+
+Create the virtualenv using uv (remove any existing one first):
 
 ```bash
-uv venv /home/pack144/apps/django/env --python 3.14
-UV_PROJECT_ENVIRONMENT=/home/pack144/apps/django/env uv sync --group production
+rm -rf ~/apps/django/env
+uv venv ~/apps/django/env --python 3.14
 ```
 
-Then restart uWSGI:
+Then follow the deploy steps below.
+
+### Deploying
 
 ```bash
+cd ~/apps/django
+git pull
 touch ~/apps/django/tmp/restart.txt
 ```
+
+Run these additional steps (prior to restart) when the pull includes the relevant changes:
+
+| Change | Command |
+|---|---|
+| `uv.lock` updated | `UV_PROJECT_ENVIRONMENT=~/apps/django/env uv sync --group production` |
+| New db migrations | `~/apps/django/env/bin/python packman/manage.py migrate` |
+| Static files changed | `DJANGO_SETTINGS_MODULE=packman.settings.production ~/apps/django/env/bin/python packman/manage.py collectstatic --no-input` |
