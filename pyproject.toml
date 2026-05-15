@@ -2,16 +2,67 @@
 name = "packman"
 version = "2023.07.10"
 description = "A Cub Scouts Pack management platform built on Python and Django."
-authors = [
-    "John Lawrence <john@cjvn.net>"
-]
-license = "MIT"
 readme = "README.md"
-python = "^3.8"
-homepage = "https://github.com/Pack144/packman/"
-repository = "https://github.com/Pack144/packman/"
-documentation = "https://github.com/Pack144/packman/docs/"
+license = {text = "MIT"}
+requires-python = ">=3.14"
 keywords = ["bsa", "cub scout", "scouting"]
+authors = [
+    {name = "John Lawrence", email = "john@cjvn.net"}
+]
+dependencies = [
+    "argon2-cffi==25.1.0",
+    "argon2-cffi-bindings==25.1.0",
+    "asgiref==3.9.1",
+    "crispy-bootstrap5==2025.6",
+    "django==5.2.14",
+    "django-crispy-forms==2.4",
+    "django-dynamic-formsets==0.0.8",
+    "django-environ==0.12.0",
+    "django-ical==1.9.2",
+    "django-localflavor==5.0",
+    "django-phonenumber-field==8.1.0",
+    "django-recurrence==1.11.1",
+    "django-tinymce==4.1.0",
+    "easy-thumbnails==2.10.1",
+    "factory-boy>=3.2.1",
+    "icalendar==6.3.1",
+    "phonenumbers==9.0.13",
+    "pillow==12.2.0",
+    "psycopg2-binary>=2.9",
+    "python-dateutil==2.9.0.post0",
+    "python-stdnum==2.1",
+    "six==1.17.0",
+    "sqlparse==0.5.4",
+    "tzdata==2025.2",
+    "unittest-parametrize==1.8.0",
+    "whitenoise==6.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Pack144/packman/"
+Repository = "https://github.com/Pack144/packman/"
+Documentation = "https://github.com/Pack144/packman/docs/"
+
+[dependency-groups]
+dev = [
+    "bandit[toml]>=1.8.6",
+    "black>=23.3.0",
+    "coverage>=7.2.7",
+    "django-debug-toolbar>=4.1",
+    "django-extensions>=3.2",
+    "djlint>=1.31.1",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "pre-commit>=3.3.3",
+]
+production = [
+    "uwsgi~=2.0",
+    "sentry-sdk[django]>=1.28.0",
+    "pylibmc>=1.6",
+]
+
+[tool.uv]
+default-groups = ["dev"]
 
 [tool.black]
 line-length = 119
@@ -22,11 +73,11 @@ include = '\.(html|jinja)$'
 exclude = '''
 (
   /(
-      \.eggs           # exclude a few common directories in the root of the project
+      \.eggs
     | \.git
     | \.venv
   )/
-  | webpack-stats.html # also separately exclude a file named webpack-stats.html in the root of the project
+  | webpack-stats.html
 )
 '''
 

@@ -36,89 +36,67 @@ importantly understandable.  That means that even members who do not live web de
 day to day should be able to pick it up and continue to maintain the site.
 
 ## How do I get started?
-To help manage the proper Python versions and dependencies, we recommend using [pyenv](https://github.com/pyenv/pyenv) to manage your Python versions.  You can install pyenv using your favorite package manager or by following the instructions in the link above.
 
-Once you have pyenv installed, install the required Python version:
-```bash
-pyenv install 3.13
-```
-
-Then set the local Python version for this project:
+This project uses [uv](https://docs.astral.sh/uv/) to manage Python versions and
+dependencies. Install it with:
 
 ```bash
-pyenv local
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-As with any Python and Django project, it is highly recommended that you install
-Packman in its own virtual environment. You can choose which virtual environment
-you want to use. Both pip and pipenv files are provided for installing project
-requirements.
+Then clone the repo and sync dependencies:
 
-To begin using virtual environments, we'll use pipenv. Install using your favorite
-package manager or use pip that ships with Python.
-```
-pip install --user pipenv
-```
-
-Once Pipenv is installed, clone this repository and create your virtual environment
-```
-git clone git@bitbucket.org:pack144/packman.git
+```bash
+git clone git@github.com:Pack144/packman.git
 cd packman
-pipenv install
+uv sync
 ```
 
-Once you have the project downloaded and a virtual environment running you can set
-up Packman for your own needs. Many of the project settings are available in
-`config/settings/*.py`. Adjust them there or, to have your own settings that are
-not overridden by source updates, create a separate `.env`
-file and put your custom settings there. Anything made in this file will overwrite
-the project settings file. Use this to configure your own database, secret key,
-email, etc.
+`uv sync` will automatically download Python 3.13 if it isn't already installed,
+create a `.venv`, and install all dependencies.
 
-### Optional Environment Setup
-Copy the example environment file to a new file named `.env` in the root of the
-project directory.
+### Environment setup
+
+Copy the example environment file and edit it to suit your environment:
+
 ```bash
-cp .env.example .env
+cp env.example-local .env
 ```
 
-And you can modify the settings in `.env` to suit your own environment.
+Configure your database, secret key, email, etc. in `.env`.
 
-After you've updated the settings for your own environment, it's time to enter the virtual environment and set up the database.
+### Set up the database
 
-#### Enter the virtual environment
 ```bash
-pipenv shell
+uv run python manage.py migrate
 ```
 
-#### Set up the database
+### Create a superuser
+
 ```bash
-python manage.py migrate
+uv run python manage.py createsuperuser
 ```
 
-#### Create a superuser
+### Run the development server
+
 ```bash
-# Create a superuser so you can log into the admin interface
-python manage.py createsuperuser
+uv run python manage.py runserver
 ```
 
-#### Run the development server
+Or use the provided helper script which handles migrations and static assets automatically:
+
 ```bash
-python manage.py runserver
+./util/start_local.sh
 ```
 
-You should now be able to access the development server at http://localhost:8000
-
-If you want to exit the virtual environment, just type `exit` at the command prompt.
+You should now be able to access the development server at http://localhost:8000.
 
 
 ## Requirements
-Review the included requirements.txt for detailed package requirements.  Our
-application is using:
 
-* [Python 3.10](https://python.org)
-* [Django 5.2.6](https://djangoproject.com)
-* [Npm](https://www.npmjs.com/)
+* [Python 3.14](https://python.org)
+* [Django 5.2](https://djangoproject.com)
+* [npm](https://www.npmjs.com/)
 
 
 ## Running locally with a backup of production Postgres on SQLite
@@ -133,7 +111,7 @@ Get a `.sql` or `.sql.gz` dump from the production server.
 ### 2. Convert the dump to SQLite
 
 ```bash
-python util/pg_to_sqlite.py /path/to/django-YYYYMMDDHHII.sql.gz \
+uv run python util/pg_to_sqlite.py /path/to/django-YYYYMMDDHHII.sql.gz \
     --output /path/to/output.sqlite3
 ```
 
@@ -141,21 +119,17 @@ Add `--django` to also run Django migrations after the data is loaded (useful
 if the dump is slightly behind the current schema):
 
 ```bash
-python util/pg_to_sqlite.py /path/to/django-YYYYMMDDHHII.sql.gz \
+uv run python util/pg_to_sqlite.py /path/to/django-YYYYMMDDHHII.sql.gz \
     --output /path/to/output.sqlite3 \
     --django
 ```
 
-Run `python util/pg_to_sqlite.py --help` for all options.
+Run `uv run python util/pg_to_sqlite.py --help` for all options.
 
 ### 3. Point your .env at the SQLite file
 
-Copy `env.example-local` to `.env` (if you haven't already), then edit `.env`
-and set `DATABASE_URL` to the absolute path of the file you just created:
-
-```bash
-cp env.example-local .env
-```
+Copy `env.example-local` to `.env` (if you haven't already), then set `DATABASE_URL`
+to the absolute path of the file you just created:
 
 ```bash
 # in .env
@@ -172,39 +146,39 @@ DATABASE_URL="sqlite:////path/to/output.sqlite3"
 ```
 
 `util/start_local.sh` sets `DJANGO_SETTINGS_MODULE=packman.settings.local` and runs
-`manage.py migrate` automatically before starting the server.  You should now be
+`manage.py migrate` automatically before starting the server. You should now be
 able to access the site at http://localhost:8000 with production data.
 
 
-## How to run tests
-
-To run the tests, first ensure that you are in the virtual environment.  Then run:
+## Running tests
 
 ```bash
-python manage.py test
+uv run python manage.py test
 ```
 
-or
+
+## Running pre-commit hooks
 
 ```bash
-pipenv run python manage.py test
+uv run pre-commit install
+uv run pre-commit run --all-files
 ```
 
+While pre-commit hooks will automatically run on GitHub after you've created a PR,
+it is best to run these locally first.
 
-## How to run pre-commit hooks
 
-To run the pre-commit hooks, first ensure that you are in the virtual environment.
-Then run:
+## Production deployment
+
+On the server, create the virtualenv at the expected path and sync production dependencies:
 
 ```bash
-pre-commit install
-pre-commit run --all-files
+uv venv /home/pack144/apps/django/env --python 3.14
+UV_PROJECT_ENVIRONMENT=/home/pack144/apps/django/env uv sync --group production
 ```
 
-or
+Then restart uWSGI:
 
-```base
-pipenv run pre-commit run --all-files
+```bash
+touch ~/apps/django/tmp/restart.txt
 ```
-
-While pre-commit hooks will automatically run in github after you've created a PR, it is of course best to run these locally first.
