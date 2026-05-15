@@ -58,41 +58,18 @@ fi
 export DJANGO_SETTINGS_MODULE="packman.settings.local"
 
 # ── Python environment ────────────────────────────────────────────────────────
-if command -v pipenv &>/dev/null; then
-    info "Using pipenv"
-    PYTHON="pipenv run python"
+if command -v uv &>/dev/null; then
+    info "Using uv"
+    PYTHON="uv run python"
 
     if [ "$RUN_INSTALL" = true ]; then
-        info "Checking dependencies..."
-        if pipenv install --dev; then
-            success "Dependencies up to date"
-        else
-            warn "pipenv install failed — see output above for details"
-        fi
-    fi
-
-    if [ "$RUN_INSTALL" = true ]; then
-        info "Checking dependencies..."
-        pipenv install --dev 2>/dev/null \
+        info "Syncing dependencies..."
+        uv sync \
             && success "Dependencies up to date" \
-            || warn "pipenv install had warnings — continuing anyway"
+            || error "uv sync failed — see output above for details"
     fi
 else
-    # Fall back to .venv or system python
-    warn "pipenv not found — falling back to virtualenv"
-    if [ ! -d ".venv" ]; then
-        info "Creating .venv..."
-        python3 -m venv .venv
-    fi
-    # shellcheck source=/dev/null
-    source .venv/bin/activate
-
-    if [ "$RUN_INSTALL" = true ]; then
-        info "Installing local requirements..."
-        pip install -q -r requirements/local.txt \
-            && success "Dependencies installed"
-    fi
-    PYTHON="python"
+    error "uv not found — install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"
 fi
 
 # ── npm / static assets ───────────────────────────────────────────────────────
