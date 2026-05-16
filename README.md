@@ -193,6 +193,6 @@ Run these additional steps (prior to restart) when the pull includes the relevan
 
 | Change | Command |
 |---|---|
-| `uv.lock` updated | `UV_PROJECT_ENVIRONMENT=~/apps/django/env uv sync --group production` |
+| `uv.lock` updated | `cd ~/apps/django/packman && UV_PROJECT_ENVIRONMENT=~/apps/django/env uv sync --group production` |
 | New db migrations | `~/apps/django/env/bin/python packman/manage.py migrate` |
 | Static files changed | `DJANGO_SETTINGS_MODULE=packman.settings.production ~/apps/django/env/bin/python packman/manage.py collectstatic --no-input` |
