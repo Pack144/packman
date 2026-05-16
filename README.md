@@ -175,24 +175,23 @@ it is of course best practice to run these locally first.
 Create the virtualenv using uv (remove any existing one first):
 
 ```bash
-rm -rf ~/apps/django/env
-uv venv ~/apps/django/env --python 3.14
+uv venv ~/apps/django-beta/env --python 3.14
 ```
-
-Then follow the deploy steps below.
 
 ### Deploying
 
+Deployment should first be validated in beta prior to deploying in prod, so sample beta paths are used below. (Of course this should be automated.)
+
 ```bash
-cd ~/apps/django
+cd ~/apps/django-beta/packman
 git pull
-touch ~/apps/django/tmp/restart.txt
+touch ~/apps/django-beta/tmp/restart.txt
 ```
 
 Run these additional steps (prior to restart) when the pull includes the relevant changes:
 
 | Change | Command |
 |---|---|
-| `uv.lock` updated | `cd ~/apps/django/packman && UV_PROJECT_ENVIRONMENT=~/apps/django/env uv sync --group production` |
-| New db migrations | `~/apps/django/env/bin/python packman/manage.py migrate` |
-| Static files changed | `DJANGO_SETTINGS_MODULE=packman.settings.production ~/apps/django/env/bin/python packman/manage.py collectstatic --no-input` |
+| `uv.lock` updated | `UV_PROJECT_ENVIRONMENT=~/apps/django-beta/env uv sync --group production` |
+| New db migrations | `~/apps/django-beta/env/bin/python packman/manage.py migrate` |
+| Static files changed | `DJANGO_SETTINGS_MODULE=packman.settings.production ~/apps/django-beta/env/bin/python packman/manage.py collectstatic --no-input` |
