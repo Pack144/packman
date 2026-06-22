@@ -16,7 +16,7 @@ jobs:
         python-version: [ '3.14' ]
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Install System Dependencies
       run: sudo apt-get install -y libmemcached-dev
     - name: Install uv
