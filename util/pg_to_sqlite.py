@@ -413,8 +413,14 @@ def pg_value_to_sqlite(value: str) -> str:
     value = value.replace(r"\n", "\n")
     value = value.replace(r"\r", "\r")
     value = value.replace(r"\t", "\t")
+    # Replace boolean 't' with 1
+    if value == "t":
+        value = 1
+    # Replace boolean 'f' with 0
+    elif value == "f":
+        value = 0
     # Normalise UUIDs: Django's SQLite backend expects 32-char hex without hyphens
-    if _UUID_RE.match(value):
+    elif _UUID_RE.match(value):
         value = value.replace("-", "")
     return value
 
