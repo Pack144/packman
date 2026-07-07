@@ -107,6 +107,7 @@ converted to SQLite — no local Postgres installation required.
 ### 1. Obtain a production pg_dump
 
 Get a `.sql` or `.sql.gz` dump from the production server.
+(See IT Committee Notes document for more details)
 
 ### 2. Convert the dump to SQLite
 
