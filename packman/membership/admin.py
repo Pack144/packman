@@ -351,13 +351,13 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
-    @admin.action(description=_("Assign selected Cubs to the same den for the next Pack Year"))
+    @admin.action(description=_("Before July 1 (pre-rollover): assign selected Cubs to next Pack Year's den"))
     def continue_in_same_den_one_more_year(self, request, queryset):
         current_year = PackYear.objects.current()
         next_year, created = PackYear.objects.get_or_create(year=current_year.pk + 1)
         self._continue_in_same_den(request, queryset, source_year=current_year, target_year=next_year)
 
-    @admin.action(description=_("Assign selected Cubs to the same den from last Pack Year"))
+    @admin.action(description=_("After June 30 (post-rollover): assign selected Cubs to same den as last Pack Year"))
     def continue_in_same_den_from_last_year(self, request, queryset):
         """
         For use once the current Pack Year has already rolled over and Cubs
