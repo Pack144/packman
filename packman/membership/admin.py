@@ -20,6 +20,7 @@ from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
 from packman.calendars.models import PackYear
 from packman.committees.models import CommitteeMember
+from packman.dens.models import Den
 from packman.dens.models import Membership as DenMembership
 from packman.dens.models import Rank
 
@@ -142,6 +143,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "make_inactive",
         "make_graduated",
         "continue_in_same_den_one_more_year",
+        "continue_in_same_den_from_last_year",
         "export_roster_csv",
         "export_for_grandprix",
     ]
@@ -314,18 +316,21 @@ class ScoutAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
 
-    @admin.action(description=_("Assign selected Cubs to the same den for the next Pack Year"))
-    def continue_in_same_den_one_more_year(self, request, queryset):
-        next_year, created = PackYear.objects.get_or_create(year=PackYear.get_current().pk + 1)
+    def _continue_in_same_den(self, request, queryset, source_year, target_year):
+        """Assign each Cub in the queryset to the den they held during source_year, for target_year."""
         n = queryset.count()
         if n:
             for obj in queryset:
-                if obj.current_den:
-                    m, c = DenMembership.objects.get_or_create(den=obj.current_den, scout=obj, year_assigned=next_year)
+                try:
+                    den = Den.objects.get(scouts__scout=obj, scouts__year_assigned=source_year)
+                except Den.DoesNotExist:
+                    den = None
+                if den:
+                    m, c = DenMembership.objects.get_or_create(den=den, scout=obj, year_assigned=target_year)
                     if not c:
                         self.message_user(
                             request,
-                            _(f"{obj} is already assigned to Den {obj.current_den} for the {next_year} Pack Year."),
+                            _(f"{obj} is already assigned to Den {den} for the {target_year} Pack Year."),
                             messages.WARNING,
                         )
                         n -= 1
@@ -333,17 +338,37 @@ class ScoutAdmin(admin.ModelAdmin):
                     n -= 1
                     self.message_user(
                         request,
-                        _(f"{obj} is not currently assigned to a den."),
+                        _(f"{obj} was not assigned to a den for the {source_year} Pack Year."),
                         messages.WARNING,
                     )
         self.message_user(
             request,
             ngettext(
-                f"Successfully rolled {n} Cub into the {next_year} Pack Year.",
-                f"Successfully rolled {n} Cubs into the {next_year} Pack Year.",
+                f"Successfully rolled {n} Cub into the {target_year} Pack Year.",
+                f"Successfully rolled {n} Cubs into the {target_year} Pack Year.",
                 n,
             ),
             messages.SUCCESS,
+        )
+
+    @admin.action(description=_("Before July 1 (pre-rollover): assign selected Cubs to next Pack Year's den"))
+    def continue_in_same_den_one_more_year(self, request, queryset):
+        current_year = PackYear.objects.current()
+        next_year, created = PackYear.objects.get_or_create(year=current_year.pk + 1)
+        self._continue_in_same_den(request, queryset, source_year=current_year, target_year=next_year)
+
+    @admin.action(description=_("After June 30 (post-rollover): assign selected Cubs to same den as last Pack Year"))
+    def continue_in_same_den_from_last_year(self, request, queryset):
+        """
+        For use once the current Pack Year has already rolled over and Cubs
+        weren't pre-assigned to a den for it ahead of time.
+        """
+        previous_year = PackYear.objects.previous()
+        if not previous_year:
+            self.message_user(request, _("There is no previous Pack Year on record."), messages.ERROR)
+            return
+        self._continue_in_same_den(
+            request, queryset, source_year=previous_year, target_year=PackYear.objects.current()
         )
 
     @admin.action(description=_("Export selected Cubs to CSV (roster)"))
