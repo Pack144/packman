@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "easy_thumbnails",
     "localflavor",
     "phonenumber_field",
+    "rest_framework",
     "tinymce",
     "whitenoise",
     # Local apps
@@ -60,8 +61,21 @@ INSTALLED_APPS = [
     "packman.documents",
     "packman.mail",
     "packman.membership",
+    "packman.mobile",
     "packman.pages",
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
