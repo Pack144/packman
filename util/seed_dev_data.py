@@ -22,12 +22,12 @@ print("Seeding families, adults, and scouts...")
 families = []
 for _ in range(20):
     family = FamilyFactory()
-    for _ in range(random.randint(1, 2)):
+    for _ in range(random.randint(1, 2)):  # nosec B311
         AdultFactory(family=family)
-    for _ in range(random.randint(1, 2)):
+    for _ in range(random.randint(1, 2)):  # nosec B311
         scout = ScoutFactory(family=family, status=Scout.ACTIVE)
-        CurrentMembershipFactory(scout=scout, den=random.choice(dens))
-    if random.random() < 0.25:
+        CurrentMembershipFactory(scout=scout, den=random.choice(dens))  # nosec B311
+    if random.random() < 0.25:  # nosec B311
         ScoutFactory(family=family, status=Scout.INACTIVE)
     families.append(family)
 
@@ -35,7 +35,7 @@ print("Seeding calendar categories and events...")
 categories = [CategoryFactory() for _ in range(4)]
 for category in categories:
     for _ in range(5):
-        EventFactory(category=category, future=random.choice([True, False]))
+        EventFactory(category=category, future=random.choice([True, False]))  # nosec B311
 
 CurrentPackYearFactory()
 
