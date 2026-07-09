@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=Alfa+Slab+One&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#eef0f3;font-family:'Public Sans',system-ui,sans-serif;color:#20242b}
+a{color:#1667d6;text-decoration:none}
+a:hover{color:#0f4fa8;text-decoration:underline}
+.pk-scroll{scrollbar-width:thin}
+</style>
+</helmet>
+
+<div style="max-width:1280px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,.08)">
+
+  <div style="position:relative;height:172px;background:#0e1c33;overflow:hidden">
+    <image-slot id="pack144-hero" shape="rect" fit="cover" placeholder="Drop your pack banner photo" style="position:absolute;inset:0"></image-slot>
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,15,28,.86) 0%,rgba(8,15,28,.5) 26%,rgba(8,15,28,0) 46%);pointer-events:none"></div>
+    <div style="position:absolute;left:26px;top:24px;display:flex;align-items:center;gap:16px;pointer-events:none">
+      <div style="display:flex;gap:5px">
+        <span style="width:38px;height:46px;background:#d21e2b;border:2px solid #f4b6bb;border-radius:5px;display:flex;align-items:center;justify-content:center;font:800 30px 'Public Sans';color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.4)">1</span>
+        <span style="width:38px;height:46px;background:#d21e2b;border:2px solid #f4b6bb;border-radius:5px;display:flex;align-items:center;justify-content:center;font:800 30px 'Public Sans';color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.4)">4</span>
+        <span style="width:38px;height:46px;background:#d21e2b;border:2px solid #f4b6bb;border-radius:5px;display:flex;align-items:center;justify-content:center;font:800 30px 'Public Sans';color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.4)">4</span>
+      </div>
+      <div style="line-height:1.05">
+        <div style="font-family:'Alfa Slab One',serif;font-size:20px;color:#ffce33;letter-spacing:.2px;text-shadow:0 2px 5px rgba(0,0,0,.55)">Cub Scouts Pack 144</div>
+        <div style="font:800 15px 'Public Sans';color:#fff;letter-spacing:.3px;margin-top:3px;text-shadow:0 1px 4px rgba(0,0,0,.6)">Seattle, Washington</div>
+        <div style="font:600 12px 'Public Sans';color:#dfe6f2;letter-spacing:2px;margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,.6)">SINCE 1929</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:linear-gradient(180deg,#1a4aa0,#173f8c);border-bottom:3px solid #ffce33">
+    <div style="display:flex;align-items:stretch;padding:0 14px">
+      <div style="display:flex;flex-wrap:wrap;flex:1;align-items:center">
+        <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="12">
+          <div onClick="{{ item.onClick }}" style="padding:14px 15px;font:600 14px 'Public Sans';color:#e9eefb;cursor:pointer;line-height:1.15;max-width:104px;border-bottom:3px solid transparent;margin-bottom:-3px" style-hover="background:rgba(255,255,255,.10)">{{ item.label }}</div>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:0 12px 0 18px;color:#ffce33;font:700 15px 'Public Sans';cursor:pointer;white-space:nowrap">
+        <span style="width:26px;height:26px;border-radius:50%;background:#ffce33;color:#173f8c;display:flex;align-items:center;justify-content:center;font:800 13px 'Public Sans'">J</span>
+        Jeremiah <span style="font-size:11px">▾</span>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <div style="padding:34px 56px 64px;max-width:1120px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">
+      <h1 style="font:800 42px/1 'Public Sans';color:#d0111f;margin:0 0 4px">Welcome to Pack 144</h1>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button style="width:38px;height:38px;border:1px solid #d7dbe2;background:#fff;border-radius:8px;color:#5f6673;font-size:19px;cursor:pointer" style-hover="background:#f4f6f9">＋</button>
+        <button style="width:38px;height:38px;border:1px solid #d7dbe2;background:#fff;border-radius:8px;color:#5f6673;font-size:16px;cursor:pointer" style-hover="background:#f4f6f9">✎</button>
+      </div>
+    </div>
+    <h2 style="font:700 27px 'Public Sans';color:#173f8c;margin:14px 0 16px">Coming Up</h2>
+
+    <div style="background:linear-gradient(135deg,#1f6dff,#1657e6);border-radius:16px;padding:34px 40px;display:flex;align-items:center;gap:44px;color:#fff;box-shadow:0 16px 34px rgba(31,109,255,.28)">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;flex:none;width:210px">
+        <svg width="86" height="66" viewBox="0 0 86 66" fill="#fff"><circle cx="43" cy="15" r="12"/><path d="M43 30c-13 0-22 8-22 20v4h44v-4c0-12-9-20-22-20z"/><circle cx="14" cy="21" r="9"/><path d="M14 33C5 33 0 39 0 47v3h13v-3c0-6 2-11 6-14-1 0-3 0-5 0z"/><circle cx="72" cy="21" r="9"/><path d="M72 33c9 0 14 6 14 14v3H73v-3c0-6-2-11-6-14 1 0 3 0 5 0z"/></svg>
+        <div style="font:800 27px 'Public Sans';text-align:center;line-height:1.05">Wallingford Parade</div>
+      </div>
+      <div style="width:1px;align-self:stretch;background:rgba(255,255,255,.28)"></div>
+      <div style="flex:1;line-height:1.55">
+        <div style="font:800 22px 'Public Sans'">Saturday, July 11th</div>
+        <div style="font:700 16px 'Public Sans';margin:6px 0 18px">10:30 a.m. — 12:00 p.m.</div>
+        <div style="font-size:16px;margin-bottom:6px"><b>Where:</b> Wallingford</div>
+        <div style="font-size:16px;opacity:.95">Wallingford 74th Annual Parade</div>
+        <div style="font-size:16px;margin-top:2px"><a href="#" style="color:#fff;text-decoration:underline">https://www.celebratewallingfordwa.org</a></div>
+      </div>
+    </div>
+
+    <div style="margin-top:30px;display:flex;flex-direction:column;gap:20px">
+      <div style="border:1px solid #e2e5ea;border-radius:14px;padding:26px 30px;box-shadow:0 3px 10px rgba(20,30,50,.04)">
+        <h3 style="font:700 27px 'Public Sans';margin:0 0 12px;color:#20242b">Spring Open House!</h3>
+        <p style="font-size:16px;line-height:1.6;margin:0 0 14px;color:#3b4149">Prospective members and parents — come to our open house and meet the pack!</p>
+        <div style="font-size:16px;color:#3b4149;margin-bottom:5px"><b>When:</b> May 13th &nbsp;|&nbsp; 6:30 PM – 7:45 PM</div>
+        <div style="font-size:16px;color:#3b4149"><b>Where:</b> Bryant Elementary Cafeteria</div>
+      </div>
+      <div style="border:1px solid #e2e5ea;border-radius:14px;padding:26px 30px;box-shadow:0 3px 10px rgba(20,30,50,.04)">
+        <h3 style="font:700 27px 'Public Sans';margin:0 0 12px;color:#20242b">Welcome, Scouts!</h3>
+        <p style="font-size:16px;line-height:1.6;margin:0;color:#3b4149">A new year of adventure starts now. Check the <a href="#">Calendar</a> for den meetings, pack outings, and campouts — and say hello in the <a href="#">Members</a> directory.</p>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isMembers }}" hint-placeholder-val="{{ true }}">
+  <div style="padding:34px 56px 64px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:30px;flex-wrap:wrap">
+      <h1 style="font:800 42px/1 'Public Sans';color:#d0111f;margin:6px 0 0">Members</h1>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div style="display:flex">
+          <input placeholder="Search" style="width:340px;height:42px;border:1px solid #ccd2db;border-right:0;border-radius:8px 0 0 8px;padding:0 14px;font:400 15px 'Public Sans';outline:none">
+          <button style="width:46px;height:42px;background:#20242b;border:0;border-radius:0 8px 8px 0;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#000">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg>
+          </button>
+        </div>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;color:#5f6673;cursor:pointer"><input type="checkbox" style="width:15px;height:15px">include alumni</label>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:2px;border-bottom:1px solid #e2e5ea;margin-top:22px">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+        <div onClick="{{ t.onClick }}" style="padding:13px 20px;font:600 16px 'Public Sans';cursor:pointer;color:{{ t.color }};border-bottom:3px solid {{ t.bar }};margin-bottom:-1px">{{ t.label }}</div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ isDens }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px">
+        <sc-for list="{{ dens }}" as="d" hint-placeholder-count="6">
+          <div style="border:1px solid #e2e5ea;border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;cursor:pointer" style-hover="box-shadow:0 6px 16px rgba(20,30,50,.09)">
+            <span style="width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:800 17px 'Public Sans';color:#fff;background:{{ d.color }}">{{ d.badge }}</span>
+            <div><div style="font:700 18px 'Public Sans'">{{ d.name }}</div><div style="font-size:13px;color:#7a828e;margin-top:2px">{{ d.meta }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isPeopleTab }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:6px">
+        <sc-for list="{{ list }}" as="p" hint-placeholder-count="6">
+          <div onClick="{{ p.onClick }}" style="display:flex;align-items:center;gap:22px;padding:14px 8px;border-bottom:1px solid #eceef1;cursor:pointer" style-hover="background:#f6f8fb">
+            <span style="width:60px;height:60px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font:700 20px 'Public Sans';color:#fff;background:{{ p.color }}">{{ p.initials }}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font:600 24px 'Public Sans';color:#20242b">{{ p.name }}</div>
+              <div style="font-size:14px;color:#7a828e;margin-top:2px">{{ p.sub }}</div>
+            </div>
+            <span style="color:#c3c9d2;font-size:22px">›</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:30px 56px 64px">
+    <div onClick="{{ goMembers }}" style="font:600 14px 'Public Sans';color:#1667d6;cursor:pointer;margin-bottom:12px">‹ Back to Members</div>
+    <h1 style="font:800 54px/1 'Public Sans';color:#d0111f;margin:0 0 24px">{{ profile.name }}</h1>
+
+    <div style="display:flex;gap:34px;align-items:flex-start;flex-wrap:wrap">
+      <div style="width:320px;flex:none;border:1px solid #e2e5ea;border-radius:14px;overflow:hidden;box-shadow:0 6px 18px rgba(20,30,50,.07)">
+        <div style="width:100%;height:300px;background:#0e1c33">
+          <image-slot id="pack144-profile" shape="rect" fit="cover" placeholder="Drop photo" style="position:relative;width:100%;height:100%"></image-slot>
+        </div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:11px;font-size:15px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6673" stroke-width="1.9"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="M3 6l9 6 9-6"/></svg>
+            <a href="mailto:{{ profile.email }}">{{ profile.email }}</a>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;font-size:15px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#5f6673"><path d="M6.6 2.5a1.7 1.7 0 00-1.5.5L3.7 4.9c-.5.5-.7 1.2-.5 1.9 1.9 6.9 6.9 11.9 13.8 13.8.7.2 1.4 0 1.9-.5l1.9-1.4a1.7 1.7 0 00.2-2.4l-2.3-2.6a1.7 1.7 0 00-2-.4l-1.9.9a13 13 0 01-5-5l.9-1.9a1.7 1.7 0 00-.4-2L8 3z"/></svg>
+            <a href="tel:{{ profile.phone }}">{{ profile.phone }}</a>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:11px;font-size:15px;color:#3b4149">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#5f6673" style="margin-top:1px"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z"/></svg>
+            <div style="line-height:1.4">{{ profile.addr1 }}<br>{{ profile.addr2 }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:340px">
+        <sc-if value="{{ isAdult }}" hint-placeholder-val="{{ true }}">
+          <h2 style="font:700 27px 'Public Sans';color:#20242b;margin:2px 0 16px">Committees</h2>
+          <div style="border:1px solid #e2e5ea;border-radius:12px;overflow:hidden">
+            <sc-for list="{{ committees }}" as="c" hint-placeholder-count="6">
+              <div style="border-bottom:1px solid #eceef1">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 20px;background:{{ c.bg }};cursor:pointer" style-hover="background:#f6f8fb">
+                  <span style="font:700 17px 'Public Sans';color:{{ c.year_color }}">{{ c.year }}</span>
+                  <span style="color:#c3c9d2;font-size:15px">{{ c.chev }}</span>
+                </div>
+                <sc-for list="{{ c.roles }}" as="r" hint-placeholder-count="0">
+                  <div style="display:flex;gap:16px;padding:10px 20px 10px 28px;border-top:1px solid #eef0f3;background:#f3f7ff">
+                    <span style="font:700 15px 'Public Sans';color:#20242b;min-width:130px">{{ r.name }}</span>
+                    <span style="font-size:15px;color:#5f6673">{{ r.role }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isCub }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font:700 27px 'Public Sans';color:#20242b;margin:2px 0 16px">Scout Info</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+            <div style="border:1px solid #e2e5ea;border-radius:12px;padding:16px 18px"><div style="font-size:12px;letter-spacing:1px;color:#7a828e;text-transform:uppercase">Den</div><div style="font:700 20px 'Public Sans';margin-top:4px">{{ profile.den }}</div></div>
+            <div style="border:1px solid #e2e5ea;border-radius:12px;padding:16px 18px"><div style="font-size:12px;letter-spacing:1px;color:#7a828e;text-transform:uppercase">Rank</div><div style="font:700 20px 'Public Sans';margin-top:4px">{{ profile.rank }}</div></div>
+            <div style="border:1px solid #e2e5ea;border-radius:12px;padding:16px 18px"><div style="font-size:12px;letter-spacing:1px;color:#7a828e;text-transform:uppercase">Grade</div><div style="font:700 20px 'Public Sans';margin-top:4px">{{ profile.grade }}</div></div>
+            <div style="border:1px solid #e2e5ea;border-radius:12px;padding:16px 18px"><div style="font-size:12px;letter-spacing:1px;color:#7a828e;text-transform:uppercase">Joined</div><div style="font:700 20px 'Public Sans';margin-top:4px">{{ profile.joined }}</div></div>
+          </div>
+          <h2 style="font:700 22px 'Public Sans';color:#20242b;margin:0 0 12px">Parents &amp; Guardians</h2>
+          <div style="border:1px solid #e2e5ea;border-radius:12px;overflow:hidden">
+            <sc-for list="{{ parents }}" as="pa" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:16px;padding:14px 18px;border-bottom:1px solid #eceef1">
+                <span style="width:44px;height:44px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font:700 15px 'Public Sans';color:#fff;background:{{ pa.color }}">{{ pa.initials }}</span>
+                <div style="flex:1"><div style="font:600 18px 'Public Sans'">{{ pa.name }}</div><div style="font-size:14px;color:#7a828e">{{ pa.phone }} &nbsp;·&nbsp; {{ pa.email }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isSection }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:80px 56px;text-align:center">
+    <h1 style="font:800 40px 'Public Sans';color:#d0111f;margin:0 0 10px">{{ sectionName }}</h1>
+    <p style="font-size:17px;color:#7a828e;max-width:520px;margin:0 auto">This section is part of the full Pack 144 site. This prototype focuses on the directory — the Home, Members, and member profile screens.</p>
+    <button onClick="{{ goHome }}" style="margin-top:26px;padding:12px 26px;background:#1a4aa0;border:0;border-radius:9px;color:#fff;font:700 15px 'Public Sans';cursor:pointer" style-hover="background:#123a86">Back to Home</button>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { screen: 'home', activeNav: '', tab: 'Cubs', profileId: 'greg', sectionName: '' };
+
+  data() {
+    const cubs = [
+      { id:'wyatt', name:'Wyatt Adams', den:'Den 4 · Wolves', rank:'Wolf', grade:'2nd Grade', joined:'Sept 2023', color:'#2f6fb0', parents:[{name:'Greg Adams',phone:'(206) 940-8598',email:'greg.a.adams.ii@gmail.com',color:'#c0392b'},{name:'Marta Adams',phone:'(206) 940-8511',email:'marta.adams@gmail.com',color:'#1f8a5b'}] },
+      { id:'cory', name:'Cory Aderhold', den:'Den 2 · Tigers', rank:'Tiger', grade:'1st Grade', joined:'Sept 2024', color:'#e08a1e', parents:[{name:'Paul Aderhold',phone:'(206) 555-0142',email:'paul.aderhold@gmail.com',color:'#5b4bb0'}] },
+      { id:'bob', name:'Bob Aderhold', den:'Den 5 · Bears', rank:'Bear', grade:'3rd Grade', joined:'Sept 2022', color:'#8a5a2b', parents:[{name:'Paul Aderhold',phone:'(206) 555-0142',email:'paul.aderhold@gmail.com',color:'#5b4bb0'}] },
+      { id:'milo', name:'Milo Almquist', den:'Den 3 · Wolves', rank:'Wolf', grade:'2nd Grade', joined:'Sept 2023', color:'#1f8a5b', parents:[{name:'Erik Almquist',phone:'(206) 555-0199',email:'erik.almquist@gmail.com',color:'#2f6fb0'}] },
+      { id:'nico', name:'Nico Altamirano', den:'Den 1 · Lions', rank:'Lion', grade:'Kindergarten', joined:'Sept 2025', color:'#c0392b', parents:[{name:'Sofia Altamirano',phone:'(206) 555-0177',email:'sofia.alt@gmail.com',color:'#e08a1e'}] },
+      { id:'ada', name:'Ada Brooks', den:'Den 6 · Bears', rank:'Bear', grade:'3rd Grade', joined:'Sept 2022', color:'#5b4bb0', parents:[{name:'Dana Brooks',phone:'(206) 555-0163',email:'dana.brooks@gmail.com',color:'#1f8a5b'}] },
+    ];
+    const adults = [
+      { id:'greg', name:'Greg Adams', type:'adult', email:'greg.a.adams.ii@gmail.com', phone:'(206) 940-8598', addr1:'4535 NE 41st St', addr2:'Seattle, WA 98105', color:'#c0392b',
+        committees:[
+          { year:'2026–2027', current:true, roles:[{name:'Snow Camp',role:'Coordinator'},{name:'Flags',role:'Member'}] },
+          { year:'2025–2026' },{ year:'2024–2025' },{ year:'2023–2024' },{ year:'2022–2023' },{ year:'2021–2022' },{ year:'2020–2021' },{ year:'2019–2020' },
+        ] },
+      { id:'dana', name:'Dana Brooks', type:'adult', email:'dana.brooks@gmail.com', phone:'(206) 555-0163', addr1:'2210 N 50th St', addr2:'Seattle, WA 98103', color:'#1f8a5b',
+        committees:[{ year:'2026–2027', current:true, roles:[{name:'Popcorn Kernel',role:'Chair'}] },{ year:'2025–2026' },{ year:'2024–2025' }] },
+      { id:'erik', name:'Erik Almquist', type:'adult', email:'erik.almquist@gmail.com', phone:'(206) 555-0199', addr1:'815 NE 65th St', addr2:'Seattle, WA 98115', color:'#2f6fb0',
+        committees:[{ year:'2026–2027', current:true, roles:[{name:'Pinewood Derby',role:'Lead'}] },{ year:'2025–2026' }] },
+    ];
+    const withInitials = (p) => ({ ...p, initials: p.name.split(' ').map(w=>w[0]).slice(0,2).join('') });
+    return { cubs: cubs.map(withInitials).map(c=>({...c,type:'cub',sub:c.den})), adults: adults.map(withInitials).map(a=>({...a,sub:a.committees && a.committees[0] && a.committees[0].roles ? a.committees[0].roles.map(r=>r.name).join(' · ') : 'Adult'})) };
+  }
+
+  go(label){ if(label==='Members'){ this.setState({activeNav:label,screen:'members',tab:'Cubs'}); } else { this.setState({activeNav:label,screen:'section',sectionName:label}); } }
+
+  renderVals() {
+    const { cubs, adults } = this.data();
+    const everyone = [...cubs, ...adults];
+    const open = (id) => this.setState({ screen:'profile', profileId:id });
+
+    const navLabels = ['Calendar','Members','Committees','Documents','Trackers & Awards','Discipline Policy','SWAG Orders','Community Service','Lost & Found','Membership Requirements','Photos','Our History'];
+    const navItems = navLabels.map(label => ({ label, onClick: () => this.go(label) }));
+
+    const tabLabels = ['Cubs','Adults','All Members','Dens'];
+    const tabs = tabLabels.map(label => {
+      const active = this.state.tab === label;
+      return { label, onClick: () => this.setState({ tab: label }), color: active ? '#20242b' : '#1667d6', bar: active ? '#1a4aa0' : 'transparent' };
+    });
+
+    const listMap = { 'Cubs': cubs, 'Adults': adults, 'All Members': [...everyone].sort((a,b)=>a.name.split(' ')[1] > b.name.split(' ')[1] ? 1 : -1) };
+    const list = (listMap[this.state.tab] || cubs).map(p => ({ ...p, onClick: () => open(p.id) }));
+
+    const dens = [
+      { name:'Den 1 · Lions', meta:'Kindergarten · 5 Cubs', badge:'L', color:'#c0392b' },
+      { name:'Den 2 · Tigers', meta:'1st Grade · 7 Cubs', badge:'T', color:'#e08a1e' },
+      { name:'Den 3 · Wolves', meta:'2nd Grade · 6 Cubs', badge:'W', color:'#2f6fb0' },
+      { name:'Den 4 · Wolves', meta:'2nd Grade · 6 Cubs', badge:'W', color:'#2f6fb0' },
+      { name:'Den 5 · Bears', meta:'3rd Grade · 6 Cubs', badge:'B', color:'#8a5a2b' },
+      { name:'Den 6 · Bears', meta:'3rd Grade · 5 Cubs', badge:'B', color:'#8a5a2b' },
+    ];
+
+    const profile = everyone.find(p => p.id === this.state.profileId) || adults[0];
+    const isAdult = profile.type === 'adult';
+    const committees = (profile.committees || []).map(c => ({
+      year: c.year,
+      roles: c.roles || [],
+      current: !!c.current,
+      bg: c.current ? '#e7f0ff' : '#fff',
+      year_color: c.current ? '#1a4aa0' : '#20242b',
+      chev: c.current ? '▾' : '›',
+    }));
+    const parents = (profile.parents || []).map(p => ({ ...p, initials: p.name.split(' ').map(w=>w[0]).slice(0,2).join('') }));
+
+    return {
+      navItems,
+      isHome: this.state.screen === 'home',
+      isMembers: this.state.screen === 'members',
+      isProfile: this.state.screen === 'profile',
+      isSection: this.state.screen === 'section',
+      sectionName: this.state.sectionName,
+      goHome: () => this.setState({ screen:'home', activeNav:'' }),
+      goMembers: () => this.setState({ screen:'members' }),
+      tabs,
+      list,
+      dens,
+      isDens: this.state.tab === 'Dens',
+      isPeopleTab: this.state.tab !== 'Dens',
+      profile,
+      isAdult,
+      isCub: !isAdult,
+      committees,
+      parents,
+    };
+  }
+}
+</script>
+</body>
+</html>

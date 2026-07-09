@@ -1,50 +1,57 @@
-import { avatar, badge, esc, pluralize } from "../components.js";
+import { avatar, esc, icons, rankTag } from "../components.js";
+
+export function leaderCards(leaders) {
+  return leaders
+    .map(
+      (leader) => `
+    <div class="card">
+      <div class="row" style="padding:14px 15px">
+        ${avatar(leader.avatar, leader.name, "md")}
+        <div class="grow">
+          <div class="row-title" style="font-size:16px">${esc(leader.name)}</div>
+          <div class="mono">${esc(leader.position)}</div>
+        </div>
+        ${leader.phone ? `<a class="icon-btn" style="color:#1a4aa0" href="tel:${esc(leader.phone)}" aria-label="Call ${esc(leader.name)}">${icons.phone}</a>` : ""}
+        ${leader.email ? `<a class="icon-btn" style="color:#1a4aa0" href="mailto:${esc(leader.email)}" aria-label="Email ${esc(leader.name)}">${icons.mail}</a>` : ""}
+      </div>
+    </div>`
+    )
+    .join("");
+}
+
+export function rosterCard(den) {
+  return `
+    <section>
+      <h2 class="sect">Cubs &amp; Families</h2>
+      <div class="card row-divided">
+        ${
+          den.roster.length
+            ? den.roster
+                .map(
+                  (entry) => `
+          <a class="row" href="#/profile/${encodeURIComponent(entry.scout.slug)}">
+            ${avatar(entry.scout.avatar, entry.scout.name, "sm")}
+            <div class="grow">
+              <div class="name-line">
+                <span class="row-title">${esc(entry.scout.name)}</span>
+                ${rankTag(entry.scout.rank_key, entry.scout.rank)}
+              </div>
+              <div class="mono plain">${esc(entry.parents.map((p) => p.name).join(" & ")) || "&mdash;"}</div>
+            </div>
+            <span class="chev">&rsaquo;</span>
+          </a>`
+                )
+                .join("")
+            : '<p class="empty" style="padding:16px">No cubs assigned to this den yet.</p>'
+        }
+      </div>
+    </section>
+  `;
+}
 
 export function denDetailMarkup(den) {
   return `
-    <div class="card den-header-card">
-      <div class="row">
-        ${badge(den.rank_letter)}
-        <div class="col">
-          <div class="row-title lg">${esc(den.rank)} Den</div>
-          <span class="mono">DEN ${den.number} &middot; ${esc(pluralize(den.cub_count, "CUB").toUpperCase())}</span>
-        </div>
-      </div>
-    </div>
-    ${den.leaders
-      .map(
-        (leader) => `
-      <div class="card">
-        <div class="row">
-          ${avatar(leader.avatar, leader.name, "md")}
-          <div class="col">
-            <div class="row-title">${esc(leader.name)}</div>
-            <span class="mono">${esc(leader.position.toUpperCase())}</span>
-          </div>
-        </div>
-      </div>`
-      )
-      .join("")}
-    <span class="mono section-label">CUBS &amp; FAMILIES</span>
-    <div class="card list-card">
-      ${
-        den.roster.length
-          ? den.roster
-              .map(
-                (entry, i) => `
-        ${i > 0 ? '<hr class="hr">' : ""}
-        <a class="row" href="#/profile/${encodeURIComponent(entry.scout.slug)}">
-          ${avatar(entry.scout.avatar, entry.scout.name, "sm")}
-          <div class="col">
-            <div class="row-title">${esc(entry.scout.name)} ${badge(entry.scout.rank_letter)}</div>
-            <span class="mono">${esc(entry.parents.map((p) => p.name).join(" & ").toUpperCase()) || "&mdash;"}</span>
-          </div>
-          <span class="chev">&rsaquo;</span>
-        </a>`
-              )
-              .join("")
-          : '<p class="empty">No cubs assigned to this den yet.</p>'
-      }
-    </div>
+    ${leaderCards(den.leaders)}
+    ${rosterCard(den)}
   `;
 }

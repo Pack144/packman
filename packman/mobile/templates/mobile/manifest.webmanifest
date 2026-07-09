@@ -5,8 +5,8 @@
   "start_url": "{% url 'mobile:index' %}",
   "scope": "{% url 'mobile:index' %}",
   "display": "standalone",
-  "background_color": "#efece6",
-  "theme_color": "#2f6690",
+  "background_color": "#f4f6f9",
+  "theme_color": "#1a4aa0",
   "icons": [
     {
       "src": "{% static 'mobile/icons/icon-192.png' %}",

@@ -1,4 +1,3 @@
-from django.templatetags.static import static
 from easy_thumbnails.files import get_thumbnailer
 from rest_framework import serializers
 
@@ -18,31 +17,93 @@ RANK_GRADE_LABELS = {
     Rank.RankChoices.ARROW: "5th Grade",
 }
 
+# Stable keys the frontend maps to the Pack 144 rank color palette.
+RANK_KEYS = {
+    Rank.RankChoices.LION: "lion",
+    Rank.RankChoices.TIGER: "tiger",
+    Rank.RankChoices.WOLF: "wolf",
+    Rank.RankChoices.BEAR: "bear",
+    Rank.RankChoices.JR_WEBE: "webelos",
+    Rank.RankChoices.SR_WEBE: "webelos",
+    Rank.RankChoices.WEBE: "webelos",
+    Rank.RankChoices.ARROW: "aol",
+}
+
+RANK_BADGES = {
+    Rank.RankChoices.LION: "L",
+    Rank.RankChoices.TIGER: "T",
+    Rank.RankChoices.WOLF: "W",
+    Rank.RankChoices.BEAR: "B",
+    Rank.RankChoices.JR_WEBE: "We",
+    Rank.RankChoices.SR_WEBE: "We",
+    Rank.RankChoices.WEBE: "We",
+    Rank.RankChoices.ARROW: "A",
+}
+
+RANK_PLURALS = {
+    Rank.RankChoices.LION: "Lions",
+    Rank.RankChoices.TIGER: "Tigers",
+    Rank.RankChoices.WOLF: "Wolves",
+    Rank.RankChoices.BEAR: "Bears",
+    Rank.RankChoices.JR_WEBE: "Jr. Webelos",
+    Rank.RankChoices.SR_WEBE: "Sr. Webelos",
+    Rank.RankChoices.WEBE: "Webelos",
+    Rank.RankChoices.ARROW: "AOL",
+}
+
 
 def get_avatar_url(member, is_scout=False):
+    """Headshot thumbnail; None when no photo — the app renders initials instead."""
     if member.photo:
         return get_thumbnailer(member.photo).get_thumbnail({"size": (80, 80), "crop": "smart"}).url
-    if is_scout:
-        return static("img/avatar_cub_80x80.png")
-    if member.gender == member.Gender.MALE:
-        return static("img/avatar_man_80x80.png")
-    if member.gender == member.Gender.FEMALE:
-        return static("img/avatar_woman_80x80.png")
-    return static("img/avatar_generic_80x80.png")
+    return None
 
 
-def get_rank_letter(rank):
-    return rank.get_rank_display()[0].upper() if rank else "?"
+def get_photo_url(member):
+    """A larger rendition for the profile hero; None when no photo uploaded."""
+    if member.photo:
+        return get_thumbnailer(member.photo).get_thumbnail({"size": (640, 640), "crop": "smart"}).url
+    return None
+
+
+def get_rank_key(rank):
+    return RANK_KEYS.get(rank.rank) if rank else None
+
+
+def get_rank_badge(rank):
+    return RANK_BADGES.get(rank.rank, "?") if rank else "?"
+
+
+def rank_fields(rank):
+    """The bundle of rank presentation fields the frontend needs everywhere."""
+    return {
+        "rank": rank.get_rank_display() if rank else None,
+        "rank_plural": RANK_PLURALS.get(rank.rank) if rank else None,
+        "rank_key": get_rank_key(rank),
+        "rank_badge": get_rank_badge(rank),
+        "grade": RANK_GRADE_LABELS.get(rank.rank) if rank else None,
+    }
+
+
+def den_label(den):
+    """'Den 4 · Wolves' — the compact den designation used across the app."""
+    if not den:
+        return None
+    plural = RANK_PLURALS.get(den.rank.rank) if den.rank else None
+    return f"Den {den.number} · {plural}" if plural else f"Den {den.number}"
 
 
 class ScoutBadgeSerializer(serializers.Serializer):
-    """A cub's avatar + rank badge, used in compact listings (Home, My Dens roster)."""
+    """A cub's avatar + den/rank badge, used in compact listings."""
 
     slug = serializers.CharField()
     name = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
     den_number = serializers.SerializerMethodField()
-    rank_letter = serializers.SerializerMethodField()
+    den_label = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+    rank_key = serializers.SerializerMethodField()
+    rank_badge = serializers.SerializerMethodField()
 
     def get_name(self, scout):
         return scout.short_name
@@ -54,8 +115,17 @@ class ScoutBadgeSerializer(serializers.Serializer):
         den = scout.current_den
         return den.number if den else None
 
-    def get_rank_letter(self, scout):
-        return get_rank_letter(scout.rank)
+    def get_den_label(self, scout):
+        return den_label(scout.current_den)
+
+    def get_rank(self, scout):
+        return scout.rank.get_rank_display() if scout.rank else None
+
+    def get_rank_key(self, scout):
+        return get_rank_key(scout.rank)
+
+    def get_rank_badge(self, scout):
+        return get_rank_badge(scout.rank)
 
 
 class AdultSummarySerializer(serializers.Serializer):
@@ -74,7 +144,7 @@ class AdultSummarySerializer(serializers.Serializer):
 
 
 class FamilySerializer(serializers.Serializer):
-    """The signed-in user's own family, for the Home screen 'Your Family' card."""
+    """The signed-in user's own family, for the Home screen family card."""
 
     name = serializers.CharField()
     adults = serializers.SerializerMethodField()
@@ -94,17 +164,50 @@ class FamilySerializer(serializers.Serializer):
         return sorted(ranks)
 
 
+class EventSerializer(serializers.Serializer):
+    """The next upcoming pack event, for the Home screen 'Coming Up' card."""
+
+    name = serializers.CharField()
+    start = serializers.DateTimeField()
+    end = serializers.DateTimeField(allow_null=True)
+    location = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+
+    def get_location(self, event):
+        if event.venue:
+            return event.venue.name
+        return event.location or None
+
+    def get_description(self, event):
+        from django.utils.html import strip_tags
+
+        if not event.description:
+            return None
+        text = strip_tags(event.description).strip()
+        return text[:140] or None
+
+
 class DenLeaderSerializer(serializers.Serializer):
     slug = serializers.CharField(source="member.slug")
     name = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
     position = serializers.CharField(source="get_position_display")
+    phone = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
 
     def get_name(self, committee_member):
         return committee_member.member.get_full_name()
 
     def get_avatar(self, committee_member):
         return get_avatar_url(committee_member.member)
+
+    def get_phone(self, committee_member):
+        number = committee_member.member.phone_numbers.filter(published=True).first()
+        return number.number.as_e164 if number else None
+
+    def get_email(self, committee_member):
+        adult = committee_member.member
+        return adult.email if adult.is_published else None
 
 
 class DenRosterEntrySerializer(serializers.Serializer):
@@ -126,21 +229,9 @@ class DenSummarySerializer(serializers.Serializer):
     """A single row in the All Dens list."""
 
     number = serializers.IntegerField()
-    rank = serializers.SerializerMethodField()
-    rank_letter = serializers.SerializerMethodField()
-    grade = serializers.SerializerMethodField()
     cub_count = serializers.SerializerMethodField()
     is_mine = serializers.SerializerMethodField()
     my_cub = serializers.SerializerMethodField()
-
-    def get_rank(self, den):
-        return den.rank.get_rank_display() if den.rank else "Unranked"
-
-    def get_rank_letter(self, den):
-        return get_rank_letter(den.rank)
-
-    def get_grade(self, den):
-        return RANK_GRADE_LABELS.get(den.rank.rank) if den.rank else None
 
     def get_cub_count(self, den):
         return den.active_cubs().count()
@@ -154,36 +245,40 @@ class DenSummarySerializer(serializers.Serializer):
         cub = my_cubs_by_den.get(den.number)
         return cub.short_name if cub else None
 
+    def to_representation(self, den):
+        data = super().to_representation(den)
+        data.update(rank_fields(den.rank))
+        return data
+
 
 class DenDetailSerializer(serializers.Serializer):
     """Full detail for one Den, used by My Dens and the Den detail screen."""
 
     number = serializers.IntegerField()
-    rank = serializers.SerializerMethodField()
-    rank_letter = serializers.SerializerMethodField()
-    grade = serializers.SerializerMethodField()
     cub_count = serializers.SerializerMethodField()
+    my_cub = serializers.SerializerMethodField()
     leaders = serializers.SerializerMethodField()
     roster = serializers.SerializerMethodField()
-
-    def get_rank(self, den):
-        return den.rank.get_rank_display() if den.rank else "Unranked"
-
-    def get_rank_letter(self, den):
-        return get_rank_letter(den.rank)
-
-    def get_grade(self, den):
-        return RANK_GRADE_LABELS.get(den.rank.rank) if den.rank else None
 
     def get_cub_count(self, den):
         return den.active_cubs().count()
 
-    def get_leaders(self, den):
-        leaders = self.context.get("leaders")
-        if leaders is None:
-            from packman.committees.models import CommitteeMember
+    def get_my_cub(self, den):
+        my_cubs_by_den = self.context.get("my_cubs_by_den", {})
+        cub = my_cubs_by_den.get(den.number)
+        return cub.short_name if cub else None
 
-            leaders = CommitteeMember.objects.filter(den=den, position=CommitteeMember.Position.DEN_LEADER)
+    def get_leaders(self, den):
+        # A den's leaders are the committee members assigned to it for the
+        # current year, reached through Den's `leadership` reverse relation
+        # (CommitteeMember.den, related_name="leadership") — the same
+        # mechanism the main site's DenDetailView uses. Ordered by position so
+        # the Den Leader leads, followed by any Akela/assistant.
+        leaders = (
+            den.leadership.filter(year=PackYear.objects.current())
+            .select_related("member")
+            .order_by("position", "member__last_name")
+        )
         return DenLeaderSerializer(leaders, many=True).data
 
     def get_roster(self, den):
@@ -194,13 +289,21 @@ class DenDetailSerializer(serializers.Serializer):
         )
         return DenRosterEntrySerializer(roster, many=True).data
 
+    def to_representation(self, den):
+        data = super().to_representation(den)
+        data.update(rank_fields(den.rank))
+        return data
+
 
 class SearchResultSerializer(serializers.Serializer):
     slug = serializers.CharField()
     name = serializers.CharField()
     type = serializers.CharField()
     subtitle = serializers.CharField()
-    avatar = serializers.CharField()
+    avatar = serializers.CharField(allow_null=True)
+    rank_key = serializers.CharField(allow_null=True)
+    rank_badge = serializers.CharField(allow_null=True)
+    rank = serializers.CharField(allow_null=True)
 
 
 class ContactMethodSerializer(serializers.Serializer):
@@ -211,8 +314,10 @@ class ContactMethodSerializer(serializers.Serializer):
 class FamilyMemberSerializer(serializers.Serializer):
     slug = serializers.CharField()
     name = serializers.CharField()
-    avatar = serializers.CharField()
+    avatar = serializers.CharField(allow_null=True)
     relation = serializers.CharField()
+    rank = serializers.CharField(allow_null=True)
+    rank_key = serializers.CharField(allow_null=True)
 
 
 class MemberDetailSerializer(serializers.Serializer):
@@ -224,10 +329,13 @@ class MemberDetailSerializer(serializers.Serializer):
 
     slug = serializers.CharField()
     name = serializers.CharField()
-    avatar = serializers.CharField()
+    avatar = serializers.CharField(allow_null=True)
+    photo = serializers.CharField(allow_null=True)
     is_scout = serializers.BooleanField()
     den = serializers.CharField(allow_null=True)
-    rank_letter = serializers.CharField(allow_null=True)
+    grade = serializers.CharField(allow_null=True)
+    rank = serializers.CharField(allow_null=True)
+    rank_key = serializers.CharField(allow_null=True)
     phone_numbers = ContactMethodSerializer(many=True)
     emails = serializers.ListField(child=serializers.EmailField())
     family = FamilyMemberSerializer(many=True)

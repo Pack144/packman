@@ -1,4 +1,4 @@
-{% load static %}const CACHE_NAME = "pack-directory-shell-v1";
+{% load static %}const CACHE_NAME = "pack-directory-shell-v3";
 
 const PRECACHE_URLS = [
   "{% url 'mobile:index' %}",

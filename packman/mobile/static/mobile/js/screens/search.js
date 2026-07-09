@@ -1,50 +1,105 @@
-import { avatar, esc, tag } from "../components.js";
+import { appBar, avatar, denBadge, esc, icons, pluralize, rankTag } from "../components.js";
 import { api } from "../api.js";
 
 const FILTERS = [
   { key: "all", label: "All" },
   { key: "cub", label: "Cubs" },
   { key: "parent", label: "Parents" },
+  { key: "den", label: "By Den" },
 ];
+
+function highlight(name, query) {
+  const safe = esc(name);
+  if (!query) return safe;
+  const index = name.toLowerCase().indexOf(query.toLowerCase());
+  if (index < 0) return safe;
+  return (
+    esc(name.slice(0, index)) +
+    `<b style="color:#20242b">${esc(name.slice(index, index + query.length))}</b>` +
+    esc(name.slice(index + query.length))
+  );
+}
+
+function resultSection(title, rows) {
+  if (!rows.length) return "";
+  return `
+    <div>
+      <h2 class="sect">${esc(title)}</h2>
+      <div class="card row-divided">${rows.join("")}</div>
+    </div>
+  `;
+}
 
 export async function renderSearch(container) {
   let query = "";
   let type = "all";
   let debounce = null;
+  let denList = null;
 
-  function paint(results) {
+  function cubRow(result) {
+    return `
+      <a class="row" href="#/profile/${encodeURIComponent(result.slug)}">
+        ${avatar(result.avatar, result.name, "sm")}
+        <div class="grow">
+          <div class="row-title">${highlight(result.name, query)}</div>
+          <div class="mono plain">${esc(result.subtitle)}</div>
+        </div>
+        ${rankTag(result.rank_key, result.rank)}
+      </a>`;
+  }
+
+  function parentRow(result) {
+    return `
+      <a class="row" href="#/profile/${encodeURIComponent(result.slug)}">
+        ${avatar(result.avatar, result.name, "sm")}
+        <div class="grow">
+          <div class="row-title">${highlight(result.name, query)}</div>
+          <div class="mono plain">${esc(result.subtitle)}</div>
+        </div>
+        <span class="chev">&rsaquo;</span>
+      </a>`;
+  }
+
+  function denRows(dens) {
+    return `
+      <div class="card row-divided">
+        ${dens
+          .map(
+            (den) => `
+          <a class="row" href="#/dens/${den.number}">
+            ${denBadge(den.rank_key, den.rank_badge)}
+            <div class="grow">
+              <div class="row-title">Den ${den.number}${den.rank_plural ? ` · ${esc(den.rank_plural)}` : ""}</div>
+              <div class="mono plain">${den.grade ? esc(den.grade) + " · " : ""}${esc(
+              pluralize(den.cub_count, "Cub")
+            )}</div>
+            </div>
+            <span class="chev">&rsaquo;</span>
+          </a>`
+          )
+          .join("")}
+      </div>`;
+  }
+
+  function paint(body) {
     container.innerHTML = `
-      <div class="search-box">
-        <input type="search" id="search-input" placeholder="Search parents &amp; Cubs" value="${esc(query)}">
+      ${appBar(
+        `
+        <div class="appbar-title">Search</div>
+        <div class="appbar-search">
+          ${icons.searchGray}
+          <input type="search" id="search-input" placeholder="Search parents &amp; Cubs" value="${esc(query)}">
+        </div>`,
+        { column: true }
+      )}
+      <div class="screen-scroll">
+        <div class="pills">
+          ${FILTERS.map(
+            (f) => `<button class="pill${f.key === type ? " on" : ""}" data-type="${f.key}">${f.label}</button>`
+          ).join("")}
+        </div>
+        ${body}
       </div>
-      <div class="row chip-row">
-        ${FILTERS.map(
-          (f) => `<button class="chip-btn${f.key === type ? " sel" : ""}" data-type="${f.key}">${f.label}</button>`
-        ).join("")}
-      </div>
-      ${
-        results.length
-          ? `<span class="mono section-label">RESULTS</span>
-        <div class="card list-card">
-          ${results
-            .map(
-              (r, i) => `
-            ${i > 0 ? '<hr class="hr">' : ""}
-            <a class="row" href="#/profile/${encodeURIComponent(r.slug)}">
-              ${avatar(r.avatar, r.name, "sm")}
-              <div class="col">
-                <div class="row-title">${esc(r.name)}</div>
-                <span class="mono">${esc(r.subtitle.toUpperCase())}</span>
-              </div>
-              ${tag(r.type === "cub" ? "CUB" : "PARENT")}
-            </a>`
-            )
-            .join("")}
-        </div>`
-          : query.trim()
-          ? `<p class="empty">No matches for &ldquo;${esc(query)}&rdquo;.</p>`
-          : ""
-      }
     `;
 
     const input = container.querySelector("#search-input");
@@ -53,24 +108,37 @@ export async function renderSearch(container) {
     input.addEventListener("input", (event) => {
       query = event.target.value;
       clearTimeout(debounce);
-      debounce = setTimeout(runSearch, 250);
+      debounce = setTimeout(refresh, 250);
     });
-    container.querySelectorAll(".chip-btn").forEach((btn) => {
+    container.querySelectorAll(".pill").forEach((btn) => {
       btn.addEventListener("click", () => {
         type = btn.dataset.type;
-        runSearch();
+        refresh();
       });
     });
   }
 
-  async function runSearch() {
+  async function refresh() {
+    if (type === "den") {
+      if (!denList) {
+        denList = (await api.dens()).dens;
+      }
+      paint(denRows(denList));
+      return;
+    }
     if (!query.trim()) {
-      paint([]);
+      paint("");
       return;
     }
     const data = await api.search(query, type);
-    paint(data.results);
+    const cubs = resultSection("Cubs", data.cubs.map(cubRow));
+    const parents = resultSection("Parents", data.parents.map(parentRow));
+    if (!cubs && !parents) {
+      paint(`<p class="empty">No matches for &ldquo;${esc(query)}&rdquo;.</p>`);
+      return;
+    }
+    paint(cubs + parents);
   }
 
-  paint([]);
+  paint("");
 }

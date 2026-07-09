@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#efece6;font-family:'Patrick Hand',system-ui,sans-serif;color:#2c2c2c}
+.dv-turn{padding:40px 44px 48px;scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 14px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-intro{font:400 13px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5);max-width:640px;margin:0 0 26px}
+.dv-opt{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px;margin-bottom:44px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.09);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:9px;font:600 14px/1.3 system-ui,sans-serif;color:#333}
+.dv-olabel small{font:400 12px/1.4 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.dv-opt:target .dv-oid{background:#2f6690;color:#fff}
+.dv-next{margin:4px 0 0;font:12px/1.7 system-ui,sans-serif;color:rgba(0,0,0,.55);max-width:940px}
+.dv-screens{display:flex;gap:22px;align-items:flex-start;flex-wrap:nowrap}
+.scr{display:flex;flex-direction:column;gap:8px;align-items:center}
+.cap{font:600 10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4);letter-spacing:.05em}
+.phone{width:268px;height:566px;background:#fff;border:2.5px solid #2c2c2c;border-radius:28px;overflow:hidden;display:flex;flex-direction:column;box-shadow:4px 5px 0 rgba(0,0,0,.10)}
+.sb{height:20px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 15px;font:700 9px ui-monospace,monospace;color:#a49c90}
+.hdr{flex:none;padding:7px 13px;border-bottom:2px dashed #ded8ce;display:flex;align-items:center;gap:8px;min-height:36px}
+.htitle{font-size:17px}
+.hsub{font:400 10px/1 system-ui;color:#a49c90;letter-spacing:.03em}
+.body{flex:1;padding:11px;overflow:hidden;display:flex;flex-direction:column;gap:9px}
+.tabs{flex:none;height:50px;border-top:2px solid #2c2c2c;display:flex}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:400 9px system-ui;color:#b5aea3}
+.tab .ic{width:17px;height:17px;border:1.8px solid #b5aea3;border-radius:5px}
+.tab.on{color:#2f6690}
+.tab.on .ic{border-color:#2f6690;background:#dbe6ef}
+.card{border:1.6px solid #cec7bc;border-radius:12px;padding:11px;background:#fff;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:9px}
+.col{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.av{border:1.8px solid #b0a99e;border-radius:50%;background:repeating-linear-gradient(45deg,#e7e2d9,#e7e2d9 4px,#f3efe8 4px,#f3efe8 8px);flex:none}
+.av.lg{width:60px;height:60px}.av.md{width:42px;height:42px}.av.sm{width:32px;height:32px}
+.sq{border:1.8px solid #b0a99e;border-radius:8px;background:repeating-linear-gradient(45deg,#e7e2d9,#e7e2d9 4px,#f3efe8 4px,#f3efe8 8px);flex:none}
+.bar{height:8px;border-radius:4px;background:#ded7cc}
+.pill{border:1.8px solid #2c2c2c;border-radius:20px;padding:6px 0;text-align:center;font-size:13px;flex:1}
+.chip{border:1.6px solid #c1b9ac;border-radius:14px;padding:2px 9px;font-size:12px;background:#fff;white-space:nowrap}
+.chip.sel{background:#2c2c2c;color:#fff;border-color:#2c2c2c}
+.badge{width:22px;height:22px;border-radius:50%;border:1.8px solid #c99a2e;color:#a97e15;display:flex;align-items:center;justify-content:center;font:700 9px system-ui;flex:none;background:#f7efdb}
+.search{border:1.8px solid #b0a99e;border-radius:20px;padding:8px 12px;font-size:13px;color:#a49c90;display:flex;align-items:center;gap:8px}
+.mono{font:400 9px ui-monospace,monospace;color:#a8a095;letter-spacing:.04em}
+.tile{border:1.6px solid #cec7bc;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;background:#fff}
+.hr{height:1.6px;background:#eee8de;border:0;margin:0}
+.tag{font:600 8px system-ui;color:#7a7266;border:1.4px solid #d6cfc4;border-radius:4px;padding:1px 5px}
+.chev{color:#c3bbae;font-size:15px;margin-left:auto}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Cub Scout Pack Directory · Campfire Hub</span></div>
+<p class="dv-intro">Mobile-first PWA · bottom tab bar · playful scouting tone. Five screens: Home, My Dens, Other Dens, Search, Profile.</p>
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Campfire Hub <small>· dashboard home with quick-jump shortcuts, list-based dens</small></div>
+<div class="dv-screens">
+
+<div class="scr"><span class="cap">HOME</span><div class="phone">
+<div class="sb"><span>9:41</span><span>5G ▮▮▮</span></div>
+<div class="hdr"><span class="htitle">Pack 128</span><div class="sq" style="width:22px;height:22px;margin-left:auto"></div></div>
+<div class="body">
+<div class="card" style="border-color:#2f6690;background:#f3f8fc">
+<div class="row"><div style="display:flex"><div class="av md"></div><div class="av md" style="margin-left:-14px"></div></div><div class="col"><div style="font-size:16px">The Ramirez Family</div><span class="mono">YOUR FAMILY</span></div><div class="sq" style="width:20px;height:20px"></div></div>
+<div class="row" style="gap:6px"><span class="chip">Wolves + Lions</span><span class="chip">2 Cubs</span></div>
+</div>
+<div class="row" style="gap:8px">
+<div class="card" style="flex:1;padding:8px"><div class="row"><div class="av sm"></div><div class="col"><div style="font-size:13px">Mateo</div></div><div class="badge">W</div></div></div>
+<div class="card" style="flex:1;padding:8px"><div class="row"><div class="av sm"></div><div class="col"><div style="font-size:13px">Lucia</div></div><div class="badge">L</div></div></div>
+</div>
+<span class="mono" style="margin-top:2px">JUMP TO</span>
+<div class="card" style="padding:0">
+<div class="row" style="padding:11px"><div class="sq" style="width:26px;height:26px"></div><div class="col"><div>My Dens — Wolves &amp; Lions</div></div><span class="chev">›</span></div>
+<hr class="hr"><div class="row" style="padding:11px"><div class="sq" style="width:26px;height:26px"></div><div class="col"><div>All Dens in Pack</div></div><span class="chev">›</span></div>
+<hr class="hr"><div class="row" style="padding:11px"><div class="sq" style="width:26px;height:26px"></div><div class="col"><div>Search directory</div></div><span class="chev">›</span></div>
+</div>
+</div>
+<div class="tabs"><div class="tab on"><div class="ic"></div>Home</div><div class="tab"><div class="ic"></div>My Dens</div><div class="tab"><div class="ic"></div>Dens</div><div class="tab"><div class="ic"></div>Search</div><div class="tab"><div class="ic"></div>Me</div></div>
+</div></div>
+
+<div class="scr"><span class="cap">MY DEN</span><div class="phone">
+<div class="sb"><span>9:41</span><span>5G ▮▮▮</span></div>
+<div class="hdr"><div class="badge" style="width:26px;height:26px">W</div><div class="col" style="gap:0"><span class="htitle">Wolf Den</span><span class="hsub">DEN 4 · 6 CUBS</span></div></div>
+<div class="body">
+<div class="row" style="gap:0;border:1.8px solid #2c2c2c;border-radius:20px;overflow:hidden;flex:none"><div style="flex:1;text-align:center;padding:6px 0;background:#2c2c2c;color:#fff;font-size:13px">Wolves · Mateo</div><div style="flex:1;text-align:center;padding:6px 0;font-size:13px">Lions · Lucia</div></div>
+<div class="card"><div class="row"><div class="av md"></div><div class="col"><div>Sam Okafor</div><span class="mono">DEN LEADER</span></div><div class="sq" style="width:22px;height:22px"></div><div class="sq" style="width:22px;height:22px"></div></div></div>
+<span class="mono">CUBS &amp; FAMILIES</span>
+<div class="card" style="padding:0">
+<div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="display:flex;align-items:center;gap:5px;font-size:14px">Mateo R.<span class="badge" style="width:16px;height:16px;font-size:8px">W</span></div><span class="mono">ELENA &amp; JON RAMIREZ</span></div><div class="sq" style="width:19px;height:19px"></div><div class="sq" style="width:19px;height:19px"></div></div>
+<hr class="hr"><div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="font-size:14px">Ava Chen</div><span class="mono">WEI &amp; MIA CHEN</span></div><div class="sq" style="width:19px;height:19px"></div><div class="sq" style="width:19px;height:19px"></div></div>
+<hr class="hr"><div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="font-size:14px">Noah Patel</div><span class="mono">RAJ PATEL</span></div><div class="sq" style="width:19px;height:19px"></div><div class="sq" style="width:19px;height:19px"></div></div>
+<hr class="hr"><div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="font-size:14px">Liam Brooks</div><span class="mono">DANA BROOKS</span></div><div class="sq" style="width:19px;height:19px"></div><div class="sq" style="width:19px;height:19px"></div></div>
+<hr class="hr"><div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="font-size:14px">Zoe Okafor</div><span class="mono">SAM OKAFOR</span></div><div class="sq" style="width:19px;height:19px"></div><div class="sq" style="width:19px;height:19px"></div></div>
+</div>
+</div>
+<div class="tabs"><div class="tab"><div class="ic"></div>Home</div><div class="tab on"><div class="ic"></div>My Dens</div><div class="tab"><div class="ic"></div>Dens</div><div class="tab"><div class="ic"></div>Search</div><div class="tab"><div class="ic"></div>Me</div></div>
+</div></div>
+
+<div class="scr"><span class="cap">OTHER DENS</span><div class="phone">
+<div class="sb"><span>9:41</span><span>5G ▮▮▮</span></div>
+<div class="hdr"><span class="htitle">All Dens</span></div>
+<div class="body" style="gap:0">
+<span class="mono" style="padding:4px 2px">LION · 1 DEN</span>
+<div class="row" style="padding:8px 4px"><div class="badge">L</div><div class="col"><div style="font-size:14px">Den 1 · Lions</div><span class="mono">KINDERGARTEN · 5 CUBS</span></div><span class="tag">LUCIA</span><span class="chev">›</span></div>
+<hr class="hr">
+<span class="mono" style="padding:8px 2px 4px">TIGER · 1 DEN</span>
+<div class="row" style="padding:8px 4px"><div class="badge">T</div><div class="col"><div style="font-size:14px">Den 2 · Tigers</div><span class="mono">1ST GRADE · 7 CUBS</span></div><span class="chev">›</span></div>
+<hr class="hr">
+<span class="mono" style="padding:8px 2px 4px">WOLF · 2 DENS</span>
+<div class="row" style="padding:8px 4px"><div class="badge">W</div><div class="col"><div style="font-size:14px">Den 3 · Wolves</div><span class="mono">2ND GRADE · 6 CUBS</span></div><span class="chev">›</span></div>
+<div class="row" style="padding:8px 4px;background:#f3f8fc;border-radius:8px"><div class="badge">W</div><div class="col"><div style="display:flex;align-items:center;gap:6px;font-size:14px">Den 4 · Wolves <span class="chip" style="font-size:9px;padding:0 5px">MATEO</span></div><span class="mono">2ND GRADE · 6 CUBS</span></div><span class="chev">›</span></div>
+<hr class="hr">
+<span class="mono" style="padding:8px 2px 4px">BEAR · 2 DENS</span>
+<div class="row" style="padding:8px 4px"><div class="badge">B</div><div class="col"><div style="font-size:14px">Den 5 · Bears</div><span class="mono">3RD GRADE · 6 CUBS</span></div><span class="chev">›</span></div>
+<div class="row" style="padding:8px 4px"><div class="badge">B</div><div class="col"><div style="font-size:14px">Den 6 · Bears</div><span class="mono">3RD GRADE · 5 CUBS</span></div><span class="chev">›</span></div>
+<hr class="hr">
+<span class="mono" style="padding:8px 2px 4px">WEBELOS · 2 DENS &nbsp;·&nbsp; ARROW OF LIGHT · 2 DENS &nbsp;↓</span>
+</div>
+<div class="tabs"><div class="tab"><div class="ic"></div>Home</div><div class="tab"><div class="ic"></div>My Dens</div><div class="tab on"><div class="ic"></div>Dens</div><div class="tab"><div class="ic"></div>Search</div><div class="tab"><div class="ic"></div>Me</div></div>
+</div></div>
+
+<div class="scr"><span class="cap">SEARCH</span><div class="phone">
+<div class="sb"><span>9:41</span><span>5G ▮▮▮</span></div>
+<div class="hdr"><span class="htitle">Search</span></div>
+<div class="body">
+<div class="search"><div class="sq" style="width:15px;height:15px"></div>Search parents &amp; Cubs</div>
+<div class="row" style="gap:6px"><span class="chip sel">All</span><span class="chip">Cubs</span><span class="chip">Parents</span><span class="chip">By Den</span></div>
+<span class="mono">RESULTS</span>
+<div class="card" style="padding:0">
+<div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="font-size:14px">Ava Chen</div><span class="mono">WOLVES</span></div><span class="tag">CUB</span></div>
+<hr class="hr"><div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="font-size:14px">Wei Chen</div><span class="mono">PARENT OF AVA</span></div><span class="tag">PARENT</span></div>
+<hr class="hr"><div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="font-size:14px">Noah Patel</div><span class="mono">WOLVES</span></div><span class="tag">CUB</span></div>
+<hr class="hr"><div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col" style="gap:2px"><div style="font-size:14px">Dana Brooks</div><span class="mono">PARENT OF LIAM</span></div><span class="tag">PARENT</span></div>
+</div>
+</div>
+<div class="tabs"><div class="tab"><div class="ic"></div>Home</div><div class="tab"><div class="ic"></div>My Dens</div><div class="tab"><div class="ic"></div>Dens</div><div class="tab on"><div class="ic"></div>Search</div><div class="tab"><div class="ic"></div>Me</div></div>
+</div></div>
+
+<div class="scr"><span class="cap">PROFILE</span><div class="phone">
+<div class="sb"><span>9:41</span><span>5G ▮▮▮</span></div>
+<div class="hdr"><span style="font-size:20px;color:#8a8378">‹</span><span class="htitle" style="font-size:15px">Profile</span></div>
+<div class="body">
+<div style="display:flex;flex-direction:column;align-items:center;gap:5px"><div class="av lg"></div><div style="font-size:17px">Ava Chen</div><div class="row" style="gap:6px"><span class="badge" style="width:18px;height:18px;font-size:8px">W</span><span class="chip">Wolf Den</span></div></div>
+<div class="row" style="gap:6px"><div class="pill">Call</div><div class="pill">Text</div><div class="pill">Email</div></div>
+<div class="card" style="padding:0">
+<div class="row" style="padding:10px 11px"><div class="sq" style="width:18px;height:18px"></div><div class="col"><span class="mono">PHONE</span><div class="bar" style="width:55%"></div></div></div>
+<hr class="hr"><div class="row" style="padding:10px 11px"><div class="sq" style="width:18px;height:18px"></div><div class="col"><span class="mono">EMAIL</span><div class="bar" style="width:70%"></div></div></div>
+</div>
+<span class="mono">FAMILY</span>
+<div class="card" style="padding:0">
+<div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col"><div style="font-size:14px">Wei Chen</div><span class="mono">PARENT</span></div><span class="chev">›</span></div>
+<hr class="hr"><div class="row" style="padding:9px 11px"><div class="av sm"></div><div class="col"><div style="font-size:14px">Mia Chen</div><span class="mono">PARENT</span></div><span class="chev">›</span></div>
+</div>
+</div>
+<div class="tabs"><div class="tab"><div class="ic"></div>Home</div><div class="tab"><div class="ic"></div>My Dens</div><div class="tab on"><div class="ic"></div>Dens</div><div class="tab"><div class="ic"></div>Search</div><div class="tab"><div class="ic"></div>Me</div></div>
+</div></div>
+
+</div>
+</div>
+
+
+<p class="dv-next">Try next: "explore 3 new Home concepts" · "add an Events tab" · "add allergy / notes fields to the profile" · "show the family profile / edit-your-info screen"</p>
+</section>
+</x-dc>
+</body>
+</html>
