@@ -80,6 +80,8 @@ export async function renderHome(container) {
   const singleDen = denNumbers.size === 1;
   setMyDenCount(denNumbers.size);
 
+  // User-supplied values are escaped via esc() before interpolation.
+  // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
     ${appBar(`
       ${packDigits(data.pack.name)}

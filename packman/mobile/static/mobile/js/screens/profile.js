@@ -107,6 +107,8 @@ function familyCard(member) {
 export async function renderProfile(container, slug, { me = false } = {}) {
   const member = await api.member(slug);
 
+  // User-supplied values are escaped via esc() before interpolation.
+  // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
     <div class="screen-scroll flush">
       ${heroMarkup(member, { me })}

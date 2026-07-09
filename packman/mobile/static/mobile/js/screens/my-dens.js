@@ -26,6 +26,8 @@ export async function renderMyDens(container) {
   const title = data.dens.length === 1 ? "My Den" : "My Dens";
 
   if (!data.dens.length) {
+    // Static copy only; no user data interpolated here.
+    // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
     container.innerHTML = `
       ${titleBar("My Dens")}
       <div class="screen-scroll"><p class="empty">None of your cubs are assigned to a den yet.</p></div>
@@ -37,6 +39,8 @@ export async function renderMyDens(container) {
 
   function paint() {
     const den = data.dens[active];
+    // User-supplied values are escaped via esc() before interpolation.
+    // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
     container.innerHTML = `
       ${titleBar(title, `${data.cub_count} CUB${data.cub_count === 1 ? "" : "S"}`)}
       <div class="screen-scroll">

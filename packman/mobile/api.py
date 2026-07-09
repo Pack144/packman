@@ -25,10 +25,21 @@ from .serializers import (
 )
 
 
+def visible_adults():
+    """
+    Adults in a currently active family, or contributors — the directory's
+    adult visibility rule, shared by member lookup and search.
+    """
+    return Adult.objects.filter(
+        Q(family__children__status__exact=Scout.ACTIVE) | Q(role__exact=Adult.CONTRIBUTOR)
+    )
+
+
 def visible_members():
     """
     Members who belong to a currently active family, or are contributors.
-    Mirrors packman.membership.views.MemberList's visibility rule.
+    Mirrors packman.membership.views.MemberList's visibility rule (and the
+    adult half of visible_adults()).
     """
     return Member.objects.filter(
         Q(adult__family__children__status__exact=Scout.ACTIVE)
@@ -64,7 +75,7 @@ def build_member_detail(member):
                     {
                         "slug": sibling.slug,
                         "name": sibling.get_full_name(),
-                        "avatar": get_avatar_url(sibling, is_scout=True),
+                        "avatar": get_avatar_url(sibling),
                         "relation": f"Sibling · {sibling_den}" if sibling_den else "Sibling",
                         "rank": sibling.rank.get_rank_display() if sibling.rank else None,
                         "rank_key": get_rank_key(sibling.rank),
@@ -73,7 +84,7 @@ def build_member_detail(member):
         return {
             "slug": scout.slug,
             "name": scout.get_full_name(),
-            "avatar": get_avatar_url(scout, is_scout=True),
+            "avatar": get_avatar_url(scout),
             "photo": get_photo_url(scout),
             "is_scout": True,
             "den": scout_den_label(scout),
@@ -109,7 +120,7 @@ def build_member_detail(member):
                 {
                     "slug": child.slug,
                     "name": child.get_full_name(),
-                    "avatar": get_avatar_url(child, is_scout=True),
+                    "avatar": get_avatar_url(child),
                     "relation": f"Cub · {child_den}" if child_den else "Cub",
                     "rank": child.rank.get_rank_display() if child.rank else None,
                     "rank_key": get_rank_key(child.rank),
@@ -230,7 +241,7 @@ class SearchView(GenericAPIView):
                             "name": scout.get_full_name(),
                             "type": "cub",
                             "subtitle": scout_den_label(scout) or "",
-                            "avatar": get_avatar_url(scout, is_scout=True),
+                            "avatar": get_avatar_url(scout),
                             "rank": scout.rank.get_rank_display() if scout.rank else None,
                             "rank_key": get_rank_key(scout.rank),
                             "rank_badge": get_rank_badge(scout.rank) if scout.rank else None,
@@ -238,9 +249,7 @@ class SearchView(GenericAPIView):
                     )
 
             if result_type in ("all", "parent"):
-                adults = Adult.objects.filter(name_filter).filter(
-                    Q(family__children__status__exact=Scout.ACTIVE) | Q(role__exact=Adult.CONTRIBUTOR)
-                ).distinct()
+                adults = visible_adults().filter(name_filter).distinct()
                 for adult in adults:
                     active_cubs = adult.get_active_scouts()
                     if active_cubs:

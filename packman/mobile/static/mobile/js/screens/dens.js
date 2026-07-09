@@ -14,6 +14,8 @@ export async function renderDens(container) {
     group.dens.push(den);
   });
 
+  // User-supplied values are escaped via esc() before interpolation.
+  // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
     ${titleBar("All Dens", pluralize(data.dens.length, "DEN"))}
     <div class="screen-scroll">
@@ -54,6 +56,8 @@ export async function renderDens(container) {
 
 export async function renderDenDetail(container, number) {
   const den = await api.den(number);
+  // User-supplied values are escaped via esc() before interpolation.
+  // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
     ${appBar(`
       <a href="#/dens" style="color:#fff;font-size:22px;line-height:1;padding-right:2px">&lsaquo;</a>

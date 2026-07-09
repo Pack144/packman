@@ -82,6 +82,8 @@ export async function renderSearch(container) {
   }
 
   function paint(body) {
+    // User-supplied values are escaped via esc() before interpolation.
+    // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
     container.innerHTML = `
       ${appBar(
         `

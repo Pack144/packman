@@ -13,7 +13,10 @@ async function request(path, params) {
   const response = await fetch(url, { credentials: "same-origin" });
 
   if (response.status === 401 || response.status === 403) {
-    const next = encodeURIComponent(window.location.pathname);
+    // Keep the hash-based in-app route so post-login lands back on the same screen.
+    const next = encodeURIComponent(
+      window.location.pathname + window.location.search + window.location.hash
+    );
     window.location.href = `${window.PACKMAN_MOBILE.loginUrl}?next=${next}`;
     throw new Error("Not authenticated");
   }

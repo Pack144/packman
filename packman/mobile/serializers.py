@@ -52,7 +52,7 @@ RANK_PLURALS = {
 }
 
 
-def get_avatar_url(member, is_scout=False):
+def get_avatar_url(member):
     """Headshot thumbnail; None when no photo — the app renders initials instead."""
     if member.photo:
         return get_thumbnailer(member.photo).get_thumbnail({"size": (80, 80), "crop": "smart"}).url
@@ -109,7 +109,7 @@ class ScoutBadgeSerializer(serializers.Serializer):
         return scout.short_name
 
     def get_avatar(self, scout):
-        return get_avatar_url(scout, is_scout=True)
+        return get_avatar_url(scout)
 
     def get_den_number(self, scout):
         den = scout.current_den

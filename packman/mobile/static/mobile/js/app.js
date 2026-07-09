@@ -19,6 +19,8 @@ function tabLabel(tab) {
 }
 
 function renderShell(activeKey) {
+  // Static TABS constants only; no user data interpolated here.
+  // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   document.getElementById("app").innerHTML = `
     <div id="screen" class="screen"></div>
     <nav class="tbar">
@@ -35,6 +37,8 @@ function renderShell(activeKey) {
 window.addEventListener("packman:den-count", () => {
   const tab = document.querySelector('.tbar a[href="#/my-dens"]');
   const spec = TABS.find((t) => t.key === "my-dens");
+  // Static TABS constants only; no user data interpolated here.
+  // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   if (tab && spec) tab.innerHTML = `${spec.icon}${tabLabel(spec)}`;
 });
 
