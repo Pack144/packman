@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
@@ -30,10 +31,7 @@ def visible_adults():
     Adults in a currently active family, or contributors — the directory's
     adult visibility rule, shared by member lookup and search.
     """
-    return Adult.objects.filter(
-        Q(family__children__status__exact=Scout.ACTIVE)
-        | Q(role__exact=Adult.CONTRIBUTOR)
-    )
+    return Adult.objects.filter(Q(family__children__status__exact=Scout.ACTIVE) | Q(role__exact=Adult.CONTRIBUTOR))
 
 
 def visible_members():
@@ -77,12 +75,8 @@ def build_member_detail(member):
                         "slug": sibling.slug,
                         "name": sibling.get_full_name(),
                         "avatar": get_avatar_url(sibling),
-                        "relation": f"Sibling · {sibling_den}"
-                        if sibling_den
-                        else "Sibling",
-                        "rank": sibling.rank.get_rank_display()
-                        if sibling.rank
-                        else None,
+                        "relation": f"Sibling · {sibling_den}" if sibling_den else "Sibling",
+                        "rank": sibling.rank.get_rank_display() if sibling.rank else None,
                         "rank_key": get_rank_key(sibling.rank),
                     }
                 )
@@ -211,15 +205,9 @@ class DenListView(GenericAPIView):
 
     def get(self, request):
         cubs_by_den = my_cubs_by_den(request.user)
-        dens = (
-            Den.objects.current()
-            .select_related("rank")
-            .order_by("rank__rank", "number")
-        )
+        dens = Den.objects.current().select_related("rank").order_by("rank__rank", "number")
         context = {"my_den_numbers": set(cubs_by_den), "my_cubs_by_den": cubs_by_den}
-        return Response(
-            {"dens": DenSummarySerializer(dens, many=True, context=context).data}
-        )
+        return Response({"dens": DenSummarySerializer(dens, many=True, context=context).data})
 
 
 class DenDetailView(GenericAPIView):
@@ -257,23 +245,16 @@ class SearchView(GenericAPIView):
                             "type": "cub",
                             "subtitle": scout_den_label(scout) or "",
                             "avatar": get_avatar_url(scout),
-                            "rank": scout.rank.get_rank_display()
-                            if scout.rank
-                            else None,
+                            "rank": scout.rank.get_rank_display() if scout.rank else None,
                             "rank_key": get_rank_key(scout.rank),
-                            "rank_badge": get_rank_badge(scout.rank)
-                            if scout.rank
-                            else None,
+                            "rank_badge": get_rank_badge(scout.rank) if scout.rank else None,
                         }
                     )
 
             if result_type in ("all", "parent"):
                 adults = (
                     Adult.objects.filter(name_filter)
-                    .filter(
-                        Q(family__children__status__exact=Scout.ACTIVE)
-                        | Q(role__exact=Adult.CONTRIBUTOR)
-                    )
+                    .filter(Q(family__children__status__exact=Scout.ACTIVE) | Q(role__exact=Adult.CONTRIBUTOR))
                     .distinct()
                 )
                 for adult in adults:

@@ -194,18 +194,14 @@ class SearchAPITestCase(MobileDirectoryTestCase):
 
     def test_cub_filter_returns_only_cubs(self):
         self.client.force_login(self.parent)
-        data = self.client.get(
-            reverse("mobile:api-search"), {"q": self.scout.first_name, "type": "cub"}
-        ).json()
+        data = self.client.get(reverse("mobile:api-search"), {"q": self.scout.first_name, "type": "cub"}).json()
         self.assertEqual(data["parents"], [])
         self.assertTrue(any(r["slug"] == self.scout.slug for r in data["cubs"]))
         self.assertTrue(all(r["type"] == "cub" for r in data["results"]))
 
     def test_parent_filter_returns_only_parents_with_cub_subtitle(self):
         self.client.force_login(self.parent)
-        data = self.client.get(
-            reverse("mobile:api-search"), {"q": self.parent.last_name, "type": "parent"}
-        ).json()
+        data = self.client.get(reverse("mobile:api-search"), {"q": self.parent.last_name, "type": "parent"}).json()
         self.assertEqual(data["cubs"], [])
         result = next(r for r in data["parents"] if r["slug"] == self.parent.slug)
         self.assertEqual(result["type"], "parent")
@@ -217,17 +213,13 @@ class SearchAPITestCase(MobileDirectoryTestCase):
 
         contributor = AdultFactory(family=FamilyFactory(), role=Adult.CONTRIBUTOR)
         self.client.force_login(self.parent)
-        data = self.client.get(
-            reverse("mobile:api-search"), {"q": contributor.last_name, "type": "parent"}
-        ).json()
+        data = self.client.get(reverse("mobile:api-search"), {"q": contributor.last_name, "type": "parent"}).json()
         result = next(r for r in data["parents"] if r["slug"] == contributor.slug)
         self.assertEqual(result["subtitle"], contributor.get_role_display())
 
     def test_flat_results_combine_grouped_cubs_and_parents(self):
         self.client.force_login(self.parent)
-        data = self.client.get(
-            reverse("mobile:api-search"), {"q": self.parent.last_name}
-        ).json()
+        data = self.client.get(reverse("mobile:api-search"), {"q": self.parent.last_name}).json()
         grouped = {r["slug"] for r in data["cubs"] + data["parents"]}
         self.assertEqual(grouped, {r["slug"] for r in data["results"]})
 
