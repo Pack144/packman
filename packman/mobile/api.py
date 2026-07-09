@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
@@ -238,9 +239,11 @@ class SearchView(GenericAPIView):
                     )
 
             if result_type in ("all", "parent"):
-                adults = Adult.objects.filter(name_filter).filter(
-                    Q(family__children__status__exact=Scout.ACTIVE) | Q(role__exact=Adult.CONTRIBUTOR)
-                ).distinct()
+                adults = (
+                    Adult.objects.filter(name_filter)
+                    .filter(Q(family__children__status__exact=Scout.ACTIVE) | Q(role__exact=Adult.CONTRIBUTOR))
+                    .distinct()
+                )
                 for adult in adults:
                     active_cubs = adult.get_active_scouts()
                     if active_cubs:

@@ -158,9 +158,7 @@ class FamilySerializer(serializers.Serializer):
         return ScoutBadgeSerializer(family.children.active(), many=True).data
 
     def get_dens(self, family):
-        ranks = {
-            scout.rank.get_rank_display() for scout in family.children.active().select_related() if scout.rank
-        }
+        ranks = {scout.rank.get_rank_display() for scout in family.children.active().select_related() if scout.rank}
         return sorted(ranks)
 
 
