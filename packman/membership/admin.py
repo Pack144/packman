@@ -55,6 +55,31 @@ class AnimalRankListFilter(admin.SimpleListFilter):
             )
 
 
+class CurrentDenListFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the right admin sidebar
+    # just above the filter options.
+    title = _("Den")
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = "den"
+
+    def lookups(self, request, model_admin):
+        return [(den.pk, str(den)) for den in Den.objects.all()]
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value provided in the query
+        string and retrievable via `self.value()`.
+        """
+        if self.value() is None:
+            return queryset
+        else:
+            return queryset.filter(
+                den_memberships__den=self.value(),
+                den_memberships__year_assigned=PackYear.objects.current(),
+            ).distinct()
+
+
 class FamilyListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the right admin sidebar
     # just above the filter options.
@@ -159,7 +184,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "date_added",
     )
     list_display_links = ("name", "last_name")
-    list_filter = ("status", AnimalRankListFilter, "den_memberships__den", "date_added")
+    list_filter = ("status", AnimalRankListFilter, CurrentDenListFilter, "date_added")
     readonly_fields = (
         "date_added",
         "last_updated",
