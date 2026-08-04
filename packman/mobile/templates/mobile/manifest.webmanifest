@@ -1,0 +1,30 @@
+{% load static %}{
+  "name": "Pack Directory",
+  "short_name": "Pack Dir",
+  "description": "Cub Scout Pack directory: dens, cubs, and families at a glance.",
+  "start_url": "{% url 'mobile:index' %}",
+  "scope": "{% url 'mobile:index' %}",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme_color": "#1a4aa0",
+  "icons": [
+    {
+      "src": "{% static 'mobile/icons/icon-192.png' %}",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "{% static 'mobile/icons/icon-512.png' %}",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "{% static 'mobile/icons/icon-maskable-512.png' %}",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

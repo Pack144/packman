@@ -23,6 +23,7 @@ dependencies = [
     "django-phonenumber-field~=8.1",
     "django-recurrence~=1.11",
     "django-tinymce~=4.1",
+    "djangorestframework>=3.17.1",
     "easy-thumbnails~=2.10",
     "factory-boy>=3.2.1",
     "icalendar~=6.3",

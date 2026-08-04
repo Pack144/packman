@@ -1,0 +1,307 @@
+from django.urls import reverse
+from django.utils import timezone
+
+from packman.address_book.models import PhoneNumber
+from packman.calendars.models import Category, Event
+
+from .base import MobileDirectoryTestCase
+
+
+class HomeAPITestCase(MobileDirectoryTestCase):
+    def test_anonymous_is_forbidden(self):
+        response = self.client.get(reverse("mobile:api-home"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_returns_the_signed_in_users_family(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-home"))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("name", data["pack"])
+        self.assertEqual(data["family"]["name"], self.family.name)
+        self.assertEqual(len(data["family"]["children"]), 1)
+        self.assertEqual(data["family"]["children"][0]["name"], self.scout.short_name)
+        self.assertEqual(data["family"]["children"][0]["den_label"], f"Den {self.den.number} · Wolves")
+
+    def test_returns_the_next_upcoming_event(self):
+        category = Category.objects.create(name="Pack Event")
+        Event.objects.create(
+            name="Wallingford Parade",
+            start=timezone.now() + timezone.timedelta(days=2),
+            end=timezone.now() + timezone.timedelta(days=2, hours=2),
+            location="Wallingford",
+            category=category,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-home")).json()
+        self.assertEqual(data["event"]["name"], "Wallingford Parade")
+        self.assertEqual(data["event"]["location"], "Wallingford")
+
+    def test_returns_an_event_already_in_progress(self):
+        # An event that started within the last 8 hours is still surfaced.
+        category = Category.objects.create(name="Pack Event")
+        Event.objects.create(
+            name="Blue & Gold Banquet",
+            start=timezone.now() - timezone.timedelta(hours=1),
+            end=timezone.now() + timezone.timedelta(hours=1),
+            location="Fellowship Hall",
+            category=category,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-home")).json()
+        self.assertEqual(data["event"]["name"], "Blue & Gold Banquet")
+
+    def test_event_past_the_eight_hour_window_is_not_returned(self):
+        category = Category.objects.create(name="Pack Event")
+        Event.objects.create(
+            name="Yesterday's Meeting",
+            start=timezone.now() - timezone.timedelta(hours=9),
+            end=timezone.now() - timezone.timedelta(hours=8),
+            location="Fellowship Hall",
+            category=category,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-home")).json()
+        self.assertIsNone(data["event"])
+
+    def test_no_event_returns_null(self):
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-home")).json()
+        self.assertIsNone(data["event"])
+
+
+class MyDensAPITestCase(MobileDirectoryTestCase):
+    def test_returns_the_dens_for_the_users_own_cubs(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-dens-mine"))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["cub_count"], 1)
+        dens = data["dens"]
+        self.assertEqual(len(dens), 1)
+        self.assertEqual(dens[0]["number"], self.den.number)
+        self.assertEqual(dens[0]["rank"], "Wolf")
+        self.assertEqual(dens[0]["rank_key"], "wolf")
+        self.assertEqual(dens[0]["grade"], "2nd Grade")
+        self.assertEqual(dens[0]["my_cub"], self.scout.short_name)
+        self.assertEqual(len(dens[0]["roster"]), 1)
+        self.assertEqual(dens[0]["roster"][0]["scout"]["name"], self.scout.short_name)
+        self.assertEqual(len(dens[0]["leaders"]), 1)
+        self.assertEqual(dens[0]["leaders"][0]["name"], self.leader.get_full_name())
+        self.assertEqual(dens[0]["leaders"][0]["email"], self.leader.email)
+
+    def test_maps_each_den_to_the_right_cub_across_multiple_dens(self):
+        from packman.dens.factories import DenFactory
+        from packman.dens.models import Membership, Rank
+        from packman.membership.factories import ScoutFactory
+        from packman.membership.models import Scout
+
+        tiger_rank = Rank.objects.create(rank=Rank.RankChoices.TIGER)
+        second_den = DenFactory(rank=tiger_rank)
+        sibling = ScoutFactory(family=self.family, status=Scout.ACTIVE)
+        Membership.objects.create(scout=sibling, den=second_den, year_assigned=self.pack_year)
+
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-dens-mine")).json()
+        self.assertEqual(data["cub_count"], 2)
+        # Dens come back ordered by den number.
+        self.assertEqual([d["number"] for d in data["dens"]], sorted([self.den.number, second_den.number]))
+        by_number = {d["number"]: d for d in data["dens"]}
+        self.assertEqual(by_number[self.den.number]["my_cub"], self.scout.short_name)
+        self.assertEqual(by_number[second_den.number]["my_cub"], sibling.short_name)
+
+
+class DenListAPITestCase(MobileDirectoryTestCase):
+    def test_flags_the_users_own_den(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-dens"))
+        self.assertEqual(response.status_code, 200)
+        dens = response.json()["dens"]
+        mine = next(d for d in dens if d["number"] == self.den.number)
+        self.assertTrue(mine["is_mine"])
+        self.assertEqual(mine["my_cub"], self.scout.short_name)
+
+
+class DenDetailAPITestCase(MobileDirectoryTestCase):
+    def test_returns_roster_and_leaders(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number]))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["number"], self.den.number)
+        self.assertEqual(len(data["roster"]), 1)
+        self.assertEqual(len(data["leaders"]), 1)
+
+    def test_den_leader_leads_over_assistants(self):
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
+
+        committee = Committee.objects.get(slug="wolf-den")
+        assistant = AdultFactory(family=FamilyFactory())
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=assistant,
+            den=self.den,
+            year=self.pack_year,
+            position=CommitteeMember.Position.ASSISTANT_AKELA,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number])).json()
+        self.assertEqual(len(data["leaders"]), 2)
+        # The Den Leader is listed first, whatever other roles support the den.
+        self.assertEqual(data["leaders"][0]["name"], self.leader.get_full_name())
+        self.assertEqual(data["leaders"][0]["position"], "Den Leader")
+        self.assertEqual(data["leaders"][1]["position"], "Assistant Akela")
+
+    def test_prior_year_leaders_are_excluded(self):
+        from packman.calendars.models import PackYear
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
+
+        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
+        committee = Committee.objects.get(slug="wolf-den")
+        former = AdultFactory(family=FamilyFactory())
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=former,
+            den=self.den,
+            year=last_year,
+            position=CommitteeMember.Position.DEN_LEADER,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number])).json()
+        self.assertEqual(len(data["leaders"]), 1)
+        self.assertNotIn(former.get_full_name(), [leader["name"] for leader in data["leaders"]])
+
+    def test_unknown_den_is_404(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-den-detail", args=[9999]))
+        self.assertEqual(response.status_code, 404)
+
+
+class SearchAPITestCase(MobileDirectoryTestCase):
+    def test_finds_the_cub_by_name(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-search"), {"q": self.scout.first_name})
+        self.assertEqual(response.status_code, 200)
+        results = response.json()["results"]
+        self.assertTrue(any(r["slug"] == self.scout.slug and r["type"] == "cub" for r in results))
+
+    def test_empty_query_returns_no_results(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-search"), {"q": ""})
+        self.assertEqual(response.json()["results"], [])
+
+    def test_cub_filter_returns_only_cubs(self):
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-search"), {"q": self.scout.first_name, "type": "cub"}).json()
+        self.assertEqual(data["parents"], [])
+        self.assertTrue(any(r["slug"] == self.scout.slug for r in data["cubs"]))
+        self.assertTrue(all(r["type"] == "cub" for r in data["results"]))
+
+    def test_parent_filter_returns_only_parents_with_cub_subtitle(self):
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-search"), {"q": self.parent.last_name, "type": "parent"}).json()
+        self.assertEqual(data["cubs"], [])
+        result = next(r for r in data["parents"] if r["slug"] == self.parent.slug)
+        self.assertEqual(result["type"], "parent")
+        self.assertEqual(result["subtitle"], f"Parent of {self.scout.short_name}")
+
+    def test_contributor_result_uses_role_as_subtitle(self):
+        from packman.membership.factories import AdultFactory, FamilyFactory
+        from packman.membership.models import Adult
+
+        contributor = AdultFactory(family=FamilyFactory(), role=Adult.CONTRIBUTOR)
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-search"), {"q": contributor.last_name, "type": "parent"}).json()
+        result = next(r for r in data["parents"] if r["slug"] == contributor.slug)
+        self.assertEqual(result["subtitle"], contributor.get_role_display())
+
+    def test_flat_results_combine_grouped_cubs_and_parents(self):
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-search"), {"q": self.parent.last_name}).json()
+        grouped = {r["slug"] for r in data["cubs"] + data["parents"]}
+        self.assertEqual(grouped, {r["slug"] for r in data["results"]})
+
+
+class MemberDetailAPITestCase(MobileDirectoryTestCase):
+    def test_scout_profile_lists_parent(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-member-detail", args=[self.scout.slug]))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["is_scout"])
+        self.assertEqual(data["den"], f"Den {self.den.number} · Wolves")
+        self.assertEqual(data["rank"], "Wolf")
+        self.assertEqual(data["rank_key"], "wolf")
+        self.assertIn(self.parent.slug, [f["slug"] for f in data["family"]])
+
+    def test_adult_profile_lists_partner_and_cub_children(self):
+        from packman.membership.factories import AdultFactory
+        from packman.membership.models import Adult
+
+        partner = AdultFactory(family=self.family, role=Adult.PARENT)
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
+        self.assertFalse(data["is_scout"])
+        family = {member["slug"]: member for member in data["family"]}
+
+        # The partner appears with their role as the relation and carries no rank.
+        self.assertIn(partner.slug, family)
+        self.assertEqual(family[partner.slug]["relation"], partner.get_role_display())
+        self.assertIsNone(family[partner.slug]["rank"])
+        self.assertIsNone(family[partner.slug]["rank_key"])
+
+        # The cub child appears with a "Cub · Den …" relation and their rank.
+        self.assertIn(self.scout.slug, family)
+        self.assertEqual(family[self.scout.slug]["relation"], f"Cub · Den {self.den.number} · Wolves")
+        self.assertEqual(family[self.scout.slug]["rank"], "Wolf")
+        self.assertEqual(family[self.scout.slug]["rank_key"], "wolf")
+
+    def test_unpublished_email_is_hidden(self):
+        self.parent.is_published = False
+        self.parent.save()
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug]))
+        self.assertEqual(response.json()["emails"], [])
+
+    def test_unpublished_phone_number_is_hidden(self):
+        PhoneNumber.objects.create(number="+15105551234", member=self.parent, published=False)
+        PhoneNumber.objects.create(number="+15105554321", member=self.parent, published=True)
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug]))
+        phone_numbers = response.json()["phone_numbers"]
+        self.assertEqual(len(phone_numbers), 1)
+
+    def test_member_outside_visibility_scope_is_404(self):
+        from packman.membership.factories import AdultFactory, FamilyFactory
+        from packman.membership.models import Adult
+
+        stranger = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)  # no active scouts
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-member-detail", args=[stranger.slug]))
+        self.assertEqual(response.status_code, 404)
+
+
+class ApiPermissionTestCase(MobileDirectoryTestCase):
+    """The API views enforce the same access rule as the shell (IsActiveMemberOrContributor)."""
+
+    ENDPOINTS = ("mobile:api-home", "mobile:api-dens-mine", "mobile:api-dens", "mobile:api-search")
+
+    def test_inactive_parent_is_forbidden(self):
+        from packman.membership.factories import AdultFactory, FamilyFactory
+        from packman.membership.models import Adult
+
+        inactive = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)  # no active cubs
+        self.client.force_login(inactive)
+        for name in self.ENDPOINTS:
+            self.assertEqual(self.client.get(reverse(name)).status_code, 403, msg=name)
+
+    def test_contributor_with_no_cubs_is_allowed(self):
+        from packman.membership.factories import AdultFactory, FamilyFactory
+        from packman.membership.models import Adult
+
+        contributor = AdultFactory(family=FamilyFactory(), role=Adult.CONTRIBUTOR)
+        self.client.force_login(contributor)
+        for name in self.ENDPOINTS:
+            self.assertEqual(self.client.get(reverse(name)).status_code, 200, msg=name)
