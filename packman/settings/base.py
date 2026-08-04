@@ -363,3 +363,7 @@ EMAIL_SUBJECT_PREFIX = env("DJANGO_EMAIL_SUBJECT_PREFIX", default=f"[{PACK_SHORT
 # https://django-environ.readthedocs.io/en/3.2/#nested-lists
 ADMINS = getaddresses([env("DJANGO_ADMINS", default="[]")])
 MANAGERS = ADMINS
+
+# Temporary fix for ADMIN UI issue updating committees with too many historical entries
+# Seems to be around 125 for the default 1000 fields
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
