@@ -181,18 +181,16 @@ uv venv ~/apps/django-beta/env --python 3.14
 
 ### Deploying
 
-Deployment should first be validated in beta prior to deploying in prod, so sample beta paths are used below. (Of course this should be automated.)
+Deployment should first be validated in beta prior to deploying in prod.
+
+Note: beta and prod share a database, the deployment to beta will also run any migrations so take care when using it.
 
 ```bash
 cd ~/apps/django-beta/packman
 git pull
-touch ~/apps/django-beta/tmp/restart.txt
+util/deploy.sh
 ```
 
-Run these additional steps (prior to restart) when the pull includes the relevant changes:
+After validation switch to the prod directory and repeat.
 
-| Change | Command |
-|---|---|
-| `uv.lock` updated | `UV_PROJECT_ENVIRONMENT=~/apps/django-beta/env uv sync --group production` |
-| New db migrations | `~/apps/django-beta/env/bin/python packman/manage.py migrate` |
-| Static files changed | `DJANGO_SETTINGS_MODULE=packman.settings.production ~/apps/django-beta/env/bin/python packman/manage.py collectstatic --no-input` |
+See the [deploy.sh](util/deploy.sh) for more details on how the deployment works.
