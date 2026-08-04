@@ -3,11 +3,11 @@
 # Exit immediately if a command exits with a non-zero status
 set -euo pipefail
 
-APPS_DIR="/home/pack144/apps/"
-PROD_APP_DIR="$apps_dir/django"
-PROD_PACKMAN_DIR="$prod_app_dir/packman"
-BETA_APP_DIR="$apps_dir/django-beta"
-BETA_PACKMAN_DIR="$beta_app_dir/packman"
+APPS_DIR="/home/pack144/apps"
+PROD_APP_DIR="$APPS_DIR/django"
+PROD_PACKMAN_DIR="$PROD_APP_DIR/packman"
+BETA_APP_DIR="$APPS_DIR/django-beta"
+BETA_PACKMAN_DIR="$BETA_APP_DIR/packman"
 
 CURRENT_DIR="$(pwd -P)"
 
@@ -35,10 +35,13 @@ if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
 fi
 
 # Update dependencies if uv.lock changed
-UV_PROJECT_ENVIRONMENT="$app_dir/env" uv sync --group production
+echo "Updating dependencies with uv sync"
+UV_PROJECT_ENVIRONMENT="$APP_DIR/env" uv sync --group production
 
 # Do any database migrations that have not been applied
-$app_dir/env/bin/python manage.py migrate
+echo "Running database migrations"
+$APP_DIR/env/bin/python manage.py migrate
 
 # Collect any new static files
-DJANGO_SETTINGS_MODULE=packman.settings.production $app_dir/env/bin/python manage.py collectstatic --no-input
+echo "Collecting any new static files"
+DJANGO_SETTINGS_MODULE=packman.settings.production $APP_DIR/env/bin/python manage.py collectstatic --no-input
