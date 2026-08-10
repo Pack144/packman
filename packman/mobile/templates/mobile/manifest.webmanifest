@@ -3,7 +3,7 @@
   "short_name": "Pack Dir",
   "description": "Cub Scout Pack directory: dens, cubs, and families at a glance.",
   "start_url": "{% url 'mobile:index' %}",
-  "scope": "{% url 'mobile:index' %}",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f4f6f9",
   "theme_color": "#1a4aa0",

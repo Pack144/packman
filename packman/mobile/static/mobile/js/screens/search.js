@@ -15,7 +15,7 @@ function highlight(name, query) {
   if (index < 0) return safe;
   return (
     esc(name.slice(0, index)) +
-    `<b style="color:#20242b">${esc(name.slice(index, index + query.length))}</b>` +
+    `<b style="color:var(--ink)">${esc(name.slice(index, index + query.length))}</b>` +
     esc(name.slice(index + query.length))
   );
 }

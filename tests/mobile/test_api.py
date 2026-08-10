@@ -1,10 +1,24 @@
+import tempfile
+from io import BytesIO
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
+
+from PIL import Image
 
 from packman.address_book.models import PhoneNumber
 from packman.calendars.models import Category, Event
 
 from .base import MobileDirectoryTestCase
+
+
+def photo_upload(name="headshot.png"):
+    """A small real image, so easy_thumbnails has something to resize."""
+    buffer = BytesIO()
+    Image.new("RGB", (200, 200), "navy").save(buffer, format="PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
 
 
 class HomeAPITestCase(MobileDirectoryTestCase):
@@ -22,6 +36,22 @@ class HomeAPITestCase(MobileDirectoryTestCase):
         self.assertEqual(len(data["family"]["children"]), 1)
         self.assertEqual(data["family"]["children"][0]["name"], self.scout.short_name)
         self.assertEqual(data["family"]["children"][0]["den_label"], f"Den {self.den.number} · Wolves")
+
+    def test_user_avatar_is_null_without_a_photo(self):
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-home")).json()
+        # The key is always present; the app falls back to initials when null.
+        self.assertIn("avatar", data["user"])
+        self.assertIsNone(data["user"]["avatar"])
+
+    def test_user_avatar_is_the_signed_in_members_headshot(self):
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            self.parent.photo = photo_upload()
+            self.parent.save()
+            self.client.force_login(self.parent)
+            data = self.client.get(reverse("mobile:api-home")).json()
+            self.assertIsNotNone(data["user"]["avatar"])
+            self.assertIn("headshot", data["user"]["avatar"])
 
     def test_returns_the_next_upcoming_event(self):
         category = Category.objects.create(name="Pack Event")

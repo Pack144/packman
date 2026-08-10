@@ -4,19 +4,37 @@ export function esc(value) {
   return div.innerHTML;
 }
 
+// Rank colours are defined as CSS custom properties so both the day and night
+// palettes can restate them; these are the references the inline styles below
+// resolve against.
 export const RANK_COLORS = {
-  lion: "#c0392b",
-  tiger: "#e08a1e",
-  wolf: "#2f6fb0",
-  bear: "#8a5a2b",
-  webelos: "#1a4aa0",
-  aol: "#0f766e",
+  lion: "var(--rank-lion)",
+  tiger: "var(--rank-tiger)",
+  wolf: "var(--rank-wolf)",
+  bear: "var(--rank-bear)",
+  webelos: "var(--rank-webelos)",
+  aol: "var(--rank-aol)",
+};
+
+// The same ranks set as text rather than as a fill. Night mode lifts these
+// further than the badge fills, which have to stay dark enough for white text.
+const RANK_TEXT_COLORS = {
+  lion: "var(--rank-lion-text)",
+  tiger: "var(--rank-tiger-text)",
+  wolf: "var(--rank-wolf-text)",
+  bear: "var(--rank-bear-text)",
+  webelos: "var(--rank-webelos-text)",
+  aol: "var(--rank-aol-text)",
 };
 
 const AVATAR_PALETTE = ["#c0392b", "#1f8a5b", "#5b4bb0", "#2f6fb0", "#e08a1e", "#0f766e"];
 
 export function rankColor(rankKey) {
-  return RANK_COLORS[rankKey] || "#1a4aa0";
+  return RANK_COLORS[rankKey] || "var(--rank-webelos)";
+}
+
+export function rankTextColor(rankKey) {
+  return RANK_TEXT_COLORS[rankKey] || "var(--rank-webelos-text)";
 }
 
 export function initialsOf(name) {
@@ -71,7 +89,7 @@ export const icons = {
     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
   mail: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="M3 6l9 6 9-6"/></svg>',
   searchGray:
-    '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a919c" stroke-width="2.2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg>',
+    '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg>',
 };
 
 // How many dens the user's cubs span — drives the "My Den" vs "My Dens"

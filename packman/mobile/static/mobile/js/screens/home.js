@@ -8,6 +8,13 @@ function packDigits(packName) {
     : "";
 }
 
+function userAvatar(user) {
+  const inner = user.avatar
+    ? `<img src="${esc(user.avatar)}" alt="${esc(user.name)}">`
+    : esc(initialsOf(user.name) || "?");
+  return `<a class="appbar-avatar" href="#/me" aria-label="Your profile">${inner}</a>`;
+}
+
 function eventCard(event) {
   if (!event) {
     return `
@@ -89,7 +96,7 @@ export async function renderHome(container) {
         <div class="brand-name">${esc(data.pack.name)}</div>
         <div class="brand-sub">${esc(data.pack.location)}</div>
       </div>
-      <a class="appbar-avatar" href="#/me">${esc(initialsOf(data.user.name)[0] || "?")}</a>
+      ${userAvatar(data.user)}
     `)}
     <div class="screen-scroll">
       <div>
@@ -101,9 +108,9 @@ export async function renderHome(container) {
       <section>
         <h2 class="sect">Jump To</h2>
         <div class="card row-divided">
-          <a class="row" href="#/my-dens"><span class="den-badge" style="width:34px;height:34px;background:#2f6fb0">W</span><div class="row-title">My Den${singleDen ? "" : "s"}</div><span class="chev">&rsaquo;</span></a>
-          <a class="row" href="#/dens"><span class="den-badge" style="width:34px;height:34px;background:#1a4aa0">D</span><div class="row-title">All Dens in Pack</div><span class="chev">&rsaquo;</span></a>
-          <a class="row" href="#/search"><span class="den-badge" style="width:34px;height:34px;background:#20242b">Q</span><div class="row-title">Search Directory</div><span class="chev">&rsaquo;</span></a>
+          <a class="row" href="#/my-dens"><span class="den-badge" style="width:34px;height:34px;background:var(--rank-wolf)">W</span><div class="row-title">My Den${singleDen ? "" : "s"}</div><span class="chev">&rsaquo;</span></a>
+          <a class="row" href="#/dens"><span class="den-badge" style="width:34px;height:34px;background:var(--rank-webelos)">D</span><div class="row-title">All Dens in Pack</div><span class="chev">&rsaquo;</span></a>
+          <a class="row" href="#/search"><span class="den-badge" style="width:34px;height:34px;background:var(--badge-neutral)">Q</span><div class="row-title">Search Directory</div><span class="chev">&rsaquo;</span></a>
         </div>
       </section>
     </div>

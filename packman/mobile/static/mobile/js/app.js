@@ -1,3 +1,4 @@
+import { claimCacheFor } from "./api.js";
 import { icons, myDensLabel } from "./components.js";
 import { route, startRouter } from "./router.js";
 import { renderHome } from "./screens/home.js";
@@ -42,19 +43,46 @@ window.addEventListener("packman:den-count", () => {
   if (tab && spec) tab.innerHTML = `${spec.icon}${tabLabel(spec)}`;
 });
 
-async function mount(renderFn, activeKey) {
-  renderShell(activeKey);
-  const screen = document.getElementById("screen");
-  screen.innerHTML = '<p class="loading">Loading&hellip;</p>';
+// The screen currently on display, so a background data refresh knows what to
+// repaint — and knows to give up if the reader has since navigated away.
+let activeMount = null;
+
+async function paint(renderFn, screen) {
   try {
     await renderFn(screen);
   } catch (err) {
     screen.innerHTML = '<p class="error">Something went wrong loading this screen.</p>';
     console.error(err);
   }
+}
+
+async function mount(renderFn, activeKey) {
+  renderShell(activeKey);
+  const screen = document.getElementById("screen");
+  screen.innerHTML = '<p class="loading">Loading&hellip;</p>';
+  const token = { renderFn };
+  activeMount = token;
+  await paint(renderFn, screen);
+  if (activeMount !== token) return;
   const scroller = screen.querySelector(".screen-scroll");
   if (scroller) scroller.scrollTo(0, 0);
 }
+
+// A background revalidation turned up newer data than we painted from cache.
+// Repaint in place, holding the reader's scroll position.
+window.addEventListener("packman:data-refresh", async () => {
+  const token = activeMount;
+  const screen = document.getElementById("screen");
+  if (!token || !screen) return;
+  // Don't yank the page out from under someone typing (the search field).
+  if (document.activeElement && document.activeElement.matches("input, textarea")) return;
+
+  const offset = screen.querySelector(".screen-scroll")?.scrollTop ?? 0;
+  await paint(token.renderFn, screen);
+  if (activeMount !== token) return;
+  const scroller = screen.querySelector(".screen-scroll");
+  if (scroller) scroller.scrollTop = offset;
+});
 
 route("/home", () => mount(renderHome, "home"));
 route("/my-dens", () => mount(renderMyDens, "my-dens"));
@@ -63,6 +91,9 @@ route("/dens/:number", (params) => mount((el) => renderDenDetail(el, params.numb
 route("/search", () => mount(renderSearch, "search"));
 route("/me", () => mount((el) => renderProfile(el, window.PACKMAN_MOBILE.user.slug, { me: true }), "me"));
 route("/profile/:slug", (params) => mount((el) => renderProfile(el, params.slug), null));
+
+// Drop any directory data cached for a different member before it can render.
+claimCacheFor(window.PACKMAN_MOBILE.user.slug);
 
 startRouter();
 

@@ -52,7 +52,7 @@ function contactCard(member) {
           .map(
             (p) => `
           <div class="row" style="padding:13px 15px">
-            <span style="color:#8a919c">${icons.phone}</span>
+            <span style="color:var(--label)">${icons.phone}</span>
             <div>
               <div class="mono">${esc(p.type)}</div>
               <a class="contact-value" href="tel:${esc(p.value)}">${esc(p.value)}</a>
@@ -64,7 +64,7 @@ function contactCard(member) {
           .map(
             (e) => `
           <div class="row" style="padding:13px 15px">
-            <span style="color:#8a919c">${icons.mail}</span>
+            <span style="color:var(--label)">${icons.mail}</span>
             <div>
               <div class="mono">Email</div>
               <a class="contact-value" href="mailto:${esc(e)}">${esc(e)}</a>

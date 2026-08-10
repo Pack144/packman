@@ -175,6 +175,7 @@ class HomeView(GenericAPIView):
                     "slug": user.slug,
                     "name": user.get_full_name(),
                     "short_name": user.short_name,
+                    "avatar": get_avatar_url(user),
                 },
                 "family": family,
                 "event": EventSerializer(event).data if event else None,

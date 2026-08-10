@@ -1,8 +1,18 @@
+/* Light theme. Every colour the app draws with is a token here so the dark
+   theme at the bottom of this file only has to restate the palette. The Pack's
+   brand colours (the navy app bar, the gold rule, the red 144 logo, the rank
+   badges) are deliberately shared by both themes. */
 :root {
+  color-scheme: light dark;
+
   --bg: #f4f6f9;
+  --surface: #fff;
+  --surface-2: #e5e9f0;
   --ink: #20242b;
   --muted: #6b7280;
   --label: #8a919c;
+  --heading: #173f8c;
+  --accent: #1a4aa0;
   --navy: #1a4aa0;
   --navy-deep: #173f8c;
   --gold: #ffce33;
@@ -12,6 +22,9 @@
   --card-border: #e6e9ee;
   --divider: #eef0f3;
   --pill-border: #d0d5de;
+  --chev: #c7cdd6;
+  --row-mine: #eef4fb;
+  --badge-neutral: #20242b;
   --tab-off: #9aa1ac;
   --hero-navy: #0e1c33;
 
@@ -21,6 +34,15 @@
   --rank-bear: #8a5a2b;
   --rank-webelos: #1a4aa0;
   --rank-aol: #0f766e;
+
+  /* Ranks set as text (the All Dens group headings) rather than as a badge
+     fill. Identical by day; night mode lifts them for contrast. */
+  --rank-lion-text: var(--rank-lion);
+  --rank-tiger-text: var(--rank-tiger);
+  --rank-wolf-text: var(--rank-wolf);
+  --rank-bear-text: var(--rank-bear);
+  --rank-webelos-text: var(--rank-webelos);
+  --rank-aol-text: var(--rank-aol);
 }
 
 * {
@@ -34,7 +56,10 @@ body {
 }
 
 body {
-  background: var(--bg);
+  /* The tab bar's colour rather than --bg, so any strip iOS leaves outside the
+     app's viewport (the home indicator area in standalone) blends into the tab
+     bar instead of showing as a band. */
+  background: var(--surface);
   color: var(--ink);
   font-family: "Public Sans", system-ui, sans-serif;
   font-size: 15px;
@@ -78,17 +103,29 @@ button {
   -webkit-overflow-scrolling: touch;
 }
 
+/* The scroll area is itself a flex column, so its children would otherwise
+   shrink to fit rather than scroll. Cards set `overflow: hidden`, which zeroes
+   out their automatic minimum size, so they collapse and clip their contents
+   whenever the viewport is short (Safari with its toolbars showing). */
+.screen-scroll > * {
+  flex: none;
+}
+
 .screen-scroll.flush {
   padding: 0;
   gap: 0;
 }
 
-/* App bar */
+/* App bar.
+   The viewport is `viewport-fit=cover` and iOS uses a translucent status bar in
+   standalone mode, so the bar draws underneath it. Pad by the top safe-area
+   inset — 0 in a browser tab, the status bar height once installed. */
 .appbar {
   flex: none;
   background: linear-gradient(180deg, var(--navy), var(--navy-deep));
   border-bottom: 3px solid var(--gold);
-  padding: 12px 18px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) calc(18px + env(safe-area-inset-right, 0px)) 12px
+    calc(18px + env(safe-area-inset-left, 0px));
   display: flex;
   align-items: center;
   gap: 12px;
@@ -162,17 +199,29 @@ button {
   font-weight: 800;
   font-size: 13px;
   flex: none;
+  overflow: hidden;
+}
+
+.appbar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* Search input inside the navy app bar */
 .appbar-search {
   display: flex;
-  background: #fff;
+  background: var(--surface);
   border-radius: 11px;
   align-items: center;
   padding: 0 12px;
   height: 42px;
   gap: 9px;
+
+  /* The magnifier draws with currentColor; without this it would inherit the
+     app bar's white and vanish into the field. */
+  color: var(--label);
 }
 
 .appbar-search svg {
@@ -186,6 +235,11 @@ button {
   font: 500 15px "Public Sans", system-ui, sans-serif;
   color: var(--ink);
   width: 100%;
+}
+
+.appbar-search input::placeholder {
+  color: var(--label);
+  opacity: 1;
 }
 
 /* Typography */
@@ -207,7 +261,7 @@ button {
 .sect {
   font-weight: 800;
   font-size: 13px;
-  color: var(--navy-deep);
+  color: var(--heading);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin: 0 0 8px;
@@ -231,7 +285,7 @@ button {
 
 /* Cards and rows */
 .card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--card-border);
   border-radius: 16px;
   box-shadow: 0 3px 10px rgba(20, 30, 50, 0.05);
@@ -274,7 +328,7 @@ button {
 }
 
 .chev {
-  color: #c7cdd6;
+  color: var(--chev);
   font-size: 20px;
   margin-left: auto;
   font-weight: 600;
@@ -282,7 +336,7 @@ button {
 }
 
 .row.mine {
-  background: #eef4fb;
+  background: var(--row-mine);
 }
 
 /* Avatars: photo when available, colored initials otherwise */
@@ -358,8 +412,8 @@ img.av {
   padding: 7px 15px;
   font-weight: 600;
   font-size: 13px;
-  color: #3b4149;
-  background: #fff;
+  color: var(--ink);
+  background: var(--surface);
   white-space: nowrap;
 }
 
@@ -372,7 +426,7 @@ img.av {
 /* Segmented control (My Dens) */
 .segmented {
   display: flex;
-  background: #e5e9f0;
+  background: var(--surface-2);
   border-radius: 12px;
   padding: 4px;
   gap: 4px;
@@ -395,21 +449,21 @@ img.av {
 }
 
 .segment.on {
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 2px 5px rgba(20, 30, 50, 0.1);
 }
 
 .segment.on .seg-title {
-  color: var(--navy);
+  color: var(--accent);
 }
 
 /* Icon buttons (leader call/email) */
 .icon-btn {
   width: 34px;
   height: 34px;
-  border: 1px solid #e0e4ea;
+  border: 1px solid var(--card-border);
   border-radius: 9px;
-  background: #fff;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -458,7 +512,7 @@ img.av {
   display: flex;
   align-items: center;
   gap: 9px;
-  border: 1px solid #eceef2;
+  border: 1px solid var(--divider);
   border-radius: 11px;
   padding: 8px 10px;
   min-width: 0;
@@ -597,8 +651,8 @@ img.av {
   height: 44px;
   border: 1px solid var(--pill-border);
   border-radius: 11px;
-  background: #fff;
-  color: var(--navy);
+  background: var(--surface);
+  color: var(--accent);
   font-weight: 700;
   font-size: 14px;
   display: flex;
@@ -631,12 +685,16 @@ img.av {
   margin: 0;
 }
 
-/* Tab bar */
+/* Tab bar.
+   Grows by the bottom safe-area inset so the labels clear the home indicator
+   wherever the viewport extends beneath it. */
 .tbar {
   flex: none;
-  height: 66px;
-  background: #fff;
-  border-top: 1px solid #e5e8ed;
+  height: auto;
+  min-height: 66px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  background: var(--surface);
+  border-top: 1px solid var(--card-border);
   display: flex;
   box-shadow: 0 -3px 14px rgba(15, 23, 42, 0.05);
 }
@@ -654,7 +712,7 @@ img.av {
 }
 
 .tbar .tab.on {
-  color: var(--navy);
+  color: var(--accent);
 }
 
 .tbar .tab svg {
@@ -672,4 +730,82 @@ img.av {
 
 .error {
   color: var(--red);
+}
+
+/* Dark theme. Follows the phone's appearance setting; the surfaces and text
+   invert while the Pack's brand colours carry over unchanged. Blues and the
+   red heading are lifted so they still read against a dark background. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0e15;
+    --surface: #151c28;
+    --surface-2: #202938;
+    --ink: #e9edf4;
+    --muted: #98a3b4;
+    --label: #8792a3;
+    --heading: #93b4f0;
+    --accent: #7aa7f0;
+    --red: #ff5f68;
+    --link: #6fa6f2;
+    --card-border: #232c3b;
+    --divider: #222a37;
+    --pill-border: #384154;
+    --chev: #596375;
+    --row-mine: #16233c;
+    --badge-neutral: #4d5768;
+    --tab-off: #7d8798;
+    --hero-navy: #0d1a2e;
+
+    /* Badge fills lift just enough to sit on a dark card while keeping their
+       white lettering legible. */
+    --rank-lion: #cd4436;
+    --rank-tiger: #e5941f;
+    --rank-wolf: #3d7cc0;
+    --rank-bear: #97653a;
+    --rank-webelos: #2a5fb5;
+    --rank-aol: #14877d;
+
+    /* As text on the near-black background these need to go further. */
+    --rank-lion-text: #ef7063;
+    --rank-tiger-text: #f2a949;
+    --rank-wolf-text: #6fa3e0;
+    --rank-bear-text: #c08b56;
+    --rank-webelos-text: #6f9fe6;
+    --rank-aol-text: #35b3a6;
+  }
+
+  /* Cards read as raised by their own lightness against a dark background, so
+     the drop shadows only muddy their edges. */
+  .card,
+  .tbar,
+  .event-card,
+  .segment.on {
+    box-shadow: none;
+  }
+
+  /* By day the selected den is a white chip on a grey track; at night that
+     inverts to a filled brand-blue chip, which stays legible without relying
+     on a light surface. */
+  .segment.on {
+    background: var(--navy);
+  }
+
+  .segment.on .seg-title {
+    color: #fff;
+  }
+
+  .segment.on .mono {
+    color: #c7d5ee;
+  }
+
+  /* Over a dark hero the light-theme white circle glares; invert it. */
+  .profile-hero .back {
+    background: rgb(13 18 28 / 72%);
+    color: var(--ink);
+  }
+
+  /* A white photo placeholder flashes bright before the image loads. */
+  img.av {
+    background: var(--surface-2);
+  }
 }

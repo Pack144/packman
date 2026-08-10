@@ -1,4 +1,4 @@
-import { appBar, denBadge, esc, pluralize, rankColor, rankTag, titleBar } from "../components.js";
+import { appBar, denBadge, esc, pluralize, rankTag, rankTextColor, titleBar } from "../components.js";
 import { api } from "../api.js";
 import { denDetailMarkup } from "./den-shared.js";
 
@@ -24,7 +24,7 @@ export async function renderDens(container) {
           (group) => `
         <div>
           <div class="group-head">
-            <span class="sect" style="color:${rankColor(group.rank_key)}">${esc(group.rank || "Unranked")}</span>
+            <span class="sect" style="color:${rankTextColor(group.rank_key)}">${esc(group.rank || "Unranked")}</span>
             <span class="mono">${esc(pluralize(group.dens.length, "DEN"))}</span>
           </div>
           <div class="card row-divided">
