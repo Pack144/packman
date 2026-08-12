@@ -236,7 +236,9 @@ button {
   border: 0;
   outline: 0;
   background: transparent;
-  font: 500 15px "Public Sans", system-ui, sans-serif;
+  /* 16px is the minimum iOS Safari won't zoom in on when the field is
+     focused; anything smaller triggers an auto-zoom on tap. */
+  font: 500 16px "Public Sans", system-ui, sans-serif;
   color: var(--ink);
   width: 100%;
 }
