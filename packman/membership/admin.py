@@ -176,6 +176,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "name",
         "last_name",
         "school",
+        "gender",
         "get_grade",
         "age",
         "status",

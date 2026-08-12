@@ -446,6 +446,7 @@ class Scout(Member):
 
     class Meta:
         indexes = [models.Index(fields=["school", "family", "status", "started_school"])]
+        ordering = ["-date_added"]
         verbose_name = _("Cub")
         verbose_name_plural = _("Cubs")
 
