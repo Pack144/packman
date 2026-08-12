@@ -83,6 +83,11 @@ export const icons = {
   search:
     '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg>',
   me: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-7 7-7s7 3 7 7"/></svg>',
+  menu: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+  committees:
+    '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="1.9"><rect x="4.5" y="3" width="15" height="18" rx="2.2"/><path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4.5"/></svg>',
+  refresh:
+    '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/></svg>',
   phone:
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 2.5a1.7 1.7 0 00-1.5.5L3.7 4.9c-.5.5-.7 1.2-.5 1.9 1.9 6.9 6.9 11.9 13.8 13.8.7.2 1.4 0 1.9-.5l1.9-1.4a1.7 1.7 0 00.2-2.4l-2.3-2.6a1.7 1.7 0 00-2-.4l-1.9.9a13 13 0 01-5-5l.9-1.9a1.7 1.7 0 00-.4-2L8 3z"/></svg>',
   message:
@@ -90,6 +95,12 @@ export const icons = {
   mail: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="M3 6l9 6 9-6"/></svg>',
   searchGray:
     '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg>',
+  install:
+    '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 8v6"/><path d="M9.4 11.6L12 14.2l2.6-2.6"/></svg>',
+  // The glyph on the iOS Share button, so the instruction points at something
+  // the reader can actually match on screen.
+  share:
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3.5v11"/><path d="M8.2 7.3L12 3.5l3.8 3.8"/><path d="M5.5 13v6.5a1.5 1.5 0 001.5 1.5h10a1.5 1.5 0 001.5-1.5V13"/></svg>',
 };
 
 // How many dens the user's cubs span — drives the "My Den" vs "My Dens"

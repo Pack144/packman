@@ -50,6 +50,38 @@ export function purgeCache() {
 }
 
 /**
+ * The Menu screen's "Refresh Data" button: clears every cache the PWA keeps
+ * — this tab's localStorage cache and the service worker's shell/data caches
+ * — then reloads, so the next paint is a genuine network fetch of everything
+ * rather than whatever was last stored.
+ */
+export async function refreshAllData() {
+  try {
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(CACHE_PREFIX))
+      .forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // Nothing cached to clear.
+  }
+
+  const controller = navigator.serviceWorker?.controller;
+  if (controller) {
+    // Wait for the service worker to confirm its caches are gone before
+    // reloading, so the reload's own requests can't race the purge and pull
+    // a cached copy right back in. An old service worker that predates this
+    // reply won't ever post back, so give up and reload anyway after a beat.
+    await new Promise((resolve) => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = () => resolve();
+      controller.postMessage("packman:purge", [channel.port2]);
+      setTimeout(resolve, 1500);
+    });
+  }
+
+  window.location.reload();
+}
+
+/**
  * Cached directory data belongs to whoever was signed in when it was stored.
  * Clear it whenever the shell reports a different member.
  */
@@ -146,4 +178,21 @@ export const api = {
   // with one entry per keystroke.
   search: (q, type) => request("search/", { q, type }),
   member: (slug) => cachedRequest(`members/${encodeURIComponent(slug)}/`),
+  committees: () => cachedRequest("committees/"),
+  committee: (slug, year) => cachedRequest(`committees/${encodeURIComponent(slug)}/`, { year }),
 };
+
+/**
+ * Fill the caches the directory reads from, so the first offline launch after an
+ * install doesn't find them empty. Covers the three screens reachable without
+ * picking a den or typing a search; the rest fill in as they're visited.
+ */
+export async function preloadCriticalData() {
+  try {
+    await Promise.all([api.home(), api.dens(), api.myDens()]);
+  } catch (err) {
+    // Offline, or the session expired mid-install. Nothing to recover: the
+    // screens each cache themselves on the way past.
+    console.warn("Pre-load skipped", err);
+  }
+}

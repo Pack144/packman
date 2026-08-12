@@ -6,12 +6,15 @@ from django.utils import timezone
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from packman.calendars.models import Event
+from packman.calendars.models import Event, PackYear
+from packman.committees.models import Committee, CommitteeMember
 from packman.dens.models import Den
 from packman.membership.models import Adult, Member, Scout
 
 from .permissions import IsActiveMemberOrContributor
 from .serializers import (
+    CommitteeDetailSerializer,
+    CommitteeSummarySerializer,
     DenDetailSerializer,
     DenSummarySerializer,
     EventSerializer,
@@ -294,3 +297,41 @@ class MemberDetailView(GenericAPIView):
     def get(self, request, slug):
         member = get_object_or_404(visible_members(), slug=slug)
         return Response(MemberDetailSerializer(build_member_detail(member)).data)
+
+
+class CommitteeListView(GenericAPIView):
+    permission_classes = [IsActiveMemberOrContributor]
+
+    def get(self, request):
+        committees = Committee.objects.all()
+        return Response({"committees": CommitteeSummarySerializer(committees, many=True).data})
+
+
+class CommitteeDetailView(GenericAPIView):
+    permission_classes = [IsActiveMemberOrContributor]
+
+    def get(self, request, slug):
+        committee = get_object_or_404(Committee, slug=slug)
+        years = PackYear.objects.filter(committee_membership__committee=committee).distinct().order_by("-start_date")
+
+        requested_year = request.query_params.get("year")
+        if requested_year:
+            year = get_object_or_404(years, year=requested_year)
+        else:
+            current_year = PackYear.objects.current()
+            # Default to the current Pack Year if the committee has a roster
+            # for it, otherwise fall back to its most recent one on record.
+            year = current_year if years.filter(pk=current_year.pk).exists() else years.first() or current_year
+
+        members = (
+            committee.committee_members.filter(year=year, position__lt=CommitteeMember.Position.AKELA)
+            .select_related("member")
+            .order_by("position", "member__last_name")
+        )
+        akelas = (
+            committee.committee_members.filter(year=year, position__gte=CommitteeMember.Position.AKELA)
+            .select_related("member")
+            .order_by("position", "member__last_name")
+        )
+        context = {"year": year, "years": years, "members_qs": members, "akelas_qs": akelas}
+        return Response(CommitteeDetailSerializer(committee, context=context).data)

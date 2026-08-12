@@ -1,22 +1,44 @@
 import { claimCacheFor } from "./api.js";
 import { icons, myDensLabel } from "./components.js";
+import { initInstall } from "./install.js";
+import { initMenu, menuLayer } from "./menu.js";
 import { route, startRouter } from "./router.js";
 import { renderHome } from "./screens/home.js";
 import { renderMyDens } from "./screens/my-dens.js";
 import { renderDens, renderDenDetail } from "./screens/dens.js";
 import { renderSearch } from "./screens/search.js";
 import { renderProfile } from "./screens/profile.js";
+import { renderCommittees, renderCommitteeDetail } from "./screens/committees.js";
 
 const TABS = [
   { key: "home", label: "Home", path: "/home", icon: icons.home },
   { key: "my-dens", label: "My Dens", path: "/my-dens", icon: icons.myDens },
   { key: "dens", label: "Dens", path: "/dens", icon: icons.dens },
   { key: "search", label: "Search", path: "/search", icon: icons.search },
-  { key: "me", label: "Me", path: "/me", icon: icons.me },
+  // No `path`: this tab opens the Me/Committees popover in place instead of
+  // navigating (see menu.js), so it's rendered as a button below.
+  { key: "menu", label: "Menu", icon: icons.menu },
 ];
 
 function tabLabel(tab) {
   return tab.key === "my-dens" ? myDensLabel() : tab.label;
+}
+
+function tabMarkup(tab, activeKey) {
+  const on = tab.key === activeKey;
+  if (!tab.path) {
+    // The Menu tab: a button that toggles the popover (menu.js) rather than
+    // a link, so it needs the current route baked in as data-active — the
+    // popover reads it back to decide whether to stay highlighted on close.
+    return `
+      <button type="button" class="tab${on ? " on" : ""}" id="menu-tab" data-active="${on}">
+        ${tab.icon}${tabLabel(tab)}
+      </button>`;
+  }
+  return `
+    <a class="tab${on ? " on" : ""}" href="#${tab.path}">
+      ${tab.icon}${tabLabel(tab)}
+    </a>`;
 }
 
 function renderShell(activeKey) {
@@ -25,13 +47,9 @@ function renderShell(activeKey) {
   document.getElementById("app").innerHTML = `
     <div id="screen" class="screen"></div>
     <nav class="tbar">
-      ${TABS.map(
-        (tab) => `
-        <a class="tab${tab.key === activeKey ? " on" : ""}" href="#${tab.path}">
-          ${tab.icon}${tabLabel(tab)}
-        </a>`
-      ).join("")}
+      ${TABS.map((tab) => tabMarkup(tab, activeKey)).join("")}
     </nav>
+    ${menuLayer()}
   `;
 }
 
@@ -89,13 +107,18 @@ route("/my-dens", () => mount(renderMyDens, "my-dens"));
 route("/dens", () => mount(renderDens, "dens"));
 route("/dens/:number", (params) => mount((el) => renderDenDetail(el, params.number), "dens"));
 route("/search", () => mount(renderSearch, "search"));
-route("/me", () => mount((el) => renderProfile(el, window.PACKMAN_MOBILE.user.slug, { me: true }), "me"));
+route("/me", () => mount((el) => renderProfile(el, window.PACKMAN_MOBILE.user.slug, { me: true }), "menu"));
 route("/profile/:slug", (params) => mount((el) => renderProfile(el, params.slug), null));
+route("/committees", () => mount(renderCommittees, "menu"));
+route("/committees/:slug", (params) => mount((el) => renderCommitteeDetail(el, params.slug), "menu"));
 
 // Drop any directory data cached for a different member before it can render.
 claimCacheFor(window.PACKMAN_MOBILE.user.slug);
 
 startRouter();
+
+initInstall();
+initMenu();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

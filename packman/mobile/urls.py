@@ -13,4 +13,6 @@ urlpatterns = [
     path("api/dens/<int:number>/", api.DenDetailView.as_view(), name="api-den-detail"),
     path("api/search/", api.SearchView.as_view(), name="api-search"),
     path("api/members/<slug:slug>/", api.MemberDetailView.as_view(), name="api-member-detail"),
+    path("api/committees/", api.CommitteeListView.as_view(), name="api-committees"),
+    path("api/committees/<slug:slug>/", api.CommitteeDetailView.as_view(), name="api-committee-detail"),
 ]

@@ -1,4 +1,4 @@
-{% load static %}const VERSION = "v4";
+{% load static %}const VERSION = "v6";
 const SHELL_CACHE = `pack-directory-shell-${VERSION}`;
 const DATA_CACHE = `pack-directory-data-${VERSION}`;
 const FONT_CACHE = `pack-directory-fonts-${VERSION}`;
@@ -16,12 +16,15 @@ const PRECACHE_URLS = [
   "{% static 'mobile/js/api.js' %}",
   "{% static 'mobile/js/router.js' %}",
   "{% static 'mobile/js/components.js' %}",
+  "{% static 'mobile/js/install.js' %}",
+  "{% static 'mobile/js/menu.js' %}",
   "{% static 'mobile/js/screens/den-shared.js' %}",
   "{% static 'mobile/js/screens/home.js' %}",
   "{% static 'mobile/js/screens/my-dens.js' %}",
   "{% static 'mobile/js/screens/dens.js' %}",
   "{% static 'mobile/js/screens/search.js' %}",
   "{% static 'mobile/js/screens/profile.js' %}",
+  "{% static 'mobile/js/screens/committees.js' %}",
   "{% static 'mobile/icons/icon-192.png' %}",
   "{% static 'mobile/icons/icon-512.png' %}",
 ];
@@ -56,11 +59,19 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// The app asks for a purge when the session ends or a different member signs
-// in, so one family's directory is never served to the next.
+// The app asks for a purge when the session ends, a different member signs
+// in, or the reader taps "Refresh Data" in the Menu — so one family's
+// directory is never served to the next, and a manual refresh means it.
+// The Refresh Data flow sends a reply port and waits for it before reloading,
+// so its own requests can't race the purge; the other two callers don't, and
+// event.ports is simply empty for them.
 self.addEventListener("message", (event) => {
   if (event.data === "packman:purge") {
-    event.waitUntil(Promise.all([caches.delete(DATA_CACHE), caches.delete(SHELL_CACHE)]));
+    event.waitUntil(
+      Promise.all([caches.delete(DATA_CACHE), caches.delete(SHELL_CACHE)]).then(() => {
+        event.ports[0]?.postMessage("done");
+      })
+    );
   }
 });
 

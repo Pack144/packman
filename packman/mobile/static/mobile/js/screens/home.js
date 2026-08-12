@@ -1,5 +1,6 @@
-import { appBar, denBadge, esc, initialsOf, pluralize, setMyDenCount } from "../components.js";
+import { appBar, avatar, esc, initialsOf, pluralize, setMyDenCount } from "../components.js";
 import { api } from "../api.js";
+import { installBanner } from "../install.js";
 
 function packDigits(packName) {
   const match = (packName || "").match(/\d+/);
@@ -63,7 +64,7 @@ function familyCard(family) {
           .map(
             (cub) => `
           <a class="cub-chip" href="#/profile/${encodeURIComponent(cub.slug)}">
-            ${denBadge(cub.rank_key, cub.rank_badge, "sm")}
+            ${avatar(cub.avatar, cub.name, "sm")}
             <div class="grow">
               <div class="cub-name">${esc(cub.name)}</div>
               <div class="mono">${esc(cub.den_label || "")}</div>
@@ -103,6 +104,7 @@ export async function renderHome(container) {
         <h1 class="h1red">Hi, ${esc(data.user.short_name)}</h1>
         ${data.family ? `<div class="h1sub">${esc(data.family.name)}</div>` : ""}
       </div>
+      <div id="install-slot">${installBanner()}</div>
       ${familyCard(data.family)}
       ${eventCard(data.event)}
       <section>

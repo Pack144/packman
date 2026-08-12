@@ -72,6 +72,10 @@ body {
   max-width: 480px;
   margin: 0 auto;
   background: var(--bg);
+
+  /* Anchors the Menu popover/backdrop (position: absolute) to the phone-width
+     column instead of the full (possibly wider, desktop-preview) viewport. */
+  position: relative;
 }
 
 a {
@@ -523,6 +527,68 @@ img.av {
   font-size: 14px;
 }
 
+/* Home: install banner. Chrome gets a working button; iOS Safari, which has no
+   install API to call, gets the manual Share-sheet route written out instead.
+   The slot is always in the markup, so it collapses itself when empty rather
+   than leaving the scroll column's gap behind. */
+#install-slot:empty {
+  display: none;
+}
+
+/* Carries .card for its surface, border and shadow; this only lays out the row. */
+.install-banner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 10px 12px 14px;
+  color: var(--accent);
+}
+
+.install-banner > svg {
+  flex: none;
+}
+
+.install-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.install-sub {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+/* The Share glyph sits inline in the sentence, so it has to ride the baseline
+   rather than the line box. */
+.install-sub svg {
+  vertical-align: -2px;
+  margin: 0 1px;
+}
+
+.install-btn {
+  flex: none;
+  border: 0;
+  border-radius: 9px;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 9px 14px;
+}
+
+.install-x {
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: var(--label);
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 7px;
+}
+
 /* Home: event card */
 .event-card {
   background: linear-gradient(135deg, #1f6dff, #1657e6);
@@ -673,6 +739,55 @@ img.av {
   color: var(--link);
 }
 
+/* Committees */
+.committee-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--link);
+}
+
+.committee-star {
+  display: flex;
+  flex: none;
+  color: var(--gold);
+}
+
+.committee-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.committee-head .h1red {
+  flex: 1;
+}
+
+.committee-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* The Pack Year picker on a Committee detail screen: a plain .pill when
+   there's only one year on record, a real <select> when there's a choice.
+   Native select chrome is stripped in favour of a CSS-drawn chevron so it
+   reads the same as the static pill either way. */
+select.pill {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1.5px solid var(--pill-border);
+  padding-right: 28px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 55%,
+    calc(100% - 10px) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
 /* Dens group header */
 .group-head {
   display: flex;
@@ -683,6 +798,66 @@ img.av {
 
 .group-head .sect {
   margin: 0;
+}
+
+/* Menu tab popover (Me / Committees). Ordered ahead of the tab bar rules
+   below: .menu-item svg and .tbar .tab svg are unrelated but equal-ish
+   specificity, and stylelint wants the lower one declared first. */
+.menu-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 14, 22, 0.35);
+  z-index: 40;
+}
+
+.menu-popover {
+  position: absolute;
+  right: 15px;
+  bottom: calc(66px + env(safe-area-inset-bottom, 0) + 10px);
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(20, 30, 50, 0.18);
+  overflow: hidden;
+  z-index: 41;
+  min-width: 172px;
+}
+
+.menu-backdrop[hidden],
+.menu-popover[hidden] {
+  display: none;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 16px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  text-align: left;
+
+  /* "Refresh Data" is a <button>; strip its UA chrome so it matches the
+     Me/Committees links either side of it. */
+  border: 0;
+  background: transparent;
+}
+
+.menu-item:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.menu-item + .menu-item {
+  border-top: 1px solid var(--divider);
+}
+
+.menu-item svg {
+  flex: none;
+  color: var(--accent);
+  stroke: currentColor;
 }
 
 /* Tab bar.
@@ -709,6 +884,11 @@ img.av {
   font-weight: 600;
   font-size: 10px;
   color: var(--tab-off);
+
+  /* The Menu tab is a <button>; strip its UA chrome so it matches the others. */
+  border: 0;
+  background: transparent;
+  padding: 0;
 }
 
 .tbar .tab.on {
@@ -779,7 +959,8 @@ img.av {
   .card,
   .tbar,
   .event-card,
-  .segment.on {
+  .segment.on,
+  .menu-popover {
     box-shadow: none;
   }
 

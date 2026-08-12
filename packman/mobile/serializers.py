@@ -293,6 +293,63 @@ class DenDetailSerializer(serializers.Serializer):
         return data
 
 
+class CommitteeSummarySerializer(serializers.Serializer):
+    """A single row in the Committees list."""
+
+    slug = serializers.CharField()
+    name = serializers.CharField()
+    leadership = serializers.BooleanField()
+
+
+class CommitteeMemberSerializer(serializers.Serializer):
+    """One assigned member row on a Committee detail screen."""
+
+    slug = serializers.CharField(source="member.slug")
+    name = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    position = serializers.CharField(source="get_position_display")
+
+    def get_name(self, committee_member):
+        return committee_member.member.get_full_name()
+
+    def get_avatar(self, committee_member):
+        return get_avatar_url(committee_member.member)
+
+
+class CommitteeDetailSerializer(serializers.Serializer):
+    """
+    Full detail for one Committee. Expects the Committee instance, plus a
+    context built by the view: the selected `year` (a PackYear), the `years`
+    it has a roster for, and the `members_qs`/`akelas_qs` querysets for that
+    year — mirroring how DenDetailSerializer reaches its leaders/roster.
+    """
+
+    slug = serializers.CharField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    leadership = serializers.BooleanField()
+    year = serializers.SerializerMethodField()
+    year_label = serializers.SerializerMethodField()
+    years = serializers.SerializerMethodField()
+    akelas = serializers.SerializerMethodField()
+    members = serializers.SerializerMethodField()
+
+    def get_year(self, committee):
+        return self.context["year"].year
+
+    def get_year_label(self, committee):
+        return str(self.context["year"])
+
+    def get_years(self, committee):
+        return [{"year": year.year, "label": str(year)} for year in self.context["years"]]
+
+    def get_akelas(self, committee):
+        return CommitteeMemberSerializer(self.context["akelas_qs"], many=True).data
+
+    def get_members(self, committee):
+        return CommitteeMemberSerializer(self.context["members_qs"], many=True).data
+
+
 class SearchResultSerializer(serializers.Serializer):
     slug = serializers.CharField()
     name = serializers.CharField()

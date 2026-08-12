@@ -313,10 +313,116 @@ class MemberDetailAPITestCase(MobileDirectoryTestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class CommitteeListAPITestCase(MobileDirectoryTestCase):
+    def test_lists_committees(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-committees"))
+        self.assertEqual(response.status_code, 200)
+        committees = response.json()["committees"]
+        self.assertTrue(any(c["slug"] == "wolf-den" for c in committees))
+
+    def test_leadership_flag_is_reported(self):
+        from packman.committees.models import Committee
+
+        Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-committees")).json()
+        akela = next(c for c in data["committees"] if c["slug"] == "akela")
+        self.assertTrue(akela["leadership"])
+        wolf_den = next(c for c in data["committees"] if c["slug"] == "wolf-den")
+        self.assertFalse(wolf_den["leadership"])
+
+
+class CommitteeDetailAPITestCase(MobileDirectoryTestCase):
+    def test_returns_current_years_roster(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"]))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Wolf Den")
+        self.assertEqual(data["year"], self.pack_year.year)
+        self.assertEqual(len(data["members"]), 1)
+        self.assertEqual(data["members"][0]["name"], self.leader.get_full_name())
+        self.assertEqual(data["akelas"], [])
+
+    def test_akelas_are_separated_from_members(self):
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
+
+        committee = Committee.objects.get(slug="wolf-den")
+        akela = AdultFactory(family=FamilyFactory())
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=akela,
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"])).json()
+        self.assertEqual(len(data["akelas"]), 1)
+        self.assertEqual(data["akelas"][0]["name"], akela.get_full_name())
+        self.assertEqual(len(data["members"]), 1)
+
+    def test_prior_year_members_are_excluded_by_default(self):
+        from packman.calendars.models import PackYear
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
+
+        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
+        committee = Committee.objects.get(slug="wolf-den")
+        former = AdultFactory(family=FamilyFactory())
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=former,
+            year=last_year,
+            position=CommitteeMember.Position.MEMBER,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"])).json()
+        self.assertNotIn(former.get_full_name(), [m["name"] for m in data["members"]])
+        # ...but it's still offered as a year to switch to.
+        self.assertIn(last_year.year, [y["year"] for y in data["years"]])
+
+    def test_can_request_a_prior_year_explicitly(self):
+        from packman.calendars.models import PackYear
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
+
+        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
+        committee = Committee.objects.get(slug="wolf-den")
+        former = AdultFactory(family=FamilyFactory())
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=former,
+            year=last_year,
+            position=CommitteeMember.Position.MEMBER,
+        )
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"]), {"year": last_year.year})
+        data = response.json()
+        self.assertEqual(data["year"], last_year.year)
+        self.assertEqual([m["name"] for m in data["members"]], [former.get_full_name()])
+
+    def test_unknown_committee_is_404(self):
+        self.client.force_login(self.parent)
+        response = self.client.get(reverse("mobile:api-committee-detail", args=["does-not-exist"]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_is_forbidden(self):
+        response = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"]))
+        self.assertEqual(response.status_code, 403)
+
+
 class ApiPermissionTestCase(MobileDirectoryTestCase):
     """The API views enforce the same access rule as the shell (IsActiveMemberOrContributor)."""
 
-    ENDPOINTS = ("mobile:api-home", "mobile:api-dens-mine", "mobile:api-dens", "mobile:api-search")
+    ENDPOINTS = (
+        "mobile:api-home",
+        "mobile:api-dens-mine",
+        "mobile:api-dens",
+        "mobile:api-search",
+        "mobile:api-committees",
+    )
 
     def test_inactive_parent_is_forbidden(self):
         from packman.membership.factories import AdultFactory, FamilyFactory
