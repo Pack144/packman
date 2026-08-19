@@ -45,6 +45,7 @@ urlpatterns = [
     path("documents/", include("packman.documents.urls")),
     path("mail/", include("packman.mail.urls")),
     path("members/", include("packman.membership.urls")),
+    path("mobile/", include("packman.mobile.urls")),
     path("ncc/", include("packman.campaigns.urls")),
     path("", include("packman.pages.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
