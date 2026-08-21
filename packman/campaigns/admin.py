@@ -76,7 +76,7 @@ class QuotaInline(admin.TabularInline):
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
-    actions = ["duplicate_campaign"]
+    actions = ["duplicate_campaign", "generate_weekly_report", "generate_campaign_report"]
     inlines = [QuotaInline]
     list_display = [
         "year",
@@ -149,54 +149,16 @@ class CampaignAdmin(admin.ModelAdmin):
             )
 
 
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ["name", "description"]
-
-
-@admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
-    inlines = [OrderInline]
-    list_display = ["name", "address", "city", "state", "zipcode", "phone_number", "email"]
-    search_fields = ["name", "address", "phone_number", "email"]
-
-
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    actions = ["generate_weekly_report", "generate_campaign_report"]
-    inlines = [OrderItemInline]
-    list_display = [
-        "customer",
-        "seller",
-        "campaign",
-        "is_paid",
-        "is_delivered",
-        "product_total",
-        "donation",
-        "order_total",
-    ]
-    list_filter = [IsPaidFilter, IsDeliveredFilter, "campaign", "seller"]
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).calculate_total()
-
-    @admin.display(description="product", ordering="subtotal")
-    def product_total(self, obj):
-        return obj.subtotal
-
-    @admin.display(description="total", ordering="total")
-    def order_total(self, obj):
-        return obj.total
-
     @admin.display(description=_("Generate Weekly Report"))
     def generate_weekly_report(self, request, queryset):
+        campaign = Campaign.get_latest()
         end_date = timezone.now()
         start_date = end_date - timezone.timedelta(days=7)
         report_name = f"Campaign Weekly Report ({end_date.month}-{end_date.day}-{end_date.year}).csv"
         field_names = ["Cub", "Den", "Order Count", "Total"]
 
-        orders = queryset.filter(date_added__gte=start_date, date_added__lte=end_date)
-        members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
+        orders = campaign.orders.filter(date_added__gte=start_date, date_added__lte=end_date)
+        members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=campaign.year)
 
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={report_name}"
@@ -212,18 +174,18 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.display(description=_("Generate Campaign Report"))
     def generate_campaign_report(self, request, queryset):
         # Determine campaign from the selected orders
-        campaign_ids = set(queryset.values_list("campaign", flat=True))
-        if len(campaign_ids) != 1:
+        campaigns = queryset.all()
+        if campaigns.count() != 1:
             self.message_user(
                 request,
                 _(
-                    "Please select orders from a single campaign"  # nosec B608
-                    f" (found {len(campaign_ids)} campaigns: {campaign_ids})"
+                    "Please select a single campaign"  # nosec B608
+                    f" (found {campaigns.count()} campaigns: {campaigns})"
                 ),
                 messages.ERROR,
             )
             return
-        campaign = Campaign.objects.get(pk=list(campaign_ids)[0])
+        campaign = campaigns[0]
 
         report_date = timezone.now()
         report_name = (
@@ -246,31 +208,44 @@ class OrderAdmin(admin.ModelAdmin):
         response["Content-Disposition"] = f"attachment; filename={report_name}"
 
         cubs = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(
-            year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE
+            year_assigned=campaign.year
         )
+
+        top_prize_points = PrizePoint.objects.order_by("earned_at").reverse()[:2]
+        print(top_prize_points)
+
+        last_prize_point = top_prize_points[0]
+        top_prize_point_earned_at_diff = top_prize_points[0].earned_at - top_prize_points[1].earned_at
+        top_prize_point_point_value_diff = top_prize_points[0].value - top_prize_points[1].value
 
         writer = csv.writer(response)
         writer.writerow(field_names)
         for cub in cubs:
-            cub_orders = queryset.filter(seller__den_memberships=cub)
+            cub_orders = campaign.orders.filter(seller__den_memberships=cub)
             total = cub_orders.totaled()["totaled"]
             quota_obj = cub.den.quotas.filter(campaign=campaign).first()
             quota = quota_obj.target if quota_obj is not None else 0
 
             # calculate points earned
             if total < quota:
+                # If the cub didn't make quota they don't get points
                 points_earned = 0
-            elif total <= 2000:
+            elif total <= last_prize_point.earned_at:
+                # If we're not off the top of the scale look it up
                 points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
             else:
-                points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
-                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100
-                )
+                # If we're off the top of the scale extrapolate lineraly based on the last two points
+                earned_above_configured_prize_points = total - last_prize_point.earned_at
+                tiers_above_configured_prize_points = int(earned_above_configured_prize_points / top_prize_point_earned_at_diff)
+                points_earned = last_prize_point.value + tiers_above_configured_prize_points * top_prize_point_point_value_diff
+
 
             points_spent = PrizeSelection.objects.filter(
                 cub=cub.scout, campaign=campaign
             ).calculate_total_points_spent()["spent"]
             points_remaining = points_earned - points_spent
+
+            print(cub, cub.den, quota, points_earned, points_spent, points_remaining)
 
             # TODO: Don't hard-code the minimum if quota unmet
             met_quota = total >= quota
@@ -294,6 +269,45 @@ class OrderAdmin(admin.ModelAdmin):
                 ]
             )
         return response
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ["name", "description"]
+
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    inlines = [OrderInline]
+    list_display = ["name", "address", "city", "state", "zipcode", "phone_number", "email"]
+    search_fields = ["name", "address", "phone_number", "email"]
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    inlines = [OrderItemInline]
+    list_display = [
+        "customer",
+        "seller",
+        "campaign",
+        "is_paid",
+        "is_delivered",
+        "product_total",
+        "donation",
+        "order_total",
+    ]
+    list_filter = [IsPaidFilter, IsDeliveredFilter, "campaign", "seller"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).calculate_total()
+
+    @admin.display(description="product", ordering="subtotal")
+    def product_total(self, obj):
+        return obj.subtotal
+
+    @admin.display(description="total", ordering="total")
+    def order_total(self, obj):
+        return obj.total
 
 
 @admin.register(Prize)
