@@ -148,7 +148,6 @@ class CampaignAdmin(admin.ModelAdmin):
                 messages.WARNING,
             )
 
-
     @admin.display(description=_("Generate Weekly Report"))
     def generate_weekly_report(self, request, queryset):
         campaign = Campaign.get_latest()
@@ -207,9 +206,7 @@ class CampaignAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename={report_name}"
 
-        cubs = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(
-            year_assigned=campaign.year
-        )
+        cubs = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(year_assigned=campaign.year)
 
         top_prize_points = PrizePoint.objects.order_by("earned_at").reverse()[:2]
         print(top_prize_points)
@@ -236,9 +233,12 @@ class CampaignAdmin(admin.ModelAdmin):
             else:
                 # If we're off the top of the scale extrapolate lineraly based on the last two points
                 earned_above_configured_prize_points = total - last_prize_point.earned_at
-                tiers_above_configured_prize_points = int(earned_above_configured_prize_points / top_prize_point_earned_at_diff)
-                points_earned = last_prize_point.value + tiers_above_configured_prize_points * top_prize_point_point_value_diff
-
+                tiers_above_configured_prize_points = int(
+                    earned_above_configured_prize_points / top_prize_point_earned_at_diff
+                )
+                points_earned = (
+                    last_prize_point.value + tiers_above_configured_prize_points * top_prize_point_point_value_diff
+                )
 
             points_spent = PrizeSelection.objects.filter(
                 cub=cub.scout, campaign=campaign
