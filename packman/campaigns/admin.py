@@ -209,7 +209,6 @@ class CampaignAdmin(admin.ModelAdmin):
         cubs = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(year_assigned=campaign.year)
 
         top_prize_points = PrizePoint.objects.order_by("earned_at").reverse()[:2]
-        print(top_prize_points)
 
         last_prize_point = top_prize_points[0]
         top_prize_point_earned_at_diff = top_prize_points[0].earned_at - top_prize_points[1].earned_at
@@ -244,8 +243,6 @@ class CampaignAdmin(admin.ModelAdmin):
                 cub=cub.scout, campaign=campaign
             ).calculate_total_points_spent()["spent"]
             points_remaining = points_earned - points_spent
-
-            print(cub, cub.den, quota, points_earned, points_spent, points_remaining)
 
             # TODO: Don't hard-code the minimum if quota unmet
             met_quota = total >= quota
