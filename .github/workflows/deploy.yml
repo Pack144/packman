@@ -30,6 +30,9 @@ jobs:
           script: |
             set -euo pipefail
             APP_DIR="${{ secrets.DEPLOY_APP_DIR }}"
+            # Secret values aren't shell-expanded, so a leading "~" in the
+            # secret wouldn't otherwise resolve to the home directory. Expand
+            # it manually here.
             APP_DIR="${APP_DIR/#\~/$HOME}"
             cd "$APP_DIR/packman"
             git fetch --prune origin
