@@ -201,7 +201,9 @@ Instead of SSHing in manually, you can deploy any branch to beta from the
 [Deploy to Beta](.github/workflows/deploy-beta.yml) workflow: go to
 the *Actions* tab, select it, click *Run workflow*, and pick the branch to
 deploy. It SSHes into the beta server, checks out the selected branch, and
-runs [deploy.sh](util/deploy.sh).
+runs [deploy.sh](util/deploy.sh). Only repository collaborators with
+maintainer or admin access can run it; the workflow checks the triggering
+user's permission level and fails otherwise.
 
 This requires the following repository secrets to be configured under
 *Settings → Secrets and variables → Actions*:
