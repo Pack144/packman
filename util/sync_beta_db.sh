@@ -33,6 +33,9 @@ require_cmd psql
 
 header "Sync beta database from production"
 
+[[ "$TGT_DB" == *-beta ]] || error "TGT_DB '$TGT_DB' doesn't end with '-beta' — refusing to run, this doesn't look like the beta database"
+[[ "$TGT_USER" == *-beta ]] || error "TGT_USER '$TGT_USER' doesn't end with '-beta' — refusing to run, this doesn't look like the beta database user"
+
 PGPASSFILE="${PGPASSFILE:-$HOME/.pgpass}"
 [[ -f "$PGPASSFILE" ]] || error "No .pgpass file found at $PGPASSFILE — see 'man pgpass'"
 
