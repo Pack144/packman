@@ -183,8 +183,6 @@ uv venv ~/apps/django-beta/env --python 3.14
 
 Deployment should first be validated in beta prior to deploying in prod.
 
-Note: beta and prod share a database, the deployment to beta will also run any migrations so take care when using it.
-
 ```bash
 cd ~/apps/django-beta/packman
 git pull
