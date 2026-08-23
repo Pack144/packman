@@ -3,12 +3,11 @@
 # fresh copy of the production database.
 #
 # Connects as the "django" user to dump the production ("django") database,
-# and as the "django-beta" user to load it into the beta ("django-beta")
-# database. pg_dump --clean --if-exists embeds DROP commands for each object
-# directly in the (plain-text) dump, so the objects are cleaned out as the
-# dump is loaded and the database itself never needs to be dropped/recreated.
-# Passwords are not handled here — they're expected to come from the
-# invoking user's ~/.pgpass file (see `man pgpass`).
+# and as the "django-beta" user to restore into the beta ("django-beta")
+# database. Before restoring, every table, view, and sequence in django-beta
+# is explicitly dropped, so the database itself never needs to be
+# dropped/recreated. Passwords are not handled here — they're expected to
+# come from the invoking user's ~/.pgpass file (see `man pgpass`).
 
 set -euo pipefail
 
@@ -29,6 +28,7 @@ require_cmd() {
 }
 
 require_cmd pg_dump
+require_cmd pg_restore
 require_cmd psql
 
 header "Sync beta database from production"
@@ -39,19 +39,40 @@ PGPASSFILE="${PGPASSFILE:-$HOME/.pgpass}"
 info "Source (production): $SRC_USER/$SRC_DB (host/port from ~/.pgpass)"
 info "Target (beta):       $TGT_USER/$TGT_DB (host/port from ~/.pgpass)"
 
-DUMP_FILE="$(mktemp -t django_beta_sync.XXXXXX.sql)"
+DUMP_FILE="$(mktemp -t django_beta_sync.XXXXXX.dump)"
 cleanup() { rm -f "$DUMP_FILE"; }
 trap cleanup EXIT
 
 header "Dumping $SRC_DB"
 pg_dump \
     -U "$SRC_USER" \
-    --clean --if-exists --no-owner --no-privileges \
+    --format=custom --no-owner --no-privileges \
     --file="$DUMP_FILE" "$SRC_DB"
 success "Dump written to $DUMP_FILE"
 
-header "Loading dump into $TGT_DB"
-psql -U "$TGT_USER" -d "$TGT_DB" -v ON_ERROR_STOP=1 -f "$DUMP_FILE"
+header "Restoring dump into $TGT_DB"
+info "Dropping all tables, views, and sequences in $TGT_DB..."
+psql -U "$TGT_USER" -d "$TGT_DB" -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT schemaname, viewname FROM pg_views WHERE schemaname = 'public') LOOP
+        EXECUTE format('DROP VIEW IF EXISTS %I.%I CASCADE', r.schemaname, r.viewname);
+    END LOOP;
+    FOR r IN (SELECT schemaname, tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+        EXECUTE format('DROP TABLE IF EXISTS %I.%I CASCADE', r.schemaname, r.tablename);
+    END LOOP;
+    FOR r IN (SELECT schemaname, sequencename FROM pg_sequences WHERE schemaname = 'public') LOOP
+        EXECUTE format('DROP SEQUENCE IF EXISTS %I.%I CASCADE', r.schemaname, r.sequencename);
+    END LOOP;
+END $$;
+SQL
+
+pg_restore \
+    -U "$TGT_USER" \
+    --no-owner --no-privileges --dbname="$TGT_DB" \
+    "$DUMP_FILE"
 success "Beta database now matches production"
 
 warn "Remember: beta will run its own migrations on next deploy (see util/deploy.sh)."
