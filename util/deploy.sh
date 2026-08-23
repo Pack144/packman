@@ -3,41 +3,66 @@
 # Exit immediately if a command exits with a non-zero status
 set -euo pipefail
 
-APPS_DIR="$HOME/apps"
-PROD_APP_DIR="$APPS_DIR/django"
-PROD_PACKMAN_DIR="$PROD_APP_DIR/packman"
-BETA_APP_DIR="$APPS_DIR/django-beta"
-BETA_PACKMAN_DIR="$BETA_APP_DIR/packman"
+usage() {
+    cat <<'USAGE'
+Usage: util/deploy.sh --app-dir DIR [-y|--yes]
 
-CURRENT_DIR="$(pwd -P)"
+  --app-dir DIR   Path to the app directory containing the "env" virtualenv
+                  and "packman" git checkout (e.g. ~/apps/django-beta)
+  -y, --yes       Skip the interactive confirmation prompt (e.g. from CI)
+  -h, --help      Show this help message
+USAGE
+}
 
-# Allow skipping the confirmation prompt (e.g. from CI) via -y/--yes
+APP_DIR=""
 ASSUME_YES=false
-for arg in "$@"; do
-    case "$arg" in
-        -y|--yes) ASSUME_YES=true ;;
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --app-dir)
+            APP_DIR="${2:-}"
+            shift 2
+            ;;
+        --app-dir=*)
+            APP_DIR="${1#*=}"
+            shift
+            ;;
+        -y|--yes)
+            ASSUME_YES=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Error: Unknown argument: $1" >&2
+            usage
+            exit 2
+            ;;
     esac
 done
 
-# Verify directory and identify stage
-if [[ "$CURRENT_DIR" == "$PROD_PACKMAN_DIR" ]]; then
-    STAGE="prod"
-    APP_DIR="$PROD_APP_DIR"
-elif [[ "$CURRENT_DIR" == "$BETA_PACKMAN_DIR" ]]; then
-    STAGE="beta"
-    APP_DIR="$BETA_APP_DIR"
-else
-    echo "Error: This script must be run from:"
-    echo "   $PROD_PACKMAN_DIR"
-    echo "   $BETA_PACKMAN_DIR"
+if [[ -z "$APP_DIR" ]]; then
+    echo "Error: --app-dir is required" >&2
+    usage
     exit 2
 fi
 
+if [[ ! -d "$APP_DIR/packman" ]]; then
+    echo "Error: '$APP_DIR/packman' does not exist" >&2
+    exit 2
+fi
+
+# Resolve to an absolute path
+APP_DIR="$(cd "$APP_DIR" && pwd -P)"
+STAGE="$(basename "$APP_DIR")"
+
 # Ask user for confirmation (skipped when -y/--yes is passed, e.g. from CI)
 if [[ "$ASSUME_YES" == true ]]; then
-    echo "⚠️  You are in the '$STAGE' environment. Proceeding with deployment (--yes)."
+    echo "⚠️  Deploying '$STAGE' ($APP_DIR). Proceeding with deployment (--yes)."
 else
-    read -rp "⚠️  You are in the '$STAGE' environment. Proceed with deployment? (y/N): " CONFIRM
+    read -rp "⚠️  You are about to deploy '$STAGE' ($APP_DIR). Proceed with deployment? (y/N): " CONFIRM
     CONFIRM="${CONFIRM,,}"  # Convert to lowercase
 
     if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
@@ -46,14 +71,16 @@ else
     fi
 fi
 
+cd "$APP_DIR/packman"
+
 echo "Updating dependencies"
 UV_PROJECT_ENVIRONMENT="$APP_DIR/env" uv sync --group production
 
 echo "Running database migrations"
-$APP_DIR/env/bin/python manage.py migrate
+"$APP_DIR/env/bin/python" manage.py migrate
 
 echo "Collecting any new static files"
-DJANGO_SETTINGS_MODULE=packman.settings.production $APP_DIR/env/bin/python manage.py collectstatic --no-input
+DJANGO_SETTINGS_MODULE=packman.settings.production "$APP_DIR/env/bin/python" manage.py collectstatic --no-input
 
 echo "Initiating server restart"
-touch $APP_DIR/packman/packman/wsgi.py
+touch "$APP_DIR/packman/packman/wsgi.py"

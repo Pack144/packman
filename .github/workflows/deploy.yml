@@ -30,10 +30,11 @@ jobs:
           script: |
             set -euo pipefail
             if [ "${{ inputs.target }}" = "prod" ]; then
-              cd ~/apps/django/packman
+              APP_DIR=~/apps/django
             else
-              cd ~/apps/django-beta/packman
+              APP_DIR=~/apps/django-beta
             fi
+            cd "$APP_DIR/packman"
             git fetch --prune origin
             git checkout "${{ github.ref_name }}"
             git pull origin "${{ github.ref_name }}"
@@ -44,4 +45,4 @@ jobs:
             git for-each-ref --format='%(refname:short)' refs/heads/ \
               | grep -v -x -e "${{ github.ref_name }}" -e "main" \
               | xargs -r -n1 git branch -D
-            util/deploy.sh --yes
+            util/deploy.sh --app-dir "$APP_DIR" --yes
