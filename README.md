@@ -195,24 +195,27 @@ After validation switch to the prod directory and repeat.
 
 See the [deploy.sh](util/deploy.sh) for more details on how the deployment works.
 
-#### Deploying to beta via GitHub Actions
+#### Deploying via GitHub Actions
 
-Instead of SSHing in manually, you can deploy any branch to beta from the
-[Deploy to Beta](.github/workflows/deploy-beta.yml) workflow: go to
-the *Actions* tab, select it, click *Run workflow*, and pick the branch to
-deploy. It SSHes into the beta server, checks out the selected branch, and
-runs [deploy.sh](util/deploy.sh).
+Instead of SSHing in manually, you can deploy any branch to beta or prod
+from the [Deploy](.github/workflows/deploy.yml) workflow: go to the
+*Actions* tab, select it, click *Run workflow*, pick the branch to deploy,
+and choose the `target` environment (`beta` or `prod`). It SSHes into the
+corresponding server, checks out the selected branch, and runs
+[deploy.sh](util/deploy.sh).
 
-This requires the following repository secrets to be configured under
-*Settings → Secrets and variables → Actions*:
+This requires the following secrets to be configured (per environment,
+under *Settings → Environments → beta/prod*, or as repository-level
+secrets under *Settings → Secrets and variables → Actions* if you don't
+need different values per environment):
 
-* `BETA_DEPLOY_HOST` — SSH host for the beta server
-* `BETA_DEPLOY_USERNAME` — SSH username
-* `BETA_DEPLOY_SSH_KEY` — private key with access to the beta deployment
-* `BETA_DEPLOY_PORT` — *(optional)* SSH port, defaults to `22`
+* `DEPLOY_HOST` — SSH host for the target server
+* `DEPLOY_USERNAME` — SSH username
+* `DEPLOY_SSH_KEY` — private key with access to the target deployment
+* `DEPLOY_PORT` — *(optional)* SSH port, defaults to `22`
 
-The deploy job runs against the `beta` [GitHub
+The deploy job runs against the selected `beta` or `prod` [GitHub
 environment](https://docs.github.com/actions/deployment/targeting-different-environments/using-environments-for-deployment).
-Create a `beta` environment under *Settings → Environments* and add
-required reviewers there to gate who can approve a deployment run; the
-secrets above can also be scoped to that environment instead of the repo.
+Create `beta` and `prod` environments under *Settings → Environments* and
+add required reviewers there to gate who can approve a deployment run to
+each one — this is especially important for `prod`.

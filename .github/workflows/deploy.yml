@@ -1,26 +1,39 @@
-name: Deploy to Beta
+name: Deploy
 
-# Manually triggered. Use the "Run workflow" button and pick the branch you
-# want to deploy — GitHub Actions will check that branch out to run this
-# workflow, so `github.ref_name` below always refers to it.
+# Manually triggered. Use the "Run workflow" button, pick the branch you want
+# to deploy (github.ref_name below always refers to it), and choose which
+# environment to deploy to.
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: Environment to deploy to
+        required: true
+        type: choice
+        default: beta
+        options:
+          - beta
+          - prod
 
 jobs:
-  deploy-beta:
+  deploy:
     runs-on: ubuntu-latest
-    environment: beta
+    environment: ${{ inputs.target }}
     steps:
-      - name: Deploy branch to beta via SSH
+      - name: Deploy branch via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.BETA_DEPLOY_HOST }}
-          username: ${{ secrets.BETA_DEPLOY_USERNAME }}
-          key: ${{ secrets.BETA_DEPLOY_SSH_KEY }}
-          port: ${{ secrets.BETA_DEPLOY_PORT || 22 }}
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
           script: |
             set -euo pipefail
-            cd ~/apps/django-beta/packman
+            if [ "${{ inputs.target }}" = "prod" ]; then
+              cd ~/apps/django/packman
+            else
+              cd ~/apps/django-beta/packman
+            fi
             git fetch --prune origin
             git checkout "${{ github.ref_name }}"
             git pull origin "${{ github.ref_name }}"
