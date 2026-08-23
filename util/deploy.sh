@@ -11,6 +11,14 @@ BETA_PACKMAN_DIR="$BETA_APP_DIR/packman"
 
 CURRENT_DIR="$(pwd -P)"
 
+# Allow skipping the confirmation prompt (e.g. from CI) via -y/--yes
+ASSUME_YES=false
+for arg in "$@"; do
+    case "$arg" in
+        -y|--yes) ASSUME_YES=true ;;
+    esac
+done
+
 # Verify directory and identify stage
 if [[ "$CURRENT_DIR" == "$PROD_PACKMAN_DIR" ]]; then
     STAGE="prod"
@@ -25,13 +33,17 @@ else
     exit 2
 fi
 
-# Ask user for confirmation
-read -rp "⚠️  You are in the '$STAGE' environment. Proceed with deployment? (y/N): " CONFIRM
-CONFIRM="${CONFIRM,,}"  # Convert to lowercase
+# Ask user for confirmation (skipped when -y/--yes is passed, e.g. from CI)
+if [[ "$ASSUME_YES" == true ]]; then
+    echo "⚠️  You are in the '$STAGE' environment. Proceeding with deployment (--yes)."
+else
+    read -rp "⚠️  You are in the '$STAGE' environment. Proceed with deployment? (y/N): " CONFIRM
+    CONFIRM="${CONFIRM,,}"  # Convert to lowercase
 
-if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
-    echo "Operation cancelled by user."
-    exit 3
+    if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
+        echo "Operation cancelled by user."
+        exit 3
+    fi
 fi
 
 echo "Updating dependencies"

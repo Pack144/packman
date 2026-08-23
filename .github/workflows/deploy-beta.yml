@@ -1,0 +1,26 @@
+name: Deploy to Opalstack Beta
+
+# Manually triggered. Use the "Run workflow" button and pick the branch you
+# want to deploy — GitHub Actions will check that branch out to run this
+# workflow, so `github.ref_name` below always refers to it.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-beta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy branch to beta via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.OPALSTACK_HOST }}
+          username: ${{ secrets.OPALSTACK_USERNAME }}
+          key: ${{ secrets.OPALSTACK_SSH_KEY }}
+          port: ${{ secrets.OPALSTACK_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            cd ~/apps/django-beta/packman
+            git fetch origin
+            git checkout "${{ github.ref_name }}"
+            git pull origin "${{ github.ref_name }}"
+            util/deploy.sh --yes
