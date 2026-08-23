@@ -75,6 +75,7 @@ SQL
 pg_restore \
     -U "$TGT_USER" \
     --no-owner --no-privileges --dbname="$TGT_DB" \
+    --exit-on-error \
     "$DUMP_FILE"
 success "Beta database now matches production"
 
