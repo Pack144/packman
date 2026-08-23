@@ -1,6 +1,7 @@
 import csv
 import decimal
 
+from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import dateparse, timezone
 
@@ -18,6 +19,8 @@ class Echo:
         return value
 
 
+@login_required
+@permission_required("campaigns.generate_order_report", raise_exception=True)
 def turn_in_night_report(request):
     if request.GET.get("campaign"):
         campaign = Campaign.objects.get_by_natural_key(request.GET.get("campaign"))
@@ -108,6 +111,8 @@ def generate_cub_row(cub, orders, campaign):
     ]
 
 
+@login_required
+@permission_required("campaigns.generate_order_report", raise_exception=True)
 def generate_weekly_report(request):
     if request.GET.get("end"):
         end_date = dateparse.parse_date(request.GET.get("end"))
