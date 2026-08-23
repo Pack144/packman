@@ -60,8 +60,9 @@ PYEOF
 
 IFS='|' read -r PGHOST PGPORT PGUSER PGPASSWORD TGT_DB <<<"$PARSED"
 
-[[ "$TGT_DB" == *-beta* ]] || error "Beta database name '$TGT_DB' doesn't contain '-beta' — cannot derive production database name"
-SRC_DB="${TGT_DB/-beta/}"
+[[ "$TGT_DB" == *-beta ]] || error "Beta database name '$TGT_DB' doesn't end with '-beta' — refusing to run, this doesn't look like the beta database"
+[[ "$PGUSER" == *-beta ]] || error "Beta database user '$PGUSER' doesn't end with '-beta' — refusing to run, this doesn't look like the beta database user"
+SRC_DB="${TGT_DB%-beta}"
 
 info "Source (production): $PGUSER@$PGHOST:$PGPORT/$SRC_DB"
 info "Target (beta):       $PGUSER@$PGHOST:$PGPORT/$TGT_DB"
