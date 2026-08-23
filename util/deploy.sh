@@ -5,17 +5,15 @@ set -euo pipefail
 
 usage() {
     cat <<'USAGE'
-Usage: util/deploy.sh --app-dir DIR [-y|--yes]
+Usage: util/deploy.sh --app-dir DIR
 
   --app-dir DIR   Path to the app directory containing the "env" virtualenv
                   and "packman" git checkout (e.g. ~/apps/django-beta)
-  -y, --yes       Skip the interactive confirmation prompt (e.g. from CI)
   -h, --help      Show this help message
 USAGE
 }
 
 APP_DIR=""
-ASSUME_YES=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -25,10 +23,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --app-dir=*)
             APP_DIR="${1#*=}"
-            shift
-            ;;
-        -y|--yes)
-            ASSUME_YES=true
             shift
             ;;
         -h|--help)
@@ -58,18 +52,7 @@ fi
 APP_DIR="$(cd "$APP_DIR" && pwd -P)"
 STAGE="$(basename "$APP_DIR")"
 
-# Ask user for confirmation (skipped when -y/--yes is passed, e.g. from CI)
-if [[ "$ASSUME_YES" == true ]]; then
-    echo "⚠️  Deploying '$STAGE' ($APP_DIR). Proceeding with deployment (--yes)."
-else
-    read -rp "⚠️  You are about to deploy '$STAGE' ($APP_DIR). Proceed with deployment? (y/N): " CONFIRM
-    CONFIRM="${CONFIRM,,}"  # Convert to lowercase
-
-    if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
-        echo "Operation cancelled by user."
-        exit 3
-    fi
-fi
+echo "Deploying '$STAGE' ($APP_DIR)"
 
 cd "$APP_DIR/packman"
 
