@@ -210,8 +210,8 @@ corresponding server, checks out the selected branch, and runs
 [deploy.sh](util/deploy.sh).
 
 This requires the following secrets to be configured.
-* `DEPLOY_HOST` — SSH host for the target server
-* `DEPLOY_USERNAME` — SSH username
-* `DEPLOY_SSH_KEY` — private key with access to the target deployment
-* `DEPLOY_PORT` — *(optional)* SSH port, defaults to `22`
-* `DEPLOY_APP_DIR` — app directory on the server to deploy
+* `SERVICE_HOST` — SSH host for the target server
+* `SERVICE_SSH_USERNAME` — SSH username
+* `SERVICE_AUTHORIZED_SSH_KEY` — private key with access to the target deployment
+* `SERVICE_SSH_PORT` — *(optional)* SSH port, defaults to `22`
+* `SERVICE_APP_DIR` — app directory on the server to deploy
