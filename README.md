@@ -188,8 +188,13 @@ Note: beta and prod share a database, the deployment to beta will also run any m
 ```bash
 cd ~/apps/django-beta/packman
 git pull
-util/deploy.sh ~/apps/django-beta
+util/deploy.sh
 ```
+
+If `APP_DIR` is omitted, `deploy.sh` will detect it from the current
+directory when run from `$HOME/apps/<app-dir>/packman` and prompt for
+confirmation before continuing. You can also pass it explicitly (from
+anywhere) with `util/deploy.sh ~/apps/django-beta`.
 
 After validation switch to the prod directory and repeat.
 
