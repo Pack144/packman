@@ -191,11 +191,6 @@ git pull
 util/deploy.sh
 ```
 
-If `APP_DIR` is omitted, `deploy.sh` will detect it from the current
-directory when run from `$HOME/apps/<app-dir>/packman` and prompt for
-confirmation before continuing. You can also pass it explicitly (from
-anywhere) with `util/deploy.sh ~/apps/django-beta`.
-
 After validation switch to the prod directory and repeat.
 
 See the [deploy.sh](util/deploy.sh) for more details on how the deployment works.
