@@ -3,45 +3,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -euo pipefail
 
-usage() {
-    cat <<'USAGE'
-Usage: util/deploy.sh --app-dir DIR
-
-  --app-dir DIR   Path to the app directory containing the "env" virtualenv
-                  and "packman" git checkout (e.g. ~/apps/django-beta)
-  -h, --help      Show this help message
-USAGE
-}
-
-APP_DIR=""
-
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --app-dir)
-            APP_DIR="${2:-}"
-            shift 2
-            ;;
-        --app-dir=*)
-            APP_DIR="${1#*=}"
-            shift
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            echo "Error: Unknown argument: $1" >&2
-            usage
-            exit 2
-            ;;
-    esac
-done
-
-if [[ -z "$APP_DIR" ]]; then
-    echo "Error: --app-dir is required" >&2
-    usage
-    exit 2
-fi
+APP_DIR="${1:?Usage: util/deploy.sh APP_DIR}"
 
 if [[ ! -d "$APP_DIR/packman" ]]; then
     echo "Error: '$APP_DIR/packman' does not exist" >&2

@@ -188,7 +188,7 @@ Note: beta and prod share a database, the deployment to beta will also run any m
 ```bash
 cd ~/apps/django-beta/packman
 git pull
-util/deploy.sh --app-dir ~/apps/django-beta
+util/deploy.sh ~/apps/django-beta
 ```
 
 After validation switch to the prod directory and repeat.
