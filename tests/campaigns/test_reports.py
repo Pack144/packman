@@ -1,15 +1,19 @@
 import csv
 import decimal
 import io
+from http import HTTPStatus
 
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from packman.calendars.factories import PackYearFactory
 from packman.campaigns.models import Campaign, Order, PrizePoint, Quota
 from packman.campaigns.reports import generate_weekly_report, report_rows, turn_in_night_report
 from packman.dens.factories import DenFactory, MembershipFactory
-from packman.membership.factories import ScoutFactory
+from packman.membership.factories import AdultFactory, CompleteFamilyFactory, ScoutFactory
 
 
 class CampaignReportTestCase(TestCase):
@@ -19,6 +23,11 @@ class CampaignReportTestCase(TestCase):
         self.previous_year = PackYearFactory(year=2025)
         self.previous_campaign = self.create_campaign(self.previous_year, timezone.datetime(2025, 9, 1).date())
         self.current_campaign = self.create_campaign(self.current_year, timezone.datetime(2026, 9, 1).date())
+
+        content_type = ContentType.objects.get_for_model(Campaign)
+        self.permission = Permission.objects.get(codename="generate_order_report", content_type=content_type)
+        self.authorized_user = AdultFactory()
+        self.authorized_user.user_permissions.add(self.permission)
 
     def create_campaign(self, year, ordering_opens):
         return Campaign.objects.create(
@@ -30,6 +39,11 @@ class CampaignReportTestCase(TestCase):
             prize_window_closes=ordering_opens + timezone.timedelta(days=60),
         )
 
+    def _authorized_request(self, path):
+        request = self.factory.get(path)
+        request.user = self.authorized_user
+        return request
+
     def test_weekly_report_only_includes_latest_campaign_orders_and_members(self):
         current_member = MembershipFactory(year_assigned=self.current_year)
         previous_member = MembershipFactory(year_assigned=self.previous_year)
@@ -40,7 +54,7 @@ class CampaignReportTestCase(TestCase):
             campaign=self.previous_campaign, seller=previous_member.scout, donation=decimal.Decimal("50.00")
         )
 
-        response = generate_weekly_report(self.factory.get("/reports/weekly/"))
+        response = generate_weekly_report(self._authorized_request("/reports/weekly/"))
         rows = list(csv.reader(io.StringIO(response.content.decode())))
 
         self.assertEqual(rows[0], ["Cub", "Den", "Order Count", "Total Sales"])
@@ -60,7 +74,7 @@ class CampaignReportTestCase(TestCase):
         MembershipFactory(scout=scout, den=new_den, year_assigned=self.current_year)
         Order.objects.create(campaign=self.current_campaign, seller=scout, donation=decimal.Decimal("10.00"))
 
-        response = generate_weekly_report(self.factory.get("/reports/weekly/"))
+        response = generate_weekly_report(self._authorized_request("/reports/weekly/"))
         rows = list(csv.reader(io.StringIO(response.content.decode())))
 
         self.assertEqual(len(rows), 2)
@@ -85,9 +99,73 @@ class CampaignReportTestCase(TestCase):
         # returns None; the report must still succeed by using the latest campaign.
         self.assertIsNone(Campaign.objects.current())
 
-        response = turn_in_night_report(self.factory.get("/reports/turn_in_night/"))
+        response = turn_in_night_report(self._authorized_request("/reports/turn_in_night/"))
         content = b"".join(response.streaming_content)
         rows = list(csv.reader(io.StringIO(content.decode())))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(rows[0][0], "Cub")
+
+
+class CampaignReportAccessControlTestCase(TestCase):
+    """Ensure the weekly and turn-in-night reports require the same
+    ``campaigns.generate_order_report`` permission as the other reports
+    views (e.g. ``OrderReportView``)."""
+
+    def setUp(self):
+        current_year = PackYearFactory(year=2026)
+        Campaign.objects.create(
+            year=current_year,
+            ordering_opens=timezone.datetime(2026, 9, 1).date(),
+            ordering_closes=timezone.datetime(2026, 10, 1).date(),
+            delivery_available=timezone.datetime(2026, 10, 15).date(),
+            prize_window_opens=timezone.datetime(2026, 10, 15).date(),
+            prize_window_closes=timezone.datetime(2026, 10, 30).date(),
+        )
+
+        content_type = ContentType.objects.get_for_model(Campaign)
+        self.permission = Permission.objects.get(codename="generate_order_report", content_type=content_type)
+
+    def test_weekly_report_redirects_anonymous_user_to_login(self):
+        url = reverse("campaigns:weekly_report")
+        login_url = f"{reverse('login')}?next={url}"
+        response = self.client.get(url)
+
+        self.assertRedirects(response, login_url)
+
+    def test_weekly_report_denies_member_without_permission(self):
+        member = CompleteFamilyFactory(active_children=1).adults.first()
+        self.client.force_login(member)
+        response = self.client.get(reverse("campaigns:weekly_report"))
+
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_weekly_report_allows_member_with_permission(self):
+        member = AdultFactory()
+        member.user_permissions.add(self.permission)
+        self.client.force_login(member)
+        response = self.client.get(reverse("campaigns:weekly_report"))
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_turn_in_night_report_redirects_anonymous_user_to_login(self):
+        url = reverse("campaigns:turn_in_night")
+        login_url = f"{reverse('login')}?next={url}"
+        response = self.client.get(url)
+
+        self.assertRedirects(response, login_url)
+
+    def test_turn_in_night_report_denies_member_without_permission(self):
+        member = CompleteFamilyFactory(active_children=1).adults.first()
+        self.client.force_login(member)
+        response = self.client.get(reverse("campaigns:turn_in_night"))
+
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_turn_in_night_report_allows_member_with_permission(self):
+        member = AdultFactory()
+        member.user_permissions.add(self.permission)
+        self.client.force_login(member)
+        response = self.client.get(reverse("campaigns:turn_in_night"))
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
