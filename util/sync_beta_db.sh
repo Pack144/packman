@@ -3,9 +3,11 @@
 # fresh copy of the production database.
 #
 # Connects as the "django" user to dump the production ("django") database,
-# and as the "django-beta" user to wipe/restore the beta ("django-beta")
-# database. Passwords are not handled here — they're expected to come from
-# the invoking user's ~/.pgpass file (see `man pgpass`).
+# and as the "django-beta" user to restore into the beta ("django-beta")
+# database. pg_restore --clean --if-exists drops the existing objects in
+# django-beta before recreating them, so the database itself never needs to
+# be dropped/recreated. Passwords are not handled here — they're expected to
+# come from the invoking user's ~/.pgpass file (see `man pgpass`).
 
 set -euo pipefail
 
@@ -27,7 +29,6 @@ require_cmd() {
 
 require_cmd pg_dump
 require_cmd pg_restore
-require_cmd psql
 
 header "Sync beta database from production"
 
@@ -48,25 +49,11 @@ pg_dump \
     --file="$DUMP_FILE" "$SRC_DB"
 success "Dump written to $DUMP_FILE"
 
-header "Recreating $TGT_DB"
-info "Terminating existing connections to $TGT_DB..."
-psql -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
-    -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$TGT_DB' AND pid <> pg_backend_pid();" \
-    >/dev/null
-
-info "Dropping database $TGT_DB..."
-psql -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
-    -c "DROP DATABASE IF EXISTS \"$TGT_DB\";"
-
-info "Creating database $TGT_DB..."
-psql -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
-    -c "CREATE DATABASE \"$TGT_DB\" OWNER \"$TGT_USER\";"
-success "$TGT_DB recreated"
-
 header "Restoring dump into $TGT_DB"
 pg_restore \
     -U "$TGT_USER" \
     --no-owner --no-privileges --dbname="$TGT_DB" \
+    --clean --if-exists \
     "$DUMP_FILE"
 success "Beta database now matches production"
 
