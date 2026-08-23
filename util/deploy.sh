@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -euo pipefail
 
-APPS_DIR="/home/pack144/apps"
+APPS_DIR="$HOME/apps"
 PROD_APP_DIR="$APPS_DIR/django"
 PROD_PACKMAN_DIR="$PROD_APP_DIR/packman"
 BETA_APP_DIR="$APPS_DIR/django-beta"
