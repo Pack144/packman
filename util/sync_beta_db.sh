@@ -9,9 +9,6 @@
 
 set -euo pipefail
 
-PGHOST="${PGHOST:-localhost}"
-PGPORT="${PGPORT:-5432}"
-
 SRC_USER="django"
 SRC_DB="django"
 TGT_USER="django-beta"
@@ -37,8 +34,8 @@ header "Sync beta database from production"
 PGPASSFILE="${PGPASSFILE:-$HOME/.pgpass}"
 [[ -f "$PGPASSFILE" ]] || error "No .pgpass file found at $PGPASSFILE — see 'man pgpass'"
 
-info "Source (production): $SRC_USER@$PGHOST:$PGPORT/$SRC_DB"
-info "Target (beta):       $TGT_USER@$PGHOST:$PGPORT/$TGT_DB"
+info "Source (production): $SRC_USER/$SRC_DB (host/port from ~/.pgpass)"
+info "Target (beta):       $TGT_USER/$TGT_DB (host/port from ~/.pgpass)"
 
 DUMP_FILE="$(mktemp -t django_beta_sync.XXXXXX.dump)"
 cleanup() { rm -f "$DUMP_FILE"; }
@@ -46,29 +43,29 @@ trap cleanup EXIT
 
 header "Dumping $SRC_DB"
 pg_dump \
-    -h "$PGHOST" -p "$PGPORT" -U "$SRC_USER" \
+    -U "$SRC_USER" \
     --format=custom --no-owner --no-privileges \
     --file="$DUMP_FILE" "$SRC_DB"
 success "Dump written to $DUMP_FILE"
 
 header "Recreating $TGT_DB"
 info "Terminating existing connections to $TGT_DB..."
-psql -h "$PGHOST" -p "$PGPORT" -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
+psql -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
     -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$TGT_DB' AND pid <> pg_backend_pid();" \
     >/dev/null
 
 info "Dropping database $TGT_DB..."
-psql -h "$PGHOST" -p "$PGPORT" -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
+psql -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
     -c "DROP DATABASE IF EXISTS \"$TGT_DB\";"
 
 info "Creating database $TGT_DB..."
-psql -h "$PGHOST" -p "$PGPORT" -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
+psql -U "$TGT_USER" -d postgres -v ON_ERROR_STOP=1 \
     -c "CREATE DATABASE \"$TGT_DB\" OWNER \"$TGT_USER\";"
 success "$TGT_DB recreated"
 
 header "Restoring dump into $TGT_DB"
 pg_restore \
-    -h "$PGHOST" -p "$PGPORT" -U "$TGT_USER" \
+    -U "$TGT_USER" \
     --no-owner --no-privileges --dbname="$TGT_DB" \
     "$DUMP_FILE"
 success "Beta database now matches production"
