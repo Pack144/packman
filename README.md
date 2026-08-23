@@ -191,6 +191,27 @@ git pull
 util/deploy.sh
 ```
 
+If `APP_DIR` is omitted, `deploy.sh` will detect it from the current
+directory when run from `$HOME/apps/<app-dir>/packman` and prompt for
+confirmation before continuing. You can also pass it explicitly (from
+anywhere) with `util/deploy.sh ~/apps/django-beta`.
+
 After validation switch to the prod directory and repeat.
 
 See the [deploy.sh](util/deploy.sh) for more details on how the deployment works.
+
+#### Deploying via GitHub Actions
+
+Instead of SSHing in manually, you can deploy any branch to beta or prod
+from the [Deploy](.github/workflows/deploy.yml) workflow: go to the
+*Actions* tab, select it, click *Run workflow*, pick the branch to deploy,
+and choose the `target` environment (`beta` or `prod`). It SSHes into the
+corresponding server, checks out the selected branch, and runs
+[deploy.sh](util/deploy.sh).
+
+This requires the following secrets to be configured.
+* `DEPLOY_HOST` — SSH host for the target server
+* `DEPLOY_USERNAME` — SSH username
+* `DEPLOY_SSH_KEY` — private key with access to the target deployment
+* `DEPLOY_PORT` — *(optional)* SSH port, defaults to `22`
+* `DEPLOY_APP_DIR` — app directory on the server to deploy

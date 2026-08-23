@@ -1,0 +1,48 @@
+name: Deploy
+
+# Manually triggered. Use the "Run workflow" button, pick the branch you want
+# to deploy (github.ref_name below always refers to it), and choose which
+# environment to deploy to.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Environment to deploy to
+        required: true
+        type: choice
+        default: beta
+        options:
+          - beta
+          - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
+    steps:
+      - name: Deploy branch via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.DEPLOY_APP_DIR }}"
+            # Secret values aren't shell-expanded, so a leading "~" in the
+            # secret wouldn't otherwise resolve to the home directory. Expand
+            # it manually here.
+            APP_DIR="${APP_DIR/#\~/$HOME}"
+            cd "$APP_DIR/packman"
+            git fetch --prune origin
+            git checkout "${{ github.ref_name }}"
+            git pull origin "${{ github.ref_name }}"
+            # Clean up other local branches left over from previous deploys of
+            # different branches, so this checkout doesn't accumulate stale
+            # local refs over time. Keeps the branch just deployed and "main".
+            # Only touches the local server checkout, not the GitHub repo.
+            git for-each-ref --format='%(refname:short)' refs/heads/ \
+              | grep -v -x -e "${{ github.ref_name }}" -e "main" \
+              | xargs -r -n1 git branch -D
+            util/deploy.sh "$APP_DIR"
