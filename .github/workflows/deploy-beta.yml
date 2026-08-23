@@ -20,7 +20,14 @@ jobs:
           script: |
             set -euo pipefail
             cd ~/apps/django-beta/packman
-            git fetch origin
+            git fetch --prune origin
             git checkout "${{ github.ref_name }}"
             git pull origin "${{ github.ref_name }}"
+            # Clean up other local branches left over from previous deploys of
+            # different branches, so this checkout doesn't accumulate stale
+            # local refs over time. Only touches the local server checkout,
+            # not the GitHub repo itself.
+            git for-each-ref --format='%(refname:short)' refs/heads/ \
+              | grep -v -x "${{ github.ref_name }}" \
+              | xargs -r -n1 git branch -D
             util/deploy.sh --yes
