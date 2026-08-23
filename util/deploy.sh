@@ -33,9 +33,8 @@ fi
 
 # Resolve to an absolute path
 APP_DIR="$(cd "$APP_DIR" && pwd -P)"
-STAGE="$(basename "$APP_DIR")"
 
-echo "Deploying '$STAGE' ($APP_DIR)"
+echo "Deploying ($APP_DIR)"
 
 cd "$APP_DIR/packman"
 
