@@ -210,3 +210,9 @@ This requires the following repository secrets to be configured under
 * `BETA_DEPLOY_USERNAME` — SSH username
 * `BETA_DEPLOY_SSH_KEY` — private key with access to the beta deployment
 * `BETA_DEPLOY_PORT` — *(optional)* SSH port, defaults to `22`
+
+The deploy job runs against the `beta` [GitHub
+environment](https://docs.github.com/actions/deployment/targeting-different-environments/using-environments-for-deployment).
+Create a `beta` environment under *Settings → Environments* and add
+required reviewers there to gate who can approve a deployment run; the
+secrets above can also be scoped to that environment instead of the repo.

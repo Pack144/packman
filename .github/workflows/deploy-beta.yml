@@ -9,6 +9,7 @@ on:
 jobs:
   deploy-beta:
     runs-on: ubuntu-latest
+    environment: beta
     steps:
       - name: Deploy branch to beta via SSH
         uses: appleboy/ssh-action@v1
