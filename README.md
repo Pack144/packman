@@ -198,14 +198,14 @@ See the [deploy.sh](util/deploy.sh) for more details on how the deployment works
 #### Deploying to beta via GitHub Actions
 
 Instead of SSHing in manually, you can deploy any branch to beta from the
-[Deploy to Opalstack Beta](.github/workflows/deploy-beta.yml) workflow: go to
+[Deploy to Beta](.github/workflows/deploy-beta.yml) workflow: go to
 the *Actions* tab, select it, click *Run workflow*, and pick the branch to
-deploy. It SSHes into Opalstack and runs the same steps shown above.
+deploy. It SSHes into the beta server and runs the same steps shown above.
 
 This requires the following repository secrets to be configured under
 *Settings → Secrets and variables → Actions*:
 
-* `OPALSTACK_HOST` — SSH host for the Opalstack server
-* `OPALSTACK_USERNAME` — SSH username
-* `OPALSTACK_SSH_KEY` — private key with access to the beta deployment
-* `OPALSTACK_PORT` — *(optional)* SSH port, defaults to `22`
+* `DEPLOY_HOST` — SSH host for the beta server
+* `DEPLOY_USERNAME` — SSH username
+* `DEPLOY_SSH_KEY` — private key with access to the beta deployment
+* `DEPLOY_PORT` — *(optional)* SSH port, defaults to `22`
