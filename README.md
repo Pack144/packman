@@ -204,6 +204,11 @@ and choose the `target` environment (`beta` or `prod`). It SSHes into the
 corresponding server, checks out the selected branch, and runs
 [deploy.sh](util/deploy.sh).
 
+When deploying to `beta`, you can also check the `reset_db` option to first
+wipe beta's database and replace it with a fresh copy of production (via
+[sync_beta_db.sh](util/sync_beta_db.sh)) before deploying — handy for
+refreshing beta with production data and the latest `main` in one run.
+
 This requires the following secrets to be configured.
 * `SERVICE_HOST` — SSH host for the target server
 * `SERVICE_SSH_USERNAME` — SSH username
