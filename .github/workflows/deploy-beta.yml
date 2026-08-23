@@ -13,10 +13,10 @@ jobs:
       - name: Deploy branch to beta via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USERNAME }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          host: ${{ secrets.BETA_DEPLOY_HOST }}
+          username: ${{ secrets.BETA_DEPLOY_USERNAME }}
+          key: ${{ secrets.BETA_DEPLOY_SSH_KEY }}
+          port: ${{ secrets.BETA_DEPLOY_PORT || 22 }}
           script: |
             set -euo pipefail
             cd ~/apps/django-beta/packman

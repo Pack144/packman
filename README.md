@@ -206,7 +206,7 @@ runs [deploy.sh](util/deploy.sh).
 This requires the following repository secrets to be configured under
 *Settings → Secrets and variables → Actions*:
 
-* `DEPLOY_HOST` — SSH host for the beta server
-* `DEPLOY_USERNAME` — SSH username
-* `DEPLOY_SSH_KEY` — private key with access to the beta deployment
-* `DEPLOY_PORT` — *(optional)* SSH port, defaults to `22`
+* `BETA_DEPLOY_HOST` — SSH host for the beta server
+* `BETA_DEPLOY_USERNAME` — SSH username
+* `BETA_DEPLOY_SSH_KEY` — private key with access to the beta deployment
+* `BETA_DEPLOY_PORT` — *(optional)* SSH port, defaults to `22`
