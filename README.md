@@ -200,12 +200,8 @@ See the [deploy.sh](util/deploy.sh) for more details on how the deployment works
 Instead of SSHing in manually, you can deploy any branch to beta from the
 [Deploy to Beta](.github/workflows/deploy-beta.yml) workflow: go to
 the *Actions* tab, select it, click *Run workflow*, and pick the branch to
-deploy. It SSHes into the beta server and runs the same steps shown above.
-After checking out and pulling the selected branch, it also deletes any
-other local branches left in that server-side checkout from previous
-deploys (keeping `main`), so it doesn't accumulate stale branches over
-time (this only affects the local checkout on the server, not the GitHub
-repo).
+deploy. It SSHes into the beta server, checks out the selected branch, and
+runs [deploy.sh](util/deploy.sh).
 
 This requires the following repository secrets to be configured under
 *Settings → Secrets and variables → Actions*:
