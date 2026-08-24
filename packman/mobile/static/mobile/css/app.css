@@ -384,10 +384,10 @@ button {
 }
 
 .av.lg {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
-  font-size: 26px;
+  width: 144px;
+  height: 144px;
+  border-radius: 36px;
+  font-size: 52px;
 }
 
 img.av {
@@ -653,14 +653,10 @@ img.av {
    avatar() helper) already handles the photo/initials fallback. */
 .profile-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--divider);
-}
-
-.profile-ident {
-  padding-top: 2px;
 }
 
 .profile-name {
