@@ -51,7 +51,7 @@ class CampaignFilter(admin.SimpleListFilter):
             # No filter param at all means this is the first, unfiltered load of
             # the changelist, so default to only the latest campaign instead of
             # showing every campaign's records.
-            latest = Campaign.objects.order_by("-ordering_opens").first()
+            latest = Campaign.get_latest()
             return queryset.filter(campaign=latest) if latest else queryset
         return queryset.filter(campaign__pk=value)
 
@@ -63,7 +63,7 @@ class CampaignFilter(admin.SimpleListFilter):
         #      "explicitly chose All" distinguishable in queryset() above.
         #   2. The latest campaign's choice is pre-selected when there's no query
         #      param yet, so the sidebar visually matches what queryset() did.
-        latest = Campaign.objects.order_by("-ordering_opens").first()
+        latest = Campaign.get_latest()
         yield {
             "selected": self.value() == "all",
             "query_string": changelist.get_query_string({self.parameter_name: "all"}),
