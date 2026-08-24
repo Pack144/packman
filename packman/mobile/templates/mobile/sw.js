@@ -1,4 +1,4 @@
-{% load static %}const VERSION = "v6";
+{% load static %}const VERSION = "v7";
 const SHELL_CACHE = `pack-directory-shell-${VERSION}`;
 const DATA_CACHE = `pack-directory-data-${VERSION}`;
 const FONT_CACHE = `pack-directory-fonts-${VERSION}`;
@@ -59,16 +59,39 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// The app asks for a purge when the session ends, a different member signs
-// in, or the reader taps "Refresh Data" in the Menu — so one family's
-// directory is never served to the next, and a manual refresh means it.
-// The Refresh Data flow sends a reply port and waits for it before reloading,
-// so its own requests can't race the purge; the other two callers don't, and
-// event.ports is simply empty for them.
+/**
+ * Everything cached for the signed-in member. `keepShell` spares the precached
+ * app shell: "Refresh Data" no longer reloads the page, so a deleted shell
+ * would leave the next offline launch with nothing to boot from — but the
+ * member photos alongside it are served cache-first and do have to go, or a
+ * changed headshot would never appear.
+ */
+async function purgeCaches({ keepShell }) {
+  await caches.delete(DATA_CACHE);
+  if (!keepShell) {
+    await caches.delete(SHELL_CACHE);
+    return;
+  }
+  const cache = await caches.open(SHELL_CACHE);
+  const keep = new Set(
+    [...PRECACHE_URLS, APP_URL].map((url) => new URL(url, self.location.origin).pathname)
+  );
+  const cached = await cache.keys();
+  await Promise.all(
+    cached.filter((request) => !keep.has(new URL(request.url).pathname)).map((request) => cache.delete(request))
+  );
+}
+
+// The app asks for a full purge when the session ends or a different member
+// signs in, so one family's directory is never served to the next; and for a
+// data-only purge when the reader taps "Refresh Data" in the Menu. Both flows
+// send a reply port and wait for it, so their own requests can't race the
+// purge — except sign-out, which doesn't care and leaves event.ports empty.
 self.addEventListener("message", (event) => {
-  if (event.data === "packman:purge") {
+  const keepShell = event.data === "packman:purge-data";
+  if (event.data === "packman:purge" || keepShell) {
     event.waitUntil(
-      Promise.all([caches.delete(DATA_CACHE), caches.delete(SHELL_CACHE)]).then(() => {
+      purgeCaches({ keepShell }).then(() => {
         event.ports[0]?.postMessage("done");
       })
     );

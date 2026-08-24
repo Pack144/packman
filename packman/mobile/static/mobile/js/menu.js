@@ -29,11 +29,28 @@ function setOpen(open) {
 async function handleRefresh(button) {
   if (button.disabled) return;
   button.disabled = true;
+
   const label = button.querySelector("span");
-  if (label) label.textContent = "Refreshing…";
-  // refreshAllData() ends in a page reload, so control doesn't normally come
-  // back here — this is just a safety net if that ever changes.
-  await refreshAllData();
+  const setLabel = (text) => {
+    if (label) label.textContent = text;
+  };
+
+  setLabel("Refreshing…");
+  // Re-fetching the whole directory is seventy-odd requests, long enough that
+  // a bare "Refreshing…" looks stuck. The total only becomes known once the
+  // den and committee rosters name their members, hence the guard.
+  const refreshed = await refreshAllData((done, total) => {
+    setLabel(total ? `Refreshing… ${Math.round((done / total) * 100)}%` : "Refreshing…");
+  });
+
+  // The screen underneath has already repainted itself with the new data by
+  // now; this is just the button reporting back before the menu closes.
+  setLabel(refreshed ? "Updated" : "No connection");
+  setTimeout(() => {
+    setLabel("Refresh Data");
+    button.disabled = false;
+    if (refreshed) setOpen(false);
+  }, 1200);
 }
 
 /**

@@ -1,4 +1,4 @@
-import { claimCacheFor } from "./api.js";
+import { claimCacheFor, primeAllData } from "./api.js";
 import { icons, myDensLabel } from "./components.js";
 import { initInstall } from "./install.js";
 import { initMenu, menuLayer } from "./menu.js";
@@ -119,6 +119,11 @@ startRouter();
 
 initInstall();
 initMenu();
+
+// Cache the rest of the directory behind whichever screen just painted, so
+// every profile, den and committee is readable offline from here on. Left
+// unawaited: it must never hold up the screen the reader is looking at.
+primeAllData();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

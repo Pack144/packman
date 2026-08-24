@@ -1,5 +1,5 @@
 import { appBar, avatar, denBadge, esc, icons, pluralize, rankTag } from "../components.js";
-import { api } from "../api.js";
+import { api, searchLocal } from "../api.js";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -110,14 +110,49 @@ export async function renderSearch(container) {
     input.addEventListener("input", (event) => {
       query = event.target.value;
       clearTimeout(debounce);
-      debounce = setTimeout(refresh, 250);
+      // Matching the cached directory is instant, so results land on the
+      // keystroke; only the server fallback below waits for a pause in typing.
+      refresh();
     });
     container.querySelectorAll(".pill").forEach((btn) => {
       btn.addEventListener("click", () => {
         type = btn.dataset.type;
+        clearTimeout(debounce);
         refresh();
       });
     });
+  }
+
+  function paintResults(cubs, parents) {
+    const cubSection = resultSection("Cubs", cubs.map(cubRow));
+    const parentSection = resultSection("Parents", parents.map(parentRow));
+    if (!cubSection && !parentSection) {
+      paint(`<p class="empty">No matches for &ldquo;${esc(query)}&rdquo;.</p>`);
+      return false;
+    }
+    paint(cubSection + parentSection);
+    return true;
+  }
+
+  /**
+   * The cached index only carries each member's display name. The server also
+   * matches middle names, and the legal first name of anybody who goes by a
+   * nickname, so a local miss is worth one request to be certain of.
+   */
+  function scheduleRemoteSearch() {
+    if (navigator.onLine === false) return;
+    const asked = query;
+    const askedType = type;
+    debounce = setTimeout(async () => {
+      try {
+        const data = await api.search(asked, askedType);
+        // The reader has typed on since; whatever is on screen is newer.
+        if (asked !== query || askedType !== type) return;
+        if (data.cubs.length || data.parents.length) paintResults(data.cubs, data.parents);
+      } catch {
+        // Offline or a transient failure — the local miss stands.
+      }
+    }, 250);
   }
 
   async function refresh() {
@@ -132,14 +167,8 @@ export async function renderSearch(container) {
       paint("");
       return;
     }
-    const data = await api.search(query, type);
-    const cubs = resultSection("Cubs", data.cubs.map(cubRow));
-    const parents = resultSection("Parents", data.parents.map(parentRow));
-    if (!cubs && !parents) {
-      paint(`<p class="empty">No matches for &ldquo;${esc(query)}&rdquo;.</p>`);
-      return;
-    }
-    paint(cubs + parents);
+    const { cubs, parents } = searchLocal(query, type);
+    if (!paintResults(cubs, parents)) scheduleRemoteSearch();
   }
 
   paint("");

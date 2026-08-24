@@ -1,4 +1,4 @@
-import { preloadCriticalData } from "./api.js";
+import { primeAllData } from "./api.js";
 import { icons } from "./components.js";
 
 // Whoever waves the banner away means it; don't ask again on this device.
@@ -109,7 +109,7 @@ export function initInstall() {
     paintInstallSlot();
     // Fill the caches now, while we know there's a network, rather than leaving
     // the first offline launch to find them empty.
-    preloadCriticalData();
+    primeAllData();
   });
 
   // The shell is rebuilt on every navigation, so the listener lives on #app —
@@ -132,5 +132,6 @@ export function initInstall() {
 
   // iOS never fires `appinstalled`, so a standalone launch is the only word we
   // get that the app was installed. Warm the caches the directory reads from.
-  if (isStandalone()) preloadCriticalData();
+  // app.js primes on every launch regardless; concurrent calls share the pass.
+  if (isStandalone()) primeAllData();
 }
