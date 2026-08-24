@@ -6,7 +6,7 @@ from packman.calendars.models import PackYear
 class CommitteeQuerySet(models.QuerySet):
     def by_year(self, year):
         """Return a list of committees with members assigned for a given Pack Year."""
-        return self.filter(committee_member__year=year)
+        return self.filter(committee_member__year=year).distinct()
 
     def by_years(self, years):
         """Return a list of committees with members assigned for a list of Pack Years."""

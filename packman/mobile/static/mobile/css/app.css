@@ -666,6 +666,12 @@ img.av {
   color: var(--ink);
 }
 
+/* Appended to the name as "Jane Doe, Akela" — lighter, so the name still leads. */
+.profile-title {
+  font-weight: 500;
+  color: var(--muted);
+}
+
 .profile-grade {
   font-weight: 500;
   font-size: 14px;

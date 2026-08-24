@@ -100,6 +100,52 @@ class HomeAPITestCase(MobileDirectoryTestCase):
         data = self.client.get(reverse("mobile:api-home")).json()
         self.assertIsNone(data["event"])
 
+    def test_no_akela_assigned_returns_null(self):
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-home")).json()
+        self.assertIsNone(data["akela"])
+
+    def test_returns_the_current_akela(self):
+        from packman.committees.models import Committee, CommitteeMember
+
+        committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=self.parent,
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
+        )
+        self.client.force_login(self.parent)
+        akela = self.client.get(reverse("mobile:api-home")).json()["akela"]
+        self.assertEqual(akela["slug"], self.parent.slug)
+        self.assertEqual(akela["name"], self.parent.get_full_name())
+        self.assertEqual(akela["title"], "Akela")
+        self.assertTrue(akela["linked"])
+
+    def test_an_akela_outside_the_directory_is_named_but_not_linked(self):
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
+        from packman.membership.models import Adult
+
+        # No active cubs and not a contributor, so MemberDetailView would 404.
+        stranger = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)
+        committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=stranger,
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
+        )
+        self.client.force_login(self.parent)
+        akela = self.client.get(reverse("mobile:api-home")).json()["akela"]
+        self.assertEqual(akela["slug"], stranger.slug)
+        self.assertFalse(akela["linked"])
+
+    def test_a_den_leader_is_not_mistaken_for_the_akela(self):
+        self.client.force_login(self.parent)
+        # The fixture's only committee assignment is a Den Leader.
+        self.assertIsNone(self.client.get(reverse("mobile:api-home")).json()["akela"])
+
 
 class MyDensAPITestCase(MobileDirectoryTestCase):
     def test_returns_the_dens_for_the_users_own_cubs(self):
@@ -203,6 +249,33 @@ class DenDetailAPITestCase(MobileDirectoryTestCase):
         data = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number])).json()
         self.assertEqual(len(data["leaders"]), 1)
         self.assertNotIn(former.get_full_name(), [leader["name"] for leader in data["leaders"]])
+
+    def test_roster_is_sorted_by_the_name_it_displays(self):
+        from packman.dens.models import Membership
+        from packman.membership.factories import FamilyFactory, ScoutFactory
+
+        # Last names run counter to first names, so a roster still ordered by
+        # surname would come back reversed. Zach goes by "Andy": he sorts under
+        # the nickname the row actually shows, not under his first name.
+        for first_name, last_name, nickname in [
+            ("Zach", "Adams", "Andy"),
+            ("Ava", "Zimmer", ""),
+            ("Miles", "Nolan", ""),
+        ]:
+            cub = ScoutFactory(
+                family=FamilyFactory(),
+                status=Scout.ACTIVE,
+                first_name=first_name,
+                last_name=last_name,
+                nickname=nickname,
+            )
+            Membership.objects.create(scout=cub, den=self.den, year_assigned=self.pack_year)
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number])).json()
+        names = [entry["scout"]["name"] for entry in data["roster"]]
+        self.assertEqual(names, sorted(names, key=str.lower))
+        self.assertIn("Andy", names)
+        self.assertNotIn("Zach", names)
 
     def test_unknown_den_is_404(self):
         self.client.force_login(self.parent)
@@ -348,6 +421,93 @@ class MemberDetailAPITestCase(MobileDirectoryTestCase):
         phone_numbers = response.json()["phone_numbers"]
         self.assertEqual(len(phone_numbers), 1)
 
+    def test_scout_has_no_leadership_title(self):
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.scout.slug])).json()
+        self.assertIsNone(data["title"])
+
+    def test_ordinary_parent_has_no_leadership_title(self):
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
+        self.assertIsNone(data["title"])
+
+    def test_title_comes_from_the_position(self):
+        from packman.committees.models import Committee, CommitteeMember
+
+        CommitteeMember.objects.create(
+            committee=Committee.objects.get(slug="wolf-den"),
+            member=self.parent,
+            den=self.den,
+            year=self.pack_year,
+            position=CommitteeMember.Position.DEN_LEADER,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
+        self.assertEqual(data["title"], "Den Leader")
+
+    def test_title_falls_back_to_the_committee_name(self):
+        from packman.committees.models import Committee, CommitteeMember
+
+        # A Pack that records the title in the committee name and leaves every
+        # member at the default "Member" position.
+        committee = Committee.objects.create(name="Assistant Akelas", slug="assistant-akelas", leadership=True)
+        CommitteeMember.objects.create(committee=committee, member=self.parent, year=self.pack_year)
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
+        self.assertEqual(data["title"], "Assistant Akela")
+
+    def test_a_non_leadership_committee_grants_no_title(self):
+        from packman.committees.models import Committee, CommitteeMember
+
+        committee = Committee.objects.create(name="Advancements", slug="advancements")
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=self.parent,
+            year=self.pack_year,
+            position=CommitteeMember.Position.CHAIR,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
+        self.assertIsNone(data["title"])
+
+    def test_the_most_senior_title_wins(self):
+        from packman.committees.models import Committee, CommitteeMember
+
+        # Leading a den and serving as Akela reads as the more senior of the two,
+        # even though ASSISTANT_AKELA/AKELA sort above DEN_LEADER numerically.
+        CommitteeMember.objects.create(
+            committee=Committee.objects.get(slug="wolf-den"),
+            member=self.parent,
+            den=self.den,
+            year=self.pack_year,
+            position=CommitteeMember.Position.DEN_LEADER,
+        )
+        CommitteeMember.objects.create(
+            committee=Committee.objects.create(name="Akela", slug="akela", leadership=True),
+            member=self.parent,
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
+        self.assertEqual(data["title"], "Akela")
+
+    def test_prior_years_title_is_not_carried_forward(self):
+        from packman.calendars.models import PackYear
+        from packman.committees.models import Committee, CommitteeMember
+
+        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
+        committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=self.parent,
+            year=last_year,
+            position=CommitteeMember.Position.AKELA,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
+        self.assertIsNone(data["title"])
+
     def test_member_outside_visibility_scope_is_404(self):
         from packman.membership.factories import AdultFactory, FamilyFactory
         from packman.membership.models import Adult
@@ -367,15 +527,54 @@ class CommitteeListAPITestCase(MobileDirectoryTestCase):
         self.assertTrue(any(c["slug"] == "wolf-den" for c in committees))
 
     def test_leadership_flag_is_reported(self):
-        from packman.committees.models import Committee
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
 
-        Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        akela_committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        CommitteeMember.objects.create(
+            committee=akela_committee,
+            member=AdultFactory(family=FamilyFactory()),
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
+        )
         self.client.force_login(self.parent)
         data = self.client.get(reverse("mobile:api-committees")).json()
         akela = next(c for c in data["committees"] if c["slug"] == "akela")
         self.assertTrue(akela["leadership"])
         wolf_den = next(c for c in data["committees"] if c["slug"] == "wolf-den")
         self.assertFalse(wolf_den["leadership"])
+
+    def test_committee_without_a_current_roster_is_excluded(self):
+        from packman.calendars.models import PackYear
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
+
+        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
+        retired = Committee.objects.create(name="Popcorn", slug="popcorn")
+        CommitteeMember.objects.create(
+            committee=retired,
+            member=AdultFactory(family=FamilyFactory()),
+            year=last_year,
+        )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-committees")).json()
+        self.assertNotIn("popcorn", [c["slug"] for c in data["committees"]])
+
+    def test_committee_is_listed_once_per_year_however_many_members(self):
+        from packman.committees.models import Committee, CommitteeMember
+        from packman.membership.factories import AdultFactory, FamilyFactory
+
+        committee = Committee.objects.get(slug="wolf-den")
+        for _ in range(2):
+            CommitteeMember.objects.create(
+                committee=committee,
+                member=AdultFactory(family=FamilyFactory()),
+                year=self.pack_year,
+            )
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-committees")).json()
+        slugs = [c["slug"] for c in data["committees"]]
+        self.assertEqual(slugs.count("wolf-den"), 1)
 
 
 class CommitteeDetailAPITestCase(MobileDirectoryTestCase):

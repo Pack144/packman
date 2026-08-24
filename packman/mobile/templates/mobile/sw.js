@@ -1,4 +1,4 @@
-{% load static %}const VERSION = "v7";
+{% load static %}const VERSION = "v9";
 const SHELL_CACHE = `pack-directory-shell-${VERSION}`;
 const DATA_CACHE = `pack-directory-data-${VERSION}`;
 const FONT_CACHE = `pack-directory-fonts-${VERSION}`;
@@ -27,6 +27,8 @@ const PRECACHE_URLS = [
   "{% static 'mobile/js/screens/committees.js' %}",
   "{% static 'mobile/icons/icon-192.png' %}",
   "{% static 'mobile/icons/icon-512.png' %}",
+  "{% static 'mobile/icons/apple-touch-icon.png' %}",
+  "{% static 'mobile/icons/favicon-32.png' %}",
 ];
 
 const FONT_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com"];

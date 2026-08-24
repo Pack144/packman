@@ -4,7 +4,7 @@ const BASE = "/mobile/api/";
 // data instead of a spinner, and keep working offline. Entries are revalidated
 // in the background; a screen that is already mounted re-renders itself when
 // the refreshed data differs (see the packman:data-refresh listener in app.js).
-const CACHE_PREFIX = "packman:api:v1:";
+const CACHE_PREFIX = "packman:api:v2:";
 const CACHE_OWNER_KEY = "packman:api:owner";
 const PRIMED_AT_KEY = "packman:api:primedAt";
 const REFRESH_EVENT = "packman:data-refresh";

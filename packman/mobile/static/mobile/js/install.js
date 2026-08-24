@@ -58,7 +58,7 @@ export function installBanner() {
       <div class="install-banner card">
         ${icons.install}
         <div class="grow">
-          <div class="install-title">Install Pack Directory</div>
+          <div class="install-title">Install PackMate</div>
           <div class="install-sub">Keep the directory on hand, even offline.</div>
         </div>
         <button class="install-btn" data-install>Install</button>
@@ -74,7 +74,7 @@ export function installBanner() {
       <div class="install-banner card">
         ${icons.install}
         <div class="grow">
-          <div class="install-title">Install Pack Directory</div>
+          <div class="install-title">Install PackMate</div>
           <div class="install-sub">Tap ${icons.share} Share, then &ldquo;Add to Home Screen&rdquo;.</div>
         </div>
         ${dismissButton}

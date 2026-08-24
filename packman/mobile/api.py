@@ -56,6 +56,72 @@ def scout_den_label(scout):
     return den_label(scout.current_den)
 
 
+# The three Pack leadership titles, most senior first — dict order is the
+# precedence used when someone holds more than one (an Akela who also leads a
+# den reads as "Akela"). Position's own numbering can't stand in for this:
+# ASSISTANT_AKELA is 6, above AKELA's 5.
+LEADERSHIP_TITLES = {
+    CommitteeMember.Position.AKELA: CommitteeMember.Position.AKELA.label,
+    CommitteeMember.Position.ASSISTANT_AKELA: CommitteeMember.Position.ASSISTANT_AKELA.label,
+    CommitteeMember.Position.DEN_LEADER: CommitteeMember.Position.DEN_LEADER.label,
+}
+
+
+def assignment_title(assignment):
+    """
+    'Akela', 'Assistant Akela' or 'Den Leader' for one CommitteeMember, else None.
+
+    Prefers the explicit position. Falls back to the committee's name, because a
+    Pack may record the title there instead — committees flagged as Pack
+    Leadership and named 'Assistant Akelas' or 'Den Leaders', whose members all
+    sit at the default 'Member' position. Those names are plural while the
+    position labels are singular, hence the removesuffix().
+    """
+    if assignment.position in LEADERSHIP_TITLES:
+        return LEADERSHIP_TITLES[assignment.position]
+    if not assignment.committee.leadership:
+        return None
+    name = assignment.committee.name.strip().removesuffix("s").casefold()
+    return next((title for title in LEADERSHIP_TITLES.values() if title.casefold() == name), None)
+
+
+def leadership_title(adult):
+    """The Pack leadership title an Adult carries this Pack Year, or None."""
+    titles = {
+        title
+        for assignment in adult.committee_memberships.filter(year=PackYear.objects.current()).select_related(
+            "committee"
+        )
+        if (title := assignment_title(assignment))
+    }
+    return next((title for title in LEADERSHIP_TITLES.values() if title in titles), None)
+
+
+def current_akela():
+    """
+    The Pack's Akela for the current Pack Year, for the Home screen's Jump To
+    card. `linked` is False when they fall outside MemberDetailView's visibility
+    scope — the row still names them, but tapping through would 404.
+    """
+    akela = CommitteeMember.Position.AKELA.label
+    assignments = (
+        CommitteeMember.objects.filter(year=PackYear.objects.current())
+        .filter(Q(position=CommitteeMember.Position.AKELA) | Q(committee__leadership=True))
+        .select_related("member", "committee")
+    )
+    assignment = next((a for a in assignments if assignment_title(a) == akela), None)
+    if not assignment:
+        return None
+    adult = assignment.member
+    return {
+        "slug": adult.slug,
+        "name": adult.get_full_name(),
+        "avatar": get_avatar_url(adult),
+        "title": akela,
+        "linked": visible_members().filter(pk=adult.pk).exists(),
+    }
+
+
 def build_member_detail(member):
     """Build the polymorphic profile payload for either an Adult or a Scout."""
     if hasattr(member, "scout"):
@@ -99,6 +165,7 @@ def build_member_detail(member):
         return {
             "slug": scout.slug,
             "name": scout.get_full_name(),
+            "title": None,
             "avatar": get_avatar_url(scout),
             "photo": get_photo_url(scout),
             "is_scout": True,
@@ -150,6 +217,7 @@ def build_member_detail(member):
     return {
         "slug": adult.slug,
         "name": adult.get_full_name(),
+        "title": leadership_title(adult),
         "avatar": get_avatar_url(adult),
         "photo": get_photo_url(adult),
         "is_scout": False,
@@ -202,6 +270,7 @@ class HomeView(GenericAPIView):
                     "avatar": get_avatar_url(user),
                 },
                 "family": family,
+                "akela": current_akela(),
                 "event": EventSerializer(event).data if event else None,
             }
         )
@@ -324,7 +393,7 @@ class CommitteeListView(GenericAPIView):
     permission_classes = [IsActiveMemberOrContributor]
 
     def get(self, request):
-        committees = Committee.objects.all()
+        committees = Committee.objects.current()
         return Response({"committees": CommitteeSummarySerializer(committees, many=True).data})
 
 

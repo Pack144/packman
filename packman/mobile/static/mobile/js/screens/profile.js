@@ -18,7 +18,9 @@ function headerMarkup(member) {
     <div class="profile-header">
       ${avatar(member.photo, member.name, "lg")}
       <div class="profile-ident">
-        <div class="profile-name">${esc(member.name)}</div>
+        <div class="profile-name">${esc(member.name)}${
+          member.title ? `<span class="profile-title">, ${esc(member.title)}</span>` : ""
+        }</div>
         ${line ? `<div class="profile-grade">${esc(line)}</div>` : ""}
         ${member.rank_plural ? rankTag(member.rank_key, member.rank_plural) : ""}
       </div>

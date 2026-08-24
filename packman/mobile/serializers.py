@@ -1,3 +1,6 @@
+from django.db.models import Value
+from django.db.models.functions import Coalesce, NullIf
+
 from easy_thumbnails.files import get_thumbnailer
 from rest_framework import serializers
 
@@ -302,7 +305,12 @@ class DenDetailSerializer(serializers.Serializer):
         roster = (
             Scout.objects.filter(den_memberships__den=den, den_memberships__year_assigned=PackYear.objects.current())
             .select_related("family")
-            .order_by("last_name", "first_name")
+            # Sorted by the name the roster row actually shows — short_name,
+            # which is the nickname when there is one. Ordering by first_name
+            # would file a nicknamed cub under a name that never appears on
+            # screen, leaving the list looking unsorted.
+            .annotate(sort_name=Coalesce(NullIf("nickname", Value("")), "first_name"))
+            .order_by("sort_name", "last_name")
         )
         return DenRosterEntrySerializer(roster, many=True).data
 
@@ -407,6 +415,8 @@ class MemberDetailSerializer(serializers.Serializer):
 
     slug = serializers.CharField()
     name = serializers.CharField()
+    # An Adult's Pack leadership title ("Akela", "Den Leader"); None otherwise.
+    title = serializers.CharField(allow_null=True)
     avatar = serializers.CharField(allow_null=True)
     photo = serializers.CharField(allow_null=True)
     is_scout = serializers.BooleanField()

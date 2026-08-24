@@ -79,6 +79,22 @@ function familyCard(family) {
   `;
 }
 
+// The Pack's Akela leads the Jump To card. A leader outside the directory's
+// visibility scope still gets named, but their profile would 404 — so, like
+// profile.js's familyRow(), the row goes unlinked rather than dead-ending.
+function akelaRow(akela) {
+  if (!akela) return "";
+  const inner = `
+    ${avatar(akela.avatar, akela.name, "sm")}
+    <div class="grow">
+      <div class="row-title">${esc(akela.name)}</div>
+      <div class="mono plain">${esc(akela.title)}</div>
+    </div>
+  `;
+  if (!akela.linked) return `<div class="row row-disabled">${inner}</div>`;
+  return `<a class="row" href="#/profile/${encodeURIComponent(akela.slug)}">${inner}<span class="chev">&rsaquo;</span></a>`;
+}
+
 export async function renderHome(container) {
   const data = await api.home();
 
@@ -110,6 +126,7 @@ export async function renderHome(container) {
       <section>
         <h2 class="sect">Jump To</h2>
         <div class="card row-divided">
+          ${akelaRow(data.akela)}
           <a class="row" href="#/my-dens"><span class="den-badge" style="width:34px;height:34px;background:var(--rank-wolf)">W</span><div class="row-title">My Den${singleDen ? "" : "s"}</div><span class="chev">&rsaquo;</span></a>
           <a class="row" href="#/dens"><span class="den-badge" style="width:34px;height:34px;background:var(--rank-webelos)">D</span><div class="row-title">All Dens in Pack</div><span class="chev">&rsaquo;</span></a>
           <a class="row" href="#/search"><span class="den-badge" style="width:34px;height:34px;background:var(--badge-neutral)">Q</span><div class="row-title">Search Directory</div><span class="chev">&rsaquo;</span></a>
