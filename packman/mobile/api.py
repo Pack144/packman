@@ -7,6 +7,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from packman.calendars.models import Event, PackYear
+from packman.committees.leadership import assignment_title, leadership_title
 from packman.committees.models import Committee, CommitteeMember
 from packman.dens.models import Den
 from packman.membership.models import Adult, Member, Scout
@@ -54,47 +55,6 @@ def visible_members():
 
 def scout_den_label(scout):
     return den_label(scout.current_den)
-
-
-# The three Pack leadership titles, most senior first — dict order is the
-# precedence used when someone holds more than one (an Akela who also leads a
-# den reads as "Akela"). Position's own numbering can't stand in for this:
-# ASSISTANT_AKELA is 6, above AKELA's 5.
-LEADERSHIP_TITLES = {
-    CommitteeMember.Position.AKELA: CommitteeMember.Position.AKELA.label,
-    CommitteeMember.Position.ASSISTANT_AKELA: CommitteeMember.Position.ASSISTANT_AKELA.label,
-    CommitteeMember.Position.DEN_LEADER: CommitteeMember.Position.DEN_LEADER.label,
-}
-
-
-def assignment_title(assignment):
-    """
-    'Akela', 'Assistant Akela' or 'Den Leader' for one CommitteeMember, else None.
-
-    Prefers the explicit position. Falls back to the committee's name, because a
-    Pack may record the title there instead — committees flagged as Pack
-    Leadership and named 'Assistant Akelas' or 'Den Leaders', whose members all
-    sit at the default 'Member' position. Those names are plural while the
-    position labels are singular, hence the removesuffix().
-    """
-    if assignment.position in LEADERSHIP_TITLES:
-        return LEADERSHIP_TITLES[assignment.position]
-    if not assignment.committee.leadership:
-        return None
-    name = assignment.committee.name.strip().removesuffix("s").casefold()
-    return next((title for title in LEADERSHIP_TITLES.values() if title.casefold() == name), None)
-
-
-def leadership_title(adult):
-    """The Pack leadership title an Adult carries this Pack Year, or None."""
-    titles = {
-        title
-        for assignment in adult.committee_memberships.filter(year=PackYear.objects.current()).select_related(
-            "committee"
-        )
-        if (title := assignment_title(assignment))
-    }
-    return next((title for title in LEADERSHIP_TITLES.values() if title in titles), None)
 
 
 def current_akela():
