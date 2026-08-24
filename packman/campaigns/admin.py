@@ -1,14 +1,8 @@
-import csv
-import decimal
-
 from django.contrib import admin, messages
-from django.http import HttpResponse
-from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
 from packman.calendars.models import PackYear
-from packman.dens.models import Membership
 
 from .models import (
     Campaign,
@@ -163,7 +157,6 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    actions = ["generate_weekly_report", "generate_campaign_report"]
     inlines = [OrderItemInline]
     list_display = [
         "customer",
@@ -187,113 +180,6 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.display(description="total", ordering="total")
     def order_total(self, obj):
         return obj.total
-
-    @admin.display(description=_("Generate Weekly Report"))
-    def generate_weekly_report(self, request, queryset):
-        end_date = timezone.now()
-        start_date = end_date - timezone.timedelta(days=7)
-        report_name = f"Campaign Weekly Report ({end_date.month}-{end_date.day}-{end_date.year}).csv"
-        field_names = ["Cub", "Den", "Order Count", "Total"]
-
-        orders = queryset.filter(date_added__gte=start_date, date_added__lte=end_date)
-        members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
-
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = f"attachment; filename={report_name}"
-        writer = csv.writer(response)
-        writer.writerow(field_names)
-
-        for cub in members:
-            cub_orders = orders.filter(seller__den_memberships=cub)
-            writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
-
-        return response
-
-    @admin.display(description=_("Generate Campaign Report"))
-    def generate_campaign_report(self, request, queryset):
-        # Determine campaign from the selected orders
-        campaign_ids = set(queryset.values_list("campaign", flat=True))
-        if len(campaign_ids) != 1:
-            self.message_user(
-                request,
-                _(
-                    "Please select orders from a single campaign"  # nosec B608
-                    f" (found {len(campaign_ids)} campaigns: {campaign_ids})"
-                ),
-                messages.ERROR,
-            )
-            return
-        campaign = Campaign.objects.get(pk=list(campaign_ids)[0])
-
-        report_date = timezone.now()
-        report_name = (
-            f"Campaign Report - {campaign.year} ({report_date.month}-{report_date.day}-{report_date.year}).csv"
-        )
-
-        field_names = [
-            "Cub",
-            "Den",
-            "Order Count",
-            "Total",
-            "Quota",
-            "Achieved",
-            "Amount Owed",
-            "Prize Points Earned",
-            "Prize Points Spent",
-            "Points Remaining",
-        ]
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = f"attachment; filename={report_name}"
-
-        cubs = Membership.objects.prefetch_related("scout", "den", "den__quotas").filter(
-            year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE
-        )
-
-        writer = csv.writer(response)
-        writer.writerow(field_names)
-        for cub in cubs:
-            cub_orders = queryset.filter(seller__den_memberships=cub)
-            total = cub_orders.totaled()["totaled"]
-            quota_obj = cub.den.quotas.filter(campaign=campaign).first()
-            quota = quota_obj.target if quota_obj is not None else 0
-
-            # calculate points earned
-            if total < quota:
-                points_earned = 0
-            elif total <= 2000:
-                points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
-            else:
-                points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
-                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100
-                )
-
-            points_spent = PrizeSelection.objects.filter(
-                cub=cub.scout, campaign=campaign
-            ).calculate_total_points_spent()["spent"]
-            points_remaining = points_earned - points_spent
-
-            # TODO: Don't hard-code the minimum if quota unmet
-            met_quota = total >= quota
-            if not met_quota:
-                shortfall = quota - total
-                owed = total + shortfall * decimal.Decimal("0.65")
-            else:
-                owed = total
-            writer.writerow(
-                [
-                    cub.scout,
-                    cub.den,
-                    cub_orders.count(),
-                    total,
-                    quota,
-                    met_quota,
-                    owed.quantize(decimal.Decimal(".01")),
-                    points_earned,
-                    points_spent,
-                    points_remaining,
-                ]
-            )
-        return response
 
 
 @admin.register(Prize)

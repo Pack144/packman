@@ -1,0 +1,62 @@
+name: Deploy
+
+# Manually triggered. Use the "Run workflow" button, pick the branch you want
+# to deploy (github.ref_name below always refers to it), and choose which
+# environment to deploy to.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Environment to deploy to
+        required: true
+        type: choice
+        default: beta
+        options:
+          - beta
+          - prod
+      reset_db:
+        description: >-
+          Wipe beta's database and replace it with a fresh copy of production
+          before deploying (beta only; see util/sync_beta_db.sh)
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
+    steps:
+      - name: Deploy branch via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVICE_HOST }}
+          username: ${{ secrets.SERVICE_SSH_USERNAME }}
+          key: ${{ secrets.SERVICE_AUTHORIZED_SSH_KEY }}
+          port: ${{ secrets.SERVICE_SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.SERVICE_APP_DIR }}"
+            # Secret values aren't shell-expanded, so a leading "~" in the
+            # secret wouldn't otherwise resolve to the home directory. Expand
+            # it manually here.
+            APP_DIR="${APP_DIR/#\~/$HOME}"
+            cd "$APP_DIR/packman"
+            git fetch --prune origin
+            git checkout "${{ github.ref_name }}"
+            git pull origin "${{ github.ref_name }}"
+            # Clean up other local branches left over from previous deploys of
+            # different branches, so this checkout doesn't accumulate stale
+            # local refs over time. Keeps the branch just deployed and "main".
+            # Only touches the local server checkout, not the GitHub repo.
+            git for-each-ref --format='%(refname:short)' refs/heads/ \
+              | { grep -v -x -e "${{ github.ref_name }}" -e "main" || [ $? -eq 1 ]; } \
+              | xargs -r -n1 git branch -D
+            if [ "${{ inputs.reset_db }}" = "true" ]; then
+              if [ "${{ inputs.target }}" != "beta" ]; then
+                echo "reset_db is only supported when target is beta" >&2
+                exit 1
+              fi
+              util/sync_beta_db.sh
+            fi
+            util/deploy.sh "$APP_DIR"

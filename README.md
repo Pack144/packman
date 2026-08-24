@@ -183,8 +183,6 @@ uv venv ~/apps/django-beta/env --python 3.14
 
 Deployment should first be validated in beta prior to deploying in prod.
 
-Note: beta and prod share a database, the deployment to beta will also run any migrations so take care when using it.
-
 ```bash
 cd ~/apps/django-beta/packman
 git pull
@@ -194,3 +192,24 @@ util/deploy.sh
 After validation switch to the prod directory and repeat.
 
 See the [deploy.sh](util/deploy.sh) for more details on how the deployment works.
+
+#### Deploying via GitHub Actions
+
+Instead of SSHing in manually, you can deploy any branch to beta or prod
+from the [Deploy](.github/workflows/deploy.yml) workflow: go to the
+*Actions* tab, select it, click *Run workflow*, pick the branch to deploy,
+and choose the `target` environment (`beta` or `prod`). It SSHes into the
+corresponding server, checks out the selected branch, and runs
+[deploy.sh](util/deploy.sh).
+
+When deploying to `beta`, you can also check the `reset_db` option to first
+wipe beta's database and replace it with a fresh copy of production (via
+[sync_beta_db.sh](util/sync_beta_db.sh)) before deploying — handy for
+refreshing beta with production data and the latest `main` in one run.
+
+This requires the following secrets to be configured.
+* `SERVICE_HOST` — SSH host for the target server
+* `SERVICE_SSH_USERNAME` — SSH username
+* `SERVICE_AUTHORIZED_SSH_KEY` — private key with access to the target deployment
+* `SERVICE_SSH_PORT` — *(optional)* SSH port, defaults to `22`
+* `SERVICE_APP_DIR` — app directory on the server to deploy

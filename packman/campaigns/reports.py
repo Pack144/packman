@@ -1,10 +1,10 @@
 import csv
 import decimal
 
+from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import dateparse, timezone
 
-from packman.calendars.models import PackYear
 from packman.campaigns.models import Campaign, Order, PrizePoint, PrizeSelection
 from packman.dens.models import Membership
 
@@ -19,11 +19,13 @@ class Echo:
         return value
 
 
+@login_required
+@permission_required("campaigns.generate_order_report", raise_exception=True)
 def turn_in_night_report(request):
     if request.GET.get("campaign"):
         campaign = Campaign.objects.get_by_natural_key(request.GET.get("campaign"))
     else:
-        campaign = Campaign.objects.current()
+        campaign = Campaign.get_latest()
 
     report_date = timezone.now()
     report_name = f"Campaign Report ({report_date.month}-{report_date.day}-{report_date.year}).csv"
@@ -62,17 +64,25 @@ def report_rows(campaign):
 def generate_cub_row(cub, orders, campaign):
     cub_orders = orders.filter(seller__den_memberships=cub)
     total = cub_orders.totaled()["totaled"]
-    quota = cub.den.quotas.current().target
+    quota_obj = cub.den.quotas.filter(campaign=campaign).first()
+    quota = quota_obj.target if quota_obj is not None else 0
 
     # calculate points earned
+    top_prize_points = PrizePoint.objects.order_by("earned_at").reverse()[:2]
+    last_prize_point = top_prize_points[0]
+    prize_point_earned_at_difference = top_prize_points[0].earned_at - top_prize_points[1].earned_at
+    prize_point_value_difference = top_prize_points[0].value - top_prize_points[1].value
+
     if total < quota:
         points_earned = 0
-    elif total <= 2000:
+    elif total <= last_prize_point.earned_at:
         points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
     else:
-        points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
-            (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100
+        earned_above_configured_prize_points = total - last_prize_point.earned_at
+        tiers_above_configured_prize_points = int(
+            earned_above_configured_prize_points / prize_point_earned_at_difference
         )
+        points_earned = last_prize_point.value + (tiers_above_configured_prize_points * prize_point_value_difference)
 
     points_spent = PrizeSelection.objects.filter(cub=cub.scout, campaign=campaign).calculate_total_points_spent()[
         "spent"
@@ -101,13 +111,15 @@ def generate_cub_row(cub, orders, campaign):
     ]
 
 
+@login_required
+@permission_required("campaigns.generate_order_report", raise_exception=True)
 def generate_weekly_report(request):
     if request.GET.get("end"):
         end_date = dateparse.parse_date(request.GET.get("end"))
     else:
         end_date = timezone.now()
 
-    if request.GET.get("end"):
+    if request.GET.get("begin"):
         begin_date = dateparse.parse_date(request.GET.get("begin"))
     else:
         begin_date = end_date - timezone.timedelta(days=7)
@@ -115,8 +127,9 @@ def generate_weekly_report(request):
     report_name = f"Campaign Weekly Report ({begin_date.month}-{begin_date.day}-{begin_date.year} to {end_date.month}-{end_date.day}-{end_date.year}).csv"  # noqa: E501
     field_names = ["Cub", "Den", "Order Count", "Total Sales"]
 
-    orders = Order.objects.filter(date_added__gte=begin_date, date_added__lte=end_date)
-    members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=PackYear.objects.current())
+    campaign = Campaign.get_latest()
+    orders = campaign.orders.filter(date_added__gte=begin_date, date_added__lte=end_date)
+    members = Membership.objects.prefetch_related("scout", "den").filter(year_assigned=campaign.year)
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f"attachment; filename={report_name}"
@@ -125,6 +138,6 @@ def generate_weekly_report(request):
 
     for cub in members:
         cub_orders = orders.filter(seller__den_memberships=cub)
-        writer.writerow([cub.scout, cub.scout.get_current_den(), cub_orders.count(), cub_orders.totaled()["totaled"]])
+        writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
 
     return response
