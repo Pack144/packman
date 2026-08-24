@@ -16,7 +16,8 @@ const FRESH_MS = 30_000;
 
 // How long a full directory pre-load stands before primeAllData() re-fetches
 // every endpoint rather than just topping up what's missing. A full pass is
-// ~70 requests, so it is not something to repeat on every launch.
+// ~70 requests for the directory JSON, plus up to two image fetches per
+// member, so it is not something to repeat on every launch.
 const PRIME_TTL_MS = 6 * 60 * 60 * 1000;
 
 // Browsers allow six connections per host on HTTP/1.1; staying just under that
@@ -203,6 +204,18 @@ function primedAt() {
   }
 }
 
+/**
+ * Ask for an image so the service worker's cache-first handler (see sw.js)
+ * stores it, without caring about the response itself — nothing here reads
+ * the bytes or the pixels. A missing photo or an offline blip just means
+ * that one member's photo isn't warmed yet; the rest of the pre-load
+ * shouldn't stop for it.
+ */
+function warmImage(url) {
+  if (!url) return Promise.resolve();
+  return fetch(url, { credentials: "same-origin" }).catch(() => {});
+}
+
 /** Work through `tasks` a few at a time, giving up if the connection drops. */
 async function drain(tasks, onSettled) {
   let next = 0;
@@ -347,7 +360,13 @@ async function runPrime({ force, onProgress }) {
   total = done + slugs.length;
   await drain(
     slugs.map((slug) => async () => {
-      await load(`members/${encodeURIComponent(slug)}/`);
+      const member = await load(`members/${encodeURIComponent(slug)}/`);
+      // The JSON above only carries the photo *URLs*; nothing has actually
+      // asked for the images yet, so the service worker has nothing to cache
+      // until some screen happens to render one. Fetch them here too, so
+      // everyone's photo is offline-ready, not just whoever's roster or
+      // profile the reader has actually opened.
+      await Promise.all([warmImage(member.avatar), warmImage(member.photo)]);
     }),
     settled
   );
@@ -413,6 +432,7 @@ export async function refreshAllData(onProgress) {
   // Avatars and profile photos are served cache-first, so they'd stay stale
   // otherwise. Only the shell survives, since nothing is reloading to refill it.
   await purgeServiceWorkerData();
+  await warmAllImages(onProgress);
   window.dispatchEvent(new CustomEvent(REFRESH_EVENT, { detail: { key: null } }));
   return true;
 }
@@ -435,6 +455,25 @@ function eachCached(visit) {
   } catch {
     // Storage unavailable.
   }
+}
+
+/**
+ * Re-fetch every cached member's avatar and profile photo. runPrime() already
+ * warms them once per member as it goes (see the member-loading pass above),
+ * but refreshAllData() purges that same image cache right after — a changed
+ * headshot has to be able to replace what was there — so it calls this
+ * afterwards to put the (now current) photos back before it hands off.
+ */
+async function warmAllImages(onProgress) {
+  const members = [];
+  eachCached((path, data) => {
+    if (/\/api\/members\/[^/]+\/$/.test(path) && data.slug) members.push(data);
+  });
+  let done = 0;
+  await drain(
+    members.map((member) => () => Promise.all([warmImage(member.avatar), warmImage(member.photo)])),
+    () => onProgress?.(++done, members.length)
+  );
 }
 
 function searchRow(member, extra) {
