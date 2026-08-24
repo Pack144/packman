@@ -1,4 +1,4 @@
-import { appBar, avatar, colorFor, esc, icons, initialsOf, rankTag } from "../components.js";
+import { appBar, avatar, esc, icons, rankTag } from "../components.js";
 import { api } from "../api.js";
 
 function profileBar(member, { me }) {
@@ -9,31 +9,19 @@ function profileBar(member, { me }) {
   return appBar(`${back}<div class="appbar-title">${esc(member.den || member.name)}</div>`);
 }
 
-function photoMarkup(member) {
-  if (member.photo) {
-    return `<div class="profile-photo"><img src="${esc(member.photo)}" alt="${esc(member.name)}"></div>`;
-  }
-  return `<div class="profile-photo no-photo" style="background:${colorFor(member.name)}">${esc(
-    initialsOf(member.name)
-  )}</div>`;
-}
-
-function identMarkup(member) {
-  const tag = member.rank_plural ? rankTag(member.rank_key, member.rank_plural) : "";
+function headerMarkup(member) {
   // "Den 4 · 2nd Grade" — either half stands on its own if the other is missing.
   const line = [member.den_number ? `Den ${member.den_number}` : "", member.grade || ""]
     .filter(Boolean)
     .join(" · ");
-  const meta =
-    tag || line
-      ? `<div class="profile-meta">${tag}${
-          line ? `<span class="profile-grade">${esc(line)}</span>` : ""
-        }</div>`
-      : "";
   return `
-    <div class="profile-ident">
-      <div class="profile-name">${esc(member.name)}</div>
-      ${meta}
+    <div class="profile-header">
+      ${avatar(member.avatar, member.name, "lg")}
+      <div class="profile-ident">
+        <div class="profile-name">${esc(member.name)}</div>
+        ${line ? `<div class="profile-grade">${esc(line)}</div>` : ""}
+        ${member.rank_plural ? rankTag(member.rank_key, member.rank_plural) : ""}
+      </div>
     </div>
   `;
 }
@@ -127,14 +115,11 @@ export async function renderProfile(container, slug, { me = false } = {}) {
   // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
     ${profileBar(member, { me })}
-    <div class="screen-scroll flush">
-      ${photoMarkup(member)}
-      <div class="profile-body">
-        ${identMarkup(member)}
-        ${actionButtons(member)}
-        ${contactCard(member)}
-        ${familyCard(member)}
-      </div>
+    <div class="screen-scroll">
+      ${headerMarkup(member)}
+      ${actionButtons(member)}
+      ${contactCard(member)}
+      ${familyCard(member)}
     </div>
   `;
 }
