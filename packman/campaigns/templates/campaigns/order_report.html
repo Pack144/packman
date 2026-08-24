@@ -159,12 +159,14 @@
             label: "Count",
             backgroundColor: "rgb(99, 132, 255)",
             borderColor: "rgb(99, 132, 255)",
+            yAxisID: "y",
             data: [{% for day in report.days %}"{{ day.count }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
           },
           {
             label: "Total $",
             backgroundColor: 'rgb(255, 99, 132)',
             borderColor: 'rgb(255, 99, 132)',
+            yAxisID: "y1",
             data: [{% for day in report.days %}"{{ day.order_total }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
           }
         ]
@@ -173,7 +175,29 @@
       const config = {
         type: "bar",
         data: data,
-        options: {}
+        options: {
+          scales: {
+            y: {
+              type: "linear",
+              position: "left",
+              title: {
+                display: true,
+                text: "Order Count"
+              }
+            },
+            y1: {
+              type: "linear",
+              position: "right",
+              title: {
+                display: true,
+                text: "Total $"
+              },
+              grid: {
+                drawOnChartArea: false
+              }
+            }
+          }
+        }
       };
 
       const myChar = new Chart(
