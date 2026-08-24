@@ -12,6 +12,7 @@ export function leaderCards(leaders) {
           <div class="mono">${esc(leader.position)}</div>
         </div>
         ${leader.phone ? `<a class="icon-btn" style="color:var(--accent)" href="tel:${esc(leader.phone)}" aria-label="Call ${esc(leader.name)}">${icons.phone}</a>` : ""}
+        ${leader.phone ? `<a class="icon-btn" style="color:var(--accent)" href="sms:${esc(leader.phone)}" aria-label="Text ${esc(leader.name)}">${icons.message}</a>` : ""}
         ${leader.email ? `<a class="icon-btn" style="color:var(--accent)" href="mailto:${esc(leader.email)}" aria-label="Email ${esc(leader.name)}">${icons.mail}</a>` : ""}
       </div>
     </div>`
