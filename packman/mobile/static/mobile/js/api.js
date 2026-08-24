@@ -250,17 +250,23 @@ function retryWhenOnline() {
   );
 }
 
-function denSlugs(den) {
-  const slugs = (den.leaders || []).map((leader) => leader.slug);
+// [slug, avatar] pairs rather than bare slugs: a roster entry already names
+// an avatar URL, and that's worth keeping even for someone whose own profile
+// turns out to be unreachable (see the member-loading pass below).
+function denPeople(den) {
+  const people = (den.leaders || []).map((leader) => [leader.slug, leader.avatar]);
   (den.roster || []).forEach((entry) => {
-    if (entry.scout?.slug) slugs.push(entry.scout.slug);
-    (entry.parents || []).forEach((parent) => slugs.push(parent.slug));
+    if (entry.scout?.slug) people.push([entry.scout.slug, entry.scout.avatar]);
+    (entry.parents || []).forEach((parent) => people.push([parent.slug, parent.avatar]));
   });
-  return slugs;
+  return people;
 }
 
-function committeeSlugs(committee) {
-  return [...(committee.akelas || []), ...(committee.members || [])].map((member) => member.slug);
+function committeePeople(committee) {
+  return [...(committee.akelas || []), ...(committee.members || [])].map((member) => [
+    member.slug,
+    member.avatar,
+  ]);
 }
 
 async function runPrime({ force, onProgress }) {
@@ -326,11 +332,28 @@ async function runPrime({ force, onProgress }) {
   const denNumbers = (dens.dens || []).map((den) => den.number);
   const committeeList = (committees.committees || []).map((committee) => committee.slug);
 
+  // A den/committee roster entry already names its own avatar; keep it
+  // alongside the slug so a member whose own profile turns out to be
+  // unreachable (see below) still gets that avatar warmed.
+  const avatarBySlug = new Map();
+  const remember = ([slug, avatarUrl]) => avatarBySlug.set(slug, avatarUrl);
+
   const myDenNumbers = new Set((myDens.dens || []).map((den) => den.number));
   const mine = new Set();
-  (home.family?.adults || []).forEach((adult) => mine.add(adult.slug));
-  (home.family?.children || []).forEach((child) => mine.add(child.slug));
-  (myDens.dens || []).forEach((den) => denSlugs(den).forEach((slug) => mine.add(slug)));
+  (home.family?.adults || []).forEach((adult) => {
+    mine.add(adult.slug);
+    remember([adult.slug, adult.avatar]);
+  });
+  (home.family?.children || []).forEach((child) => {
+    mine.add(child.slug);
+    remember([child.slug, child.avatar]);
+  });
+  (myDens.dens || []).forEach((den) =>
+    denPeople(den).forEach(([slug, avatarUrl]) => {
+      mine.add(slug);
+      remember([slug, avatarUrl]);
+    })
+  );
 
   const nearby = new Set();
   const rest = new Set();
@@ -341,11 +364,17 @@ async function runPrime({ force, onProgress }) {
       ...denNumbers.map((number) => async () => {
         const den = await load(`dens/${number}/`);
         const into = myDenNumbers.has(number) ? nearby : rest;
-        denSlugs(den).forEach((slug) => into.add(slug));
+        denPeople(den).forEach(([slug, avatarUrl]) => {
+          into.add(slug);
+          remember([slug, avatarUrl]);
+        });
       }),
       ...committeeList.map((slug) => async () => {
         const committee = await load(`committees/${encodeURIComponent(slug)}/`);
-        committeeSlugs(committee).forEach((member) => rest.add(member));
+        committeePeople(committee).forEach(([memberSlug, avatarUrl]) => {
+          rest.add(memberSlug);
+          remember([memberSlug, avatarUrl]);
+        });
       }),
     ],
     settled
@@ -360,13 +389,21 @@ async function runPrime({ force, onProgress }) {
   total = done + slugs.length;
   await drain(
     slugs.map((slug) => async () => {
-      const member = await load(`members/${encodeURIComponent(slug)}/`);
-      // The JSON above only carries the photo *URLs*; nothing has actually
+      // The JSON below only carries the photo *URLs*; nothing has actually
       // asked for the images yet, so the service worker has nothing to cache
       // until some screen happens to render one. Fetch them here too, so
       // everyone's photo is offline-ready, not just whoever's roster or
       // profile the reader has actually opened.
-      await Promise.all([warmImage(member.avatar), warmImage(member.photo)]);
+      let member = null;
+      try {
+        member = await load(`members/${encodeURIComponent(slug)}/`);
+      } catch {
+        // Outside MemberDetailView's visibility scope — a den leader or
+        // committee member without an active scout of their own, say. Their
+        // roster/committee entry still named an avatar; warm that instead
+        // of giving up on their photo entirely.
+      }
+      await Promise.all([warmImage(member?.avatar ?? avatarBySlug.get(slug)), warmImage(member?.photo)]);
     }),
     settled
   );
@@ -465,14 +502,32 @@ function eachCached(visit) {
  * afterwards to put the (now current) photos back before it hands off.
  */
 async function warmAllImages(onProgress) {
-  const members = [];
+  // Member-detail entries carry both sizes; den/committee rosters only ever
+  // carry the avatar (see denPeople()/committeePeople()) — including them
+  // too covers a leader whose own profile is outside MemberDetailView's
+  // visibility scope, the same case runPrime()'s member-loading pass guards.
+  const avatarBySlug = new Map();
+  const photoBySlug = new Map();
   eachCached((path, data) => {
-    if (/\/api\/members\/[^/]+\/$/.test(path) && data.slug) members.push(data);
+    if (/\/api\/members\/[^/]+\/$/.test(path) && data.slug) {
+      avatarBySlug.set(data.slug, data.avatar);
+      photoBySlug.set(data.slug, data.photo);
+    } else if (/\/api\/dens\/\d+\/$/.test(path)) {
+      denPeople(data).forEach(([slug, avatarUrl]) => {
+        if (!avatarBySlug.has(slug)) avatarBySlug.set(slug, avatarUrl);
+      });
+    } else if (/\/api\/committees\/[^/]+\/$/.test(path)) {
+      committeePeople(data).forEach(([slug, avatarUrl]) => {
+        if (!avatarBySlug.has(slug)) avatarBySlug.set(slug, avatarUrl);
+      });
+    }
   });
+
+  const slugs = [...avatarBySlug.keys()];
   let done = 0;
   await drain(
-    members.map((member) => () => Promise.all([warmImage(member.avatar), warmImage(member.photo)])),
-    () => onProgress?.(++done, members.length)
+    slugs.map((slug) => () => Promise.all([warmImage(avatarBySlug.get(slug)), warmImage(photoBySlug.get(slug))])),
+    () => onProgress?.(++done, slugs.length)
   );
 }
 
