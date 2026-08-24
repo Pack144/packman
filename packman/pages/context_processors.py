@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 
 from packman.campaigns.models import Campaign
+from packman.membership.mixins import is_active_member_or_contributor
 from packman.pages.models import Page
 
 
@@ -16,6 +17,8 @@ def populate_navbar(request):
         },
         "site": get_current_site(request),
         "fundraiser": Campaign.objects.current(),
+        # The PackMate promo only makes sense to those the app would actually let in.
+        "packmate_available": is_active_member_or_contributor(request.user),
     }
     for page in Page.objects.get_visible_content(user=request.user).filter(include_in_nav=True):
         if page.content_blocks.count():

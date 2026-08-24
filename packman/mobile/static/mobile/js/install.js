@@ -4,6 +4,10 @@ import { icons } from "./components.js";
 // Whoever waves the banner away means it; don't ask again on this device.
 const DISMISSED_KEY = "packman:install-dismissed";
 
+// Same origin as the main site, so the promo strip over there reads this to know
+// it has nothing left to advertise.
+const INSTALLED_KEY = "packman:installed";
+
 // Chrome hands the install prompt over through `beforeinstallprompt` and nowhere
 // else, so we hold onto the event until someone taps Install. Safari never fires
 // it, which is what splits the banner into its two forms below.
@@ -22,6 +26,14 @@ function isIos() {
     /iphone|ipad|ipod/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
   );
+}
+
+function markInstalled() {
+  try {
+    localStorage.setItem(INSTALLED_KEY, "1");
+  } catch {
+    // Private browsing blocks storage; the main site keeps offering the app.
+  }
 }
 
 function isDismissed() {
@@ -106,6 +118,7 @@ export function initInstall() {
 
   window.addEventListener("appinstalled", () => {
     deferredPrompt = null;
+    markInstalled();
     paintInstallSlot();
     // Fill the caches now, while we know there's a network, rather than leaving
     // the first offline launch to find them empty.
@@ -133,5 +146,8 @@ export function initInstall() {
   // iOS never fires `appinstalled`, so a standalone launch is the only word we
   // get that the app was installed. Warm the caches the directory reads from.
   // app.js primes on every launch regardless; concurrent calls share the pass.
-  if (isStandalone()) primeAllData();
+  if (isStandalone()) {
+    markInstalled();
+    primeAllData();
+  }
 }
