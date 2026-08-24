@@ -26,6 +26,8 @@ from .serializers import (
     get_photo_url,
     get_rank_badge,
     get_rank_key,
+    get_rank_plural,
+    grade_label,
 )
 
 
@@ -68,19 +70,30 @@ def build_member_detail(member):
                     "relation": adult.get_role_display(),
                     "rank": None,
                     "rank_key": None,
+                    "active": True,
                 }
                 for adult in scout.family.adults.all()
             )
+            # Unlike the roster above, get_siblings() isn't filtered to active
+            # scouts — a sibling who has graduated or left the Pack still
+            # belongs to the family. They're outside MemberDetailView's
+            # visibility scope though, so their profile 404s; `active` tells
+            # the frontend not to link there.
             for sibling in scout.get_siblings() or []:
                 sibling_den = scout_den_label(sibling)
+                sibling_active = sibling.status == Scout.ACTIVE
+                relation = f"Sibling · {sibling_den}" if sibling_den else "Sibling"
+                if not sibling_active:
+                    relation += " · No longer active"
                 family.append(
                     {
                         "slug": sibling.slug,
                         "name": sibling.get_full_name(),
                         "avatar": get_avatar_url(sibling),
-                        "relation": f"Sibling · {sibling_den}" if sibling_den else "Sibling",
+                        "relation": relation,
                         "rank": sibling.rank.get_rank_display() if sibling.rank else None,
                         "rank_key": get_rank_key(sibling.rank),
+                        "active": sibling_active,
                     }
                 )
         return {
@@ -90,8 +103,10 @@ def build_member_detail(member):
             "photo": get_photo_url(scout),
             "is_scout": True,
             "den": scout_den_label(scout),
-            "grade": str(scout.grade).title() if scout.grade else None,
+            "den_number": scout.current_den.number if scout.current_den else None,
+            "grade": grade_label(scout),
             "rank": scout.rank.get_rank_display() if scout.rank else None,
+            "rank_plural": get_rank_plural(scout.rank),
             "rank_key": get_rank_key(scout.rank),
             "phone_numbers": [],
             "emails": [],
@@ -113,9 +128,12 @@ def build_member_detail(member):
                 "relation": partner.get_role_display(),
                 "rank": None,
                 "rank_key": None,
+                "active": True,
             }
             for partner in adult.get_partners() or []
         )
+        # .active() already excludes graduated/withdrawn cubs, unlike a
+        # Scout's own get_siblings() above — so every entry here is linkable.
         for child in adult.family.children.active():
             child_den = scout_den_label(child)
             family.append(
@@ -126,6 +144,7 @@ def build_member_detail(member):
                     "relation": f"Cub · {child_den}" if child_den else "Cub",
                     "rank": child.rank.get_rank_display() if child.rank else None,
                     "rank_key": get_rank_key(child.rank),
+                    "active": True,
                 }
             )
     return {
@@ -135,8 +154,10 @@ def build_member_detail(member):
         "photo": get_photo_url(adult),
         "is_scout": False,
         "den": None,
+        "den_number": None,
         "grade": None,
         "rank": None,
+        "rank_plural": None,
         "rank_key": None,
         "phone_numbers": phone_numbers,
         "emails": [adult.email] if adult.is_published else [],

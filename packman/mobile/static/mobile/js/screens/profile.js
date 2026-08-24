@@ -1,29 +1,39 @@
-import { avatar, colorFor, esc, icons, initialsOf, rankTag } from "../components.js";
+import { appBar, avatar, colorFor, esc, icons, initialsOf, rankTag } from "../components.js";
 import { api } from "../api.js";
 
-function heroMarkup(member, { me }) {
+function profileBar(member, { me }) {
   const back = me
     ? ""
-    : '<a class="back" href="javascript:history.back()" aria-label="Back">&lsaquo;</a>';
-  const media = member.photo
-    ? `<img src="${esc(member.photo)}" alt="${esc(member.name)}">`
-    : `<div class="initials" style="background:${colorFor(member.name)}">${esc(initialsOf(member.name))}</div>`;
-  const denTag = member.den ? rankTag(member.rank_key, member.den) : "";
+    : '<a class="appbar-back" href="javascript:history.back()" aria-label="Back">&lsaquo;</a>';
+  // A cub's den titles the bar; adults have no den, so they get their own name.
+  return appBar(`${back}<div class="appbar-title">${esc(member.den || member.name)}</div>`);
+}
+
+function photoMarkup(member) {
+  if (member.photo) {
+    return `<div class="profile-photo"><img src="${esc(member.photo)}" alt="${esc(member.name)}"></div>`;
+  }
+  return `<div class="profile-photo no-photo" style="background:${colorFor(member.name)}">${esc(
+    initialsOf(member.name)
+  )}</div>`;
+}
+
+function identMarkup(member) {
+  const tag = member.rank_plural ? rankTag(member.rank_key, member.rank_plural) : "";
+  // "Den 4 · 2nd Grade" — either half stands on its own if the other is missing.
+  const line = [member.den_number ? `Den ${member.den_number}` : "", member.grade || ""]
+    .filter(Boolean)
+    .join(" · ");
+  const meta =
+    tag || line
+      ? `<div class="profile-meta">${tag}${
+          line ? `<span class="profile-grade">${esc(line)}</span>` : ""
+        }</div>`
+      : "";
   return `
-    <div class="profile-hero">
-      ${media}
-      <div class="overlay"></div>
-      ${back}
-      <div class="caption">
-        <div class="profile-name">${esc(member.name)}</div>
-        ${
-          denTag || member.grade
-            ? `<div class="profile-meta">${denTag}${
-                member.grade ? `<span class="profile-grade">${esc(member.grade)}</span>` : ""
-              }</div>`
-            : ""
-        }
-      </div>
+    <div class="profile-ident">
+      <div class="profile-name">${esc(member.name)}</div>
+      ${meta}
     </div>
   `;
 }
@@ -51,9 +61,8 @@ function contactCard(member) {
         ${member.phone_numbers
           .map(
             (p) => `
-          <div class="row" style="padding:13px 15px">
-            <span style="color:var(--label)">${icons.phone}</span>
-            <div>
+          <div class="row contact-row">
+            <div class="grow">
               <div class="mono">${esc(p.type)}</div>
               <a class="contact-value" href="tel:${esc(p.value)}">${esc(p.value)}</a>
             </div>
@@ -63,9 +72,8 @@ function contactCard(member) {
         ${member.emails
           .map(
             (e) => `
-          <div class="row" style="padding:13px 15px">
-            <span style="color:var(--label)">${icons.mail}</span>
-            <div>
+          <div class="row contact-row">
+            <div class="grow">
               <div class="mono">Email</div>
               <a class="contact-value" href="mailto:${esc(e)}">${esc(e)}</a>
             </div>
@@ -77,28 +85,36 @@ function contactCard(member) {
   `;
 }
 
+function familyRow(f) {
+  const inner = `
+    ${avatar(f.avatar, f.name, "sm")}
+    <div class="grow">
+      <div class="name-line">
+        <span class="row-title">${esc(f.name)}</span>
+        ${f.rank ? rankTag(f.rank_key, f.rank) : ""}
+      </div>
+      <div class="mono plain">${esc(f.relation)}</div>
+    </div>
+  `;
+  // A sibling who's graduated or left the Pack is outside the directory's
+  // visibility scope — their profile 404s — so they're listed but not linked.
+  if (!f.active) {
+    return `<div class="row row-disabled">${inner}</div>`;
+  }
+  return `
+    <a class="row" href="#/profile/${encodeURIComponent(f.slug)}">
+      ${inner}
+      <span class="chev">&rsaquo;</span>
+    </a>`;
+}
+
 function familyCard(member) {
   if (!member.family.length) return "";
   return `
     <div>
       <h2 class="sect">Family</h2>
       <div class="card row-divided">
-        ${member.family
-          .map(
-            (f) => `
-          <a class="row" href="#/profile/${encodeURIComponent(f.slug)}">
-            ${avatar(f.avatar, f.name, "sm")}
-            <div class="grow">
-              <div class="name-line">
-                <span class="row-title">${esc(f.name)}</span>
-                ${f.rank ? rankTag(f.rank_key, f.rank) : ""}
-              </div>
-              <div class="mono plain">${esc(f.relation)}</div>
-            </div>
-            <span class="chev">&rsaquo;</span>
-          </a>`
-          )
-          .join("")}
+        ${member.family.map(familyRow).join("")}
       </div>
     </div>
   `;
@@ -110,9 +126,11 @@ export async function renderProfile(container, slug, { me = false } = {}) {
   // User-supplied values are escaped via esc() before interpolation.
   // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
+    ${profileBar(member, { me })}
     <div class="screen-scroll flush">
-      ${heroMarkup(member, { me })}
+      ${photoMarkup(member)}
       <div class="profile-body">
+        ${identMarkup(member)}
         ${actionButtons(member)}
         ${contactCard(member)}
         ${familyCard(member)}

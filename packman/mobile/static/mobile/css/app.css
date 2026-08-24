@@ -149,6 +149,13 @@ button {
   color: #fff;
 }
 
+.appbar-back {
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  padding-right: 2px;
+}
+
 .appbar-meta {
   margin-left: auto;
   font-weight: 600;
@@ -339,6 +346,12 @@ button {
   margin-left: auto;
   font-weight: 600;
   flex: none;
+}
+
+/* A family member who isn't clickable (their profile is out of scope) —
+   same layout as .row, minus the affordance to tap. */
+.row-disabled {
+  opacity: 0.6;
 }
 
 .row.mine {
@@ -628,78 +641,54 @@ img.av {
 }
 
 /* Profile */
-.profile-hero {
-  height: 260px;
+
+/* The photo runs edge to edge at its native 1:1 — member photos are headshots,
+   and a square is the most generous view of the face. */
+.profile-photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
   background: var(--hero-navy);
-  position: relative;
   flex: none;
 }
 
-.profile-hero img {
-  position: absolute;
-  inset: 0;
+.profile-photo img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.profile-hero .initials {
-  position: absolute;
-  inset: 0;
+/* Without a photo the square would be a full screen of flat colour, pushing the
+   contact details out of reach; a shorter band keeps them near the fold. */
+.profile-photo.no-photo {
+  aspect-ratio: auto;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 72px;
-  color: rgba(255, 255, 255, 0.35);
+  font-size: 64px;
+  color: rgb(255 255 255 / 35%);
 }
 
-.profile-hero .overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(8, 15, 28, 0.35) 0, rgba(8, 15, 28, 0) 30%, rgba(8, 15, 28, 0.78) 100%);
-}
-
-.profile-hero .back {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: #12151c;
-}
-
-.profile-hero .caption {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 14px;
-  color: #fff;
-}
-
-.profile-hero .caption .profile-name {
+.profile-name {
   font-weight: 800;
-  font-size: 30px;
-  line-height: 1;
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--ink);
 }
 
-.profile-hero .caption .profile-meta {
+.profile-meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 7px;
 }
 
-.profile-hero .caption .profile-grade {
+.profile-grade {
   font-weight: 600;
   font-size: 13px;
-  color: #e7ecf6;
+  color: var(--muted);
 }
 
 .profile-body {
@@ -735,10 +724,18 @@ img.av {
   color: #fff;
 }
 
+.contact-row {
+  padding: 11px 15px;
+}
+
 .contact-value {
+  display: block;
   font-weight: 600;
   font-size: 15px;
   color: var(--link);
+
+  /* An address longer than the card would otherwise spill past its edge. */
+  overflow-wrap: anywhere;
 }
 
 /* Committees */
@@ -979,12 +976,6 @@ select.pill {
 
   .segment.on .mono {
     color: #c7d5ee;
-  }
-
-  /* Over a dark hero the light-theme white circle glares; invert it. */
-  .profile-hero .back {
-    background: rgb(13 18 28 / 72%);
-    color: var(--ink);
   }
 
   /* A white photo placeholder flashes bright before the image loads. */

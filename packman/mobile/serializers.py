@@ -74,11 +74,30 @@ def get_rank_badge(rank):
     return RANK_BADGES.get(rank.rank, "?") if rank else "?"
 
 
+def get_rank_plural(rank):
+    return RANK_PLURALS.get(rank.rank) if rank else None
+
+
+def grade_label(scout):
+    """
+    '2nd Grade' — the same label the den screens show for a rank. Falls back to
+    the cub's school-derived grade when they have no rank yet; that string is
+    lowercase ('2nd grade') and str.title() would mangle it into '2Nd Grade'.
+    """
+    if scout.rank:
+        return RANK_GRADE_LABELS.get(scout.rank.rank)
+    grade = str(scout.grade) if scout.grade else None
+    if not grade:
+        return None
+    label = grade.replace("grade", "Grade")
+    return label[:1].upper() + label[1:]
+
+
 def rank_fields(rank):
     """The bundle of rank presentation fields the frontend needs everywhere."""
     return {
         "rank": rank.get_rank_display() if rank else None,
-        "rank_plural": RANK_PLURALS.get(rank.rank) if rank else None,
+        "rank_plural": get_rank_plural(rank),
         "rank_key": get_rank_key(rank),
         "rank_badge": get_rank_badge(rank),
         "grade": RANK_GRADE_LABELS.get(rank.rank) if rank else None,
@@ -373,6 +392,10 @@ class FamilyMemberSerializer(serializers.Serializer):
     relation = serializers.CharField()
     rank = serializers.CharField(allow_null=True)
     rank_key = serializers.CharField(allow_null=True)
+    # False for a sibling who's graduated or left the Pack: still part of the
+    # family, but outside MemberDetailView's visibility scope, so the frontend
+    # shouldn't link to their profile.
+    active = serializers.BooleanField()
 
 
 class MemberDetailSerializer(serializers.Serializer):
@@ -388,8 +411,10 @@ class MemberDetailSerializer(serializers.Serializer):
     photo = serializers.CharField(allow_null=True)
     is_scout = serializers.BooleanField()
     den = serializers.CharField(allow_null=True)
+    den_number = serializers.IntegerField(allow_null=True)
     grade = serializers.CharField(allow_null=True)
     rank = serializers.CharField(allow_null=True)
+    rank_plural = serializers.CharField(allow_null=True)
     rank_key = serializers.CharField(allow_null=True)
     phone_numbers = ContactMethodSerializer(many=True)
     emails = serializers.ListField(child=serializers.EmailField())

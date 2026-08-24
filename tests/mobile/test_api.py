@@ -10,6 +10,7 @@ from PIL import Image
 
 from packman.address_book.models import PhoneNumber
 from packman.calendars.models import Category, Event
+from packman.membership.models import Scout
 
 from .base import MobileDirectoryTestCase
 
@@ -262,9 +263,45 @@ class MemberDetailAPITestCase(MobileDirectoryTestCase):
         data = response.json()
         self.assertTrue(data["is_scout"])
         self.assertEqual(data["den"], f"Den {self.den.number} · Wolves")
+        self.assertEqual(data["den_number"], self.den.number)
         self.assertEqual(data["rank"], "Wolf")
+        self.assertEqual(data["rank_plural"], "Wolves")
         self.assertEqual(data["rank_key"], "wolf")
+        # The profile labels the grade the way the den screens do — and not as
+        # the "2Nd Grade" that title-casing the school grade used to produce.
+        self.assertEqual(data["grade"], "2nd Grade")
         self.assertIn(self.parent.slug, [f["slug"] for f in data["family"]])
+        parent_entry = next(f for f in data["family"] if f["slug"] == self.parent.slug)
+        self.assertTrue(parent_entry["active"])
+
+    def test_active_sibling_is_linkable(self):
+        from packman.membership.factories import ScoutFactory
+
+        sibling = ScoutFactory(family=self.family, status=Scout.ACTIVE)
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.scout.slug])).json()
+        family = {f["slug"]: f for f in data["family"]}
+        self.assertTrue(family[sibling.slug]["active"])
+        self.assertNotIn("No longer active", family[sibling.slug]["relation"])
+
+    def test_inactive_sibling_is_listed_but_not_linkable(self):
+        from packman.membership.factories import ScoutFactory
+
+        sibling = ScoutFactory(family=self.family, status=Scout.INACTIVE)
+        self.client.force_login(self.parent)
+        data = self.client.get(reverse("mobile:api-member-detail", args=[self.scout.slug])).json()
+        family = {f["slug"]: f for f in data["family"]}
+
+        # Still shown — they're part of the family — but flagged so the
+        # frontend won't link to a profile that's outside visibility scope.
+        self.assertIn(sibling.slug, family)
+        self.assertFalse(family[sibling.slug]["active"])
+        self.assertIn("No longer active", family[sibling.slug]["relation"])
+
+        # And that profile really is out of scope, confirming the flag matches
+        # what would happen if the frontend linked there anyway.
+        response = self.client.get(reverse("mobile:api-member-detail", args=[sibling.slug]))
+        self.assertEqual(response.status_code, 404)
 
     def test_adult_profile_lists_partner_and_cub_children(self):
         from packman.membership.factories import AdultFactory
@@ -274,6 +311,12 @@ class MemberDetailAPITestCase(MobileDirectoryTestCase):
         self.client.force_login(self.parent)
         data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
         self.assertFalse(data["is_scout"])
+
+        # An adult has none of the cub-only den/rank presentation fields.
+        self.assertIsNone(data["den_number"])
+        self.assertIsNone(data["rank_plural"])
+        self.assertIsNone(data["grade"])
+
         family = {member["slug"]: member for member in data["family"]}
 
         # The partner appears with their role as the relation and carries no rank.
@@ -281,9 +324,11 @@ class MemberDetailAPITestCase(MobileDirectoryTestCase):
         self.assertEqual(family[partner.slug]["relation"], partner.get_role_display())
         self.assertIsNone(family[partner.slug]["rank"])
         self.assertIsNone(family[partner.slug]["rank_key"])
+        self.assertTrue(family[partner.slug]["active"])
 
         # The cub child appears with a "Cub · Den …" relation and their rank.
         self.assertIn(self.scout.slug, family)
+        self.assertTrue(family[self.scout.slug]["active"])
         self.assertEqual(family[self.scout.slug]["relation"], f"Cub · Den {self.den.number} · Wolves")
         self.assertEqual(family[self.scout.slug]["rank"], "Wolf")
         self.assertEqual(family[self.scout.slug]["rank_key"], "wolf")
