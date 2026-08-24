@@ -22,18 +22,8 @@ from .models import (
 
 class CampaignFilter(admin.SimpleListFilter):
     """
-    A drop-in replacement for the default "campaign" FK list filter.
-
-    We use a custom filter (instead of just listing "campaign" in
-    ``list_filter``) so that Orders, Prizes, and Products default to showing
-    only the latest campaign when an admin first opens the changelist,
-    rather than dumping every campaign's data on screen at once. The stock
-    FK filter has no concept of a "default" selection: with no query
-    param present it always means "show everything", and its "All" choice
-    works by removing the param entirely - which is indistinguishable from
-    the un-filtered initial state. To get a real default we have to own
-    both `queryset()` (decide what "no param" means) and `choices()`
-    (make "All" its own distinct, stateful choice).
+    A custom "campaign" list filter that defaults to the latest campaign
+    when the changelist is first opened, instead of showing every campaign.
     """
 
     title = _("campaign")
