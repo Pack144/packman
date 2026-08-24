@@ -20,6 +20,54 @@ from .models import (
 )
 
 
+class CampaignFilter(admin.SimpleListFilter):
+    """
+    A custom "campaign" list filter that defaults to the latest campaign
+    when the changelist is first opened, instead of showing every campaign.
+    """
+
+    title = _("campaign")
+    parameter_name = "campaign__id__exact"
+
+    def lookups(self, request, model_admin):
+        return [(campaign.pk, str(campaign)) for campaign in Campaign.objects.all()]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value == "all":
+            # Explicit "All" was chosen from the filter sidebar - show everything.
+            return queryset
+        if value in (None, ""):
+            # No filter param at all means this is the first, unfiltered load of
+            # the changelist, so default to only the latest campaign instead of
+            # showing every campaign's records.
+            latest = Campaign.get_latest()
+            return queryset.filter(campaign=latest) if latest else queryset
+        return queryset.filter(campaign__pk=value)
+
+    def choices(self, changelist):
+        # Mirrors Django's default SimpleListFilter.choices(), but with two
+        # deliberate differences from the stock FK filter:
+        #   1. "All" links to `campaign__id__exact=all` (a sentinel value) instead
+        #      of dropping the query param. That's what makes "no param" and
+        #      "explicitly chose All" distinguishable in queryset() above.
+        #   2. The latest campaign's choice is pre-selected when there's no query
+        #      param yet, so the sidebar visually matches what queryset() did.
+        latest = Campaign.get_latest()
+        yield {
+            "selected": self.value() == "all",
+            "query_string": changelist.get_query_string({self.parameter_name: "all"}),
+            "display": _("All"),
+        }
+        for lookup, title in self.lookup_choices:
+            yield {
+                "selected": (self.value() is None and latest is not None and str(lookup) == str(latest.pk))
+                or self.value() == str(lookup),
+                "query_string": changelist.get_query_string({self.parameter_name: lookup}),
+                "display": title,
+            }
+
+
 class IsDeliveredFilter(admin.SimpleListFilter):
     title = _("delivered")
     parameter_name = "delivered"
@@ -168,7 +216,7 @@ class OrderAdmin(admin.ModelAdmin):
         "donation",
         "order_total",
     ]
-    list_filter = [IsPaidFilter, IsDeliveredFilter, "campaign", "seller"]
+    list_filter = [IsPaidFilter, IsDeliveredFilter, CampaignFilter, "seller"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).calculate_total()
@@ -186,7 +234,7 @@ class OrderAdmin(admin.ModelAdmin):
 class PrizeAdmin(admin.ModelAdmin):
     actions = ["duplicate_prizes"]
     list_display = ["name", "points", "value", "campaign"]
-    list_filter = ["points", "campaign"]
+    list_filter = ["points", CampaignFilter]
 
     @admin.display(description=_("Copy selected prizes to the latest campaign"))
     def duplicate_prizes(self, request, queryset):
@@ -221,7 +269,7 @@ class ProductAdmin(admin.ModelAdmin):
     actions = ["duplicate_products"]
     filter_horizontal = ["tags"]
     list_display = ["name", "category", "price", "has_description", "has_image", "campaign"]
-    list_filter = ["category", "tags", "campaign"]
+    list_filter = ["category", "tags", CampaignFilter]
 
     def get_readonly_fields(self, request, obj=None):
         # Disallow changing the campaign of a product with orders.
