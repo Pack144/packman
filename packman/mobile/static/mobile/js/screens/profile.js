@@ -16,7 +16,7 @@ function headerMarkup(member) {
     .join(" · ");
   return `
     <div class="profile-header">
-      ${avatar(member.avatar, member.name, "lg")}
+      ${avatar(member.photo, member.name, "lg")}
       <div class="profile-ident">
         <div class="profile-name">${esc(member.name)}</div>
         ${line ? `<div class="profile-grade">${esc(line)}</div>` : ""}
