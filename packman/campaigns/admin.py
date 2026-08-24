@@ -21,6 +21,21 @@ from .models import (
 
 
 class CampaignFilter(admin.SimpleListFilter):
+    """
+    A drop-in replacement for the default "campaign" FK list filter.
+
+    We use a custom filter (instead of just listing "campaign" in
+    ``list_filter``) so that Orders, Prizes, and Products default to showing
+    only the latest campaign when an admin first opens the changelist,
+    rather than dumping every campaign's data on screen at once. The stock
+    FK filter has no concept of a "default" selection: with no query
+    param present it always means "show everything", and its "All" choice
+    works by removing the param entirely - which is indistinguishable from
+    the un-filtered initial state. To get a real default we have to own
+    both `queryset()` (decide what "no param" means) and `choices()`
+    (make "All" its own distinct, stateful choice).
+    """
+
     title = _("campaign")
     parameter_name = "campaign__id__exact"
 
@@ -30,13 +45,24 @@ class CampaignFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         value = self.value()
         if value == "all":
+            # Explicit "All" was chosen from the filter sidebar - show everything.
             return queryset
         if value in (None, ""):
+            # No filter param at all means this is the first, unfiltered load of
+            # the changelist, so default to only the latest campaign instead of
+            # showing every campaign's records.
             latest = Campaign.objects.order_by("-ordering_opens").first()
             return queryset.filter(campaign=latest) if latest else queryset
         return queryset.filter(campaign__pk=value)
 
     def choices(self, changelist):
+        # Mirrors Django's default SimpleListFilter.choices(), but with two
+        # deliberate differences from the stock FK filter:
+        #   1. "All" links to `campaign__id__exact=all` (a sentinel value) instead
+        #      of dropping the query param. That's what makes "no param" and
+        #      "explicitly chose All" distinguishable in queryset() above.
+        #   2. The latest campaign's choice is pre-selected when there's no query
+        #      param yet, so the sidebar visually matches what queryset() did.
         latest = Campaign.objects.order_by("-ordering_opens").first()
         yield {
             "selected": self.value() == "all",
