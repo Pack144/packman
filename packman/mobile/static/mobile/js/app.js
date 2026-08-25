@@ -127,8 +127,29 @@ primeAllData();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/mobile/sw.js", { scope: "/mobile/" }).catch((err) => {
-      console.error("Service worker registration failed", err);
+    navigator.serviceWorker
+      .register("/mobile/sw.js", { scope: "/mobile/" })
+      .then((registration) => {
+        // The PWA is launched standalone and rarely navigates, so it can sit
+        // open for days without the browser's own update check ever firing.
+        // Ask again whenever the reader comes back to the tab.
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") registration.update();
+        });
+      })
+      .catch((err) => {
+        console.error("Service worker registration failed", err);
+      });
+
+    // sw.js calls skipWaiting()/clients.claim() as soon as a new version
+    // installs, so this tab ends up controlled by code its already-loaded JS
+    // never fetched. Reload once to pick it up — guarded so an unrelated
+    // controller change (e.g. another tab activating first) can't loop us.
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading) return;
+      reloading = true;
+      window.location.reload();
     });
   });
 }
