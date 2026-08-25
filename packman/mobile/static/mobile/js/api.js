@@ -10,14 +10,19 @@ const CACHE_OWNER_KEY = "packman:api:owner";
 const PRIMED_AT_KEY = "packman:api:primedAt";
 const REFRESH_EVENT = "packman:data-refresh";
 
-// How long a cached entry is served without hitting the network at all. Short
-// enough that a stale roster corrects itself on the next screen visit, long
-// enough that flicking between tabs doesn't refetch everything.
-const FRESH_MS = 30_000;
+// How long the next-event lookup is served without hitting the network at
+// all. Short enough that a changed pack meeting corrects itself on the next
+// Home visit, long enough that flicking between tabs doesn't refetch it
+// every time.
+const EVENT_FRESH_MS = 30_000;
 
-// How long a directory pre-load stands before primeAllData() re-warms every
-// member's photo rather than trusting what's already stored.
-const PRIME_TTL_MS = 6 * 60 * 60 * 1000;
+// How long a cached directory stands before it's worth asking the network
+// again — the roster rarely changes, so there's no reason to re-fetch it (or
+// re-warm every member's photo) on every single page load. Also governs
+// primeAllData()'s photo re-warm cadence, since a fresh directory is what
+// tells it whether anything needs re-warming in the first place. A manual
+// "Refresh Data" tap (force) bypasses this entirely.
+const DIRECTORY_TTL_MS = 6 * 60 * 60 * 1000;
 
 // Browsers allow six connections per host on HTTP/1.1; staying just under that
 // keeps the pre-load from starving whatever the reader is actively looking at.
@@ -72,10 +77,14 @@ export function purgeCache() {
 }
 
 /**
- * Ask the service worker to drop its cached API responses and member photos,
- * keeping the precached app shell. Resolves once it confirms.
+ * Ask the service worker to drop its cached API responses and any member
+ * photos that aren't in `keepPhotoPaths` — a former member's headshot, say,
+ * or a since-removed avatar. Photos still referenced by the fresh directory
+ * are left alone: they were just revalidated (see refreshAllData()) rather
+ * than deleted and re-downloaded from scratch. Resolves once the worker
+ * confirms.
  */
-function purgeServiceWorkerData() {
+function purgeServiceWorkerData(keepPhotoPaths) {
   const controller = navigator.serviceWorker?.controller;
   if (!controller) return Promise.resolve();
   // Wait for the confirmation so a repaint can't race the purge and pull a
@@ -84,9 +93,28 @@ function purgeServiceWorkerData() {
   return new Promise((resolve) => {
     const channel = new MessageChannel();
     channel.port1.onmessage = () => resolve();
-    controller.postMessage("packman:purge-data", [channel.port2]);
+    controller.postMessage({ type: "packman:purge-data", keepPhotoPaths: [...keepPhotoPaths] }, [channel.port2]);
     setTimeout(resolve, 1500);
   });
+}
+
+/** `member.avatar`/`member.photo` as same-origin pathnames, the way the
+ * service worker keys its photo cache — so a keep-list built here lines up
+ * with what it has stored regardless of whether the API sent a relative
+ * path or an absolute URL. */
+function mediaPathsOf(members) {
+  const paths = new Set();
+  members.forEach((member) => {
+    [member.avatar, member.photo].forEach((url) => {
+      if (!url) return;
+      try {
+        paths.add(new URL(url, window.location.origin).pathname);
+      } catch {
+        // Not a usable URL; nothing to keep for it.
+      }
+    });
+  });
+  return paths;
 }
 
 /**
@@ -133,10 +161,10 @@ async function fetchJson(url) {
 
 /**
  * Stale-while-revalidate: resolve from cache when we have it, and refresh in
- * the background. Falls back to whatever is cached when the network fails, so
- * the directory stays readable offline.
+ * the background once it's older than `ttlMs`. Falls back to whatever is
+ * cached when the network fails, so the directory stays readable offline.
  */
-async function cachedRequest(path) {
+async function cachedRequest(path, ttlMs) {
   const url = buildUrl(path);
   const key = url.toString();
   const cached = readCache(key);
@@ -147,7 +175,7 @@ async function cachedRequest(path) {
     return fresh;
   }
 
-  if (Date.now() - cached.at < FRESH_MS) {
+  if (Date.now() - cached.at < ttlMs) {
     return cached.data;
   }
 
@@ -167,11 +195,12 @@ async function cachedRequest(path) {
 
 // The mobile PWA's only two network calls: the whole member/den/committee
 // directory (see getDirectory() below for the shape screens actually read),
-// and the next upcoming event, which is cached separately because its
-// freshness matters on its own schedule.
+// only re-fetched every so often since it barely changes; and the next
+// upcoming event, refetched on essentially every read since its freshness
+// matters on a much shorter schedule.
 export const api = {
-  directory: () => cachedRequest("pack_directory/"),
-  event: () => cachedRequest("event/"),
+  directory: () => cachedRequest("pack_directory/", DIRECTORY_TTL_MS),
+  event: () => cachedRequest("event/", EVENT_FRESH_MS),
 };
 
 /* ------------------------------------------------------------------ *
@@ -317,10 +346,17 @@ function primedAt() {
  * the bytes or the pixels. A missing photo or an offline blip just means
  * that one member's photo isn't warmed yet; the rest of the pre-load
  * shouldn't stop for it.
+ *
+ * With `forceRevalidate`, the service worker is told (via a header) to check
+ * with the server and only resolve once the real, current bytes are in the
+ * cache — plain cache-first would otherwise hand back the old cached copy
+ * immediately and revalidate in the background, so a caller awaiting this
+ * would think the photo is fresh before it actually is.
  */
-function warmImage(url) {
+function warmImage(url, { forceRevalidate } = {}) {
   if (!url) return Promise.resolve();
-  return fetch(url, { credentials: "same-origin" }).catch(() => {});
+  const headers = forceRevalidate ? { "X-Packman-Force-Revalidate": "1" } : undefined;
+  return fetch(url, { credentials: "same-origin", headers }).catch(() => {});
 }
 
 /** Work through `tasks` a few at a time, giving up if the connection drops. */
@@ -364,39 +400,57 @@ async function runPrime({ force, onProgress }) {
   }
 
   storageFull = false;
-  let changed = false;
 
-  async function load(path) {
-    const url = buildUrl(path);
-    const key = url.toString();
-    const cached = readCache(key);
-    const fresh = await fetchJson(url);
-    if (cached && JSON.stringify(cached.data) !== JSON.stringify(fresh)) changed = true;
-    writeCache(key, fresh);
-    return fresh;
-  }
+  // Once DIRECTORY_TTL_MS has elapsed (or on a forced "Refresh Data" pass)
+  // the directory needs a guaranteed fresh fetch, since that's also what
+  // decides which members' photos get re-warmed below — cachedRequest()'s
+  // own stale-while-revalidate won't do here, as it hands back the old
+  // roster immediately and only fetches fresh data in the background, which
+  // would warm photos for members who are no longer current and mark the
+  // cadence as satisfied before the real roster even arrived.
+  const refetch = force || Date.now() - primedAt() > DIRECTORY_TTL_MS;
 
-  // Both endpoints, always revalidated on launch — this is the entire
-  // network fan-out now: no more crawling every den/committee roster to
-  // discover member slugs before fetching each profile individually.
   let raw;
+  let directoryChanged = false;
   try {
-    [raw] = await Promise.all([load("pack_directory/"), load("event/")]);
+    const directoryUrl = buildUrl("pack_directory/");
+    const eventUrl = buildUrl("event/");
+    const loadDirectory = refetch
+      ? (async () => {
+          const cached = readCache(directoryUrl.toString());
+          const fresh = await fetchJson(directoryUrl);
+          if (cached && JSON.stringify(cached.data) !== JSON.stringify(fresh)) directoryChanged = true;
+          writeCache(directoryUrl.toString(), fresh);
+          return fresh;
+        })()
+      : api.directory();
+    // The event stays on its own short cadence except on a forced pass, which
+    // talks to the network directly for it too rather than trusting the cache.
+    const loadEvent = force
+      ? fetchJson(eventUrl).then((fresh) => {
+          writeCache(eventUrl.toString(), fresh);
+          return fresh;
+        })
+      : api.event();
+    [raw] = await Promise.all([loadDirectory, loadEvent]);
   } catch {
     retryWhenOnline();
     return false;
   }
 
-  // Past the TTL (or on a manual refresh), every member's photo is re-warmed;
-  // otherwise a fresh directory fetch above is already enough for this launch.
-  const refetch = force || Date.now() - primedAt() > PRIME_TTL_MS;
+  // Past the TTL (or on a manual refresh), every member's photo is re-warmed
+  // from the roster just fetched above; otherwise a cache-served directory is
+  // already enough for this launch.
   if (refetch) {
     const members = raw.members || [];
     let done = 0;
     onProgress?.(done, members.length);
     await drain(
       members.map((member) => async () => {
-        await Promise.all([warmImage(member.avatar), warmImage(member.photo)]);
+        await Promise.all([
+          warmImage(member.avatar, { forceRevalidate: true }),
+          warmImage(member.photo, { forceRevalidate: true }),
+        ]);
       }),
       () => onProgress?.(++done, members.length)
     );
@@ -412,11 +466,13 @@ async function runPrime({ force, onProgress }) {
     }
   }
 
-  // One event for the whole pass rather than one per endpoint, so the mounted
-  // screen repaints once instead of twice. A forced pass stays quiet:
-  // refreshAllData() announces itself once it has purged the photo cache too,
+  // No REFRESH_EVENT for the event endpoint here: it's still on cachedRequest()
+  // outside of a forced pass, which already dispatches its own event when it
+  // changes. The directory's own TTL-driven refetch above bypasses that, so
+  // it announces itself here instead; a forced pass stays quiet, since
+  // refreshAllData() announces itself once it has pruned the photo cache too,
   // and two events back to back would repaint the screen twice.
-  if (changed && !force) {
+  if (directoryChanged && !force) {
     window.dispatchEvent(new CustomEvent(REFRESH_EVENT, { detail: { key: null } }));
   }
   return true;
@@ -458,32 +514,20 @@ export function primeAllData({ force = false, onProgress } = {}) {
 export async function refreshAllData(onProgress) {
   if (navigator.onLine === false) return false;
 
+  // A forced pass already re-fetches every currently-referenced avatar/photo
+  // (see runPrime()'s `refetch` branch), and the service worker's
+  // stale-while-revalidate handling means each one is revalidated against the
+  // server rather than blindly re-downloaded. So there's nothing left to warm
+  // here — only to prune: drop any cached photo that's no longer referenced
+  // (a former member, a swapped-out headshot path) instead of wiping every
+  // photo and starting over.
   const refreshed = await primeAllData({ force: true, onProgress });
   if (!refreshed) return false;
 
-  // Avatars and profile photos are served cache-first, so they'd stay stale
-  // otherwise. Only the shell survives, since nothing is reloading to refill it.
-  await purgeServiceWorkerData();
-  await warmAllImages(onProgress);
+  const raw = readCache(buildUrl("pack_directory/").toString())?.data;
+  await purgeServiceWorkerData(mediaPathsOf(raw?.members || []));
   window.dispatchEvent(new CustomEvent(REFRESH_EVENT, { detail: { key: null } }));
   return true;
-}
-
-/**
- * Re-fetch every cached member's avatar and profile photo. runPrime() already
- * warms them once per pass, but refreshAllData() purges that same image
- * cache right after — a changed headshot has to be able to replace what was
- * there — so it calls this afterwards to put the (now current) photos back
- * before it hands off.
- */
-async function warmAllImages(onProgress) {
-  const raw = readCache(buildUrl("pack_directory/").toString())?.data;
-  const members = raw?.members || [];
-  let done = 0;
-  await drain(
-    members.map((member) => () => Promise.all([warmImage(member.avatar), warmImage(member.photo)])),
-    () => onProgress?.(++done, members.length)
-  );
 }
 
 /* ------------------------------------------------------------------ *
