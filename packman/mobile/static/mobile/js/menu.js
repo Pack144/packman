@@ -36,9 +36,9 @@ async function handleRefresh(button) {
   };
 
   setLabel("Refreshing…");
-  // Re-fetching the whole directory is seventy-odd requests, long enough that
-  // a bare "Refreshing…" looks stuck. The total only becomes known once the
-  // den and committee rosters name their members, hence the guard.
+  // Re-fetching the directory is now just two requests plus warming every
+  // member's photo — the total only becomes known once the directory names
+  // its members, hence the guard.
   const refreshed = await refreshAllData((done, total) => {
     setLabel(total ? `Refreshing… ${Math.round((done / total) * 100)}%` : "Refreshing…");
   });

@@ -1,11 +1,12 @@
 import { appBar, denBadge, esc, pluralize, rankTag, rankTextColor, titleBar } from "../components.js";
-import { api } from "../api.js";
+import { allDens, denByNumber, getDirectory } from "../api.js";
 import { denDetailMarkup } from "./den-shared.js";
 
 export async function renderDens(container) {
-  const data = await api.dens();
+  const directory = await getDirectory();
+  const dens = allDens(directory);
   const groups = [];
-  data.dens.forEach((den) => {
+  dens.forEach((den) => {
     let group = groups.find((g) => g.rank === den.rank);
     if (!group) {
       group = { rank: den.rank, rank_key: den.rank_key, dens: [] };
@@ -17,7 +18,7 @@ export async function renderDens(container) {
   // User-supplied values are escaped via esc() before interpolation.
   // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
-    ${titleBar("All Dens", pluralize(data.dens.length, "DEN"))}
+    ${titleBar("All Dens", pluralize(dens.length, "DEN"))}
     <div class="screen-scroll">
       ${groups
         .map(
@@ -55,7 +56,8 @@ export async function renderDens(container) {
 }
 
 export async function renderDenDetail(container, number) {
-  const den = await api.den(number);
+  const directory = await getDirectory();
+  const den = denByNumber(directory, number);
   // User-supplied values are escaped via esc() before interpolation.
   // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `

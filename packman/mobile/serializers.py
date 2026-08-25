@@ -1,12 +1,11 @@
-from django.db.models import Value
-from django.db.models.functions import Coalesce, NullIf
+import logging
 
 from easy_thumbnails.files import get_thumbnailer
 from rest_framework import serializers
 
-from packman.calendars.models import PackYear
 from packman.dens.models import Rank
-from packman.membership.models import Scout
+
+logger = logging.getLogger(__name__)
 
 # BSA's cub scout program ties each rank to a specific school grade.
 RANK_GRADE_LABELS = {
@@ -57,16 +56,33 @@ RANK_PLURALS = {
 
 def get_avatar_url(member):
     """Headshot thumbnail; None when no photo — the app renders initials instead."""
-    if member.photo:
-        return get_thumbnailer(member.photo).get_thumbnail({"size": (80, 80), "crop": "smart"}).url
-    return None
+    return _thumbnail_url(member, size=(80, 80))
 
 
 def get_photo_url(member):
     """A larger rendition for the profile hero; None when no photo uploaded."""
-    if member.photo:
-        return get_thumbnailer(member.photo).get_thumbnail({"size": (640, 640), "crop": "smart"}).url
-    return None
+    return _thumbnail_url(member, size=(640, 640))
+
+
+def _thumbnail_url(member, *, size):
+    """
+    A cropped thumbnail URL for `member.photo`, or None when there's no photo
+    — or when the file on disk can't actually be read as one. One member's
+    corrupt/missing upload shouldn't 500 the whole directory for everyone
+    else, so a broken photo is treated the same as no photo at all.
+
+    Deliberately broad: easy_thumbnails/Pillow surface a variety of
+    exception types for "this isn't a readable image" (missing file, wrong
+    format, a source generator raising its own error, ...) and every one of
+    them should degrade the same way here.
+    """
+    if not member.photo:
+        return None
+    try:
+        return get_thumbnailer(member.photo).get_thumbnail({"size": size, "crop": "smart"}).url
+    except Exception:
+        logger.warning("Could not generate a thumbnail for %r; treating as no photo.", member.photo.name)
+        return None
 
 
 def get_rank_key(rank):
@@ -81,21 +97,6 @@ def get_rank_plural(rank):
     return RANK_PLURALS.get(rank.rank) if rank else None
 
 
-def grade_label(scout):
-    """
-    '2nd Grade' — the same label the den screens show for a rank. Falls back to
-    the cub's school-derived grade when they have no rank yet; that string is
-    lowercase ('2nd grade') and str.title() would mangle it into '2Nd Grade'.
-    """
-    if scout.rank:
-        return RANK_GRADE_LABELS.get(scout.rank.rank)
-    grade = str(scout.grade) if scout.grade else None
-    if not grade:
-        return None
-    label = grade.replace("grade", "Grade")
-    return label[:1].upper() + label[1:]
-
-
 def rank_fields(rank):
     """The bundle of rank presentation fields the frontend needs everywhere."""
     return {
@@ -105,83 +106,6 @@ def rank_fields(rank):
         "rank_badge": get_rank_badge(rank),
         "grade": RANK_GRADE_LABELS.get(rank.rank) if rank else None,
     }
-
-
-def den_label(den):
-    """'Den 4 · Wolves' — the compact den designation used across the app."""
-    if not den:
-        return None
-    plural = RANK_PLURALS.get(den.rank.rank) if den.rank else None
-    return f"Den {den.number} · {plural}" if plural else f"Den {den.number}"
-
-
-class ScoutBadgeSerializer(serializers.Serializer):
-    """A cub's avatar + den/rank badge, used in compact listings."""
-
-    slug = serializers.CharField()
-    name = serializers.SerializerMethodField()
-    avatar = serializers.SerializerMethodField()
-    den_number = serializers.SerializerMethodField()
-    den_label = serializers.SerializerMethodField()
-    rank = serializers.SerializerMethodField()
-    rank_key = serializers.SerializerMethodField()
-    rank_badge = serializers.SerializerMethodField()
-
-    def get_name(self, scout):
-        return scout.short_name
-
-    def get_avatar(self, scout):
-        return get_avatar_url(scout)
-
-    def get_den_number(self, scout):
-        den = scout.current_den
-        return den.number if den else None
-
-    def get_den_label(self, scout):
-        return den_label(scout.current_den)
-
-    def get_rank(self, scout):
-        return scout.rank.get_rank_display() if scout.rank else None
-
-    def get_rank_key(self, scout):
-        return get_rank_key(scout.rank)
-
-    def get_rank_badge(self, scout):
-        return get_rank_badge(scout.rank)
-
-
-class AdultSummarySerializer(serializers.Serializer):
-    """A parent/guardian's name + link, used in family and roster listings."""
-
-    slug = serializers.CharField()
-    name = serializers.SerializerMethodField()
-    avatar = serializers.SerializerMethodField()
-    role = serializers.CharField(source="get_role_display")
-
-    def get_name(self, adult):
-        return adult.get_full_name()
-
-    def get_avatar(self, adult):
-        return get_avatar_url(adult)
-
-
-class FamilySerializer(serializers.Serializer):
-    """The signed-in user's own family, for the Home screen family card."""
-
-    name = serializers.CharField()
-    adults = serializers.SerializerMethodField()
-    children = serializers.SerializerMethodField()
-    dens = serializers.SerializerMethodField()
-
-    def get_adults(self, family):
-        return AdultSummarySerializer(family.adults.all(), many=True).data
-
-    def get_children(self, family):
-        return ScoutBadgeSerializer(family.children.active(), many=True).data
-
-    def get_dens(self, family):
-        ranks = {scout.rank.get_rank_display() for scout in family.children.active().select_related() if scout.rank}
-        return sorted(ranks)
 
 
 class EventSerializer(serializers.Serializer):
@@ -207,225 +131,124 @@ class EventSerializer(serializers.Serializer):
         return text[:140] or None
 
 
-class DenLeaderSerializer(serializers.Serializer):
-    slug = serializers.CharField(source="member.slug")
-    name = serializers.SerializerMethodField()
-    avatar = serializers.SerializerMethodField()
-    position = serializers.CharField(source="get_position_display")
-    phone = serializers.SerializerMethodField()
-    email = serializers.SerializerMethodField()
-
-    def get_name(self, committee_member):
-        return committee_member.member.get_full_name()
-
-    def get_avatar(self, committee_member):
-        return get_avatar_url(committee_member.member)
-
-    def get_phone(self, committee_member):
-        number = committee_member.member.phone_numbers.filter(published=True).first()
-        return number.number.as_e164 if number else None
-
-    def get_email(self, committee_member):
-        adult = committee_member.member
-        return adult.email if adult.is_published else None
-
-
-class DenRosterEntrySerializer(serializers.Serializer):
-    """One row in a Den's cub/family roster."""
-
-    scout = serializers.SerializerMethodField()
-    parents = serializers.SerializerMethodField()
-
-    def get_scout(self, scout):
-        return ScoutBadgeSerializer(scout).data
-
-    def get_parents(self, scout):
-        if scout.family:
-            return AdultSummarySerializer(scout.family.adults.all(), many=True).data
-        return []
-
-
-class DenSummarySerializer(serializers.Serializer):
-    """A single row in the All Dens list."""
-
-    number = serializers.IntegerField()
-    cub_count = serializers.SerializerMethodField()
-    is_mine = serializers.SerializerMethodField()
-    my_cub = serializers.SerializerMethodField()
-
-    def get_cub_count(self, den):
-        return den.active_cubs().count()
-
-    def get_is_mine(self, den):
-        my_dens = self.context.get("my_den_numbers", set())
-        return den.number in my_dens
-
-    def get_my_cub(self, den):
-        my_cubs_by_den = self.context.get("my_cubs_by_den", {})
-        cub = my_cubs_by_den.get(den.number)
-        return cub.short_name if cub else None
-
-    def to_representation(self, den):
-        data = super().to_representation(den)
-        data.update(rank_fields(den.rank))
-        return data
-
-
-class DenDetailSerializer(serializers.Serializer):
-    """Full detail for one Den, used by My Dens and the Den detail screen."""
-
-    number = serializers.IntegerField()
-    cub_count = serializers.SerializerMethodField()
-    my_cub = serializers.SerializerMethodField()
-    leaders = serializers.SerializerMethodField()
-    roster = serializers.SerializerMethodField()
-
-    def get_cub_count(self, den):
-        return den.active_cubs().count()
-
-    def get_my_cub(self, den):
-        my_cubs_by_den = self.context.get("my_cubs_by_den", {})
-        cub = my_cubs_by_den.get(den.number)
-        return cub.short_name if cub else None
-
-    def get_leaders(self, den):
-        # A den's leaders are the committee members assigned to it for the
-        # current year, reached through Den's `leadership` reverse relation
-        # (CommitteeMember.den, related_name="leadership") — the same
-        # mechanism the main site's DenDetailView uses. Ordered by position so
-        # the Den Leader leads, followed by any Akela/assistant.
-        leaders = (
-            den.leadership.filter(year=PackYear.objects.current())
-            .select_related("member")
-            .order_by("position", "member__last_name")
-        )
-        return DenLeaderSerializer(leaders, many=True).data
-
-    def get_roster(self, den):
-        roster = (
-            Scout.objects.filter(den_memberships__den=den, den_memberships__year_assigned=PackYear.objects.current())
-            .select_related("family")
-            # Sorted by the name the roster row actually shows — short_name,
-            # which is the nickname when there is one. Ordering by first_name
-            # would file a nicknamed cub under a name that never appears on
-            # screen, leaving the list looking unsorted.
-            .annotate(sort_name=Coalesce(NullIf("nickname", Value("")), "first_name"))
-            .order_by("sort_name", "last_name")
-        )
-        return DenRosterEntrySerializer(roster, many=True).data
-
-    def to_representation(self, den):
-        data = super().to_representation(den)
-        data.update(rank_fields(den.rank))
-        return data
-
-
-class CommitteeSummarySerializer(serializers.Serializer):
-    """A single row in the Committees list."""
-
-    slug = serializers.CharField()
-    name = serializers.CharField()
-    leadership = serializers.BooleanField()
-
-
-class CommitteeMemberSerializer(serializers.Serializer):
-    """One assigned member row on a Committee detail screen."""
-
-    slug = serializers.CharField(source="member.slug")
-    name = serializers.SerializerMethodField()
-    avatar = serializers.SerializerMethodField()
-    position = serializers.CharField(source="get_position_display")
-
-    def get_name(self, committee_member):
-        return committee_member.member.get_full_name()
-
-    def get_avatar(self, committee_member):
-        return get_avatar_url(committee_member.member)
-
-
-class CommitteeDetailSerializer(serializers.Serializer):
-    """
-    Full detail for one Committee. Expects the Committee instance, plus a
-    context built by the view: the selected `year` (a PackYear), the `years`
-    it has a roster for, and the `members_qs`/`akelas_qs` querysets for that
-    year — mirroring how DenDetailSerializer reaches its leaders/roster.
-    """
-
-    slug = serializers.CharField()
-    name = serializers.CharField()
-    description = serializers.CharField()
-    leadership = serializers.BooleanField()
-    year = serializers.SerializerMethodField()
-    year_label = serializers.SerializerMethodField()
-    years = serializers.SerializerMethodField()
-    akelas = serializers.SerializerMethodField()
-    members = serializers.SerializerMethodField()
-
-    def get_year(self, committee):
-        return self.context["year"].year
-
-    def get_year_label(self, committee):
-        return str(self.context["year"])
-
-    def get_years(self, committee):
-        return [{"year": year.year, "label": str(year)} for year in self.context["years"]]
-
-    def get_akelas(self, committee):
-        return CommitteeMemberSerializer(self.context["akelas_qs"], many=True).data
-
-    def get_members(self, committee):
-        return CommitteeMemberSerializer(self.context["members_qs"], many=True).data
-
-
-class SearchResultSerializer(serializers.Serializer):
-    slug = serializers.CharField()
-    name = serializers.CharField()
-    type = serializers.CharField()
-    subtitle = serializers.CharField()
-    avatar = serializers.CharField(allow_null=True)
-    rank_key = serializers.CharField(allow_null=True)
-    rank_badge = serializers.CharField(allow_null=True)
-    rank = serializers.CharField(allow_null=True)
-
-
 class ContactMethodSerializer(serializers.Serializer):
     type = serializers.CharField()
     value = serializers.CharField()
 
 
-class FamilyMemberSerializer(serializers.Serializer):
-    slug = serializers.CharField()
-    name = serializers.CharField()
-    avatar = serializers.CharField(allow_null=True)
-    relation = serializers.CharField()
-    rank = serializers.CharField(allow_null=True)
-    rank_key = serializers.CharField(allow_null=True)
-    # False for a sibling who's graduated or left the Pack: still part of the
-    # family, but outside MemberDetailView's visibility scope, so the frontend
-    # shouldn't link to their profile.
-    active = serializers.BooleanField()
-
-
-class MemberDetailSerializer(serializers.Serializer):
+class DirectoryMemberSerializer(serializers.Serializer):
     """
-    A single Adult or Scout's profile page. Expects a plain dict (built by
-    packman.mobile.api.build_member_detail) rather than a model instance,
-    since Adults and Scouts expose different contact/relation data.
+    One row in the single-call directory's `members` list — an Adult or a
+    Scout, flattened into one shape. Scout-only fields are null for adults
+    and vice versa; the frontend tells them apart with `is_scout`.
     """
 
     slug = serializers.CharField()
     name = serializers.CharField()
-    # An Adult's Pack leadership title ("Akela", "Den Leader"); None otherwise.
-    title = serializers.CharField(allow_null=True)
+    short_name = serializers.CharField()
     avatar = serializers.CharField(allow_null=True)
     photo = serializers.CharField(allow_null=True)
     is_scout = serializers.BooleanField()
-    den = serializers.CharField(allow_null=True)
+    # False for a graduated/withdrawn scout, or an adult with no active cub
+    # who isn't a contributor — kept only so a family card can still name them.
+    active = serializers.BooleanField()
+    # False whenever `active` is False: there's no profile to link to.
+    linkable = serializers.BooleanField()
+
+    # Adult-only fields.
+    title = serializers.CharField(allow_null=True)
+    role = serializers.CharField(allow_null=True)
+    phone_numbers = ContactMethodSerializer(many=True)
+    emails = serializers.ListField(child=serializers.EmailField())
+
+    # Scout-only fields. Rank/grade aren't repeated here — they always match
+    # the den (`dens[].rank`/`rank_plural`/`rank_key`/`rank_badge`/`grade`)
+    # this scout's `den_number` points to, so the frontend resolves them from
+    # there instead of the wire duplicating the same value per scout.
     den_number = serializers.IntegerField(allow_null=True)
-    grade = serializers.CharField(allow_null=True)
+
+    # Opaque id grouping related members; null for a member with no family on
+    # file. The frontend groups by this to render family/roster relations.
+    family_slug = serializers.CharField(allow_null=True)
+
+
+class DenLeaderRefSerializer(serializers.Serializer):
+    """
+    A den leadership assignment. Unlike a committee membership row, a den
+    leader is assumed to always be a linked, visible member — there's no
+    `linked` flag here; a leader who somehow isn't in `members` is a data
+    bug to fix, not a case the frontend needs to render around.
+    """
+
+    slug = serializers.CharField()
+    position = serializers.CharField()
+    name = serializers.CharField()
+
+
+class DirectoryDenSerializer(serializers.Serializer):
+    """A single Den, current Pack Year only — every den member is guaranteed
+    to be in `members`, so `roster` is a plain list of scout slugs."""
+
+    number = serializers.IntegerField()
     rank = serializers.CharField(allow_null=True)
     rank_plural = serializers.CharField(allow_null=True)
     rank_key = serializers.CharField(allow_null=True)
-    phone_numbers = ContactMethodSerializer(many=True)
-    emails = serializers.ListField(child=serializers.EmailField())
-    family = FamilyMemberSerializer(many=True)
+    rank_badge = serializers.CharField(allow_null=True)
+    grade = serializers.CharField(allow_null=True)
+    leaders = DenLeaderRefSerializer(many=True)
+    roster = serializers.ListField(child=serializers.CharField())
+
+
+class CommitteeMembershipEntrySerializer(serializers.Serializer):
+    """
+    One assigned member row for a single committee year, grouped under its
+    `position` in the parent map (see DirectoryCommitteeSerializer.membership)
+    — the position isn't repeated on the entry itself. `linked` is False
+    when the member has since left the pack entirely and isn't in `members`
+    — `name` is inlined here because it's the only place left to get it from.
+    """
+
+    slug = serializers.CharField()
+    name = serializers.CharField()
+    linked = serializers.BooleanField()
+
+
+class DirectoryCommitteeSerializer(serializers.Serializer):
+    """A Committee and its last 5 years of membership history."""
+
+    slug = serializers.CharField()
+    name = serializers.CharField()
+    description = serializers.CharField(allow_blank=True)
+    leadership = serializers.BooleanField()
+    # Just the PackYear ending years, newest first; a Pack Year always runs
+    # <year - 1>-<year>, so the frontend builds a display label from the
+    # int itself instead of the wire spelling it out for every committee.
+    years = serializers.ListField(child=serializers.IntegerField())
+    # Keyed by year (as a string, since JSON object keys are always strings),
+    # then by that year's position label (e.g. "Chair", "Den Leader") — a
+    # flat list per position, server-ordered (lowest Position value, i.e.
+    # most senior, first; then by name) rather than the frontend having to
+    # re-derive groupings from a raw position code.
+    membership = serializers.DictField(
+        child=serializers.DictField(child=CommitteeMembershipEntrySerializer(many=True))
+    )
+
+
+class PackSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    location = serializers.CharField()
+
+
+class DirectorySerializer(serializers.Serializer):
+    """The mobile PWA's single data call — see packman.mobile.api.DirectoryView."""
+
+    viewer = serializers.CharField()
+    current_year = serializers.IntegerField()
+    # Slug of whoever holds the Pack's "Akela" title this year, mirroring
+    # `viewer` — the frontend resolves it against `members`/`committees`
+    # instead of re-deriving it from committee position/title text itself.
+    akela = serializers.CharField(allow_null=True)
+    pack = PackSerializer()
+    members = DirectoryMemberSerializer(many=True)
+    dens = DirectoryDenSerializer(many=True)
+    committees = DirectoryCommitteeSerializer(many=True)

@@ -1,5 +1,5 @@
 import { appBar, esc, titleBar } from "../components.js";
-import { api } from "../api.js";
+import { committeeYear, getDirectory, packYearLabel } from "../api.js";
 
 // Marks a committee as Pack Leadership (Akela, Assistant Akelas, Den
 // Leaders) in the list — drawn with currentColor so `.committee-star` can
@@ -9,16 +9,17 @@ function starIcon() {
 }
 
 export async function renderCommittees(container) {
-  const data = await api.committees();
+  const directory = await getDirectory();
+  const committees = directory.committees;
   // User-supplied values are escaped via esc() before interpolation.
   // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
     ${titleBar("Committees")}
     <div class="screen-scroll">
       ${
-        data.committees.length
+        committees.length
           ? `<div class="card row-divided">
-        ${data.committees
+        ${committees
           .map(
             (committee) => `
           <a class="row" href="#/committees/${encodeURIComponent(committee.slug)}">
@@ -35,6 +36,15 @@ export async function renderCommittees(container) {
 }
 
 function memberRow(member) {
+  // A committee roster can span years; someone who served a while back may
+  // have left the pack entirely since — named, but not linked to a profile.
+  if (!member.linked) {
+    return `
+      <div class="row row-disabled">
+        <div class="grow"><div class="row-title">${esc(member.name)}</div></div>
+      </div>
+    `;
+  }
   return `
     <a class="row" href="#/profile/${encodeURIComponent(member.slug)}">
       <div class="grow"><div class="row-title">${esc(member.name)}</div></div>
@@ -44,14 +54,29 @@ function memberRow(member) {
 }
 
 export async function renderCommitteeDetail(container, slug) {
-  // The selected Pack Year; null asks the API for its default (the current
-  // year, or the committee's most recent one if it has none).
+  const directory = await getDirectory();
+  const committee = directory.committees.find((c) => c.slug === slug);
+  if (!committee) {
+    // Static copy only; no user data interpolated here.
+    // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
+    container.innerHTML = `
+      ${appBar(`
+        <a href="#/committees" style="color:#fff;font-size:22px;line-height:1;padding-right:2px" aria-label="Back to Committees">&lsaquo;</a>
+        <div class="appbar-title">Committees</div>
+      `)}
+      <div class="screen-scroll"><p class="empty">This committee could not be found.</p></div>
+    `;
+    return;
+  }
+
+  // The selected Pack Year; null asks committeeYear() for its default (the
+  // most recent year that has a roster).
   let year = null;
 
-  async function paint() {
-    const committee = await api.committee(slug, year);
-    year = committee.year;
-    const roster = [...committee.akelas, ...committee.members];
+  function paint() {
+    const view = committeeYear(committee, year);
+    year = view.year;
+    const roster = view.members;
 
     // User-supplied values are escaped via esc() before interpolation.
     // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
@@ -62,20 +87,18 @@ export async function renderCommitteeDetail(container, slug) {
       `)}
       <div class="screen-scroll">
         <div class="committee-head">
-          <h1 class="h1red">${esc(committee.name)}</h1>
+          <h1 class="h1red">${esc(view.name)}</h1>
           ${
-            committee.years.length > 1
+            view.years.length > 1
               ? `<select class="pill" id="committee-year" aria-label="Pack Year">
-            ${committee.years
-              .map(
-                (y) => `<option value="${y.year}"${y.year === committee.year ? " selected" : ""}>${esc(y.label)}</option>`
-              )
+            ${view.years
+              .map((y) => `<option value="${y}"${y === view.year ? " selected" : ""}>${esc(packYearLabel(y))}</option>`)
               .join("")}
           </select>`
-              : `<span class="pill">${esc(committee.year_label)}</span>`
+              : `<span class="pill">${esc(view.year_label)}</span>`
           }
         </div>
-        ${committee.description ? `<p class="committee-desc">${esc(committee.description)}</p>` : ""}
+        ${view.description ? `<p class="committee-desc">${esc(view.description)}</p>` : ""}
         <div class="card row-divided">
           ${
             roster.length
@@ -92,5 +115,5 @@ export async function renderCommitteeDetail(container, slug) {
     });
   }
 
-  await paint();
+  paint();
 }
