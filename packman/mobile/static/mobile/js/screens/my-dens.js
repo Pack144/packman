@@ -1,5 +1,5 @@
 import { denBadge, esc, pluralize, setMyDenCount, titleBar } from "../components.js";
-import { api } from "../api.js";
+import { getDirectory, myActiveChildren, myDens } from "../api.js";
 import { denDetailMarkup } from "./den-shared.js";
 
 function denHeaderCard(den) {
@@ -21,11 +21,13 @@ function denHeaderCard(den) {
 }
 
 export async function renderMyDens(container) {
-  const data = await api.myDens();
-  setMyDenCount(data.dens.length);
-  const title = data.dens.length === 1 ? "My Den" : "My Dens";
+  const directory = await getDirectory();
+  const dens = myDens(directory);
+  const cubCount = myActiveChildren(directory).length;
+  setMyDenCount(dens.length);
+  const title = dens.length === 1 ? "My Den" : "My Dens";
 
-  if (!data.dens.length) {
+  if (!dens.length) {
     // Static copy only; no user data interpolated here.
     // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
     container.innerHTML = `
@@ -38,16 +40,16 @@ export async function renderMyDens(container) {
   let active = 0;
 
   function paint() {
-    const den = data.dens[active];
+    const den = dens[active];
     // User-supplied values are escaped via esc() before interpolation.
     // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
     container.innerHTML = `
-      ${titleBar(title, `${data.cub_count} CUB${data.cub_count === 1 ? "" : "S"}`)}
+      ${titleBar(title, `${cubCount} CUB${cubCount === 1 ? "" : "S"}`)}
       <div class="screen-scroll">
         ${
-          data.dens.length > 1
+          dens.length > 1
             ? `<div class="segmented">
-          ${data.dens
+          ${dens
             .map(
               (d, i) => `
             <button class="segment${i === active ? " on" : ""}" data-index="${i}">

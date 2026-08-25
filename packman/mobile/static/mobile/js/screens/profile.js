@@ -1,12 +1,12 @@
 import { appBar, avatar, esc, icons, rankTag } from "../components.js";
-import { api } from "../api.js";
+import { denLabel, familyOf, getDirectory } from "../api.js";
 
 function profileBar(member, { me }) {
   const back = me
     ? ""
     : '<a class="appbar-back" href="javascript:history.back()" aria-label="Back">&lsaquo;</a>';
   // A cub's den titles the bar; adults have no den, so they get their own name.
-  return appBar(`${back}<div class="appbar-title">${esc(member.den || member.name)}</div>`);
+  return appBar(`${back}<div class="appbar-title">${esc(denLabel(member) || member.name)}</div>`);
 }
 
 function headerMarkup(member) {
@@ -98,20 +98,31 @@ function familyRow(f) {
     </a>`;
 }
 
-function familyCard(member) {
-  if (!member.family.length) return "";
+function familyCard(family) {
+  if (!family.length) return "";
   return `
     <div>
       <h2 class="sect">Family</h2>
       <div class="card row-divided">
-        ${member.family.map(familyRow).join("")}
+        ${family.map(familyRow).join("")}
       </div>
     </div>
   `;
 }
 
 export async function renderProfile(container, slug, { me = false } = {}) {
-  const member = await api.member(slug);
+  const directory = await getDirectory();
+  const member = directory.bySlug.get(slug);
+
+  if (!member) {
+    // Static copy only; no user data interpolated here.
+    // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
+    container.innerHTML = `
+      ${appBar('<a class="appbar-back" href="javascript:history.back()" aria-label="Back">&lsaquo;</a><div class="appbar-title">Profile</div>')}
+      <div class="screen-scroll"><p class="empty">This profile could not be found.</p></div>
+    `;
+    return;
+  }
 
   // User-supplied values are escaped via esc() before interpolation.
   // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
@@ -121,7 +132,7 @@ export async function renderProfile(container, slug, { me = false } = {}) {
       ${headerMarkup(member)}
       ${actionButtons(member)}
       ${contactCard(member)}
-      ${familyCard(member)}
+      ${familyCard(familyOf(directory, member))}
     </div>
   `;
 }

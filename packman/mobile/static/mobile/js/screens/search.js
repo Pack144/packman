@@ -1,5 +1,5 @@
 import { appBar, avatar, denBadge, esc, icons, pluralize, rankTag } from "../components.js";
-import { api, searchLocal } from "../api.js";
+import { allDens, getDirectory, searchLocal } from "../api.js";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -31,10 +31,9 @@ function resultSection(title, rows) {
 }
 
 export async function renderSearch(container) {
+  const directory = await getDirectory();
   let query = "";
   let type = "all";
-  let debounce = null;
-  let denList = null;
 
   function cubRow(result) {
     return `
@@ -109,15 +108,11 @@ export async function renderSearch(container) {
     input.setSelectionRange(query.length, query.length);
     input.addEventListener("input", (event) => {
       query = event.target.value;
-      clearTimeout(debounce);
-      // Matching the cached directory is instant, so results land on the
-      // keystroke; only the server fallback below waits for a pause in typing.
       refresh();
     });
     container.querySelectorAll(".pill").forEach((btn) => {
       btn.addEventListener("click", () => {
         type = btn.dataset.type;
-        clearTimeout(debounce);
         refresh();
       });
     });
@@ -134,41 +129,17 @@ export async function renderSearch(container) {
     return true;
   }
 
-  /**
-   * The cached index only carries each member's display name. The server also
-   * matches middle names, and the legal first name of anybody who goes by a
-   * nickname, so a local miss is worth one request to be certain of.
-   */
-  function scheduleRemoteSearch() {
-    if (navigator.onLine === false) return;
-    const asked = query;
-    const askedType = type;
-    debounce = setTimeout(async () => {
-      try {
-        const data = await api.search(asked, askedType);
-        // The reader has typed on since; whatever is on screen is newer.
-        if (asked !== query || askedType !== type) return;
-        if (data.cubs.length || data.parents.length) paintResults(data.cubs, data.parents);
-      } catch {
-        // Offline or a transient failure — the local miss stands.
-      }
-    }, 250);
-  }
-
-  async function refresh() {
+  function refresh() {
     if (type === "den") {
-      if (!denList) {
-        denList = (await api.dens()).dens;
-      }
-      paint(denRows(denList));
+      paint(denRows(allDens(directory)));
       return;
     }
     if (!query.trim()) {
       paint("");
       return;
     }
-    const { cubs, parents } = searchLocal(query, type);
-    if (!paintResults(cubs, parents)) scheduleRemoteSearch();
+    const { cubs, parents } = searchLocal(directory, query, type);
+    paintResults(cubs, parents);
   }
 
   paint("");

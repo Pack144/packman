@@ -9,8 +9,12 @@ from django.utils import timezone
 from PIL import Image
 
 from packman.address_book.models import PhoneNumber
-from packman.calendars.models import Category, Event
-from packman.membership.models import Scout
+from packman.calendars.models import Category, Event, PackYear
+from packman.committees.models import Committee, CommitteeMember
+from packman.dens.factories import DenFactory
+from packman.dens.models import Membership, Rank
+from packman.membership.factories import AdultFactory, FamilyFactory, ScoutFactory
+from packman.membership.models import Adult, Scout
 
 from .base import MobileDirectoryTestCase
 
@@ -22,37 +26,10 @@ def photo_upload(name="headshot.png"):
     return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
 
 
-class HomeAPITestCase(MobileDirectoryTestCase):
+class EventAPITestCase(MobileDirectoryTestCase):
     def test_anonymous_is_forbidden(self):
-        response = self.client.get(reverse("mobile:api-home"))
+        response = self.client.get(reverse("mobile:api-event"))
         self.assertEqual(response.status_code, 403)
-
-    def test_returns_the_signed_in_users_family(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-home"))
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("name", data["pack"])
-        self.assertEqual(data["family"]["name"], self.family.name)
-        self.assertEqual(len(data["family"]["children"]), 1)
-        self.assertEqual(data["family"]["children"][0]["name"], self.scout.short_name)
-        self.assertEqual(data["family"]["children"][0]["den_label"], f"Den {self.den.number} · Wolves")
-
-    def test_user_avatar_is_null_without_a_photo(self):
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-home")).json()
-        # The key is always present; the app falls back to initials when null.
-        self.assertIn("avatar", data["user"])
-        self.assertIsNone(data["user"]["avatar"])
-
-    def test_user_avatar_is_the_signed_in_members_headshot(self):
-        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
-            self.parent.photo = photo_upload()
-            self.parent.save()
-            self.client.force_login(self.parent)
-            data = self.client.get(reverse("mobile:api-home")).json()
-            self.assertIsNotNone(data["user"]["avatar"])
-            self.assertIn("headshot", data["user"]["avatar"])
 
     def test_returns_the_next_upcoming_event(self):
         category = Category.objects.create(name="Pack Event")
@@ -64,7 +41,7 @@ class HomeAPITestCase(MobileDirectoryTestCase):
             category=category,
         )
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-home")).json()
+        data = self.client.get(reverse("mobile:api-event")).json()
         self.assertEqual(data["event"]["name"], "Wallingford Parade")
         self.assertEqual(data["event"]["location"], "Wallingford")
 
@@ -79,7 +56,7 @@ class HomeAPITestCase(MobileDirectoryTestCase):
             category=category,
         )
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-home")).json()
+        data = self.client.get(reverse("mobile:api-event")).json()
         self.assertEqual(data["event"]["name"], "Blue & Gold Banquet")
 
     def test_event_past_the_eight_hour_window_is_not_returned(self):
@@ -92,348 +69,164 @@ class HomeAPITestCase(MobileDirectoryTestCase):
             category=category,
         )
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-home")).json()
+        data = self.client.get(reverse("mobile:api-event")).json()
         self.assertIsNone(data["event"])
 
     def test_no_event_returns_null(self):
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-home")).json()
+        data = self.client.get(reverse("mobile:api-event")).json()
         self.assertIsNone(data["event"])
 
-    def test_no_akela_assigned_returns_null(self):
+
+class DirectoryAPITestCase(MobileDirectoryTestCase):
+    def get_directory(self):
+        return self.client.get(reverse("mobile:api-directory")).json()
+
+    def member(self, data, slug):
+        return next(m for m in data["members"] if m["slug"] == slug)
+
+    def test_anonymous_is_forbidden(self):
+        response = self.client.get(reverse("mobile:api-directory"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_viewer_points_to_the_signed_in_member(self):
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-home")).json()
+        data = self.get_directory()
+        self.assertEqual(data["viewer"], self.parent.slug)
+        self.assertTrue(any(m["slug"] == self.parent.slug for m in data["members"]))
+
+    def test_pack_info_is_present(self):
+        self.client.force_login(self.parent)
+        data = self.get_directory()
+        self.assertIn("name", data["pack"])
+        self.assertIn("location", data["pack"])
+
+    def test_current_year_is_reported(self):
+        self.client.force_login(self.parent)
+        data = self.get_directory()
+        self.assertEqual(data["current_year"], self.pack_year.year)
+
+    def test_akela_is_null_when_nobody_holds_the_title(self):
+        self.client.force_login(self.parent)
+        data = self.get_directory()
         self.assertIsNone(data["akela"])
 
-    def test_returns_the_current_akela(self):
-        from packman.committees.models import Committee, CommitteeMember
+    def test_akela_points_to_the_position_based_akela(self):
+        committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        CommitteeMember.objects.create(
+            committee=committee, member=self.parent, year=self.pack_year, position=CommitteeMember.Position.AKELA,
+        )
+        self.client.force_login(self.parent)
+        data = self.get_directory()
+        self.assertEqual(data["akela"], self.parent.slug)
 
+    def test_akela_points_to_a_committee_name_fallback_akela(self):
+        # No AKELA position row at all — the title comes purely from the
+        # committee being flagged leadership=True and named "Akela".
+        committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        CommitteeMember.objects.create(committee=committee, member=self.parent, year=self.pack_year)
+        self.client.force_login(self.parent)
+        data = self.get_directory()
+        self.assertEqual(data["akela"], self.parent.slug)
+
+    def test_akela_ignores_an_assistant_akela(self):
         committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
         CommitteeMember.objects.create(
             committee=committee,
             member=self.parent,
             year=self.pack_year,
-            position=CommitteeMember.Position.AKELA,
-        )
-        self.client.force_login(self.parent)
-        akela = self.client.get(reverse("mobile:api-home")).json()["akela"]
-        self.assertEqual(akela["slug"], self.parent.slug)
-        self.assertEqual(akela["name"], self.parent.get_full_name())
-        self.assertEqual(akela["title"], "Akela")
-        self.assertTrue(akela["linked"])
-
-    def test_an_akela_outside_the_directory_is_named_but_not_linked(self):
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-        from packman.membership.models import Adult
-
-        # No active cubs and not a contributor, so MemberDetailView would 404.
-        stranger = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)
-        committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
-        CommitteeMember.objects.create(
-            committee=committee,
-            member=stranger,
-            year=self.pack_year,
-            position=CommitteeMember.Position.AKELA,
-        )
-        self.client.force_login(self.parent)
-        akela = self.client.get(reverse("mobile:api-home")).json()["akela"]
-        self.assertEqual(akela["slug"], stranger.slug)
-        self.assertFalse(akela["linked"])
-
-    def test_a_den_leader_is_not_mistaken_for_the_akela(self):
-        self.client.force_login(self.parent)
-        # The fixture's only committee assignment is a Den Leader.
-        self.assertIsNone(self.client.get(reverse("mobile:api-home")).json()["akela"])
-
-
-class MyDensAPITestCase(MobileDirectoryTestCase):
-    def test_returns_the_dens_for_the_users_own_cubs(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-dens-mine"))
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["cub_count"], 1)
-        dens = data["dens"]
-        self.assertEqual(len(dens), 1)
-        self.assertEqual(dens[0]["number"], self.den.number)
-        self.assertEqual(dens[0]["rank"], "Wolf")
-        self.assertEqual(dens[0]["rank_key"], "wolf")
-        self.assertEqual(dens[0]["grade"], "2nd Grade")
-        self.assertEqual(dens[0]["my_cub"], self.scout.short_name)
-        self.assertEqual(len(dens[0]["roster"]), 1)
-        self.assertEqual(dens[0]["roster"][0]["scout"]["name"], self.scout.short_name)
-        self.assertEqual(len(dens[0]["leaders"]), 1)
-        self.assertEqual(dens[0]["leaders"][0]["name"], self.leader.get_full_name())
-        self.assertEqual(dens[0]["leaders"][0]["email"], self.leader.email)
-
-    def test_maps_each_den_to_the_right_cub_across_multiple_dens(self):
-        from packman.dens.factories import DenFactory
-        from packman.dens.models import Membership, Rank
-        from packman.membership.factories import ScoutFactory
-        from packman.membership.models import Scout
-
-        tiger_rank = Rank.objects.create(rank=Rank.RankChoices.TIGER)
-        second_den = DenFactory(rank=tiger_rank)
-        sibling = ScoutFactory(family=self.family, status=Scout.ACTIVE)
-        Membership.objects.create(scout=sibling, den=second_den, year_assigned=self.pack_year)
-
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-dens-mine")).json()
-        self.assertEqual(data["cub_count"], 2)
-        # Dens come back ordered by den number.
-        self.assertEqual([d["number"] for d in data["dens"]], sorted([self.den.number, second_den.number]))
-        by_number = {d["number"]: d for d in data["dens"]}
-        self.assertEqual(by_number[self.den.number]["my_cub"], self.scout.short_name)
-        self.assertEqual(by_number[second_den.number]["my_cub"], sibling.short_name)
-
-
-class DenListAPITestCase(MobileDirectoryTestCase):
-    def test_flags_the_users_own_den(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-dens"))
-        self.assertEqual(response.status_code, 200)
-        dens = response.json()["dens"]
-        mine = next(d for d in dens if d["number"] == self.den.number)
-        self.assertTrue(mine["is_mine"])
-        self.assertEqual(mine["my_cub"], self.scout.short_name)
-
-
-class DenDetailAPITestCase(MobileDirectoryTestCase):
-    def test_returns_roster_and_leaders(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number]))
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["number"], self.den.number)
-        self.assertEqual(len(data["roster"]), 1)
-        self.assertEqual(len(data["leaders"]), 1)
-
-    def test_den_leader_leads_over_assistants(self):
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-
-        committee = Committee.objects.get(slug="wolf-den")
-        assistant = AdultFactory(family=FamilyFactory())
-        CommitteeMember.objects.create(
-            committee=committee,
-            member=assistant,
-            den=self.den,
-            year=self.pack_year,
             position=CommitteeMember.Position.ASSISTANT_AKELA,
         )
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number])).json()
-        self.assertEqual(len(data["leaders"]), 2)
-        # The Den Leader is listed first, whatever other roles support the den.
-        self.assertEqual(data["leaders"][0]["name"], self.leader.get_full_name())
-        self.assertEqual(data["leaders"][0]["position"], "Den Leader")
-        self.assertEqual(data["leaders"][1]["position"], "Assistant Akela")
+        data = self.get_directory()
+        self.assertIsNone(data["akela"])
 
-    def test_prior_year_leaders_are_excluded(self):
-        from packman.calendars.models import PackYear
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-
+    def test_akela_from_a_prior_year_is_not_reported(self):
         last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
-        committee = Committee.objects.get(slug="wolf-den")
-        former = AdultFactory(family=FamilyFactory())
+        committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
         CommitteeMember.objects.create(
-            committee=committee,
-            member=former,
-            den=self.den,
-            year=last_year,
-            position=CommitteeMember.Position.DEN_LEADER,
+            committee=committee, member=self.parent, year=last_year, position=CommitteeMember.Position.AKELA,
         )
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number])).json()
-        self.assertEqual(len(data["leaders"]), 1)
-        self.assertNotIn(former.get_full_name(), [leader["name"] for leader in data["leaders"]])
+        data = self.get_directory()
+        self.assertIsNone(data["akela"])
 
-    def test_roster_is_sorted_by_the_name_it_displays(self):
-        from packman.dens.models import Membership
-        from packman.membership.factories import FamilyFactory, ScoutFactory
-
-        # Last names run counter to first names, so a roster still ordered by
-        # surname would come back reversed. Zach goes by "Andy": he sorts under
-        # the nickname the row actually shows, not under his first name.
-        for first_name, last_name, nickname in [
-            ("Zach", "Adams", "Andy"),
-            ("Ava", "Zimmer", ""),
-            ("Miles", "Nolan", ""),
-        ]:
-            cub = ScoutFactory(
-                family=FamilyFactory(),
-                status=Scout.ACTIVE,
-                first_name=first_name,
-                last_name=last_name,
-                nickname=nickname,
-            )
-            Membership.objects.create(scout=cub, den=self.den, year_assigned=self.pack_year)
+    def test_scout_member_carries_den_number_but_not_rank_fields(self):
+        """
+        Rank/grade live only on the den entry (dens[].rank/.../grade) that
+        this scout's den_number points to — a member row doesn't repeat them.
+        """
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-den-detail", args=[self.den.number])).json()
-        names = [entry["scout"]["name"] for entry in data["roster"]]
-        self.assertEqual(names, sorted(names, key=str.lower))
-        self.assertIn("Andy", names)
-        self.assertNotIn("Zach", names)
+        data = self.get_directory()
+        scout = self.member(data, self.scout.slug)
+        self.assertTrue(scout["is_scout"])
+        self.assertTrue(scout["active"])
+        self.assertTrue(scout["linkable"])
+        self.assertEqual(scout["den_number"], self.den.number)
+        for field in ("rank", "rank_plural", "rank_key", "rank_badge", "grade"):
+            self.assertNotIn(field, scout)
+        self.assertEqual(scout["phone_numbers"], [])
+        self.assertEqual(scout["emails"], [])
 
-    def test_unknown_den_is_404(self):
+    def test_adult_member_has_no_scout_only_fields(self):
         self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-den-detail", args=[9999]))
-        self.assertEqual(response.status_code, 404)
+        data = self.get_directory()
+        parent = self.member(data, self.parent.slug)
+        self.assertFalse(parent["is_scout"])
+        self.assertIsNone(parent["den_number"])
+        for field in ("rank", "rank_plural", "rank_key", "rank_badge", "grade"):
+            self.assertNotIn(field, parent)
 
-
-class SearchAPITestCase(MobileDirectoryTestCase):
-    def test_finds_the_cub_by_name(self):
+    def test_family_members_share_a_family_slug(self):
         self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-search"), {"q": self.scout.first_name})
-        self.assertEqual(response.status_code, 200)
-        results = response.json()["results"]
-        self.assertTrue(any(r["slug"] == self.scout.slug and r["type"] == "cub" for r in results))
-
-    def test_empty_query_returns_no_results(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-search"), {"q": ""})
-        self.assertEqual(response.json()["results"], [])
-
-    def test_cub_filter_returns_only_cubs(self):
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-search"), {"q": self.scout.first_name, "type": "cub"}).json()
-        self.assertEqual(data["parents"], [])
-        self.assertTrue(any(r["slug"] == self.scout.slug for r in data["cubs"]))
-        self.assertTrue(all(r["type"] == "cub" for r in data["results"]))
-
-    def test_parent_filter_returns_only_parents_with_cub_subtitle(self):
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-search"), {"q": self.parent.last_name, "type": "parent"}).json()
-        self.assertEqual(data["cubs"], [])
-        result = next(r for r in data["parents"] if r["slug"] == self.parent.slug)
-        self.assertEqual(result["type"], "parent")
-        self.assertEqual(result["subtitle"], f"Parent of {self.scout.short_name}")
-
-    def test_contributor_result_uses_role_as_subtitle(self):
-        from packman.membership.factories import AdultFactory, FamilyFactory
-        from packman.membership.models import Adult
-
-        contributor = AdultFactory(family=FamilyFactory(), role=Adult.CONTRIBUTOR)
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-search"), {"q": contributor.last_name, "type": "parent"}).json()
-        result = next(r for r in data["parents"] if r["slug"] == contributor.slug)
-        self.assertEqual(result["subtitle"], contributor.get_role_display())
-
-    def test_flat_results_combine_grouped_cubs_and_parents(self):
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-search"), {"q": self.parent.last_name}).json()
-        grouped = {r["slug"] for r in data["cubs"] + data["parents"]}
-        self.assertEqual(grouped, {r["slug"] for r in data["results"]})
-
-
-class MemberDetailAPITestCase(MobileDirectoryTestCase):
-    def test_scout_profile_lists_parent(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-member-detail", args=[self.scout.slug]))
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertTrue(data["is_scout"])
-        self.assertEqual(data["den"], f"Den {self.den.number} · Wolves")
-        self.assertEqual(data["den_number"], self.den.number)
-        self.assertEqual(data["rank"], "Wolf")
-        self.assertEqual(data["rank_plural"], "Wolves")
-        self.assertEqual(data["rank_key"], "wolf")
-        # The profile labels the grade the way the den screens do — and not as
-        # the "2Nd Grade" that title-casing the school grade used to produce.
-        self.assertEqual(data["grade"], "2nd Grade")
-        self.assertIn(self.parent.slug, [f["slug"] for f in data["family"]])
-        parent_entry = next(f for f in data["family"] if f["slug"] == self.parent.slug)
-        self.assertTrue(parent_entry["active"])
-
-    def test_active_sibling_is_linkable(self):
-        from packman.membership.factories import ScoutFactory
-
-        sibling = ScoutFactory(family=self.family, status=Scout.ACTIVE)
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.scout.slug])).json()
-        family = {f["slug"]: f for f in data["family"]}
-        self.assertTrue(family[sibling.slug]["active"])
-        self.assertNotIn("No longer active", family[sibling.slug]["relation"])
-
-    def test_inactive_sibling_is_listed_but_not_linkable(self):
-        from packman.membership.factories import ScoutFactory
-
-        sibling = ScoutFactory(family=self.family, status=Scout.INACTIVE)
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.scout.slug])).json()
-        family = {f["slug"]: f for f in data["family"]}
-
-        # Still shown — they're part of the family — but flagged so the
-        # frontend won't link to a profile that's outside visibility scope.
-        self.assertIn(sibling.slug, family)
-        self.assertFalse(family[sibling.slug]["active"])
-        self.assertIn("No longer active", family[sibling.slug]["relation"])
-
-        # And that profile really is out of scope, confirming the flag matches
-        # what would happen if the frontend linked there anyway.
-        response = self.client.get(reverse("mobile:api-member-detail", args=[sibling.slug]))
-        self.assertEqual(response.status_code, 404)
-
-    def test_adult_profile_lists_partner_and_cub_children(self):
-        from packman.membership.factories import AdultFactory
-        from packman.membership.models import Adult
-
-        partner = AdultFactory(family=self.family, role=Adult.PARENT)
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
-        self.assertFalse(data["is_scout"])
-
-        # An adult has none of the cub-only den/rank presentation fields.
-        self.assertIsNone(data["den_number"])
-        self.assertIsNone(data["rank_plural"])
-        self.assertIsNone(data["grade"])
-
-        family = {member["slug"]: member for member in data["family"]}
-
-        # The partner appears with their role as the relation and carries no rank.
-        self.assertIn(partner.slug, family)
-        self.assertEqual(family[partner.slug]["relation"], partner.get_role_display())
-        self.assertIsNone(family[partner.slug]["rank"])
-        self.assertIsNone(family[partner.slug]["rank_key"])
-        self.assertTrue(family[partner.slug]["active"])
-
-        # The cub child appears with a "Cub · Den …" relation and their rank.
-        self.assertIn(self.scout.slug, family)
-        self.assertTrue(family[self.scout.slug]["active"])
-        self.assertEqual(family[self.scout.slug]["relation"], f"Cub · Den {self.den.number} · Wolves")
-        self.assertEqual(family[self.scout.slug]["rank"], "Wolf")
-        self.assertEqual(family[self.scout.slug]["rank_key"], "wolf")
+        data = self.get_directory()
+        parent = self.member(data, self.parent.slug)
+        scout = self.member(data, self.scout.slug)
+        self.assertIsNotNone(parent["family_slug"])
+        self.assertEqual(parent["family_slug"], scout["family_slug"])
 
     def test_unpublished_email_is_hidden(self):
         self.parent.is_published = False
         self.parent.save()
         self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug]))
-        self.assertEqual(response.json()["emails"], [])
+        data = self.get_directory()
+        self.assertEqual(self.member(data, self.parent.slug)["emails"], [])
 
     def test_unpublished_phone_number_is_hidden(self):
         PhoneNumber.objects.create(number="+15105551234", member=self.parent, published=False)
         PhoneNumber.objects.create(number="+15105554321", member=self.parent, published=True)
         self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug]))
-        phone_numbers = response.json()["phone_numbers"]
-        self.assertEqual(len(phone_numbers), 1)
+        data = self.get_directory()
+        self.assertEqual(len(self.member(data, self.parent.slug)["phone_numbers"]), 1)
 
-    def test_scout_has_no_leadership_title(self):
+    def test_contributor_with_no_cubs_is_active_and_linkable(self):
+        contributor = AdultFactory(family=FamilyFactory(), role=Adult.CONTRIBUTOR)
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.scout.slug])).json()
-        self.assertIsNone(data["title"])
+        data = self.get_directory()
+        entry = self.member(data, contributor.slug)
+        self.assertTrue(entry["active"])
+        self.assertTrue(entry["linkable"])
+
+    def test_inactive_sibling_is_listed_but_not_linkable(self):
+        sibling = ScoutFactory(family=self.family, status=Scout.INACTIVE)
+        self.client.force_login(self.parent)
+        data = self.get_directory()
+        entry = self.member(data, sibling.slug)
+        self.assertFalse(entry["active"])
+        self.assertFalse(entry["linkable"])
+
+    def test_stranger_outside_any_family_is_absent(self):
+        stranger = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)  # no active cubs
+        self.client.force_login(self.parent)
+        data = self.get_directory()
+        self.assertFalse(any(m["slug"] == stranger.slug for m in data["members"]))
 
     def test_ordinary_parent_has_no_leadership_title(self):
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
-        self.assertIsNone(data["title"])
+        data = self.get_directory()
+        self.assertIsNone(self.member(data, self.parent.slug)["title"])
 
     def test_title_comes_from_the_position(self):
-        from packman.committees.models import Committee, CommitteeMember
-
         CommitteeMember.objects.create(
             committee=Committee.objects.get(slug="wolf-den"),
             member=self.parent,
@@ -442,39 +235,10 @@ class MemberDetailAPITestCase(MobileDirectoryTestCase):
             position=CommitteeMember.Position.DEN_LEADER,
         )
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
-        self.assertEqual(data["title"], "Den Leader")
-
-    def test_title_falls_back_to_the_committee_name(self):
-        from packman.committees.models import Committee, CommitteeMember
-
-        # A Pack that records the title in the committee name and leaves every
-        # member at the default "Member" position.
-        committee = Committee.objects.create(name="Assistant Akelas", slug="assistant-akelas", leadership=True)
-        CommitteeMember.objects.create(committee=committee, member=self.parent, year=self.pack_year)
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
-        self.assertEqual(data["title"], "Assistant Akela")
-
-    def test_a_non_leadership_committee_grants_no_title(self):
-        from packman.committees.models import Committee, CommitteeMember
-
-        committee = Committee.objects.create(name="Advancements", slug="advancements")
-        CommitteeMember.objects.create(
-            committee=committee,
-            member=self.parent,
-            year=self.pack_year,
-            position=CommitteeMember.Position.CHAIR,
-        )
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
-        self.assertIsNone(data["title"])
+        data = self.get_directory()
+        self.assertEqual(self.member(data, self.parent.slug)["title"], "Den Leader")
 
     def test_the_most_senior_title_wins(self):
-        from packman.committees.models import Committee, CommitteeMember
-
-        # Leading a den and serving as Akela reads as the more senior of the two,
-        # even though ASSISTANT_AKELA/AKELA sort above DEN_LEADER numerically.
         CommitteeMember.objects.create(
             committee=Committee.objects.get(slug="wolf-den"),
             member=self.parent,
@@ -489,198 +253,230 @@ class MemberDetailAPITestCase(MobileDirectoryTestCase):
             position=CommitteeMember.Position.AKELA,
         )
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
-        self.assertEqual(data["title"], "Akela")
+        data = self.get_directory()
+        self.assertEqual(self.member(data, self.parent.slug)["title"], "Akela")
 
     def test_prior_years_title_is_not_carried_forward(self):
-        from packman.calendars.models import PackYear
-        from packman.committees.models import Committee, CommitteeMember
-
         last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
         committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        CommitteeMember.objects.create(committee=committee, member=self.parent, year=last_year,
+                                        position=CommitteeMember.Position.AKELA)
+        self.client.force_login(self.parent)
+        data = self.get_directory()
+        self.assertIsNone(self.member(data, self.parent.slug)["title"])
+
+    def test_user_avatar_is_null_without_a_photo(self):
+        self.client.force_login(self.parent)
+        data = self.get_directory()
+        self.assertIn("avatar", self.member(data, self.parent.slug))
+        self.assertIsNone(self.member(data, self.parent.slug)["avatar"])
+
+    def test_user_avatar_is_the_signed_in_members_headshot(self):
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            self.parent.photo = photo_upload()
+            self.parent.save()
+            self.client.force_login(self.parent)
+            data = self.get_directory()
+            avatar = self.member(data, self.parent.slug)["avatar"]
+            self.assertIsNotNone(avatar)
+            self.assertIn("headshot", avatar)
+
+    def test_an_unreadable_photo_does_not_500_the_whole_directory(self):
+        # A photo record can outlive its file on disk (e.g. media not synced
+        # alongside a copied database) or point at something that isn't
+        # actually an image; either way this shouldn't break the directory
+        # for everyone else — just this member's avatar.
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            self.parent.photo = SimpleUploadedFile("broken.jpg", b"not an image", content_type="image/jpeg")
+            self.parent.save()
+            self.client.force_login(self.parent)
+            response = self.client.get(reverse("mobile:api-directory"))
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertIsNone(self.member(data, self.parent.slug)["avatar"])
+
+
+class DirectoryDensAPITestCase(MobileDirectoryTestCase):
+    def get_dens(self):
+        self.client.force_login(self.parent)
+        return self.get_directory()["dens"]
+
+    def get_directory(self):
+        return self.client.get(reverse("mobile:api-directory")).json()
+
+    def find_den(self, dens, number):
+        return next(d for d in dens if d["number"] == number)
+
+    def test_returns_roster_and_leaders(self):
+        dens = self.get_dens()
+        den = self.find_den(dens, self.den.number)
+        self.assertEqual(den["rank"], "Wolf")
+        self.assertEqual(len(den["roster"]), 1)
+        self.assertEqual(den["roster"][0], self.scout.slug)
+        self.assertEqual(len(den["leaders"]), 1)
+        self.assertEqual(den["leaders"][0]["slug"], self.leader.slug)
+
+    def test_den_leader_leads_over_assistants(self):
+        committee = Committee.objects.get(slug="wolf-den")
+        assistant = AdultFactory(family=FamilyFactory())
         CommitteeMember.objects.create(
-            committee=committee,
-            member=self.parent,
-            year=last_year,
-            position=CommitteeMember.Position.AKELA,
+            committee=committee, member=assistant, den=self.den, year=self.pack_year,
+            position=CommitteeMember.Position.ASSISTANT_AKELA,
         )
+        den = self.find_den(self.get_dens(), self.den.number)
+        self.assertEqual(len(den["leaders"]), 2)
+        self.assertEqual(den["leaders"][0]["name"], self.leader.get_full_name())
+        self.assertEqual(den["leaders"][0]["position"], "Den Leader")
+        self.assertEqual(den["leaders"][1]["position"], "Assistant Akela")
+
+    def test_prior_year_leaders_are_excluded(self):
+        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
+        committee = Committee.objects.get(slug="wolf-den")
+        former = AdultFactory(family=FamilyFactory())
+        CommitteeMember.objects.create(
+            committee=committee, member=former, den=self.den, year=last_year,
+            position=CommitteeMember.Position.DEN_LEADER,
+        )
+        den = self.find_den(self.get_dens(), self.den.number)
+        self.assertEqual(len(den["leaders"]), 1)
+        self.assertNotIn(former.slug, [leader["slug"] for leader in den["leaders"]])
+
+    def test_roster_is_sorted_by_the_name_it_displays(self):
+        for first_name, last_name, nickname in [
+            ("Zach", "Adams", "Andy"),
+            ("Ava", "Zimmer", ""),
+            ("Miles", "Nolan", ""),
+        ]:
+            cub = ScoutFactory(
+                family=FamilyFactory(), status=Scout.ACTIVE, first_name=first_name, last_name=last_name,
+                nickname=nickname,
+            )
+            Membership.objects.create(scout=cub, den=self.den, year_assigned=self.pack_year)
+        den = self.find_den(self.get_dens(), self.den.number)
+        members = {m["slug"]: m for m in self.get_directory()["members"]}
+        names = [members[slug]["short_name"] for slug in den["roster"]]
+        self.assertEqual(names, sorted(names, key=str.lower))
+        self.assertIn("Andy", names)
+        self.assertNotIn("Zach", names)
+
+    def test_dens_without_a_current_roster_are_excluded(self):
+        empty_rank = Rank.objects.create(rank=Rank.RankChoices.BEAR)
+        empty_den = DenFactory(rank=empty_rank)
+        dens = self.get_dens()
+        self.assertNotIn(empty_den.number, [d["number"] for d in dens])
+
+
+class DirectoryCommitteesAPITestCase(MobileDirectoryTestCase):
+    def get_directory(self):
         self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-member-detail", args=[self.parent.slug])).json()
-        self.assertIsNone(data["title"])
+        return self.client.get(reverse("mobile:api-directory")).json()
 
-    def test_member_outside_visibility_scope_is_404(self):
-        from packman.membership.factories import AdultFactory, FamilyFactory
-        from packman.membership.models import Adult
+    def committee(self, data, slug):
+        return next(c for c in data["committees"] if c["slug"] == slug)
 
-        stranger = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)  # no active scouts
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-member-detail", args=[stranger.slug]))
-        self.assertEqual(response.status_code, 404)
+    def flat_membership(self, committee_data, year_key):
+        """Every membership entry for a year, regardless of position."""
+        return [entry for entries in committee_data["membership"][year_key].values() for entry in entries]
 
-
-class CommitteeListAPITestCase(MobileDirectoryTestCase):
-    def test_lists_committees(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-committees"))
-        self.assertEqual(response.status_code, 200)
-        committees = response.json()["committees"]
-        self.assertTrue(any(c["slug"] == "wolf-den" for c in committees))
+    def test_lists_committees_with_a_current_roster(self):
+        data = self.get_directory()
+        self.assertTrue(any(c["slug"] == "wolf-den" for c in data["committees"]))
 
     def test_leadership_flag_is_reported(self):
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-
         akela_committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
         CommitteeMember.objects.create(
-            committee=akela_committee,
-            member=AdultFactory(family=FamilyFactory()),
-            year=self.pack_year,
+            committee=akela_committee, member=AdultFactory(family=FamilyFactory()), year=self.pack_year,
             position=CommitteeMember.Position.AKELA,
         )
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-committees")).json()
-        akela = next(c for c in data["committees"] if c["slug"] == "akela")
-        self.assertTrue(akela["leadership"])
-        wolf_den = next(c for c in data["committees"] if c["slug"] == "wolf-den")
-        self.assertFalse(wolf_den["leadership"])
+        data = self.get_directory()
+        self.assertTrue(self.committee(data, "akela")["leadership"])
+        self.assertFalse(self.committee(data, "wolf-den")["leadership"])
 
-    def test_committee_without_a_current_roster_is_excluded(self):
-        from packman.calendars.models import PackYear
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-
-        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
+    def test_committee_without_a_recent_roster_is_excluded(self):
+        old_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 6)
         retired = Committee.objects.create(name="Popcorn", slug="popcorn")
         CommitteeMember.objects.create(
-            committee=retired,
-            member=AdultFactory(family=FamilyFactory()),
-            year=last_year,
+            committee=retired, member=AdultFactory(family=FamilyFactory()), year=old_year,
         )
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-committees")).json()
+        data = self.get_directory()
         self.assertNotIn("popcorn", [c["slug"] for c in data["committees"]])
 
-    def test_committee_is_listed_once_per_year_however_many_members(self):
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-
+    def test_committee_membership_is_grouped_by_position_in_server_order(self):
         committee = Committee.objects.get(slug="wolf-den")
-        for _ in range(2):
+        akela = AdultFactory(family=FamilyFactory(), first_name="Aaron", last_name="Akela")
+        CommitteeMember.objects.create(
+            committee=committee, member=akela, year=self.pack_year, position=CommitteeMember.Position.AKELA,
+        )
+        data = self.get_directory()
+        year_key = str(self.pack_year.year)
+        by_position = self.committee(data, "wolf-den")["membership"][year_key]
+        # self.leader is the den's DEN_LEADER (position 4); Akela is position
+        # 5 — lower position numbers sort first, so "Den Leader" is the first
+        # key and "Akela" the second, each holding its own flat roster.
+        self.assertEqual(list(by_position.keys()), ["Den Leader", "Akela"])
+        self.assertEqual([m["slug"] for m in by_position["Den Leader"]], [self.leader.slug])
+        self.assertEqual([m["slug"] for m in by_position["Akela"]], [akela.slug])
+
+    def test_a_linked_committee_assignment_resolves_by_slug(self):
+        # Use self.parent (already in the directory, part of an active
+        # family) so linked is expected to be True.
+        committee = Committee.objects.get(slug="wolf-den")
+        CommitteeMember.objects.create(
+            committee=committee, member=self.parent, year=self.pack_year, position=CommitteeMember.Position.AKELA,
+        )
+        data = self.get_directory()
+        year_key = str(self.pack_year.year)
+        entry = next(
+            row
+            for row in self.flat_membership(self.committee(data, "wolf-den"), year_key)
+            if row["slug"] == self.parent.slug
+        )
+        self.assertTrue(entry["linked"])
+
+    def test_akela_outside_the_directory_is_named_but_not_linked(self):
+        stranger = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)  # no active cubs
+        committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
+        CommitteeMember.objects.create(
+            committee=committee, member=stranger, year=self.pack_year, position=CommitteeMember.Position.AKELA,
+        )
+        data = self.get_directory()
+        year_key = str(self.pack_year.year)
+        entry = self.committee(data, "akela")["membership"][year_key]["Akela"][0]
+        self.assertEqual(entry["slug"], stranger.slug)
+        self.assertEqual(entry["name"], stranger.get_full_name())
+        self.assertFalse(entry["linked"])
+
+    def test_years_are_capped_to_the_last_five(self):
+        committee = Committee.objects.get(slug="wolf-den")
+        for offset in range(1, 7):
+            year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - offset)
             CommitteeMember.objects.create(
-                committee=committee,
-                member=AdultFactory(family=FamilyFactory()),
-                year=self.pack_year,
+                committee=committee, member=AdultFactory(family=FamilyFactory()), year=year,
             )
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-committees")).json()
-        slugs = [c["slug"] for c in data["committees"]]
-        self.assertEqual(slugs.count("wolf-den"), 1)
+        data = self.get_directory()
+        years = self.committee(data, "wolf-den")["years"]
+        self.assertEqual(len(years), 5)
+        self.assertEqual(years, sorted(years, reverse=True))
+        self.assertNotIn(self.pack_year.year - 6, years)
+        self.assertNotIn(str(self.pack_year.year - 6), self.committee(data, "wolf-den")["membership"])
 
-
-class CommitteeDetailAPITestCase(MobileDirectoryTestCase):
-    def test_returns_current_years_roster(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"]))
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["name"], "Wolf Den")
-        self.assertEqual(data["year"], self.pack_year.year)
-        self.assertEqual(len(data["members"]), 1)
-        self.assertEqual(data["members"][0]["name"], self.leader.get_full_name())
-        self.assertEqual(data["akelas"], [])
-
-    def test_akelas_are_separated_from_members(self):
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-
-        committee = Committee.objects.get(slug="wolf-den")
-        akela = AdultFactory(family=FamilyFactory())
-        CommitteeMember.objects.create(
-            committee=committee,
-            member=akela,
-            year=self.pack_year,
-            position=CommitteeMember.Position.AKELA,
-        )
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"])).json()
-        self.assertEqual(len(data["akelas"]), 1)
-        self.assertEqual(data["akelas"][0]["name"], akela.get_full_name())
-        self.assertEqual(len(data["members"]), 1)
-
-    def test_prior_year_members_are_excluded_by_default(self):
-        from packman.calendars.models import PackYear
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-
-        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
-        committee = Committee.objects.get(slug="wolf-den")
-        former = AdultFactory(family=FamilyFactory())
-        CommitteeMember.objects.create(
-            committee=committee,
-            member=former,
-            year=last_year,
-            position=CommitteeMember.Position.MEMBER,
-        )
-        self.client.force_login(self.parent)
-        data = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"])).json()
-        self.assertNotIn(former.get_full_name(), [m["name"] for m in data["members"]])
-        # ...but it's still offered as a year to switch to.
-        self.assertIn(last_year.year, [y["year"] for y in data["years"]])
-
-    def test_can_request_a_prior_year_explicitly(self):
-        from packman.calendars.models import PackYear
-        from packman.committees.models import Committee, CommitteeMember
-        from packman.membership.factories import AdultFactory, FamilyFactory
-
-        last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
-        committee = Committee.objects.get(slug="wolf-den")
-        former = AdultFactory(family=FamilyFactory())
-        CommitteeMember.objects.create(
-            committee=committee,
-            member=former,
-            year=last_year,
-            position=CommitteeMember.Position.MEMBER,
-        )
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"]), {"year": last_year.year})
-        data = response.json()
-        self.assertEqual(data["year"], last_year.year)
-        self.assertEqual([m["name"] for m in data["members"]], [former.get_full_name()])
-
-    def test_unknown_committee_is_404(self):
-        self.client.force_login(self.parent)
-        response = self.client.get(reverse("mobile:api-committee-detail", args=["does-not-exist"]))
-        self.assertEqual(response.status_code, 404)
-
-    def test_anonymous_is_forbidden(self):
-        response = self.client.get(reverse("mobile:api-committee-detail", args=["wolf-den"]))
-        self.assertEqual(response.status_code, 403)
+    def test_unknown_committee_is_absent(self):
+        data = self.get_directory()
+        self.assertNotIn("does-not-exist", [c["slug"] for c in data["committees"]])
 
 
 class ApiPermissionTestCase(MobileDirectoryTestCase):
     """The API views enforce the same access rule as the shell (IsActiveMemberOrContributor)."""
 
-    ENDPOINTS = (
-        "mobile:api-home",
-        "mobile:api-dens-mine",
-        "mobile:api-dens",
-        "mobile:api-search",
-        "mobile:api-committees",
-    )
+    ENDPOINTS = ("mobile:api-directory", "mobile:api-event")
 
     def test_inactive_parent_is_forbidden(self):
-        from packman.membership.factories import AdultFactory, FamilyFactory
-        from packman.membership.models import Adult
-
         inactive = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)  # no active cubs
         self.client.force_login(inactive)
         for name in self.ENDPOINTS:
             self.assertEqual(self.client.get(reverse(name)).status_code, 403, msg=name)
 
     def test_contributor_with_no_cubs_is_allowed(self):
-        from packman.membership.factories import AdultFactory, FamilyFactory
-        from packman.membership.models import Adult
-
         contributor = AdultFactory(family=FamilyFactory(), role=Adult.CONTRIBUTOR)
         self.client.force_login(contributor)
         for name in self.ENDPOINTS:

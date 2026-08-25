@@ -1,5 +1,5 @@
 import { appBar, avatar, esc, initialsOf, pluralize, setMyDenCount } from "../components.js";
-import { api } from "../api.js";
+import { api, currentAkela, getDirectory, myActiveChildren, myFamilyCard } from "../api.js";
 import { installBanner } from "../install.js";
 
 function packDigits(packName) {
@@ -79,9 +79,8 @@ function familyCard(family) {
   `;
 }
 
-// The Pack's Akela leads the Jump To card. A leader outside the directory's
-// visibility scope still gets named, but their profile would 404 — so, like
-// profile.js's familyRow(), the row goes unlinked rather than dead-ending.
+// The Pack's Akela leads the Jump To card. currentAkela() guarantees a
+// linked member (or null), so this always renders a live profile link.
 function akelaRow(akela) {
   if (!akela) return "";
   const inner = `
@@ -91,16 +90,16 @@ function akelaRow(akela) {
       <div class="mono plain">${esc(akela.title)}</div>
     </div>
   `;
-  if (!akela.linked) return `<div class="row row-disabled">${inner}</div>`;
   return `<a class="row" href="#/profile/${encodeURIComponent(akela.slug)}">${inner}<span class="chev">&rsaquo;</span></a>`;
 }
 
 export async function renderHome(container) {
-  const data = await api.home();
+  const [directory, { event }] = await Promise.all([getDirectory(), api.event()]);
+  const user = directory.me;
+  const family = myFamilyCard(directory);
+  const akela = currentAkela(directory);
 
-  const denNumbers = new Set(
-    (data.family?.children || []).map((cub) => cub.den_number).filter((n) => n !== null)
-  );
+  const denNumbers = new Set(myActiveChildren(directory).map((cub) => cub.den_number).filter((n) => n !== null));
   const singleDen = denNumbers.size === 1;
   setMyDenCount(denNumbers.size);
 
@@ -108,25 +107,25 @@ export async function renderHome(container) {
   // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
   container.innerHTML = `
     ${appBar(`
-      ${packDigits(data.pack.name)}
+      ${packDigits(directory.pack.name)}
       <div style="line-height:1.05">
-        <div class="brand-name">${esc(data.pack.name)}</div>
-        <div class="brand-sub">${esc(data.pack.location)}</div>
+        <div class="brand-name">${esc(directory.pack.name)}</div>
+        <div class="brand-sub">${esc(directory.pack.location)}</div>
       </div>
-      ${userAvatar(data.user)}
+      ${userAvatar(user)}
     `)}
     <div class="screen-scroll">
       <div>
-        <h1 class="h1red">Hi, ${esc(data.user.short_name)}</h1>
-        ${data.family ? `<div class="h1sub">${esc(data.family.name)}</div>` : ""}
+        <h1 class="h1red">Hi, ${esc(user.short_name)}</h1>
+        ${family ? `<div class="h1sub">${esc(family.name)}</div>` : ""}
       </div>
       <div id="install-slot">${installBanner()}</div>
-      ${familyCard(data.family)}
-      ${eventCard(data.event)}
+      ${familyCard(family)}
+      ${eventCard(event)}
       <section>
         <h2 class="sect">Jump To</h2>
         <div class="card row-divided">
-          ${akelaRow(data.akela)}
+          ${akelaRow(akela)}
           <a class="row" href="#/my-dens"><span class="den-badge" style="width:34px;height:34px;background:var(--rank-wolf)">W</span><div class="row-title">My Den${singleDen ? "" : "s"}</div><span class="chev">&rsaquo;</span></a>
           <a class="row" href="#/dens"><span class="den-badge" style="width:34px;height:34px;background:var(--rank-webelos)">D</span><div class="row-title">All Dens in Pack</div><span class="chev">&rsaquo;</span></a>
           <a class="row" href="#/search"><span class="den-badge" style="width:34px;height:34px;background:var(--badge-neutral)">Q</span><div class="row-title">Search Directory</div><span class="chev">&rsaquo;</span></a>

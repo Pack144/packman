@@ -1,10 +1,11 @@
 const BASE = "/mobile/api/";
 
-// Directory responses are cached locally so screens paint from the last known
-// data instead of a spinner, and keep working offline. Entries are revalidated
-// in the background; a screen that is already mounted re-renders itself when
-// the refreshed data differs (see the packman:data-refresh listener in app.js).
-const CACHE_PREFIX = "packman:api:v2:";
+// The directory + event responses are cached locally so screens paint from
+// the last known data instead of a spinner, and keep working offline. Entries
+// are revalidated in the background; a screen that is already mounted
+// re-renders itself when the refreshed data differs (see the
+// packman:data-refresh listener in app.js).
+const CACHE_PREFIX = "packman:api:v3:";
 const CACHE_OWNER_KEY = "packman:api:owner";
 const PRIMED_AT_KEY = "packman:api:primedAt";
 const REFRESH_EVENT = "packman:data-refresh";
@@ -14,10 +15,8 @@ const REFRESH_EVENT = "packman:data-refresh";
 // enough that flicking between tabs doesn't refetch everything.
 const FRESH_MS = 30_000;
 
-// How long a full directory pre-load stands before primeAllData() re-fetches
-// every endpoint rather than just topping up what's missing. A full pass is
-// ~70 requests for the directory JSON, plus up to two image fetches per
-// member, so it is not something to repeat on every launch.
+// How long a directory pre-load stands before primeAllData() re-warms every
+// member's photo rather than trusting what's already stored.
 const PRIME_TTL_MS = 6 * 60 * 60 * 1000;
 
 // Browsers allow six connections per host on HTTP/1.1; staying just under that
@@ -39,21 +38,20 @@ function readCache(url) {
 }
 
 // Set when a write runs out of room, so an in-flight pre-load stops instead of
-// grinding through another sixty writes that cannot land.
+// grinding through another round of image fetches that cannot land.
 let storageFull = false;
 
-// The Search screen's view of the cache (see peopleIndex), rebuilt lazily and
-// dropped whenever anything underneath it is written.
-let peopleCache = null;
+// getDirectory()'s built view of the last directory payload seen, keyed off
+// that payload's own JSON so it's cheap to tell whether a revalidated fetch
+// actually changed anything worth rebuilding for.
+let directorySourceJSON = null;
+let directoryView = null;
 
 function writeCache(url, data) {
   try {
     localStorage.setItem(cacheKey(url), JSON.stringify({ at: Date.now(), data }));
-    peopleCache = null;
   } catch {
-    // Out of quota or storage blocked. Drop only what wouldn't fit: a pre-load
-    // that overflows near the end should keep the sixty profiles it already
-    // stored rather than emptying the directory over the last one.
+    // Out of quota or storage blocked.
     storageFull = true;
   }
 }
@@ -67,7 +65,8 @@ export function purgeCache() {
   } catch {
     // Nothing cached to clear.
   }
-  peopleCache = null;
+  directorySourceJSON = null;
+  directoryView = null;
   // The service worker holds its own copy of the same responses.
   navigator.serviceWorker?.controller?.postMessage("packman:purge");
 }
@@ -115,16 +114,8 @@ function redirectToLogin() {
   window.location.href = `${window.PACKMAN_MOBILE.loginUrl}?next=${next}`;
 }
 
-function buildUrl(path, params) {
-  const url = new URL(BASE + path, window.location.origin);
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        url.searchParams.set(key, value);
-      }
-    });
-  }
-  return url;
+function buildUrl(path) {
+  return new URL(BASE + path, window.location.origin);
 }
 
 async function fetchJson(url) {
@@ -140,17 +131,13 @@ async function fetchJson(url) {
   return response.json();
 }
 
-async function request(path, params) {
-  return fetchJson(buildUrl(path, params));
-}
-
 /**
  * Stale-while-revalidate: resolve from cache when we have it, and refresh in
  * the background. Falls back to whatever is cached when the network fails, so
  * the directory stays readable offline.
  */
-async function cachedRequest(path, params) {
-  const url = buildUrl(path, params);
+async function cachedRequest(path) {
+  const url = buildUrl(path);
   const key = url.toString();
   const cached = readCache(key);
 
@@ -178,22 +165,142 @@ async function cachedRequest(path, params) {
   return cached.data;
 }
 
+// The mobile PWA's only two network calls: the whole member/den/committee
+// directory (see getDirectory() below for the shape screens actually read),
+// and the next upcoming event, which is cached separately because its
+// freshness matters on its own schedule.
 export const api = {
-  home: () => cachedRequest("home/"),
-  myDens: () => cachedRequest("dens/mine/"),
-  dens: () => cachedRequest("dens/"),
-  den: (number) => cachedRequest(`dens/${number}/`),
-  // Searches aren't cached: results are query-specific and would fill storage
-  // with one entry per keystroke. The Search screen matches the cached
-  // directory itself (see searchLocal) and only falls back to this.
-  search: (q, type) => request("search/", { q, type }),
-  member: (slug) => cachedRequest(`members/${encodeURIComponent(slug)}/`),
-  committees: () => cachedRequest("committees/"),
-  committee: (slug, year) => cachedRequest(`committees/${encodeURIComponent(slug)}/`, { year }),
+  directory: () => cachedRequest("pack_directory/"),
+  event: () => cachedRequest("event/"),
 };
 
 /* ------------------------------------------------------------------ *
- * Pre-loading the whole directory
+ * Turning the raw directory payload into something screens can read
+ * without re-deriving the same lookups over and over.
+ * ------------------------------------------------------------------ */
+
+/** A committee membership reference, resolved against `bySlug` when linked. */
+function resolveRef(bySlug, ref) {
+  const member = ref.linked ? bySlug.get(ref.slug) : null;
+  return {
+    slug: ref.slug,
+    name: member ? member.name : ref.name,
+    avatar: member ? member.avatar : null,
+    phone: member?.phone_numbers[0]?.value ?? null,
+    email: member?.emails[0] ?? null,
+    linked: ref.linked,
+  };
+}
+
+/**
+ * A den leader reference, resolved against `bySlug`. Unlike a committee
+ * membership row, a den leader is assumed to always be a linked, visible
+ * member — there's no `linked` flag to check; a lookup miss is a data bug
+ * to fix, not something this needs to render around.
+ */
+function resolveLeader(bySlug, leader) {
+  const member = bySlug.get(leader.slug);
+  return {
+    slug: leader.slug,
+    name: member ? member.name : leader.name,
+    avatar: member?.avatar ?? null,
+    position: leader.position,
+    phone: member?.phone_numbers[0]?.value ?? null,
+    email: member?.emails[0] ?? null,
+  };
+}
+
+/**
+ * Rank/grade for a scout aren't sent per-member — they always match the den
+ * `member.den_number` points to (`dens[].rank`/`rank_plural`/`rank_key`/
+ * `rank_badge`/`grade`), so resolve them here once and attach them to the
+ * member record every other helper below already expects them on.
+ */
+function denRankFields(den) {
+  return {
+    rank: den?.rank ?? null,
+    rank_plural: den?.rank_plural ?? null,
+    rank_key: den?.rank_key ?? null,
+    rank_badge: den?.rank_badge ?? null,
+    grade: den?.grade ?? null,
+  };
+}
+
+function buildDirectory(raw) {
+  const denRankByNumber = new Map(raw.dens.map((den) => [den.number, den]));
+  const members = raw.members.map((member) => ({
+    ...member,
+    ...denRankFields(member.is_scout ? denRankByNumber.get(member.den_number) : null),
+  }));
+
+  const bySlug = new Map(members.map((member) => [member.slug, member]));
+
+  const byFamily = new Map();
+  members.forEach((member) => {
+    if (!member.family_slug) return;
+    if (!byFamily.has(member.family_slug)) byFamily.set(member.family_slug, []);
+    byFamily.get(member.family_slug).push(member);
+  });
+
+  const dens = raw.dens.map((den) => ({
+    ...den,
+    leaders: den.leaders.map((leader) => resolveLeader(bySlug, leader)),
+    // Every den member is guaranteed to be in `members` (dens only ever show
+    // the current year), so a missing lookup just drops that slug quietly.
+    roster: den.roster.map((slug) => bySlug.get(slug)).filter(Boolean),
+  }));
+
+  const committees = raw.committees.map((committee) => ({
+    ...committee,
+    // Keyed by year, then by position (e.g. "Chair", "Den Leader") — a flat,
+    // server-ordered roster per position (lowest Position value, i.e. most
+    // senior, first; then by name); no leadership/rank-and-file split to
+    // re-flatten here.
+    membership: Object.fromEntries(
+      Object.entries(committee.membership).map(([year, byPosition]) => [
+        year,
+        Object.fromEntries(
+          Object.entries(byPosition).map(([position, entries]) => [
+            position,
+            entries.map((ref) => resolveRef(bySlug, ref)),
+          ])
+        ),
+      ])
+    ),
+  }));
+
+  return {
+    viewerSlug: raw.viewer,
+    currentYear: raw.current_year,
+    akelaSlug: raw.akela,
+    pack: raw.pack,
+    me: bySlug.get(raw.viewer) || null,
+    bySlug,
+    byFamily,
+    dens,
+    committees,
+  };
+}
+
+/**
+ * Fetch (or read from cache) the single directory call and hand back the
+ * frontend-friendly structure every screen reads from — a viewer pointer,
+ * member/den/committee lookups already resolved by slug, and no further
+ * network activity. Cheap to call repeatedly: the transform only reruns when
+ * the underlying payload has actually changed.
+ */
+export async function getDirectory() {
+  const raw = await api.directory();
+  const json = JSON.stringify(raw);
+  if (json !== directorySourceJSON) {
+    directorySourceJSON = json;
+    directoryView = buildDirectory(raw);
+  }
+  return directoryView;
+}
+
+/* ------------------------------------------------------------------ *
+ * Pre-loading member photos
  * ------------------------------------------------------------------ */
 
 function primedAt() {
@@ -225,7 +332,7 @@ async function drain(tasks, onSettled) {
       try {
         await task();
       } catch {
-        // One member out of visibility scope, or a blip. The rest still stand.
+        // A missing photo or a blip. The rest still stand.
       }
       onSettled?.();
     }
@@ -250,25 +357,6 @@ function retryWhenOnline() {
   );
 }
 
-// [slug, avatar] pairs rather than bare slugs: a roster entry already names
-// an avatar URL, and that's worth keeping even for someone whose own profile
-// turns out to be unreachable (see the member-loading pass below).
-function denPeople(den) {
-  const people = (den.leaders || []).map((leader) => [leader.slug, leader.avatar]);
-  (den.roster || []).forEach((entry) => {
-    if (entry.scout?.slug) people.push([entry.scout.slug, entry.scout.avatar]);
-    (entry.parents || []).forEach((parent) => people.push([parent.slug, parent.avatar]));
-  });
-  return people;
-}
-
-function committeePeople(committee) {
-  return [...(committee.akelas || []), ...(committee.members || [])].map((member) => [
-    member.slug,
-    member.avatar,
-  ]);
-}
-
 async function runPrime({ force, onProgress }) {
   if (navigator.onLine === false) {
     retryWhenOnline();
@@ -277,136 +365,42 @@ async function runPrime({ force, onProgress }) {
 
   storageFull = false;
   let changed = false;
-  let done = 0;
-  let total = 0;
-  const settled = () => onProgress?.(++done, total);
 
-  // Past the TTL (or on a manual refresh) every endpoint is re-fetched;
-  // otherwise this pass only fills in what isn't cached yet.
-  const refetch = force || Date.now() - primedAt() > PRIME_TTL_MS;
-
-  async function load(path, params, { revalidate = false } = {}) {
-    const url = buildUrl(path, params);
+  async function load(path) {
+    const url = buildUrl(path);
     const key = url.toString();
     const cached = readCache(key);
-
-    if (cached && !force) {
-      // Still inside the freshness window, which on a cold launch means the
-      // screen that just painted fetched this a moment ago. Don't ask twice.
-      if (Date.now() - cached.at < FRESH_MS) return cached.data;
-      if (!revalidate && !refetch) return cached.data;
-    }
-
     const fresh = await fetchJson(url);
     if (cached && JSON.stringify(cached.data) !== JSON.stringify(fresh)) changed = true;
     writeCache(key, fresh);
     return fresh;
   }
 
-  // The index endpoints, always revalidated — they back the four tab screens,
-  // so they're the ones worth a round trip on every launch. The first doubles
-  // as the reachability probe: navigator.onLine only reports that the radio is
-  // on, and there's no point firing seventy more requests at a captive portal.
-  let home;
-  let dens;
-  let myDens;
-  let committees;
+  // Both endpoints, always revalidated on launch — this is the entire
+  // network fan-out now: no more crawling every den/committee roster to
+  // discover member slugs before fetching each profile individually.
+  let raw;
   try {
-    home = await load("home/", undefined, { revalidate: true });
-    [dens, myDens, committees] = await Promise.all([
-      load("dens/", undefined, { revalidate: true }),
-      load("dens/mine/", undefined, { revalidate: true }),
-      load("committees/", undefined, { revalidate: true }),
-    ]);
+    [raw] = await Promise.all([load("pack_directory/"), load("event/")]);
   } catch {
     retryWhenOnline();
     return false;
   }
-  done = 4;
 
-  // Every den and committee in full, which is also how the member list is
-  // discovered: there is no endpoint that enumerates members, but a profile
-  // link only ever originates from a den roster, a committee roster or the
-  // Home family card — so their union is exactly the set of profiles that can
-  // be reached by tapping through the app.
-  const denNumbers = (dens.dens || []).map((den) => den.number);
-  const committeeList = (committees.committees || []).map((committee) => committee.slug);
-
-  // A den/committee roster entry already names its own avatar; keep it
-  // alongside the slug so a member whose own profile turns out to be
-  // unreachable (see below) still gets that avatar warmed.
-  const avatarBySlug = new Map();
-  const remember = ([slug, avatarUrl]) => avatarBySlug.set(slug, avatarUrl);
-
-  const myDenNumbers = new Set((myDens.dens || []).map((den) => den.number));
-  const mine = new Set();
-  (home.family?.adults || []).forEach((adult) => {
-    mine.add(adult.slug);
-    remember([adult.slug, adult.avatar]);
-  });
-  (home.family?.children || []).forEach((child) => {
-    mine.add(child.slug);
-    remember([child.slug, child.avatar]);
-  });
-  (myDens.dens || []).forEach((den) =>
-    denPeople(den).forEach(([slug, avatarUrl]) => {
-      mine.add(slug);
-      remember([slug, avatarUrl]);
-    })
-  );
-
-  const nearby = new Set();
-  const rest = new Set();
-
-  total = 4 + denNumbers.length + committeeList.length;
-  await drain(
-    [
-      ...denNumbers.map((number) => async () => {
-        const den = await load(`dens/${number}/`);
-        const into = myDenNumbers.has(number) ? nearby : rest;
-        denPeople(den).forEach(([slug, avatarUrl]) => {
-          into.add(slug);
-          remember([slug, avatarUrl]);
-        });
+  // Past the TTL (or on a manual refresh), every member's photo is re-warmed;
+  // otherwise a fresh directory fetch above is already enough for this launch.
+  const refetch = force || Date.now() - primedAt() > PRIME_TTL_MS;
+  if (refetch) {
+    const members = raw.members || [];
+    let done = 0;
+    onProgress?.(done, members.length);
+    await drain(
+      members.map((member) => async () => {
+        await Promise.all([warmImage(member.avatar), warmImage(member.photo)]);
       }),
-      ...committeeList.map((slug) => async () => {
-        const committee = await load(`committees/${encodeURIComponent(slug)}/`);
-        committeePeople(committee).forEach(([memberSlug, avatarUrl]) => {
-          rest.add(memberSlug);
-          remember([memberSlug, avatarUrl]);
-        });
-      }),
-    ],
-    settled
-  );
-
-  // Own family first, then the rosters of the reader's own dens, then everyone
-  // else — so the profiles most likely to be tapped are cached soonest.
-  const slugs = [...mine, ...nearby, ...rest].filter(
-    (slug, index, all) => slug && all.indexOf(slug) === index
-  );
-
-  total = done + slugs.length;
-  await drain(
-    slugs.map((slug) => async () => {
-      // The JSON below only carries the photo *URLs*; nothing has actually
-      // asked for the images yet, so the service worker has nothing to cache
-      // until some screen happens to render one. Fetch them here too, so
-      // everyone's photo is offline-ready, not just whoever's roster or
-      // profile the reader has actually opened.
-      let member = null;
-      try {
-        member = await load(`members/${encodeURIComponent(slug)}/`);
-      } catch {
-        // Outside MemberDetailView's visibility scope — a den leader or
-        // committee member without an active scout of their own, say. Their
-        // roster/committee entry still named an avatar; warm that instead
-        // of giving up on their photo entirely.
-      }
-      await Promise.all([warmImage(member?.avatar ?? avatarBySlug.get(slug)), warmImage(member?.photo)]);
-    }),
-    settled
-  );
+      () => onProgress?.(++done, members.length)
+    );
+  }
 
   if (storageFull) {
     console.warn("Directory pre-load stopped early: local storage is full");
@@ -419,7 +413,7 @@ async function runPrime({ force, onProgress }) {
   }
 
   // One event for the whole pass rather than one per endpoint, so the mounted
-  // screen repaints once instead of seventy times. A forced pass stays quiet:
+  // screen repaints once instead of twice. A forced pass stays quiet:
   // refreshAllData() announces itself once it has purged the photo cache too,
   // and two events back to back would repaint the screen twice.
   if (changed && !force) {
@@ -429,8 +423,8 @@ async function runPrime({ force, onProgress }) {
 }
 
 /**
- * Fetch and cache the entire directory — every den, committee and member
- * profile reachable in the app — so it all works offline. Runs in the
+ * Fetch and cache the directory and next event, and warm every member's
+ * avatar/profile photo so the whole app works offline. Runs in the
  * background; screens read what it stores through the normal cache.
  *
  * Concurrent calls share the one pass. Resolves false when there was nothing
@@ -438,8 +432,8 @@ async function runPrime({ force, onProgress }) {
  */
 export function primeAllData({ force = false, onProgress } = {}) {
   // A forced pass can't just join a background one already in flight — that
-  // one is topping up gaps, not re-fetching, and "Refresh Data" would report
-  // success without having asked the server anything.
+  // one may skip re-warming photos, and "Refresh Data" would report success
+  // without having actually refreshed them.
   if (priming && (!force || primingForced)) return priming;
 
   const inFlight = priming;
@@ -456,9 +450,10 @@ export function primeAllData({ force = false, onProgress } = {}) {
 }
 
 /**
- * The Menu screen's "Refresh Data" button: re-fetch the whole directory, then
- * swap it in. The fetch comes first on purpose — purging up front would leave
- * a reader who tapped this offline with an empty app and no way to refill it.
+ * The Menu screen's "Refresh Data" button: re-fetch the directory and event,
+ * then swap them in. The fetch comes first on purpose — purging up front
+ * would leave a reader who tapped this offline with an empty app and no way
+ * to refill it.
  */
 export async function refreshAllData(onProgress) {
   if (navigator.onLine === false) return false;
@@ -474,127 +469,242 @@ export async function refreshAllData(onProgress) {
   return true;
 }
 
-/* ------------------------------------------------------------------ *
- * Searching the cached directory
- * ------------------------------------------------------------------ */
-
-function eachCached(visit) {
-  try {
-    Object.keys(localStorage).forEach((key) => {
-      if (!key.startsWith(CACHE_PREFIX)) return;
-      try {
-        const entry = JSON.parse(localStorage.getItem(key));
-        if (entry?.data) visit(key.slice(CACHE_PREFIX.length), entry.data);
-      } catch {
-        // Corrupt entry; skip it.
-      }
-    });
-  } catch {
-    // Storage unavailable.
-  }
-}
-
 /**
  * Re-fetch every cached member's avatar and profile photo. runPrime() already
- * warms them once per member as it goes (see the member-loading pass above),
- * but refreshAllData() purges that same image cache right after — a changed
- * headshot has to be able to replace what was there — so it calls this
- * afterwards to put the (now current) photos back before it hands off.
+ * warms them once per pass, but refreshAllData() purges that same image
+ * cache right after — a changed headshot has to be able to replace what was
+ * there — so it calls this afterwards to put the (now current) photos back
+ * before it hands off.
  */
 async function warmAllImages(onProgress) {
-  // Member-detail entries carry both sizes; den/committee rosters only ever
-  // carry the avatar (see denPeople()/committeePeople()) — including them
-  // too covers a leader whose own profile is outside MemberDetailView's
-  // visibility scope, the same case runPrime()'s member-loading pass guards.
-  const avatarBySlug = new Map();
-  const photoBySlug = new Map();
-  eachCached((path, data) => {
-    if (/\/api\/members\/[^/]+\/$/.test(path) && data.slug) {
-      avatarBySlug.set(data.slug, data.avatar);
-      photoBySlug.set(data.slug, data.photo);
-    } else if (/\/api\/dens\/\d+\/$/.test(path)) {
-      denPeople(data).forEach(([slug, avatarUrl]) => {
-        if (!avatarBySlug.has(slug)) avatarBySlug.set(slug, avatarUrl);
-      });
-    } else if (/\/api\/committees\/[^/]+\/$/.test(path)) {
-      committeePeople(data).forEach(([slug, avatarUrl]) => {
-        if (!avatarBySlug.has(slug)) avatarBySlug.set(slug, avatarUrl);
-      });
-    }
-  });
-
-  const slugs = [...avatarBySlug.keys()];
+  const raw = readCache(buildUrl("pack_directory/").toString())?.data;
+  const members = raw?.members || [];
   let done = 0;
   await drain(
-    slugs.map((slug) => () => Promise.all([warmImage(avatarBySlug.get(slug)), warmImage(photoBySlug.get(slug))])),
-    () => onProgress?.(++done, slugs.length)
+    members.map((member) => () => Promise.all([warmImage(member.avatar), warmImage(member.photo)])),
+    () => onProgress?.(++done, members.length)
   );
 }
 
-function searchRow(member, extra) {
-  // The server labels a parent by who they're a parent of. The same names are
-  // on the profile as `Cub · Den 4 · Wolves` relations, and a full name always
-  // starts with the short name the server uses, so the first word matches.
-  const cubs = (member.family || [])
-    .filter((relation) => (relation.relation || "").startsWith("Cub"))
-    .map((relation) => (relation.name || "").split(" ")[0]);
+/* ------------------------------------------------------------------ *
+ * Deriving screen-specific views from the cached directory
+ * ------------------------------------------------------------------ */
 
+/** "Den 4 · Wolves" — falls back to just "Den 4" if the cub has no rank yet. */
+export function denLabel(member) {
+  if (member.den_number == null) return null;
+  return member.rank_plural ? `Den ${member.den_number} · ${member.rank_plural}` : `Den ${member.den_number}`;
+}
+
+function relationLabel(viewer, other) {
+  if (other.is_scout) {
+    const label = denLabel(other);
+    const relation = viewer.is_scout ? "Sibling" : "Cub";
+    const withDen = label ? `${relation} · ${label}` : relation;
+    return other.active ? withDen : `${withDen} · No longer active`;
+  }
+  return other.role || "Parent";
+}
+
+/**
+ * Every other member of `member`'s family, in profile-card order — mirrors
+ * the pre-single-call API's build_member_detail() family listing, just
+ * computed from the cached directory instead of a per-profile request.
+ */
+export function familyOf(directory, member) {
+  if (!member.family_slug) return [];
+  return (directory.byFamily.get(member.family_slug) || [])
+    .filter((other) => other.slug !== member.slug)
+    .map((other) => ({
+      slug: other.slug,
+      name: other.name,
+      avatar: other.avatar,
+      relation: relationLabel(member, other),
+      rank: other.rank,
+      rank_key: other.rank_key,
+      active: other.active,
+    }));
+}
+
+function lastNameOf(fullName) {
+  const parts = (fullName || "").trim().split(/\s+/);
+  return parts[parts.length - 1] || "";
+}
+
+/** The viewer's own active cubs — the family the Home screen cares about. */
+export function myActiveChildren(directory) {
+  const me = directory.me;
+  if (!me?.family_slug) return [];
+  return (directory.byFamily.get(me.family_slug) || []).filter((m) => m.is_scout && m.active);
+}
+
+/** Home screen's family card: the viewer's own household. */
+export function myFamilyCard(directory) {
+  const me = directory.me;
+  if (!me?.family_slug) return null;
+  const family = directory.byFamily.get(me.family_slug) || [];
+  const children = myActiveChildren(directory);
+  const lastNames = [...new Set(family.map((m) => lastNameOf(m.name)).filter(Boolean))];
+  const name = lastNames.length <= 1 ? `The ${lastNames[0] || ""} Family`.trim() : lastNames.join(" & ");
   return {
-    slug: member.slug,
-    name: member.name,
-    type: member.is_scout ? "cub" : "parent",
-    subtitle: member.is_scout
-      ? member.den || ""
-      : cubs.length
-        ? `Parent of ${cubs.join(", ")}`
-        : extra.role || "",
-    avatar: member.avatar,
-    rank: member.rank,
-    rank_key: member.rank_key,
-    rank_badge: extra.rank_badge || null,
+    name,
+    children: children.map((child) => ({
+      slug: child.slug,
+      name: child.short_name,
+      avatar: child.avatar,
+      den_number: child.den_number,
+      den_label: denLabel(child) || "",
+    })),
+    dens: [...new Set(children.map((child) => child.rank_plural).filter(Boolean))],
   };
 }
 
 /**
- * Every cached profile, in the shape the Search screen renders. Built by
- * merging the two cached shapes that describe a person: the member detail
- * carries the full name, and the den roster carries a cub's rank badge and an
- * adult's role, neither of which the profile endpoint returns.
+ * The Pack's current Akela, for the Home screen's Jump To card.
+ *
+ * The Akela is assumed to always be a linked/visible member — a Pack that
+ * ever named someone outside the directory as Akela has a data problem to
+ * fix on its own, not something this needs to paper over — so this is a
+ * single O(1) `bySlug` lookup, not a scan through committee membership rows.
  */
-export function peopleIndex() {
-  if (peopleCache) return peopleCache;
+export function currentAkela(directory) {
+  if (!directory.akelaSlug) return null;
+  const member = directory.bySlug.get(directory.akelaSlug);
+  if (!member) return null;
+  return { slug: member.slug, name: member.name, avatar: member.avatar, title: "Akela" };
+}
 
-  const extras = new Map();
-  eachCached((path, data) => {
-    if (!/\/api\/dens\/\d+\/$/.test(path)) return;
-    (data.roster || []).forEach((entry) => {
-      if (entry.scout?.slug) extras.set(entry.scout.slug, { rank_badge: entry.scout.rank_badge });
-      (entry.parents || []).forEach((parent) => extras.set(parent.slug, { role: parent.role }));
-    });
+/** Den number -> the viewer's own cub assigned there, for "My Dens". */
+function myCubByDenNumber(directory) {
+  const map = new Map();
+  myActiveChildren(directory).forEach((child) => {
+    if (child.den_number != null) map.set(child.den_number, child);
   });
+  return map;
+}
 
-  const people = new Map();
-  eachCached((path, data) => {
-    if (!/\/api\/members\/[^/]+\/$/.test(path) || !data.slug) return;
-    people.set(data.slug, searchRow(data, extras.get(data.slug) || {}));
+/** A den, with its leaders/roster resolved to full member records. */
+function resolveDen(directory, den) {
+  const roster = den.roster.map((scout) => ({
+    scout: {
+      slug: scout.slug,
+      name: scout.short_name,
+      avatar: scout.avatar,
+      rank: scout.rank,
+      rank_key: scout.rank_key,
+    },
+    parents: (scout.family_slug ? directory.byFamily.get(scout.family_slug) || [] : [])
+      .filter((m) => !m.is_scout)
+      .map((adult) => ({ slug: adult.slug, name: adult.short_name })),
+  }));
+  return {
+    number: den.number,
+    rank: den.rank,
+    rank_plural: den.rank_plural,
+    rank_key: den.rank_key,
+    rank_badge: den.rank_badge,
+    grade: den.grade,
+    leaders: den.leaders,
+    roster,
+    cub_count: roster.length,
+  };
+}
+
+/** Every den, resolved and flagged with whether one of the viewer's own cubs is in it. */
+export function allDens(directory) {
+  const myDenByNumber = myCubByDenNumber(directory);
+  return directory.dens.map((den) => {
+    const resolved = resolveDen(directory, den);
+    const myCub = myDenByNumber.get(den.number);
+    return { ...resolved, is_mine: Boolean(myCub), my_cub: myCub ? myCub.short_name : null };
   });
+}
 
-  peopleCache = [...people.values()].sort((a, b) => a.name.localeCompare(b.name));
-  return peopleCache;
+/** Just the dens holding one of the viewer's own cubs, for "My Dens". */
+export function myDens(directory) {
+  const myDenByNumber = myCubByDenNumber(directory);
+  return allDens(directory).filter((den) => myDenByNumber.has(den.number));
+}
+
+/** A single den by number, resolved — for the Den Detail screen. */
+export function denByNumber(directory, number) {
+  const den = directory.dens.find((d) => d.number === Number(number));
+  return den ? resolveDen(directory, den) : null;
 }
 
 /**
- * Match the cached directory by name. Instant and works offline, but it only
- * sees the display names the API returns — `nickname or first_name` plus the
- * last name — so a middle name, or the legal first name of somebody who goes
- * by a nickname, finds nothing here. The Search screen asks the server when
- * this comes back empty.
+ * A Pack Year always runs from the fall of `<year - 1>` through the summer
+ * of `<year>`, so the label is derivable from the year alone — the server
+ * doesn't need to send it.
  */
-export function searchLocal(query, type = "all") {
+export function packYearLabel(year) {
+  return `${year - 1}-${year}`;
+}
+
+/** A committee's roster for one Pack Year (the most recent one if omitted). */
+export function committeeYear(committee, year) {
+  const years = committee.years;
+  const chosenYear = year ?? years[0] ?? null;
+  const byPosition = committee.membership[String(chosenYear)] || {};
+  return {
+    ...committee,
+    year: chosenYear,
+    year_label: chosenYear ? packYearLabel(chosenYear) : "",
+    // Positions are already server-ordered (most senior first); flattening
+    // Object.values() preserves that order across positions.
+    members: Object.values(byPosition).flat(),
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Searching the cached directory
+ * ------------------------------------------------------------------ */
+
+function myFamilyChildNames(directory, adult) {
+  if (!adult.family_slug) return [];
+  return (directory.byFamily.get(adult.family_slug) || [])
+    .filter((m) => m.is_scout && m.active)
+    .map((m) => m.short_name);
+}
+
+function searchRow(directory, member) {
+  let subtitle;
+  if (member.is_scout) {
+    subtitle = denLabel(member) || "";
+  } else {
+    const cubs = myFamilyChildNames(directory, member);
+    subtitle = cubs.length ? `Parent of ${cubs.join(", ")}` : member.role || "";
+  }
+  return {
+    slug: member.slug,
+    name: member.name,
+    type: member.is_scout ? "cub" : "parent",
+    subtitle,
+    avatar: member.avatar,
+    rank: member.rank,
+    rank_key: member.rank_key,
+  };
+}
+
+/** Every linkable profile in the cached directory, sorted by display name. */
+export function peopleIndex(directory) {
+  return [...directory.bySlug.values()]
+    .filter((member) => member.linkable)
+    .map((member) => searchRow(directory, member))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Match the cached directory by name. Instant and works offline. Only sees
+ * the display name (`nickname or first_name` plus the last name), so a
+ * middle name or someone's legal first name finds nothing here — there's no
+ * server fallback anymore, since there's no per-query endpoint left to ask.
+ */
+export function searchLocal(directory, query, type = "all") {
   const needle = query.trim().toLowerCase();
   if (!needle) return { cubs: [], parents: [] };
 
-  const hits = peopleIndex().filter((person) => person.name.toLowerCase().includes(needle));
+  const hits = peopleIndex(directory).filter((person) => person.name.toLowerCase().includes(needle));
   return {
     cubs: type === "parent" ? [] : hits.filter((person) => person.type === "cub"),
     parents: type === "cub" ? [] : hits.filter((person) => person.type === "parent"),
