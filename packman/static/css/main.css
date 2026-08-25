@@ -90,6 +90,16 @@ footer {
     display: none;
 }
 
+/* The strip pitches an app you carry, so it only earns its space where the
+   primary input is touch — a phone or tablet. A desktop reads as `fine` even
+   with the window dragged narrow, which a width breakpoint would get wrong.
+   The profile menu keeps PackMate reachable from a computer. */
+@media not all and (pointer: coarse) {
+    #packmate-promo {
+        display: none;
+    }
+}
+
 #packmate-promo-icon {
     display: flex;
     width: 2.5rem;
