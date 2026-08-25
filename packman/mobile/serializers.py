@@ -229,7 +229,9 @@ class DirectoryCommitteeSerializer(serializers.Serializer):
     # flat list per position, server-ordered (lowest Position value, i.e.
     # most senior, first; then by name) rather than the frontend having to
     # re-derive groupings from a raw position code.
-    membership = serializers.DictField(child=serializers.DictField(child=CommitteeMembershipEntrySerializer(many=True)))
+    membership = serializers.DictField(
+        child=serializers.DictField(child=CommitteeMembershipEntrySerializer(many=True))
+    )
 
 
 class PackSerializer(serializers.Serializer):

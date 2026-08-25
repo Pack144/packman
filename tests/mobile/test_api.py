@@ -114,7 +114,10 @@ class DirectoryAPITestCase(MobileDirectoryTestCase):
     def test_akela_points_to_the_position_based_akela(self):
         committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
         CommitteeMember.objects.create(
-            committee=committee, member=self.parent, year=self.pack_year, position=CommitteeMember.Position.AKELA,
+            committee=committee,
+            member=self.parent,
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
         )
         self.client.force_login(self.parent)
         data = self.get_directory()
@@ -145,7 +148,10 @@ class DirectoryAPITestCase(MobileDirectoryTestCase):
         last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
         committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
         CommitteeMember.objects.create(
-            committee=committee, member=self.parent, year=last_year, position=CommitteeMember.Position.AKELA,
+            committee=committee,
+            member=self.parent,
+            year=last_year,
+            position=CommitteeMember.Position.AKELA,
         )
         self.client.force_login(self.parent)
         data = self.get_directory()
@@ -259,8 +265,9 @@ class DirectoryAPITestCase(MobileDirectoryTestCase):
     def test_prior_years_title_is_not_carried_forward(self):
         last_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 1)
         committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
-        CommitteeMember.objects.create(committee=committee, member=self.parent, year=last_year,
-                                        position=CommitteeMember.Position.AKELA)
+        CommitteeMember.objects.create(
+            committee=committee, member=self.parent, year=last_year, position=CommitteeMember.Position.AKELA
+        )
         self.client.force_login(self.parent)
         data = self.get_directory()
         self.assertIsNone(self.member(data, self.parent.slug)["title"])
@@ -320,7 +327,10 @@ class DirectoryDensAPITestCase(MobileDirectoryTestCase):
         committee = Committee.objects.get(slug="wolf-den")
         assistant = AdultFactory(family=FamilyFactory())
         CommitteeMember.objects.create(
-            committee=committee, member=assistant, den=self.den, year=self.pack_year,
+            committee=committee,
+            member=assistant,
+            den=self.den,
+            year=self.pack_year,
             position=CommitteeMember.Position.ASSISTANT_AKELA,
         )
         den = self.find_den(self.get_dens(), self.den.number)
@@ -334,7 +344,10 @@ class DirectoryDensAPITestCase(MobileDirectoryTestCase):
         committee = Committee.objects.get(slug="wolf-den")
         former = AdultFactory(family=FamilyFactory())
         CommitteeMember.objects.create(
-            committee=committee, member=former, den=self.den, year=last_year,
+            committee=committee,
+            member=former,
+            den=self.den,
+            year=last_year,
             position=CommitteeMember.Position.DEN_LEADER,
         )
         den = self.find_den(self.get_dens(), self.den.number)
@@ -348,7 +361,10 @@ class DirectoryDensAPITestCase(MobileDirectoryTestCase):
             ("Miles", "Nolan", ""),
         ]:
             cub = ScoutFactory(
-                family=FamilyFactory(), status=Scout.ACTIVE, first_name=first_name, last_name=last_name,
+                family=FamilyFactory(),
+                status=Scout.ACTIVE,
+                first_name=first_name,
+                last_name=last_name,
                 nickname=nickname,
             )
             Membership.objects.create(scout=cub, den=self.den, year_assigned=self.pack_year)
@@ -385,7 +401,9 @@ class DirectoryCommitteesAPITestCase(MobileDirectoryTestCase):
     def test_leadership_flag_is_reported(self):
         akela_committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
         CommitteeMember.objects.create(
-            committee=akela_committee, member=AdultFactory(family=FamilyFactory()), year=self.pack_year,
+            committee=akela_committee,
+            member=AdultFactory(family=FamilyFactory()),
+            year=self.pack_year,
             position=CommitteeMember.Position.AKELA,
         )
         data = self.get_directory()
@@ -396,7 +414,9 @@ class DirectoryCommitteesAPITestCase(MobileDirectoryTestCase):
         old_year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - 6)
         retired = Committee.objects.create(name="Popcorn", slug="popcorn")
         CommitteeMember.objects.create(
-            committee=retired, member=AdultFactory(family=FamilyFactory()), year=old_year,
+            committee=retired,
+            member=AdultFactory(family=FamilyFactory()),
+            year=old_year,
         )
         data = self.get_directory()
         self.assertNotIn("popcorn", [c["slug"] for c in data["committees"]])
@@ -405,7 +425,10 @@ class DirectoryCommitteesAPITestCase(MobileDirectoryTestCase):
         committee = Committee.objects.get(slug="wolf-den")
         akela = AdultFactory(family=FamilyFactory(), first_name="Aaron", last_name="Akela")
         CommitteeMember.objects.create(
-            committee=committee, member=akela, year=self.pack_year, position=CommitteeMember.Position.AKELA,
+            committee=committee,
+            member=akela,
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
         )
         data = self.get_directory()
         year_key = str(self.pack_year.year)
@@ -422,7 +445,10 @@ class DirectoryCommitteesAPITestCase(MobileDirectoryTestCase):
         # family) so linked is expected to be True.
         committee = Committee.objects.get(slug="wolf-den")
         CommitteeMember.objects.create(
-            committee=committee, member=self.parent, year=self.pack_year, position=CommitteeMember.Position.AKELA,
+            committee=committee,
+            member=self.parent,
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
         )
         data = self.get_directory()
         year_key = str(self.pack_year.year)
@@ -437,7 +463,10 @@ class DirectoryCommitteesAPITestCase(MobileDirectoryTestCase):
         stranger = AdultFactory(family=FamilyFactory(), role=Adult.PARENT)  # no active cubs
         committee = Committee.objects.create(name="Akela", slug="akela", leadership=True)
         CommitteeMember.objects.create(
-            committee=committee, member=stranger, year=self.pack_year, position=CommitteeMember.Position.AKELA,
+            committee=committee,
+            member=stranger,
+            year=self.pack_year,
+            position=CommitteeMember.Position.AKELA,
         )
         data = self.get_directory()
         year_key = str(self.pack_year.year)
@@ -451,7 +480,9 @@ class DirectoryCommitteesAPITestCase(MobileDirectoryTestCase):
         for offset in range(1, 7):
             year, _ = PackYear.objects.get_or_create(year=self.pack_year.year - offset)
             CommitteeMember.objects.create(
-                committee=committee, member=AdultFactory(family=FamilyFactory()), year=year,
+                committee=committee,
+                member=AdultFactory(family=FamilyFactory()),
+                year=year,
             )
         data = self.get_directory()
         years = self.committee(data, "wolf-den")["years"]

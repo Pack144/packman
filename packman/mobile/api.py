@@ -93,9 +93,9 @@ def _build_members_payload(members, *, base_ids, current_year):
     scout_pks = [m.pk for m in members if hasattr(m, "scout")]
     den_by_scout = {
         membership.scout_id: membership.den
-        for membership in Membership.objects.filter(
-            scout_id__in=scout_pks, year_assigned=current_year
-        ).select_related("den", "den__rank")
+        for membership in Membership.objects.filter(scout_id__in=scout_pks, year_assigned=current_year).select_related(
+            "den", "den__rank"
+        )
     }
 
     # One query for every adult's current-year committee assignments, rather
@@ -182,8 +182,7 @@ def _build_committees_payload(current_year, payload_ids):
         membership = {}
         for year in years_with_roster:
             rows = (
-                committee.committee_members.filter(year=year)
-                .select_related("member")
+                committee.committee_members.filter(year=year).select_related("member")
                 # Lower Position values are more senior (Chair=1 ... Assistant
                 # Akela=6); rows arrive in this order and are grouped below
                 # without disturbing it, so the frontend never re-sorts.
