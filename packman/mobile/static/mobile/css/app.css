@@ -1,0 +1,971 @@
+/* Light theme. Every colour the app draws with is a token here so the dark
+   theme at the bottom of this file only has to restate the palette. The Pack's
+   brand colours (the navy app bar, the gold rule, the red 144 logo, the rank
+   badges) are deliberately shared by both themes. */
+:root {
+  color-scheme: light dark;
+
+  --bg: #f4f6f9;
+  --surface: #fff;
+  --surface-2: #e5e9f0;
+  --ink: #20242b;
+  --muted: #6b7280;
+  --label: #8a919c;
+  --heading: #173f8c;
+  --accent: #1a4aa0;
+  --navy: #1a4aa0;
+  --navy-deep: #173f8c;
+  --gold: #ffce33;
+  --red: #d0111f;
+  --logo-red: #d21e2b;
+  --link: #1667d6;
+  --card-border: #e6e9ee;
+  --divider: #eef0f3;
+  --pill-border: #d0d5de;
+  --chev: #c7cdd6;
+  --row-mine: #eef4fb;
+  --badge-neutral: #20242b;
+  --tab-off: #9aa1ac;
+  --hero-navy: #0e1c33;
+
+  --rank-lion: #c0392b;
+  --rank-tiger: #e08a1e;
+  --rank-wolf: #2f6fb0;
+  --rank-bear: #8a5a2b;
+  --rank-webelos: #1a4aa0;
+  --rank-aol: #0f766e;
+
+  /* Ranks set as text (the All Dens group headings) rather than as a badge
+     fill. Identical by day; night mode lifts them for contrast. */
+  --rank-lion-text: var(--rank-lion);
+  --rank-tiger-text: var(--rank-tiger);
+  --rank-wolf-text: var(--rank-wolf);
+  --rank-bear-text: var(--rank-bear);
+  --rank-webelos-text: var(--rank-webelos);
+  --rank-aol-text: var(--rank-aol);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  /* The tab bar's colour rather than --bg, so any strip iOS leaves outside the
+     app's viewport (the home indicator area in standalone) blends into the tab
+     bar instead of showing as a band. */
+  background: var(--surface);
+  color: var(--ink);
+  font-family: "Public Sans", system-ui, sans-serif;
+  font-size: 15px;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg);
+
+  /* Anchors the Menu popover/backdrop (position: absolute) to the phone-width
+     column instead of the full (possibly wider, desktop-preview) viewport. */
+  position: relative;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Screen layout: each screen renders its own app bar; the scroll area sits
+   between it and the fixed tab bar. */
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.screen-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 15px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The scroll area is itself a flex column, so its children would otherwise
+   shrink to fit rather than scroll. Cards set `overflow: hidden`, which zeroes
+   out their automatic minimum size, so they collapse and clip their contents
+   whenever the viewport is short (Safari with its toolbars showing). */
+.screen-scroll > * {
+  flex: none;
+}
+
+.screen-scroll.flush {
+  padding: 0;
+  gap: 0;
+}
+
+/* App bar.
+   The viewport is `viewport-fit=cover` and iOS uses a translucent status bar in
+   standalone mode, so the bar draws underneath it. Pad by the top safe-area
+   inset — 0 in a browser tab, the status bar height once installed. */
+.appbar {
+  flex: none;
+  background: linear-gradient(180deg, var(--navy), var(--navy-deep));
+  border-bottom: 3px solid var(--gold);
+  padding: calc(12px + env(safe-area-inset-top, 0px)) calc(18px + env(safe-area-inset-right, 0px)) 12px
+    calc(18px + env(safe-area-inset-left, 0px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+}
+
+.appbar.column {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 11px;
+  padding-bottom: 14px;
+}
+
+.appbar-title {
+  font-weight: 800;
+  font-size: 19px;
+  color: #fff;
+}
+
+.appbar-back {
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  padding-right: 2px;
+}
+
+.appbar-meta {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 11px;
+  color: #c9d4ea;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.brand-digits {
+  display: flex;
+  gap: 3px;
+}
+
+.brand-digits span {
+  width: 24px;
+  height: 29px;
+  background: var(--logo-red);
+  border: 1.5px solid #f4b6bb;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  color: #fff;
+}
+
+.brand-name {
+  font-family: "Alfa Slab One", serif;
+  font-size: 14px;
+  color: var(--gold);
+  line-height: 1.05;
+}
+
+.brand-sub {
+  font-weight: 700;
+  font-size: 11px;
+  color: #dfe6f2;
+}
+
+.appbar-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--navy-deep);
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  flex: none;
+  overflow: hidden;
+}
+
+.appbar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Search input inside the navy app bar */
+.appbar-search {
+  display: flex;
+  background: var(--surface);
+  border-radius: 11px;
+  align-items: center;
+  padding: 0 12px;
+  height: 42px;
+  gap: 9px;
+
+  /* The magnifier draws with currentColor; without this it would inherit the
+     app bar's white and vanish into the field. */
+  color: var(--label);
+}
+
+.appbar-search svg {
+  flex: none;
+}
+
+.appbar-search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  /* 16px is the minimum iOS Safari won't zoom in on when the field is
+     focused; anything smaller triggers an auto-zoom on tap. */
+  font: 500 16px "Public Sans", system-ui, sans-serif;
+  color: var(--ink);
+  width: 100%;
+}
+
+.appbar-search input::placeholder {
+  color: var(--label);
+  opacity: 1;
+}
+
+/* Typography */
+.h1red {
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--red);
+  margin: 0;
+}
+
+.h1sub {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.sect {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.sect.red {
+  color: var(--red);
+}
+
+.mono {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--label);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mono.plain {
+  text-transform: none;
+}
+
+/* Cards and rows */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: 0 3px 10px rgba(20, 30, 50, 0.05);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.row + .row,
+.row-divided > * + * {
+  border-top: 1px solid var(--divider);
+}
+
+.row .grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.name-line .row-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chev {
+  color: var(--chev);
+  font-size: 20px;
+  margin-left: auto;
+  font-weight: 600;
+  flex: none;
+}
+
+/* A family member who isn't clickable (their profile is out of scope) —
+   same layout as .row, minus the affordance to tap. */
+.row-disabled {
+  opacity: 0.6;
+}
+
+.row.mine {
+  background: var(--row-mine);
+}
+
+/* Avatars: photo when available, colored initials otherwise */
+.av {
+  border-radius: 11px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+.av.sm {
+  width: 42px;
+  height: 42px;
+}
+
+.av.md {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+}
+
+.av.lg {
+  width: 144px;
+  height: 144px;
+  border-radius: 36px;
+  font-size: 52px;
+}
+
+img.av {
+  background: var(--divider);
+}
+
+/* Rank badges and tags */
+.den-badge {
+  border-radius: 8px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  width: 38px;
+  height: 38px;
+}
+
+.den-badge.sm {
+  width: 32px;
+  height: 32px;
+}
+
+.tag {
+  font-weight: 800;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  border-radius: 5px;
+  padding: 3px 7px;
+  color: #fff;
+  text-transform: uppercase;
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Pills */
+.pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  border: 1.5px solid var(--pill-border);
+  border-radius: 20px;
+  padding: 7px 15px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.pill.on {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+/* Segmented control (My Dens) */
+.segmented {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  flex: none;
+}
+
+.segment {
+  flex: 1;
+  text-align: center;
+  padding: 9px 0;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+}
+
+.segment .seg-title {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.segment.on {
+  background: var(--surface);
+  box-shadow: 0 2px 5px rgba(20, 30, 50, 0.1);
+}
+
+.segment.on .seg-title {
+  color: var(--accent);
+}
+
+/* Icon buttons (leader call/email) */
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--card-border);
+  border-radius: 9px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+/* Home: family card */
+.family-card-hero {
+  height: 96px;
+  background: var(--hero-navy);
+  position: relative;
+}
+
+.family-card-hero .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 15, 28, 0.05), rgba(8, 15, 28, 0.72));
+}
+
+.family-card-hero .caption {
+  position: absolute;
+  left: 15px;
+  bottom: 10px;
+  color: #fff;
+}
+
+.family-card-hero .caption .fam-name {
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.family-card-hero .caption .fam-sub {
+  font-weight: 600;
+  font-size: 11px;
+  color: #e7ecf6;
+}
+
+.cub-chips {
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.cub-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--divider);
+  border-radius: 11px;
+  padding: 8px 10px;
+  min-width: 0;
+}
+
+.cub-chip .cub-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Home: install banner. Chrome gets a working button; iOS Safari, which has no
+   install API to call, gets the manual Share-sheet route written out instead.
+   The slot is always in the markup, so it collapses itself when empty rather
+   than leaving the scroll column's gap behind. */
+#install-slot:empty {
+  display: none;
+}
+
+/* Carries .card for its surface, border and shadow; this only lays out the row. */
+.install-banner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 10px 12px 14px;
+  color: var(--accent);
+}
+
+.install-banner > svg {
+  flex: none;
+}
+
+.install-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.install-sub {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+/* The Share glyph sits inline in the sentence, so it has to ride the baseline
+   rather than the line box. */
+.install-sub svg {
+  vertical-align: -2px;
+  margin: 0 1px;
+}
+
+.install-btn {
+  flex: none;
+  border: 0;
+  border-radius: 9px;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 9px 14px;
+}
+
+.install-x {
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: var(--label);
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 7px;
+}
+
+/* Home: event card */
+.event-card {
+  background: linear-gradient(135deg, #1f6dff, #1657e6);
+  border-radius: 16px;
+  padding: 18px 18px 16px;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(31, 109, 255, 0.3);
+}
+
+.event-date {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+
+.event-name {
+  font-weight: 800;
+  font-size: 21px;
+  margin: 3px 0 8px;
+}
+
+.event-when {
+  font-weight: 600;
+  font-size: 13px;
+  opacity: 0.95;
+}
+
+.event-desc {
+  font-weight: 500;
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+/* Profile */
+
+/* The avatar sits at the left of the header row; .av.lg (components.js's
+   avatar() helper) already handles the photo/initials fallback. */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.profile-name {
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* Appended to the name as "Jane Doe, Akela" — lighter, so the name still leads. */
+.profile-title {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.profile-grade {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.profile-ident .tag {
+  display: inline-block;
+  margin-top: 8px;
+}
+
+.action-row {
+  display: flex;
+  gap: 9px;
+}
+
+.action-btn {
+  flex: 1;
+  height: 44px;
+  border: 1px solid var(--pill-border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.action-btn.primary {
+  border: 0;
+  background: var(--navy);
+  color: #fff;
+}
+
+.contact-row {
+  padding: 11px 15px;
+}
+
+.contact-value {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--link);
+
+  /* An address longer than the card would otherwise spill past its edge. */
+  overflow-wrap: anywhere;
+}
+
+/* Committees */
+.committee-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--link);
+}
+
+.committee-star {
+  display: flex;
+  flex: none;
+  color: var(--gold);
+}
+
+.committee-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.committee-head .h1red {
+  flex: 1;
+}
+
+.committee-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* The Pack Year picker on a Committee detail screen: a plain .pill when
+   there's only one year on record, a real <select> when there's a choice.
+   Native select chrome is stripped in favour of a CSS-drawn chevron so it
+   reads the same as the static pill either way. */
+select.pill {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1.5px solid var(--pill-border);
+  padding-right: 28px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 55%,
+    calc(100% - 10px) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Dens group header */
+.group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 2px 8px;
+}
+
+.group-head .sect {
+  margin: 0;
+}
+
+/* Menu tab popover (Me / Committees). Ordered ahead of the tab bar rules
+   below: .menu-item svg and .tbar .tab svg are unrelated but equal-ish
+   specificity, and stylelint wants the lower one declared first. */
+.menu-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 14, 22, 0.35);
+  z-index: 40;
+}
+
+.menu-popover {
+  position: absolute;
+  right: 15px;
+  bottom: calc(66px + env(safe-area-inset-bottom, 0) + 10px);
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(20, 30, 50, 0.18);
+  overflow: hidden;
+  z-index: 41;
+  min-width: 172px;
+}
+
+.menu-backdrop[hidden],
+.menu-popover[hidden] {
+  display: none;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 16px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  text-align: left;
+
+  /* "Refresh Data" is a <button>; strip its UA chrome so it matches the
+     Me/Committees links either side of it. */
+  border: 0;
+  background: transparent;
+}
+
+.menu-item:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.menu-item + .menu-item {
+  border-top: 1px solid var(--divider);
+}
+
+.menu-item svg {
+  flex: none;
+  color: var(--accent);
+  stroke: currentColor;
+}
+
+/* Tab bar.
+   Grows by the bottom safe-area inset so the labels clear the home indicator
+   wherever the viewport extends beneath it. */
+.tbar {
+  flex: none;
+  height: auto;
+  min-height: 66px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  background: var(--surface);
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  box-shadow: 0 -3px 14px rgba(15, 23, 42, 0.05);
+}
+
+.tbar .tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--tab-off);
+
+  /* The Menu tab is a <button>; strip its UA chrome so it matches the others. */
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.tbar .tab.on {
+  color: var(--accent);
+}
+
+.tbar .tab svg {
+  stroke: currentColor;
+}
+
+/* States */
+.loading,
+.error,
+.empty {
+  font-size: 14px;
+  color: var(--muted);
+  padding: 20px 4px;
+}
+
+.error {
+  color: var(--red);
+}
+
+/* Dark theme. Follows the phone's appearance setting; the surfaces and text
+   invert while the Pack's brand colours carry over unchanged. Blues and the
+   red heading are lifted so they still read against a dark background. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0e15;
+    --surface: #151c28;
+    --surface-2: #202938;
+    --ink: #e9edf4;
+    --muted: #98a3b4;
+    --label: #8792a3;
+    --heading: #93b4f0;
+    --accent: #7aa7f0;
+    --red: #ff5f68;
+    --link: #6fa6f2;
+    --card-border: #232c3b;
+    --divider: #222a37;
+    --pill-border: #384154;
+    --chev: #596375;
+    --row-mine: #16233c;
+    --badge-neutral: #4d5768;
+    --tab-off: #7d8798;
+    --hero-navy: #0d1a2e;
+
+    /* Badge fills lift just enough to sit on a dark card while keeping their
+       white lettering legible. */
+    --rank-lion: #cd4436;
+    --rank-tiger: #e5941f;
+    --rank-wolf: #3d7cc0;
+    --rank-bear: #97653a;
+    --rank-webelos: #2a5fb5;
+    --rank-aol: #14877d;
+
+    /* As text on the near-black background these need to go further. */
+    --rank-lion-text: #ef7063;
+    --rank-tiger-text: #f2a949;
+    --rank-wolf-text: #6fa3e0;
+    --rank-bear-text: #c08b56;
+    --rank-webelos-text: #6f9fe6;
+    --rank-aol-text: #35b3a6;
+  }
+
+  /* Cards read as raised by their own lightness against a dark background, so
+     the drop shadows only muddy their edges. */
+  .card,
+  .tbar,
+  .event-card,
+  .segment.on,
+  .menu-popover {
+    box-shadow: none;
+  }
+
+  /* By day the selected den is a white chip on a grey track; at night that
+     inverts to a filled brand-blue chip, which stays legible without relying
+     on a light surface. */
+  .segment.on {
+    background: var(--navy);
+  }
+
+  .segment.on .seg-title {
+    color: #fff;
+  }
+
+  .segment.on .mono {
+    color: #c7d5ee;
+  }
+
+  /* A white photo placeholder flashes bright before the image loads. */
+  img.av {
+    background: var(--surface-2);
+  }
+}

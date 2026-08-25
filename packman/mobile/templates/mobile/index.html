@@ -1,0 +1,33 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PackMate</title>
+
+  <link rel="manifest" href="{% url 'mobile:manifest' %}">
+  <meta name="theme-color" content="#c8202f">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'mobile/icons/favicon-32.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'mobile/icons/apple-touch-icon.png' %}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PackMate">
+
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Alfa+Slab+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'mobile/css/app.css' %}">
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    window.PACKMAN_MOBILE = {
+      user: {
+        slug: "{{ request.user.slug|escapejs }}",
+        name: "{{ request.user.get_full_name|escapejs }}"
+      },
+      loginUrl: "{% url 'login' %}"
+    };
+  </script>
+  <script type="module" src="{% static 'mobile/js/app.js' %}"></script>
+</body>
+</html>

@@ -20,14 +20,16 @@
     /* Preferred colors */
     --footer-background: var(--scouting-blue);
     --h2-color: var(--scouting-blue);
-    --navbar-background: rgb(0 63 135 / 80%) /* scouting-blue as rgba */
+    --navbar-background: rgb(0 63 135 / 80%); /* scouting-blue as rgba */
+    --packmate-promo-background: var(--scouting-red);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
         --footer-background: var(--scouting-dark-blue);
         --h2-color: var(--scouting-pale-blue);
-        --navbar-background: rgb(0 51 102 / 80%) /* scouting-dark-blue as rgba */
+        --navbar-background: rgb(0 51 102 / 80%); /* scouting-dark-blue as rgba */
+        --packmate-promo-background: #A50E1E; /* scouting-red, dimmed for dark mode */
     }
 }
 
@@ -69,6 +71,55 @@ footer {
     z-index: 1020;
     background-image: url('/static/img/jumbotron.jpg');
     background-size: cover;
+}
+
+.packmate-icon {
+    /* Sized and nudged to sit on the same line as the Font Awesome fa-fw icons
+       it shares the profile dropdown with. */
+    width: 1.25em;
+    height: 1.25em;
+    vertical-align: -0.25em;
+}
+
+#packmate-promo {
+    background-color: var(--packmate-promo-background);
+    color: #FFF;
+}
+
+#packmate-promo[hidden] {
+    display: none;
+}
+
+/* The strip pitches an app you carry, so it only earns its space where the
+   primary input is touch — a phone or tablet. A desktop reads as `fine` even
+   with the window dragged narrow, which a width breakpoint would get wrong.
+   The profile menu keeps PackMate reachable from a computer. */
+@media not all and (pointer: coarse) {
+    #packmate-promo {
+        display: none;
+    }
+}
+
+#packmate-promo-icon {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.6rem;
+    background-color: #FFF;
+    color: var(--packmate-promo-background);
+    font-size: 1.25rem;
+}
+
+#packmate-promo-title {
+    font-weight: 700;
+}
+
+#packmate-promo-tagline {
+    font-size: 0.875rem;
+    opacity: 0.9;
 }
 
 #den-patches {
