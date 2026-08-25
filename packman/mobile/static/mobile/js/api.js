@@ -394,40 +394,46 @@ async function runPrime({ force, onProgress }) {
 
   storageFull = false;
 
-  // A background pass leaves each endpoint on its own cadence — cachedRequest
-  // serves the directory from cache unless it's over DIRECTORY_TTL_MS old
-  // (quietly revalidating in the background when it is, which is what
-  // repaints a mounted screen — see cachedRequest()), so this is often not a
-  // network call at all. A forced pass ("Refresh Data") can't settle for
-  // that: the reader tapped the button expecting fresh data now, so it talks
-  // to the network directly for both, bypassing whatever's cached.
+  // Once a week (or on a forced "Refresh Data" pass) the directory needs a
+  // guaranteed fresh fetch, since that's also what decides which members'
+  // photos get re-warmed below — cachedRequest()'s own stale-while-revalidate
+  // won't do here, as it hands back the old roster immediately and only
+  // fetches fresh data in the background, which would warm photos for
+  // members who are no longer current and mark the cadence as satisfied
+  // before the real roster even arrived.
+  const refetch = force || Date.now() - primedAt() > DIRECTORY_TTL_MS;
+
   let raw;
+  let directoryChanged = false;
   try {
-    if (force) {
-      const directoryUrl = buildUrl("pack_directory/");
-      const eventUrl = buildUrl("event/");
-      [raw] = await Promise.all([
-        fetchJson(directoryUrl).then((fresh) => {
+    const directoryUrl = buildUrl("pack_directory/");
+    const eventUrl = buildUrl("event/");
+    const loadDirectory = refetch
+      ? (async () => {
+          const cached = readCache(directoryUrl.toString());
+          const fresh = await fetchJson(directoryUrl);
+          if (cached && JSON.stringify(cached.data) !== JSON.stringify(fresh)) directoryChanged = true;
           writeCache(directoryUrl.toString(), fresh);
           return fresh;
-        }),
-        fetchJson(eventUrl).then((fresh) => {
+        })()
+      : api.directory();
+    // The event stays on its own short cadence except on a forced pass, which
+    // talks to the network directly for it too rather than trusting the cache.
+    const loadEvent = force
+      ? fetchJson(eventUrl).then((fresh) => {
           writeCache(eventUrl.toString(), fresh);
           return fresh;
-        }),
-      ]);
-    } else {
-      [raw] = await Promise.all([api.directory(), api.event()]);
-    }
+        })
+      : api.event();
+    [raw] = await Promise.all([loadDirectory, loadEvent]);
   } catch {
     retryWhenOnline();
     return false;
   }
 
-  // Past the TTL (or on a manual refresh), every member's photo is re-warmed;
-  // otherwise a fresh-enough directory fetch above is already enough for
-  // this launch.
-  const refetch = force || Date.now() - primedAt() > DIRECTORY_TTL_MS;
+  // Past the TTL (or on a manual refresh), every member's photo is re-warmed
+  // from the roster just fetched above; otherwise a cache-served directory is
+  // already enough for this launch.
   if (refetch) {
     const members = raw.members || [];
     let done = 0;
@@ -450,11 +456,15 @@ async function runPrime({ force, onProgress }) {
     }
   }
 
-  // No REFRESH_EVENT here: a background pass that actually fetched anything
-  // did so through cachedRequest(), which already dispatches its own event
-  // when the data changes; a forced pass stays quiet since refreshAllData()
-  // announces itself once it has pruned the photo cache too, and two events
-  // back to back would repaint the screen twice.
+  // No REFRESH_EVENT for the event endpoint here: it's still on cachedRequest()
+  // outside of a forced pass, which already dispatches its own event when it
+  // changes. The directory's own weekly refetch above bypasses that, so it
+  // announces itself here instead; a forced pass stays quiet, since
+  // refreshAllData() announces itself once it has pruned the photo cache too,
+  // and two events back to back would repaint the screen twice.
+  if (directoryChanged && !force) {
+    window.dispatchEvent(new CustomEvent(REFRESH_EVENT, { detail: { key: null } }));
+  }
   return true;
 }
 
