@@ -22,7 +22,7 @@ const EVENT_FRESH_MS = 30_000;
 // primeAllData()'s photo re-warm cadence, since a fresh directory is what
 // tells it whether anything needs re-warming in the first place. A manual
 // "Refresh Data" tap (force) bypasses this entirely.
-const DIRECTORY_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const DIRECTORY_TTL_MS = 6 * 60 * 60 * 1000;
 
 // Browsers allow six connections per host on HTTP/1.1; staying just under that
 // keeps the pre-load from starving whatever the reader is actively looking at.
@@ -195,7 +195,7 @@ async function cachedRequest(path, ttlMs) {
 
 // The mobile PWA's only two network calls: the whole member/den/committee
 // directory (see getDirectory() below for the shape screens actually read),
-// only re-fetched about once a week since it barely changes; and the next
+// only re-fetched every so often since it barely changes; and the next
 // upcoming event, refetched on essentially every read since its freshness
 // matters on a much shorter schedule.
 export const api = {
@@ -401,13 +401,13 @@ async function runPrime({ force, onProgress }) {
 
   storageFull = false;
 
-  // Once a week (or on a forced "Refresh Data" pass) the directory needs a
-  // guaranteed fresh fetch, since that's also what decides which members'
-  // photos get re-warmed below — cachedRequest()'s own stale-while-revalidate
-  // won't do here, as it hands back the old roster immediately and only
-  // fetches fresh data in the background, which would warm photos for
-  // members who are no longer current and mark the cadence as satisfied
-  // before the real roster even arrived.
+  // Once DIRECTORY_TTL_MS has elapsed (or on a forced "Refresh Data" pass)
+  // the directory needs a guaranteed fresh fetch, since that's also what
+  // decides which members' photos get re-warmed below — cachedRequest()'s
+  // own stale-while-revalidate won't do here, as it hands back the old
+  // roster immediately and only fetches fresh data in the background, which
+  // would warm photos for members who are no longer current and mark the
+  // cadence as satisfied before the real roster even arrived.
   const refetch = force || Date.now() - primedAt() > DIRECTORY_TTL_MS;
 
   let raw;
@@ -468,8 +468,8 @@ async function runPrime({ force, onProgress }) {
 
   // No REFRESH_EVENT for the event endpoint here: it's still on cachedRequest()
   // outside of a forced pass, which already dispatches its own event when it
-  // changes. The directory's own weekly refetch above bypasses that, so it
-  // announces itself here instead; a forced pass stays quiet, since
+  // changes. The directory's own TTL-driven refetch above bypasses that, so
+  // it announces itself here instead; a forced pass stays quiet, since
   // refreshAllData() announces itself once it has pruned the photo cache too,
   // and two events back to back would repaint the screen twice.
   if (directoryChanged && !force) {

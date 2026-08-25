@@ -9,7 +9,7 @@ const API_PREFIX = APP_URL + "api/";
 const MEDIA_PREFIX = "/media/";
 
 // Set by api.js on a photo-warming fetch that needs to know the *real*,
-// current bytes before it resolves (a forced "Refresh Data" or the weekly
+// current bytes before it resolves (a forced "Refresh Data" or the periodic
 // re-warm), rather than the cache-first response staleWhileRevalidate()
 // normally returns while it revalidates in the background.
 const FORCE_REVALIDATE_HEADER = "X-Packman-Force-Revalidate";
@@ -192,7 +192,7 @@ async function staleWhileRevalidate(event, request, cacheName) {
 /**
  * Same conditional-request check as revalidate() above, but awaited instead
  * of run in the background — for the photo-warming pass behind a forced
- * "Refresh Data" (or the weekly re-warm), which needs to know the fresh
+ * "Refresh Data" (or the periodic re-warm), which needs to know the fresh
  * bytes are actually in the cache before it reports itself done, rather than
  * handing back stale bytes while a background fetch is still in flight.
  */
