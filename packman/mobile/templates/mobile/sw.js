@@ -1,4 +1,4 @@
-{% load static %}const VERSION = "v11";
+{% load static %}const VERSION = "v12";
 const SHELL_CACHE = `pack-directory-shell-${VERSION}`;
 const DATA_CACHE = `pack-directory-data-${VERSION}`;
 const FONT_CACHE = `pack-directory-fonts-${VERSION}`;
@@ -7,6 +7,12 @@ const CURRENT_CACHES = [SHELL_CACHE, DATA_CACHE, FONT_CACHE];
 const APP_URL = "{% url 'mobile:index' %}";
 const API_PREFIX = APP_URL + "api/";
 const MEDIA_PREFIX = "/media/";
+
+// Set by api.js on a photo-warming fetch that needs to know the *real*,
+// current bytes before it resolves (a forced "Refresh Data" or the weekly
+// re-warm), rather than the cache-first response staleWhileRevalidate()
+// normally returns while it revalidates in the background.
+const FORCE_REVALIDATE_HEADER = "X-Packman-Force-Revalidate";
 
 // Static assets only. The app shell itself is behind a login and carries the
 // signed-in member's name, so it is cached from a real navigation instead (see
@@ -183,6 +189,34 @@ async function staleWhileRevalidate(event, request, cacheName) {
   return response;
 }
 
+/**
+ * Same conditional-request check as revalidate() above, but awaited instead
+ * of run in the background — for the photo-warming pass behind a forced
+ * "Refresh Data" (or the weekly re-warm), which needs to know the fresh
+ * bytes are actually in the cache before it reports itself done, rather than
+ * handing back stale bytes while a background fetch is still in flight.
+ */
+async function forceRevalidate(request, cacheName) {
+  const cached = await caches.match(request);
+  try {
+    const headers = new Headers(request.headers);
+    headers.delete(FORCE_REVALIDATE_HEADER);
+    if (cached) {
+      const etag = cached.headers.get("ETag");
+      const lastModified = cached.headers.get("Last-Modified");
+      if (etag) headers.set("If-None-Match", etag);
+      if (lastModified) headers.set("If-Modified-Since", lastModified);
+    }
+    const response = await fetch(request, { headers });
+    if (response.status === 304 && cached) return cached;
+    if (isCacheable(response)) cachePut(cacheName, request, response);
+    return response;
+  } catch {
+    if (cached) return cached;
+    throw new Error("offline and nothing cached yet");
+  }
+}
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") {
     return;
@@ -217,6 +251,12 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (url.pathname.startsWith(MEDIA_PREFIX)) {
+    if (event.request.headers.has(FORCE_REVALIDATE_HEADER)) {
+      // Photo-warming wants to know the fresh bytes actually landed before
+      // it moves on, not just that a background revalidation started.
+      event.respondWith(forceRevalidate(event.request, SHELL_CACHE));
+      return;
+    }
     // Member photos: cache-first, but revalidated in the background so a
     // headshot re-uploaded to the same path doesn't get stuck stale forever.
     event.respondWith(staleWhileRevalidate(event, event.request, SHELL_CACHE));

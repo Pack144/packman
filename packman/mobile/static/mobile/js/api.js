@@ -346,10 +346,17 @@ function primedAt() {
  * the bytes or the pixels. A missing photo or an offline blip just means
  * that one member's photo isn't warmed yet; the rest of the pre-load
  * shouldn't stop for it.
+ *
+ * With `forceRevalidate`, the service worker is told (via a header) to check
+ * with the server and only resolve once the real, current bytes are in the
+ * cache — plain cache-first would otherwise hand back the old cached copy
+ * immediately and revalidate in the background, so a caller awaiting this
+ * would think the photo is fresh before it actually is.
  */
-function warmImage(url) {
+function warmImage(url, { forceRevalidate } = {}) {
   if (!url) return Promise.resolve();
-  return fetch(url, { credentials: "same-origin" }).catch(() => {});
+  const headers = forceRevalidate ? { "X-Packman-Force-Revalidate": "1" } : undefined;
+  return fetch(url, { credentials: "same-origin", headers }).catch(() => {});
 }
 
 /** Work through `tasks` a few at a time, giving up if the connection drops. */
@@ -440,7 +447,10 @@ async function runPrime({ force, onProgress }) {
     onProgress?.(done, members.length);
     await drain(
       members.map((member) => async () => {
-        await Promise.all([warmImage(member.avatar), warmImage(member.photo)]);
+        await Promise.all([
+          warmImage(member.avatar, { forceRevalidate: true }),
+          warmImage(member.photo, { forceRevalidate: true }),
+        ]);
       }),
       () => onProgress?.(++done, members.length)
     );
