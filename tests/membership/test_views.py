@@ -4,12 +4,13 @@ from django.test import TestCase
 from django.urls import reverse
 
 from packman.calendars.models import PackYear
-from packman.committees.leadership import is_pack_leader
+from packman.committees.leadership import leads_or_serves_on
 from packman.committees.models import Committee, CommitteeMember
 from packman.dens.factories import DenFactory
 from packman.dens.models import Membership
 from packman.membership.factories import AdultFactory, FamilyFactory, ScoutFactory
 from packman.membership.models import Scout
+from packman.pages.context_processors import PACKMATE_COMMITTEES
 
 User = get_user_model()
 
@@ -191,7 +192,7 @@ class PackMateEntryPointsTestCase(TestCase):
 
     def test_leadership_check_survives_an_undeterminable_pack_year(self):
         """
-        is_pack_leader is asked on every page render, so it must swallow a Pack
+        leads_or_serves_on is asked on every page render, so it must swallow a Pack
         Year it can't pin down rather than raise. Here a second year overlaps
         today, which makes PackYear.objects.current()'s bare .get() blow up.
 
@@ -206,4 +207,44 @@ class PackMateEntryPointsTestCase(TestCase):
         )
         cache.clear()
 
-        self.assertIs(is_pack_leader(self.leader), False)
+        self.assertIs(leads_or_serves_on(self.leader, PACKMATE_COMMITTEES), False)
+
+    def test_shown_to_membership_committee(self):
+        """Membership sits on no den, but still needs to hand the app out."""
+        committee = Committee.objects.create(name="Membership", slug="membership")
+        member = AdultFactory(family=self.active_family())
+        CommitteeMember.objects.create(
+            committee=committee,
+            member=member,
+            year=self.pack_year,
+            position=CommitteeMember.Position.MEMBER,
+        )
+
+        self.client.force_login(member)
+        response = self.client.get(reverse("membership:scouts"))
+        self.assertContains(response, "packmate-promo")
+        self.assertContains(response, "packmate-icon")
+
+    def test_membership_committee_matched_by_name_when_slug_differs(self):
+        # The admin prepopulates the slug but leaves it editable, so a Pack that
+        # renamed one shouldn't silently lose access.
+        committee = Committee.objects.create(name="Membership", slug="new-family-onboarding")
+        member = AdultFactory(family=self.active_family())
+        CommitteeMember.objects.create(
+            committee=committee, member=member, year=self.pack_year, position=CommitteeMember.Position.MEMBER
+        )
+
+        self.client.force_login(member)
+        self.assertContains(self.client.get(reverse("membership:scouts")), "packmate-promo")
+
+    def test_other_committees_still_excluded(self):
+        committee = Committee.objects.create(name="Pinewood Derby", slug="pinewood-derby")
+        member = AdultFactory(family=self.active_family())
+        CommitteeMember.objects.create(
+            committee=committee, member=member, year=self.pack_year, position=CommitteeMember.Position.MEMBER
+        )
+
+        self.client.force_login(member)
+        response = self.client.get(reverse("membership:scouts"))
+        self.assertNotContains(response, "packmate-promo")
+        self.assertNotContains(response, "packmate-icon")

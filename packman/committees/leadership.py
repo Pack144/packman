@@ -50,9 +50,14 @@ def leadership_title(adult):
     return next((title for title in LEADERSHIP_TITLES.values() if title in titles), None)
 
 
-def is_pack_leader(user):
+def leads_or_serves_on(user, committees=()):
     """
-    True when the signed-in user is an Akela, Assistant Akela or Den Leader.
+    True when the user carries a Pack leadership title this Pack Year, or sits
+    on one of the named committees.
+
+    Committees are matched on slug or name, case-insensitively. The admin
+    prepopulates the slug from the name but leaves both editable, so neither on
+    its own is a dependable handle on a committee a Pack set up years ago.
 
     Fails closed and never raises: this is asked on every page render, so a
     Pack Year that can't be pinned down must cost us a promo banner rather than
@@ -63,7 +68,17 @@ def is_pack_leader(user):
     # Scouts and anonymous visitors never carry committee assignments.
     if not getattr(user, "is_authenticated", False) or not hasattr(user, "committee_memberships"):
         return False
+
+    wanted = {name.casefold() for name in committees}
     try:
-        return leadership_title(user) is not None
+        # One pass: the leadership title and the committee both come off the
+        # same rows, and this runs on every page.
+        assignments = user.committee_memberships.filter(year=PackYear.objects.current()).select_related("committee")
+        return any(
+            assignment_title(assignment)
+            or assignment.committee.slug.casefold() in wanted
+            or assignment.committee.name.strip().casefold() in wanted
+            for assignment in assignments
+        )
     except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
         return False
