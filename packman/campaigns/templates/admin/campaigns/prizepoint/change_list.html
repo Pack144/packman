@@ -10,5 +10,58 @@
       earned points to select prizes during a campaign's prize window.
     {% endblocktranslate %}
   </p>
+  <p class="help">
+    {% blocktranslate %}
+      Sales above the highest configured tier are not capped. The rate of
+      points per dollar between the two highest tiers is extrapolated
+      forward: for every full increment of the "earned at" difference
+      between those two tiers, another increment of the point difference
+      is added on top of the highest tier's points.
+    {% endblocktranslate %}
+  </p>
+  <table class="help" style="margin-bottom: 1em;">
+    <caption>{% translate "Example" %}</caption>
+    <thead>
+      <tr>
+        <th>{% translate "Sales total" %}</th>
+        <th>{% translate "Points earned" %}</th>
+        <th>{% translate "How it's calculated" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>$300</td>
+        <td>150</td>
+        <td>{% translate "Configured tier" %}</td>
+      </tr>
+      <tr>
+        <td>$400</td>
+        <td>200</td>
+        <td>{% translate "Highest configured tier" %}</td>
+      </tr>
+      <tr>
+        <td>$550</td>
+        <td>250</td>
+        <td>
+          {% blocktranslate %}
+            Extrapolated: $150 past the $400 tier is one full $100
+            increment, so one more 50-point increment is added
+            (200 + 50 = 250)
+          {% endblocktranslate %}
+        </td>
+      </tr>
+      <tr>
+        <td>$650</td>
+        <td>300</td>
+        <td>
+          {% blocktranslate %}
+            Extrapolated: $250 past the $400 tier is two full $100
+            increments, so two more 50-point increments are added
+            (200 + 50 + 50 = 300)
+          {% endblocktranslate %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
   {{ block.super }}
 {% endblock %}
