@@ -1,0 +1,63 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+  <p class="help">
+    {% blocktranslate %}
+      Prize Points define the sales tiers used to calculate how many points
+      a Scout earns. Each entry pairs a sales total ("earned at") with the
+      number of points awarded once that total is reached. Scouts spend
+      earned points to select prizes during a campaign's prize window.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    {% blocktranslate %}
+      Sales above the highest configured tier are not capped. The rate of
+      points per dollar between the two highest tiers is extrapolated
+      forward: for every full increment of the "earned at" difference
+      between those two tiers, another increment of the point difference
+      is added on top of the highest tier's points.
+    {% endblocktranslate %}
+  </p>
+  <table class="help" style="margin-bottom: 1em; border-collapse: collapse;">
+    <caption>{% translate "Example, based on the two highest configured tiers" %}</caption>
+    <thead>
+      <tr>
+        <th style="padding: 4px 8px;">{% translate "Point value" %}</th>
+        <th style="padding: 4px 8px;">{% translate "Earned at" %}</th>
+        <th style="padding: 4px 8px;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 4px 8px;">3</td>
+        <td style="padding: 4px 8px;">$550.00</td>
+        <td style="padding: 4px 8px;">{% translate "Configured tier" %}</td>
+      </tr>
+      <tr>
+        <td style="padding: 4px 8px;">4</td>
+        <td style="padding: 4px 8px;">$650.00</td>
+        <td style="padding: 4px 8px;">{% translate "Highest configured tier" %}</td>
+      </tr>
+      <tr style="background-color: var(--message-warning-bg);">
+        <td style="padding: 4px 8px;">5</td>
+        <td style="padding: 4px 8px;">$750.00</td>
+        <td style="padding: 4px 8px;">{% translate "Extrapolated" %}</td>
+      </tr>
+      <tr style="background-color: var(--message-warning-bg);">
+        <td style="padding: 4px 8px;">6</td>
+        <td style="padding: 4px 8px;">$850.00</td>
+        <td style="padding: 4px 8px;">{% translate "Extrapolated" %}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="help">
+    {% blocktranslate %}
+      Here, the two highest configured tiers are 3 points at $550.00 and 4
+      points at $650.00: a difference of 1 point per $100.00. Each
+      $100.00 sold beyond $650.00 earns one more point, so $750.00 earns
+      5 points and $850.00 earns 6 points, and so on.
+    {% endblocktranslate %}
+  </p>
+  {{ block.super }}
+{% endblock %}
