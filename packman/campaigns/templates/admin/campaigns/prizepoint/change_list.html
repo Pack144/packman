@@ -23,27 +23,31 @@
     <caption>{% translate "Example, based on the two highest configured tiers" %}</caption>
     <thead>
       <tr>
-        <th></th>
-        <th style="padding: 4px 8px;">{% translate "Configured tier" %}</th>
-        <th style="padding: 4px 8px;">{% translate "Highest configured tier" %}</th>
-        <th style="padding: 4px 8px; background-color: #fff3cd;">{% translate "Extrapolated" %}</th>
-        <th style="padding: 4px 8px; background-color: #fff3cd;">{% translate "Extrapolated" %}</th>
+        <th style="padding: 4px 8px;">{% translate "Point value" %}</th>
+        <th style="padding: 4px 8px;">{% translate "Earned at" %}</th>
+        <th style="padding: 4px 8px;"></th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <th style="text-align: left; padding: 4px 8px;">{% translate "Point value" %}</th>
         <td style="padding: 4px 8px;">3</td>
-        <td style="padding: 4px 8px;">4</td>
-        <td style="padding: 4px 8px; background-color: #fff3cd;">5</td>
-        <td style="padding: 4px 8px; background-color: #fff3cd;">6</td>
+        <td style="padding: 4px 8px;">$550.00</td>
+        <td style="padding: 4px 8px;">{% translate "Configured tier" %}</td>
       </tr>
       <tr>
-        <th style="text-align: left; padding: 4px 8px;">{% translate "Earned at" %}</th>
-        <td style="padding: 4px 8px;">$550.00</td>
+        <td style="padding: 4px 8px;">4</td>
         <td style="padding: 4px 8px;">$650.00</td>
-        <td style="padding: 4px 8px; background-color: #fff3cd;">$750.00</td>
-        <td style="padding: 4px 8px; background-color: #fff3cd;">$850.00</td>
+        <td style="padding: 4px 8px;">{% translate "Highest configured tier" %}</td>
+      </tr>
+      <tr style="background-color: var(--message-warning-bg);">
+        <td style="padding: 4px 8px;">5</td>
+        <td style="padding: 4px 8px;">$750.00</td>
+        <td style="padding: 4px 8px;">{% translate "Extrapolated" %}</td>
+      </tr>
+      <tr style="background-color: var(--message-warning-bg);">
+        <td style="padding: 4px 8px;">6</td>
+        <td style="padding: 4px 8px;">$850.00</td>
+        <td style="padding: 4px 8px;">{% translate "Extrapolated" %}</td>
       </tr>
     </tbody>
   </table>
