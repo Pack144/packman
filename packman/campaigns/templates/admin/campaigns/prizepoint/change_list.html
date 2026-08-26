@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+  <p class="help">
+    {% blocktranslate %}
+      Prize Points define the sales tiers used to calculate how many points
+      a Scout earns. Each entry pairs a sales total ("earned at") with the
+      number of points awarded once that total is reached. Scouts spend
+      earned points to select prizes during a campaign's prize window.
+    {% endblocktranslate %}
+  </p>
+  {{ block.super }}
+{% endblock %}
