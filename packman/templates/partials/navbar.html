@@ -83,22 +83,20 @@
                 <i class="fa-solid fa-user-friends fa-fw"></i>
                 <span class="ms-1">{% translate 'My Family' %}</span>
               </a>
-              {% if packmate_available %}
-                <a class="dropdown-item" href="{% url 'mobile:index' %}">
-                  <svg class="packmate-icon"
-                       viewBox="0 0 24 24"
-                       fill="none"
-                       stroke="currentColor"
-                       stroke-width="1.8"
-                       stroke-linecap="round"
-                       stroke-linejoin="round"
-                       aria-hidden="true">
-                    <rect x="6.5" y="2.5" width="11" height="19" rx="2.3"></rect>
-                    <line x1="10.3" y1="18.4" x2="13.7" y2="18.4"></line>
-                  </svg>
-                  <span class="ms-1">PackMate</span>
-                </a>
-              {% endif %}
+              <a class="dropdown-item" href="{% url 'mobile:index' %}">
+                <svg class="packmate-icon"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true">
+                  <rect x="6.5" y="2.5" width="11" height="19" rx="2.3"></rect>
+                  <line x1="10.3" y1="18.4" x2="13.7" y2="18.4"></line>
+                </svg>
+                <span class="ms-1">PackMate</span>
+              </a>
               <a class="dropdown-item" href="{% url 'password_change' %}">
                 <i class="fa-solid fa-key fa-fw"></i>
                 <span class="ms-1">{% translate 'Change My Password' %}</span>
