@@ -1,20 +1,18 @@
 {% load i18n %}
 
-{% if packmate_available %}
-  <!-- PackMate promo ------------------------------------------------------->
-  <div class="container-fluid p-0" id="packmate-promo">
-    <div class="d-flex flex-wrap align-items-center gap-3 px-3 py-3">
-      <span id="packmate-promo-icon">
-        <i class="fa-solid fa-mobile-screen-button"></i>
-      </span>
-      <div class="flex-grow-1">
-        <div id="packmate-promo-title">{% translate "Get PackMate — the pack directory in your pocket" %}</div>
-        <div id="packmate-promo-tagline">{% translate "Call, text and see den rosters on the go" %}</div>
-      </div>
-      <a class="btn btn-light rounded-pill fw-semibold"
-         href="{% url 'mobile:index' %}">
-        {% translate "Add app" %} <span aria-hidden="true">›</span>
-      </a>
+<!-- PackMate promo ------------------------------------------------------->
+<div class="container-fluid p-0" id="packmate-promo">
+  <div class="d-flex flex-wrap align-items-center gap-3 px-3 py-3">
+    <span id="packmate-promo-icon">
+      <i class="fa-solid fa-mobile-screen-button"></i>
+    </span>
+    <div class="flex-grow-1">
+      <div id="packmate-promo-title">{% translate "Get PackMate — the pack directory in your pocket" %}</div>
+      <div id="packmate-promo-tagline">{% translate "Call, text and see den rosters on the go" %}</div>
     </div>
+    <a class="btn btn-light rounded-pill fw-semibold"
+       href="{% url 'mobile:index' %}">
+      {% translate "Add app" %} <span aria-hidden="true">›</span>
+    </a>
   </div>
-{% endif %}
+</div>
