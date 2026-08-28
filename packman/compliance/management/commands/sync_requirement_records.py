@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.utils.translation import ngettext
 
 from packman.calendars.models import PackYear
 from packman.compliance.models import Requirement
@@ -38,11 +39,11 @@ class Command(BaseCommand):
             if options["dry_run"]:
                 transaction.set_rollback(True)
 
-        summary = f"{total} record(s) opened for {year}"
+        summary = ngettext("%(count)d record", "%(count)d records", total) % {"count": total}
         if options["dry_run"]:
-            self.stdout.write(self.style.WARNING(f"Dry run, rolled back. Would have opened {summary}."))
+            self.stdout.write(self.style.WARNING(f"Dry run, rolled back. Would have opened {summary} for {year}."))
         else:
-            self.stdout.write(self.style.SUCCESS(summary.capitalize() + "."))
+            self.stdout.write(self.style.SUCCESS(f"Opened {summary} for {year}."))
 
     def get_year(self, year):
         if year is None:
