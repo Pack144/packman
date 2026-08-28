@@ -10,6 +10,9 @@
   </div>
   <div class="card-group mb-5">
     {% include 'membership/snippets/detail_card.html' with member_email=email member_addresses=addresses member_phone_numbers=phone_numbers %}
+    {% if user.family == member.family or perms.compliance.view_all_records %}
+      {% include 'compliance/snippets/member_requirements_card.html' %}
+    {% endif %}
   </div>
   {% if member.family.children.count > 1 or member.family.adults.count %}
     <h2>

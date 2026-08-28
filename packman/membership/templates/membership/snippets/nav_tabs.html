@@ -1,0 +1,29 @@
+{% load i18n %}
+{% comment %}
+  The member directory tabs. Pass `active` as one of cubs, adults, all, or
+  dens. Extracted from the three list templates that each carried their own
+  copy of this block.
+{% endcomment %}
+<ul class="nav nav-tabs card-header-tabs">
+  <li class="nav-item">
+    <a class="nav-link {% if active == 'cubs' %}active{% endif %}"
+       href="{% url 'membership:scouts' %}">{% translate "Cubs" %}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active == 'adults' %}active{% endif %}"
+       href="{% url 'membership:parents' %}">{% translate "Adults" %}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active == 'all' %}active{% endif %}"
+       href="{% url 'membership:all' %}">{% translate "All Members" %}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active == 'dens' %}active{% endif %}" href="{% url 'dens:list' %}">Dens</a>
+  </li>
+  {% if perms.compliance.view_all_records %}
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'requirements' %}active{% endif %}"
+         href="{% url 'compliance:dashboard' %}">{% translate "Requirements" %}</a>
+    </li>
+  {% endif %}
+</ul>

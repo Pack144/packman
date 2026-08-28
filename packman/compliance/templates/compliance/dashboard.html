@@ -60,7 +60,7 @@
               {% for cell in row.cells %}
                 <td class="text-center">
                   {% if not cell %}
-                    <span class="text-body-secondary">&mdash;</span>
+                    <span class="text-body-secondary">—</span>
                   {% elif cell.expired %}
                     <span class="badge text-bg-danger" title="{% translate 'Expired' %}">{{ cell.expired }}</span>
                   {% elif cell.outstanding %}

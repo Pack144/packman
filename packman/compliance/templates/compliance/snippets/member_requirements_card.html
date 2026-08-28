@@ -1,0 +1,50 @@
+{% load i18n %}
+{% comment %}
+  One member's requirements, grouped by pack year. Pass `member`.
+
+  Structurally the same accordion as the Committees Served card on the adult
+  detail page. Callers are responsible for gating this on ownership or the
+  compliance.view_all_records permission.
+{% endcomment %}
+{% regroup member.requirement_records.all by year as requirements_by_year %}
+{% if requirements_by_year %}
+  <div class="card shadow-sm">
+    <div class="card-header">{% translate 'Membership Requirements' %}</div>
+    <div class="accordion accordion-flush" id="requirementsAccordion">
+      {% for year in requirements_by_year %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="requirementsHeading{{ forloop.counter }}">
+            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#requirementsCollapse{{ forloop.counter }}"
+                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                    aria-controls="requirementsCollapse{{ forloop.counter }}">{{ year.grouper }}</button>
+          </h2>
+          <div id="requirementsCollapse{{ forloop.counter }}"
+               class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+               aria-labelledby="requirementsHeading{{ forloop.counter }}"
+               data-bs-parent="#requirementsAccordion">
+            <div class="accordion-body p-0">
+              <ul class="list-group list-group-flush">
+                {% for record in year.list %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      {{ record.requirement.name }}
+                      {% if record.expires_on %}
+                        <small class="d-block text-body-secondary">
+                          {% blocktranslate with date=record.expires_on %}Expires {{ date }}{% endblocktranslate %}
+                        </small>
+                      {% endif %}
+                    </div>
+                    {% include 'compliance/snippets/status_badge.html' %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}

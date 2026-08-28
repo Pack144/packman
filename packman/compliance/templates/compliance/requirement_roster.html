@@ -12,7 +12,7 @@
     {% include 'compliance/snippets/year_switcher.html' %}
   </div>
   <p class="text-body-secondary">
-    <a href="{% url 'compliance:dashboard_by_year' year=years.viewing.year %}">&larr; {% translate 'All requirements' %}</a>
+    <a href="{% url 'compliance:dashboard_by_year' year=years.viewing.year %}">← {% translate 'All requirements' %}</a>
   </p>
   {% if requirement.description %}<p>{{ requirement.description }}</p>{% endif %}
 

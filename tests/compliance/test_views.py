@@ -330,3 +330,86 @@ class EmptyStateTestCase(ComplianceViewTestCase):
         response = self.client.get(reverse("compliance:dashboard"))
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
+
+class SiteIntegrationTestCase(ComplianceViewTestCase):
+    """The tabs, navbar entries, and member detail cards added to membership."""
+
+    DIRECTORY_URLS = ("membership:scouts", "membership:parents", "membership:all")
+
+    def test_directory_pages_still_render_after_the_tabs_were_extracted(self):
+        self.login(self.parent)
+
+        for name in self.DIRECTORY_URLS:
+            with self.subTest(url=name):
+                response = self.client.get(reverse(name))
+
+                self.assertEqual(response.status_code, HTTPStatus.OK)
+                for tab in ("Cubs", "Adults", "All Members", "Dens"):
+                    self.assertContains(response, tab)
+
+    def dashboard_link(self):
+        # Match the href exactly. The bare path is a prefix of the my-family
+        # URL, which every member sees.
+        return f'href="{reverse("compliance:dashboard")}"'
+
+    def test_requirements_tab_is_hidden_from_a_plain_parent(self):
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:scouts"))
+
+        self.assertNotContains(response, self.dashboard_link())
+
+    def test_requirements_tab_is_shown_to_leadership(self):
+        self.login(self.leader)
+
+        response = self.client.get(reverse("membership:scouts"))
+
+        self.assertContains(response, self.dashboard_link())
+
+    def test_my_requirements_is_offered_to_every_member(self):
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:scouts"))
+
+        self.assertContains(response, reverse("compliance:my_family"))
+
+    def test_card_appears_on_a_cub_in_your_own_family(self):
+        requirement = CubRequirementFactory(slug="card-own")
+        scout = self.family.children.first()
+        RequirementRecordFactory(requirement=requirement, year=self.year, member=scout)
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:scout_detail", kwargs={"slug": scout.slug}))
+
+        self.assertContains(response, "Membership Requirements")
+        self.assertContains(response, requirement.name)
+
+    def test_card_is_hidden_on_another_family_s_cub(self):
+        requirement = CubRequirementFactory(slug="card-other")
+        scout = self.leader_family.children.first()
+        RequirementRecordFactory(requirement=requirement, year=self.year, member=scout)
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:scout_detail", kwargs={"slug": scout.slug}))
+
+        self.assertNotContains(response, "Membership Requirements")
+
+    def test_leadership_sees_the_card_on_any_cub(self):
+        requirement = CubRequirementFactory(slug="card-leader")
+        scout = self.family.children.first()
+        RequirementRecordFactory(requirement=requirement, year=self.year, member=scout)
+        self.login(self.leader)
+
+        response = self.client.get(reverse("membership:scout_detail", kwargs={"slug": scout.slug}))
+
+        self.assertContains(response, "Membership Requirements")
+
+    def test_card_appears_on_an_adult_page(self):
+        requirement = AdultRequirementFactory(slug="card-adult")
+        RequirementRecordFactory(requirement=requirement, year=self.year, member=self.parent)
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:parent_detail", kwargs={"slug": self.parent.slug}))
+
+        self.assertContains(response, "Membership Requirements")
