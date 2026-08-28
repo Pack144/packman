@@ -1,0 +1,27 @@
+{% load i18n %}
+{% comment %}
+  Year switcher. Pass `years`, the available/current/viewing dict. Each entry
+  in `available` carries its own url, built by PackYearContextMixin, because
+  the routes take different kwargs.
+{% endcomment %}
+<div class="btn-group">
+  <button type="button" class="btn btn-outline-secondary">{{ years.viewing }}</button>
+  <button type="button"
+          class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+          data-bs-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false">
+    <span class="visually-hidden">{% translate 'Toggle Dropdown' %}</span>
+  </button>
+  <div class="dropdown-menu dropdown-menu-end">
+    {% for entry in years.available %}
+      {% if entry.year == years.viewing %}
+        <div class="dropdown-item active">{{ entry.year }}</div>
+      {% else %}
+        <a class="dropdown-item" href="{{ entry.url }}">{{ entry.year }}</a>
+      {% endif %}
+    {% empty %}
+      <div class="dropdown-item disabled">{% translate 'No records yet' %}</div>
+    {% endfor %}
+  </div>
+</div>

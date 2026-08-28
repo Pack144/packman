@@ -1,0 +1,33 @@
+{% load i18n %}
+{% comment %}
+  One record as a badge. Pass `record`; a missing record reads as not started,
+  since a Cub who joined mid-year has no row until someone records against them.
+{% endcomment %}
+{% if not record %}
+  <span class="badge text-bg-secondary" title="{% translate 'Nothing recorded yet' %}">
+    <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Not started' %}
+  </span>
+{% elif record.effective_status == 'EXP' %}
+  <span class="badge text-bg-danger"
+        title="{% blocktranslate with date=record.expires_on %}Expired {{ date }}{% endblocktranslate %}">
+    <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
+  </span>
+{% elif record.effective_status == 'SOON' %}
+  <span class="badge text-bg-warning"
+        title="{% blocktranslate with date=record.expires_on %}Expires {{ date }}{% endblocktranslate %}">
+    <i class="fa-solid fa-clock fa-fw"></i> {% translate 'Expiring' %}
+  </span>
+{% elif record.effective_status == 'OK' %}
+  <span class="badge text-bg-success"
+        title="{% if record.expires_on %}{% blocktranslate with date=record.expires_on %}Good until {{ date }}{% endblocktranslate %}{% else %}{% translate 'Complete' %}{% endif %}">
+    <i class="fa-solid fa-circle-check fa-fw"></i> {% translate 'Complete' %}
+  </span>
+{% elif record.effective_status == 'NA' %}
+  <span class="badge text-bg-light" title="{% translate 'Waived by pack leadership' %}">
+    <i class="fa-solid fa-circle-minus fa-fw"></i> {% translate 'Waived' %}
+  </span>
+{% else %}
+  <span class="badge text-bg-secondary" title="{% translate 'Nothing recorded yet' %}">
+    <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Not started' %}
+  </span>
+{% endif %}
