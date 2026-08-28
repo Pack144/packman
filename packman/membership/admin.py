@@ -20,6 +20,7 @@ from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
 from packman.calendars.models import PackYear
 from packman.committees.models import CommitteeMember
+from packman.compliance.admin import FamilyRequirementRecordInline, MemberRequirementRecordInline
 from packman.dens.models import Den
 from packman.dens.models import Membership as DenMembership
 from packman.dens.models import Rank
@@ -195,7 +196,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "get_adults",
     )
     autocomplete_fields = ["family", "school"]
-    inlines = [DenMembershipInline]
+    inlines = [DenMembershipInline, MemberRequirementRecordInline]
     search_fields = (
         "first_name",
         "middle_name",
@@ -576,7 +577,7 @@ class AdultAdmin(UserAdmin):
         ),
         (_("Account Details"), {"fields": (("email", "password1", "password2"),)}),
     )
-    inlines = [PhoneNumberInline, AddressInline, CommitteeMemberInline]
+    inlines = [PhoneNumberInline, AddressInline, CommitteeMemberInline, MemberRequirementRecordInline]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -660,6 +661,7 @@ class FamilyAdmin(admin.ModelAdmin):
         "children_count",
     )
     list_filter = (FamilyListFilter,)
+    inlines = [FamilyRequirementRecordInline]
     search_fields = (
         "name",
         "adults__first_name",
@@ -669,6 +671,17 @@ class FamilyAdmin(admin.ModelAdmin):
         "children__nickname",
         "children__last_name",
     )
+
+    def get_inlines(self, request, obj=None):
+        """
+        Hide inlines on the add page.
+
+        A Family's primary key is a UUID with a default, so an unsaved instance
+        already has one. Django's inline formset takes that to mean the parent
+        exists and filters against it, which raises. There is nothing to show
+        before the family has been created anyway.
+        """
+        return super().get_inlines(request, obj) if obj else []
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -691,3 +704,26 @@ class FamilyAdmin(admin.ModelAdmin):
     )
     def children_count(self, obj):
         return obj._children_count
+
+
+@admin.register(models.Member)
+class MemberAdmin(admin.ModelAdmin):
+    """
+    Registered for lookup only.
+
+    Adults and Cubs are edited on their own pages; this exists so that the
+    `member` autocomplete on requirement records has a changelist to search,
+    since autocomplete resolves against the target model's admin.
+    """
+
+    list_display = ("__str__", "last_name", "date_added")
+    search_fields = ("first_name", "nickname", "last_name")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
