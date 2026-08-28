@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -92,6 +93,49 @@ class Requirement(TimeStampedUUIDModel):
     def tracks_member(self):
         """True when this requirement is recorded against a person rather than a family."""
         return self.applies_to in (self.Audience.CUB, self.Audience.ADULT)
+
+    def subjects_for(self, year):
+        """The Cubs, adults, or families this requirement applies to in a given pack year."""
+        Family = apps.get_model("membership", "Family")
+
+        if self.applies_to == self.Audience.CUB:
+            return apps.get_model("membership", "Scout").objects.active_in(year)
+
+        if self.applies_to == self.Audience.ADULT:
+            Adult = apps.get_model("membership", "Adult")
+            criteria = Q(family__in=Family.objects.active_in(year).values("pk"))
+            if self.include_contributors:
+                criteria |= Q(role=Adult.CONTRIBUTOR)
+            return Adult.objects.filter(criteria, is_active=True).distinct()
+
+        return Family.objects.filter(pk__in=Family.objects.active_in(year).values("pk"))
+
+    def sync_records(self, year=None):
+        """
+        Open a record for every active subject that does not have one yet, and
+        return those created.
+
+        This is a convenience for the start of a pack year, not an invariant
+        anything else relies on -- a Cub who joins in October simply has no row
+        until someone records against them.
+        """
+        year = year or PackYear.objects.current()
+        record_model = self.records.model
+        for_family = self.applies_to == self.Audience.FAMILY
+        subject_field = "family_id" if for_family else "member_id"
+        already_tracked = set(self.records.filter(year=year).values_list(subject_field, flat=True))
+
+        pending = []
+        for subject in self.subjects_for(year):
+            if subject.pk in already_tracked:
+                continue
+            if for_family:
+                pending.append(record_model(requirement=self, year=year, family=subject))
+            else:
+                # bulk_create() skips save(), so the family has to be set here.
+                pending.append(record_model(requirement=self, year=year, member_id=subject.pk, family=subject.family))
+
+        return record_model.objects.bulk_create(pending, ignore_conflicts=True)
 
 
 class RequirementRecord(TimeStampedUUIDModel):
