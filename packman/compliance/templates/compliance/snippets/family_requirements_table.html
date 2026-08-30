@@ -1,0 +1,70 @@
+{% load i18n %}
+{% comment %}
+  Every family member's requirements for one pack year, at a glance.
+
+  Pass `family_requirements`, the list of {subject, records} groups built by
+  compliance.views.FamilyComplianceView.group_by_subject, and `year`.
+  Callers gate this on the viewer belonging to the family.
+{% endcomment %}
+{% if family_requirements %}
+  <div class="card mt-5">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-baseline">
+        <h3 class="card-title">{% translate 'Membership Requirements' %}</h3>
+        <small class="text-body-secondary">{{ year }}</small>
+      </div>
+      {% if family_outstanding %}
+        <p class="mb-3">
+          <span class="badge text-bg-warning">
+            {% blocktranslate count n=family_outstanding|length %}
+              {{ n }} item needs attention
+            {% plural %}
+              {{ n }} items need attention
+            {% endblocktranslate %}
+          </span>
+        </p>
+      {% else %}
+        <p class="mb-3">
+          <span class="badge text-bg-success">{% translate 'Everything is up to date' %}</span>
+        </p>
+      {% endif %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">{% translate 'Who' %}</th>
+              <th scope="col">{% translate 'Requirement' %}</th>
+              <th scope="col">{% translate 'Expires' %}</th>
+              <th scope="col" class="text-end">{% translate 'Status' %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for group in family_requirements %}
+              {% for record in group.records %}
+                <tr>
+                  {% if forloop.first %}
+                    <th scope="row"
+                        class="fw-normal"
+                        rowspan="{{ group.records|length }}">{{ group.subject }}</th>
+                  {% endif %}
+                  <td>{{ record.requirement }}</td>
+                  <td class="text-body-secondary">{{ record.expires_on|default:"" }}</td>
+                  <td class="text-end">{% include 'compliance/snippets/status_badge.html' %}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <th scope="row" class="fw-normal">{{ group.subject }}</th>
+                  <td colspan="3" class="text-body-secondary">
+                    {% translate 'Nothing is being tracked this year.' %}
+                  </td>
+                </tr>
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <a class="btn btn-sm btn-outline-secondary mt-3"
+         href="{% url 'compliance:my_family' %}">{% translate 'See more detail' %}</a>
+    </div>
+  </div>
+{% endif %}

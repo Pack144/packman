@@ -9,6 +9,7 @@ from packman.membership.models import Family
 from .managers import EXPIRING_WINDOW
 from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest
 from .models import Requirement, RequirementRecord
+from .summaries import summarize_family
 
 
 class RequirementRollupMixin:
@@ -193,39 +194,10 @@ class FamilyComplianceView(UserIsOwnFamilyOrLeadershipTest, PackYearContextMixin
         family = self.object
         context.setdefault("family", family)
 
-        if family is None:
-            context["groups"] = []
-            context["outstanding"] = []
-            return context
-
-        records = (
-            RequirementRecord.objects.filter(family=family, year=context["years"]["viewing"])
-            .select_related("requirement", "member")
-            .order_by("requirement__sort_order", "requirement__name")
-        )
-        context["groups"] = self.group_by_subject(family, records)
-        context["outstanding"] = [record for record in records if not record.is_satisfied]
+        summary = summarize_family(family, context["years"]["viewing"])
+        context["groups"] = summary["groups"]
+        context["outstanding"] = summary["outstanding"]
         return context
-
-    @staticmethod
-    def group_by_subject(family, records):
-        """
-        One panel per person, plus one for the family as a whole, so a parent
-        can see at a glance who still owes what.
-        """
-        by_member = {}
-        household = []
-        for record in records:
-            if record.member_id:
-                by_member.setdefault(record.member_id, []).append(record)
-            else:
-                household.append(record)
-
-        groups = [{"subject": scout, "records": by_member.get(scout.pk, [])} for scout in family.children.all()]
-        groups += [{"subject": adult, "records": by_member.get(adult.pk, [])} for adult in family.adults.all()]
-        if household:
-            groups.append({"subject": family, "records": household})
-        return groups
 
 
 class MyFamilyComplianceView(ActiveMemberOrContributorTest, FamilyComplianceView):

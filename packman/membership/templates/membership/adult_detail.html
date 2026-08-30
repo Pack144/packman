@@ -101,4 +101,7 @@
       </div>
     </div>
   {% endif %}
+  {% if user.family == member.family %}
+    {% include 'compliance/snippets/family_requirements_table.html' with year=requirements_year %}
+  {% endif %}
 {% endblock content %}

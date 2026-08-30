@@ -496,3 +496,86 @@ class MatrixCellStateTestCase(ComplianceViewTestCase):
 
         self.assertContains(response, "still to do")
         self.assertContains(response, "text-bg-warning")
+
+
+class MyFamilyPageSummaryTestCase(ComplianceViewTestCase):
+    """
+    The whole family's requirements, summarised below the Add Family Members
+    button on /members/my-family/.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.cub = self.family.children.first()
+        self.cub_requirement = CubRequirementFactory(slug="summary-cub")
+        self.dues = FamilyRequirementFactory(slug="summary-dues")
+
+    def test_lists_every_member_of_the_family(self):
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.year, member=self.cub)
+        RequirementRecordFactory(requirement=self.dues, year=self.year, member=None, family=self.family)
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:my-family"))
+
+        subjects = [str(group["subject"]) for group in response.context["family_requirements"]]
+        self.assertIn(str(self.cub), subjects)
+        self.assertIn(str(self.parent), subjects)
+        self.assertIn(str(self.family), subjects)
+
+    def test_counts_only_items_needing_attention(self):
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.year, member=self.cub)
+        RequirementRecordFactory(
+            requirement=self.dues,
+            year=self.year,
+            member=None,
+            family=self.family,
+            status=RequirementRecord.Status.COMPLETE,
+        )
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:my-family"))
+
+        self.assertEqual(len(response.context["family_outstanding"]), 1)
+
+    def test_an_expiring_record_does_not_count_as_needing_attention(self):
+        ExpiringRecordFactory(requirement=self.cub_requirement, year=self.year, member=self.cub)
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:my-family"))
+
+        self.assertEqual(response.context["family_outstanding"], [])
+
+    def test_an_expired_record_needs_attention(self):
+        ExpiredRecordFactory(requirement=self.cub_requirement, year=self.year, member=self.cub)
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:my-family"))
+
+        self.assertEqual(len(response.context["family_outstanding"]), 1)
+
+    def test_the_table_renders(self):
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.year, member=self.cub)
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:my-family"))
+
+        self.assertContains(response, self.cub_requirement.name)
+        self.assertContains(response, "needs attention")
+
+    def test_another_adults_page_does_not_show_the_family_summary(self):
+        """The summary belongs to My Family only, not to every adult page."""
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.year, member=self.cub)
+        self.login(self.parent)
+
+        response = self.client.get(reverse("membership:parent_detail", kwargs={"slug": self.leader.slug}))
+
+        self.assertNotIn("family_requirements", response.context)
+
+    def test_a_member_without_a_family_does_not_break_the_page(self):
+        contributor = AdultFactory(family=None, role=Adult.CONTRIBUTOR)
+        self.login(contributor)
+
+        response = self.client.get(reverse("membership:my-family"))
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response.context["family_requirements"], [])
