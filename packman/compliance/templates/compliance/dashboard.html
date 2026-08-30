@@ -61,12 +61,17 @@
                 <td class="text-center">
                   {% if not cell %}
                     <span class="text-body-secondary">—</span>
-                  {% elif cell.expired %}
+                  {% elif cell.state == 'expired' %}
                     <span class="badge text-bg-danger" title="{% translate 'Expired' %}">{{ cell.expired }}</span>
-                  {% elif cell.outstanding %}
+                  {% elif cell.state == 'partial' %}
+                    <span class="badge text-bg-warning"
+                          title="{% blocktranslate with left=cell.outstanding total=cell.total %}{{ left }} of {{ total }} still to do{% endblocktranslate %}">
+                      {{ cell.outstanding }}
+                    </span>
+                  {% elif cell.state == 'outstanding' %}
                     <span class="badge text-bg-secondary"
                           title="{% translate 'Not started' %}">{{ cell.outstanding }}</span>
-                  {% elif cell.expiring %}
+                  {% elif cell.state == 'expiring' %}
                     <span class="badge text-bg-warning" title="{% translate 'Expiring soon' %}">{{ cell.expiring }}</span>
                   {% else %}
                     <i class="fa-solid fa-circle-check text-success" title="{% translate 'Complete' %}"></i>

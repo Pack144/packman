@@ -13,6 +13,7 @@ from packman.compliance.factories import (
     AdultRequirementFactory,
     CubRequirementFactory,
     ExpiredRecordFactory,
+    ExpiringRecordFactory,
     FamilyRequirementFactory,
     RequirementRecordFactory,
 )
@@ -413,3 +414,85 @@ class SiteIntegrationTestCase(ComplianceViewTestCase):
         response = self.client.get(reverse("membership:parent_detail", kwargs={"slug": self.parent.slug}))
 
         self.assertContains(response, "Membership Requirements")
+
+
+class MatrixCellStateTestCase(ComplianceViewTestCase):
+    """
+    The dashboard cell reports one state per family and requirement. Partly
+    done reads yellow so a family with one parent's medical form on file does
+    not look identical to one with none.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.login(self.leader)
+        self.requirement = AdultRequirementFactory(slug="medical-adult-state")
+        # Two adults in the family, so partial completion is possible.
+        self.adults = list(self.family.adults.all())
+        while len(self.adults) < 2:
+            self.adults.append(AdultFactory(family=self.family))
+
+    def cell_for(self, family):
+        response = self.client.get(reverse("compliance:dashboard"))
+        row = next(r for r in response.context["matrix"] if r["family"] == family)
+        index = [r.slug for r in response.context["requirements"]].index(self.requirement.slug)
+        return row["cells"][index]
+
+    def record(self, adult, **kwargs):
+        return RequirementRecordFactory(requirement=self.requirement, year=self.year, member=adult, **kwargs)
+
+    def test_none_complete_reads_not_started(self):
+        for adult in self.adults:
+            self.record(adult)
+
+        self.assertEqual(self.cell_for(self.family)["state"], "outstanding")
+
+    def test_one_of_two_complete_reads_partial(self):
+        self.record(self.adults[0], status=RequirementRecord.Status.COMPLETE)
+        self.record(self.adults[1])
+
+        cell = self.cell_for(self.family)
+        self.assertEqual(cell["state"], "partial")
+        self.assertEqual(cell["outstanding"], 1)
+        self.assertEqual(cell["total"], 2)
+
+    def test_all_complete_reads_complete(self):
+        for adult in self.adults:
+            self.record(adult, status=RequirementRecord.Status.COMPLETE)
+
+        self.assertEqual(self.cell_for(self.family)["state"], "complete")
+
+    def test_a_waived_record_counts_as_done(self):
+        self.record(self.adults[0], status=RequirementRecord.Status.WAIVED)
+        self.record(self.adults[1])
+
+        self.assertEqual(self.cell_for(self.family)["state"], "partial")
+
+    def test_expired_still_wins_over_partial(self):
+        ExpiredRecordFactory(requirement=self.requirement, year=self.year, member=self.adults[0])
+        self.record(self.adults[1])
+
+        self.assertEqual(self.cell_for(self.family)["state"], "expired")
+
+    def test_expiring_reads_expiring_when_nothing_is_outstanding(self):
+        ExpiringRecordFactory(requirement=self.requirement, year=self.year, member=self.adults[0])
+        self.record(self.adults[1], status=RequirementRecord.Status.COMPLETE)
+
+        self.assertEqual(self.cell_for(self.family)["state"], "expiring")
+
+    def test_partly_done_families_still_match_the_outstanding_filter(self):
+        self.record(self.adults[0], status=RequirementRecord.Status.COMPLETE)
+        self.record(self.adults[1])
+
+        response = self.client.get(reverse("compliance:dashboard"), {"filter": "outstanding"})
+
+        self.assertIn(self.family, [row["family"] for row in response.context["matrix"]])
+
+    def test_partial_renders_a_yellow_badge(self):
+        self.record(self.adults[0], status=RequirementRecord.Status.COMPLETE)
+        self.record(self.adults[1])
+
+        response = self.client.get(reverse("compliance:dashboard"))
+
+        self.assertContains(response, "still to do")
+        self.assertContains(response, "text-bg-warning")

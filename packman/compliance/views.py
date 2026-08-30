@@ -95,6 +95,9 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         if den := self.request.GET.get("den"):
             families = families.filter(children__den_memberships__den__number=den).distinct()
 
+        for cell in cells.values():
+            cell["state"] = self.cell_state(cell)
+
         wanted = self.request.GET.get("filter")
         rows = []
         for family in families:
@@ -105,9 +108,28 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         return rows
 
     @staticmethod
+    def cell_state(cell):
+        """
+        The single thing a family's cell should report, most urgent first.
+
+        Partly done sits between expired and not started. A family where one
+        parent has filed a medical form and the other has not should not read
+        the same as a family where neither has.
+        """
+        if cell["expired"]:
+            return "expired"
+        if cell["outstanding"]:
+            return "partial" if cell["outstanding"] < cell["total"] else "outstanding"
+        if cell["expiring"]:
+            return "expiring"
+        return "complete"
+
+    @staticmethod
     def row_matches(cells, wanted):
         if wanted not in ("outstanding", "expiring", "expired"):
             return True
+        # A partly done family still has outstanding items, so it keeps
+        # matching the outstanding filter.
         return any(cell and cell[wanted] for cell in cells)
 
 
