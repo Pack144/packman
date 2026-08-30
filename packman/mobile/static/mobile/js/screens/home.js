@@ -1,5 +1,12 @@
 import { appBar, avatar, esc, initialsOf, pluralize, setMyDenCount } from "../components.js";
-import { api, currentAkela, getDirectory, myActiveChildren, myFamilyCard } from "../api.js";
+import {
+  api,
+  currentAkela,
+  getDirectory,
+  getFamilyRequirements,
+  myActiveChildren,
+  myFamilyCard,
+} from "../api.js";
 import { installBanner } from "../install.js";
 
 function packDigits(packName) {
@@ -93,8 +100,36 @@ function akelaRow(akela) {
   return `<a class="row" href="#/profile/${encodeURIComponent(akela.slug)}">${inner}<span class="chev">&rsaquo;</span></a>`;
 }
 
+/**
+ * A nudge when the family owes paperwork, linking through to the detail on
+ * Me. Silent when everything is in order — Home shouldn't carry a banner
+ * saying nothing is wrong.
+ */
+function requirementsNotice(requirements) {
+  if (!requirements?.outstanding) return "";
+  const count = requirements.outstanding;
+  return `
+    <a class="notice warn card" href="#/me">
+      <span class="notice-dot" aria-hidden="true"></span>
+      <div class="grow">
+        <div class="notice-title">${count} membership ${
+          count === 1 ? "requirement needs" : "requirements need"
+        } attention</div>
+        <div class="notice-sub">Tap to see what's outstanding for your family.</div>
+      </div>
+      <span class="chev">&rsaquo;</span>
+    </a>
+  `;
+}
+
 export async function renderHome(container) {
-  const [directory, { event }] = await Promise.all([getDirectory(), api.event()]);
+  // getFamilyRequirements() resolves null rather than throwing, so a failed
+  // or offline call just drops the notice instead of taking Home down.
+  const [directory, { event }, requirements] = await Promise.all([
+    getDirectory(),
+    api.event(),
+    getFamilyRequirements(),
+  ]);
   const user = directory.me;
   const family = myFamilyCard(directory);
   const akela = currentAkela(directory);
@@ -120,6 +155,7 @@ export async function renderHome(container) {
         ${family ? `<div class="h1sub">${esc(family.name)}</div>` : ""}
       </div>
       <div id="install-slot">${installBanner()}</div>
+      ${requirementsNotice(requirements)}
       ${familyCard(family)}
       ${eventCard(event)}
       <section>

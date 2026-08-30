@@ -14,6 +14,7 @@ from packman.committees.models import Committee, CommitteeMember
 from packman.compliance.factories import (
     CubRequirementFactory,
     ExpiredRecordFactory,
+    ExpiringRecordFactory,
     FamilyRequirementFactory,
     RequirementRecordFactory,
 )
@@ -584,6 +585,21 @@ class RequirementsApiTests(MobileDirectoryTestCase):
         data = self.client.get(self.url).json()
 
         self.assertEqual(data["outstanding"], 1)
+
+    def test_outstanding_is_zero_when_everything_is_satisfied(self):
+        """Home hides its notice on this; a waived item counts as satisfied."""
+        RequirementRecordFactory(
+            requirement=self.cub_requirement,
+            year=self.pack_year,
+            member=self.scout,
+            status=RequirementRecord.Status.WAIVED,
+        )
+        ExpiringRecordFactory(requirement=self.dues, year=self.pack_year, member=None, family=self.family)
+        self.client.force_login(self.parent)
+
+        data = self.client.get(self.url).json()
+
+        self.assertEqual(data["outstanding"], 0)
 
     def test_the_household_group_has_no_profile_slug(self):
         RequirementRecordFactory(requirement=self.dues, year=self.pack_year, member=None, family=self.family)

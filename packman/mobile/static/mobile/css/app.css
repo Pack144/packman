@@ -911,6 +911,47 @@ select.pill {
 /* Dark theme. Follows the phone's appearance setting; the surfaces and text
    invert while the Pack's brand colours carry over unchanged. Blues and the
    red heading are lifted so they still read against a dark background. */
+/* Home's outstanding-requirements nudge */
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 12px 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.notice.warn {
+  background: var(--status-warn-bg);
+  border-color: var(--status-warn-ink);
+}
+
+.notice-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--status-warn-ink);
+}
+
+.notice-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--status-warn-ink);
+}
+
+.notice-sub {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--status-warn-ink);
+  opacity: 0.85;
+  margin-top: 1px;
+}
+
+.notice .chev {
+  color: var(--status-warn-ink);
+}
+
 /* Membership requirements (Me screen) */
 .req-summary {
   display: flex;
