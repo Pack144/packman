@@ -67,9 +67,9 @@ body {
 }
 
 body {
-  /* The tab bar's colour rather than --bg, so any strip iOS leaves outside the
-     app's viewport (the home indicator area in standalone) blends into the tab
-     bar instead of showing as a band. */
+  /* #app is position: fixed; inset: 0 and fully covers the viewport, so this
+     is only ever visible for an instant before #app paints — kept as the tab
+     bar's colour (not --bg) so that flash is unobtrusive. */
   background: var(--surface);
   color: var(--ink);
   font-family: "Public Sans", system-ui, sans-serif;
@@ -79,14 +79,26 @@ body {
 #app {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+
+  /* Anchored straight to the visual viewport frame rather than sized with a
+     viewport-height unit. iOS WKWebView's 100dvh is unreliable in standalone
+     mode and can resolve shorter than the real window height, leaving a
+     strip of bare `body` below #app that no safe-area padding *inside* #app
+     can reach. position: fixed + inset: 0 removes the viewport-height unit
+     from the equation: there's nothing left outside the box for iOS to
+     leave uncovered.
+
+     width: 100% keeps max-width/margin: 0 auto centering deterministic — a
+     fixed box with left/right: 0 doesn't reliably stretch-to-fill via
+     shrink-to-fit the way a static block does. This still anchors the Menu
+     popover/backdrop (position: absolute) to the phone-width column instead
+     of the full (possibly wider, desktop-preview) viewport, same as before. */
+  position: fixed;
+  inset: 0;
+  width: 100%;
   max-width: 480px;
   margin: 0 auto;
   background: var(--bg);
-
-  /* Anchors the Menu popover/backdrop (position: absolute) to the phone-width
-     column instead of the full (possibly wider, desktop-preview) viewport. */
-  position: relative;
 }
 
 a {
