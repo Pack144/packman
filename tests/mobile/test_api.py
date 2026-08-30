@@ -11,6 +11,13 @@ from PIL import Image
 from packman.address_book.models import PhoneNumber
 from packman.calendars.models import Category, Event, PackYear
 from packman.committees.models import Committee, CommitteeMember
+from packman.compliance.factories import (
+    CubRequirementFactory,
+    ExpiredRecordFactory,
+    FamilyRequirementFactory,
+    RequirementRecordFactory,
+)
+from packman.compliance.models import RequirementRecord
 from packman.dens.factories import DenFactory
 from packman.dens.models import Membership, Rank
 from packman.membership.factories import AdultFactory, FamilyFactory, ScoutFactory
@@ -512,3 +519,105 @@ class ApiPermissionTestCase(MobileDirectoryTestCase):
         self.client.force_login(contributor)
         for name in self.ENDPOINTS:
             self.assertEqual(self.client.get(reverse(name)).status_code, 200, msg=name)
+
+
+class RequirementsApiTests(MobileDirectoryTestCase):
+    """
+    The Me screen's requirements section. Scoped to the caller's own family
+    rather than folded into the shared directory payload.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.url = reverse("mobile:api-requirements")
+        self.cub_requirement = CubRequirementFactory(slug="mobile-cub")
+        self.dues = FamilyRequirementFactory(slug="mobile-dues")
+
+    def test_anonymous_is_refused(self):
+        response = self.client.get(self.url)
+
+        self.assertIn(response.status_code, (401, 403))
+
+    def test_returns_the_callers_own_family(self):
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.pack_year, member=self.scout)
+        self.client.force_login(self.parent)
+
+        data = self.client.get(self.url).json()
+
+        names = [group["name"] for group in data["groups"]]
+        self.assertIn(str(self.scout), names)
+        self.assertIn(str(self.parent), names)
+
+    def test_does_not_leak_another_family(self):
+        other_family = FamilyFactory()
+        other_scout = ScoutFactory(family=other_family, status=Scout.ACTIVE)
+        Membership.objects.create(scout=other_scout, den=self.den, year_assigned=self.pack_year)
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.pack_year, member=other_scout)
+        self.client.force_login(self.parent)
+
+        data = self.client.get(self.url).json()
+
+        self.assertNotIn(str(other_scout), [group["name"] for group in data["groups"]])
+
+    def test_sends_the_derived_status_not_the_stored_one(self):
+        ExpiredRecordFactory(requirement=self.cub_requirement, year=self.pack_year, member=self.scout)
+        self.client.force_login(self.parent)
+
+        data = self.client.get(self.url).json()
+
+        record = next(r for g in data["groups"] for r in g["records"])
+        # Stored as COMPLETE; the passed expiry is what makes it expired.
+        self.assertEqual(record["status"], "EXP")
+        self.assertEqual(record["status_label"], "Expired")
+
+    def test_counts_only_items_needing_attention(self):
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.pack_year, member=self.scout)
+        RequirementRecordFactory(
+            requirement=self.dues,
+            year=self.pack_year,
+            member=None,
+            family=self.family,
+            status=RequirementRecord.Status.COMPLETE,
+        )
+        self.client.force_login(self.parent)
+
+        data = self.client.get(self.url).json()
+
+        self.assertEqual(data["outstanding"], 1)
+
+    def test_the_household_group_has_no_profile_slug(self):
+        RequirementRecordFactory(requirement=self.dues, year=self.pack_year, member=None, family=self.family)
+        self.client.force_login(self.parent)
+
+        data = self.client.get(self.url).json()
+
+        household = next(g for g in data["groups"] if g["name"] == str(self.family))
+        self.assertIsNone(household["slug"])
+
+    def test_members_carry_a_slug_so_the_app_can_link_them(self):
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.pack_year, member=self.scout)
+        self.client.force_login(self.parent)
+
+        data = self.client.get(self.url).json()
+
+        cub = next(g for g in data["groups"] if g["name"] == str(self.scout))
+        self.assertEqual(cub["slug"], self.scout.slug)
+
+    def test_a_member_without_a_family_gets_an_empty_payload(self):
+        contributor = AdultFactory(family=None, role=Adult.CONTRIBUTOR)
+        self.client.force_login(contributor)
+
+        data = self.client.get(self.url).json()
+
+        self.assertEqual(data["groups"], [])
+        self.assertEqual(data["outstanding"], 0)
+
+    def test_requirements_are_absent_from_the_shared_directory(self):
+        """A family's paperwork must not travel in the pack-wide payload."""
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.pack_year, member=self.scout)
+        self.client.force_login(self.parent)
+
+        data = self.client.get(reverse("mobile:api-directory")).json()
+
+        self.assertNotIn("requirements", data)
+        self.assertNotIn("requirements", data["members"][0])

@@ -24,6 +24,12 @@ const EVENT_FRESH_MS = 30_000;
 // "Refresh Data" tap (force) bypasses this entirely.
 const DIRECTORY_TTL_MS = 6 * 60 * 60 * 1000;
 
+// The viewer's own requirements. Leadership records these as paperwork comes
+// in, so a parent who has just handed in a form should see it land soon
+// rather than on the directory's six-hour cadence — but not so eagerly that
+// opening Me twice in a row costs two round trips.
+const REQUIREMENTS_FRESH_MS = 60_000;
+
 // Browsers allow six connections per host on HTTP/1.1; staying just under that
 // keeps the pre-load from starving whatever the reader is actively looking at.
 const PRIME_CONCURRENCY = 5;
@@ -201,7 +207,25 @@ async function cachedRequest(path, ttlMs) {
 export const api = {
   directory: () => cachedRequest("pack_directory/", DIRECTORY_TTL_MS),
   event: () => cachedRequest("event/", EVENT_FRESH_MS),
+  requirements: () => cachedRequest("requirements/", REQUIREMENTS_FRESH_MS),
 };
+
+/**
+ * The viewer's own family's membership requirements, for the bottom of the
+ * Me screen. Its own call rather than part of the directory: that payload is
+ * shared by the whole pack, and a family's paperwork is theirs alone.
+ *
+ * Resolves null when the request fails, so an offline Me screen renders
+ * everything else rather than falling over on a section that is only ever
+ * supplementary.
+ */
+export async function getFamilyRequirements() {
+  try {
+    return await api.requirements();
+  } catch {
+    return null;
+  }
+}
 
 /* ------------------------------------------------------------------ *
  * Turning the raw directory payload into something screens can read

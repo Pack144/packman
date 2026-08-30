@@ -28,6 +28,17 @@
   --tab-off: #9aa1ac;
   --hero-navy: #0e1c33;
 
+  /* Requirement status pills. Green/amber/red carry the same meaning as the
+     badges on the main site's compliance pages. */
+  --status-ok-bg: #e3f5ea;
+  --status-ok-ink: #106034;
+  --status-warn-bg: #fdf0d2;
+  --status-warn-ink: #7a5205;
+  --status-bad-bg: #fce4e6;
+  --status-bad-ink: #a01120;
+  --status-muted-bg: #eceff4;
+  --status-muted-ink: #5c6675;
+
   --rank-lion: #c0392b;
   --rank-tiger: #e08a1e;
   --rank-wolf: #2f6fb0;
@@ -900,6 +911,60 @@ select.pill {
 /* Dark theme. Follows the phone's appearance setting; the surfaces and text
    invert while the Pack's brand colours carry over unchanged. Blues and the
    red heading are lifted so they still read against a dark background. */
+/* Membership requirements (Me screen) */
+.req-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.req-group + .req-group {
+  margin-top: 12px;
+}
+
+.req-who {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 6px 2px;
+}
+
+.req-row {
+  align-items: center;
+}
+
+.req-pill {
+  flex: none;
+  align-self: center;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.req-pill.ok {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-ink);
+}
+
+.req-pill.warn {
+  background: var(--status-warn-bg);
+  color: var(--status-warn-ink);
+}
+
+.req-pill.bad {
+  background: var(--status-bad-bg);
+  color: var(--status-bad-ink);
+}
+
+.req-pill.muted {
+  background: var(--status-muted-bg);
+  color: var(--status-muted-ink);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0a0e15;
@@ -920,6 +985,17 @@ select.pill {
     --badge-neutral: #4d5768;
     --tab-off: #7d8798;
     --hero-navy: #0d1a2e;
+
+    /* Status pills: muted fills with lifted text, so they read on a dark
+       card without glowing. */
+    --status-ok-bg: #17352a;
+    --status-ok-ink: #6fd39b;
+    --status-warn-bg: #3a2e12;
+    --status-warn-ink: #f0c257;
+    --status-bad-bg: #3d1b21;
+    --status-bad-ink: #ff8a92;
+    --status-muted-bg: #232c3b;
+    --status-muted-ink: #a3adbd;
 
     /* Badge fills lift just enough to sit on a dark card while keeping their
        white lettering legible. */

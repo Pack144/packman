@@ -9,4 +9,5 @@ urlpatterns = [
     path("manifest.webmanifest", views.WebManifestView.as_view(), name="manifest"),
     path("api/pack_directory/", api.DirectoryView.as_view(), name="api-directory"),
     path("api/event/", api.EventView.as_view(), name="api-event"),
+    path("api/requirements/", api.RequirementsView.as_view(), name="api-requirements"),
 ]
