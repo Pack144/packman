@@ -68,14 +68,12 @@ body {
 #app {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  position: fixed;
+  inset: 0;
+  width: 100%;
   max-width: 480px;
   margin: 0 auto;
   background: var(--bg);
-
-  /* Anchors the Menu popover/backdrop (position: absolute) to the phone-width
-     column instead of the full (possibly wider, desktop-preview) viewport. */
-  position: relative;
 }
 
 a {
