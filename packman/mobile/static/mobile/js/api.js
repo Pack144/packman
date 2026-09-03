@@ -632,14 +632,14 @@ function resolveDen(directory, den) {
   const roster = den.roster.map((scout) => ({
     scout: {
       slug: scout.slug,
-      name: scout.short_name,
+      name: scout.name,
       avatar: scout.avatar,
       rank: scout.rank,
       rank_key: scout.rank_key,
     },
     parents: (scout.family_slug ? directory.byFamily.get(scout.family_slug) || [] : [])
       .filter((m) => !m.is_scout)
-      .map((adult) => ({ slug: adult.slug, name: adult.short_name, avatar: adult.avatar })),
+      .map((adult) => ({ slug: adult.slug, name: adult.name, avatar: adult.avatar })),
   }));
   return {
     number: den.number,
