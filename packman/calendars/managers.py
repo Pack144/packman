@@ -9,21 +9,11 @@ class PackYearManager(models.Manager):
         return self.get(start_date__lte=date, end_date__gte=date)
 
     def current(self):
-        """
-        Return the current PackYear.
-
-        Overlapping years should not exist, but a stray one entered by hand is
-        enough to make for_date() raise and take down every page that asks for
-        the current year. Prefer the one that started most recently instead.
-        """
+        """Return the current PackYear."""
         current_year = cache.get("current_year")
 
         if current_year is None:
-            now = timezone.now()
-            try:
-                current_year = self.for_date(date=now)
-            except self.model.MultipleObjectsReturned:
-                current_year = self.filter(start_date__lte=now, end_date__gte=now).order_by("-start_date").first()
+            current_year = self.for_date(date=timezone.now())
             cache.set("current_year", current_year)
 
         return current_year

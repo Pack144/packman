@@ -44,22 +44,23 @@ class CurrentPackYearTestCase(TestCase):
 
         self.assertEqual(PackYear.objects.current(), year)
 
-    def test_overlapping_years_prefer_the_most_recently_started(self):
+    def test_still_raises_when_overlapping_years_cover_today(self):
         """
-        Overlapping years should not exist, but one entered by hand used to
-        make current() raise and take down every page that asked for it.
+        Overlapping years should not exist. If one is entered by hand anyway,
+        current() should raise rather than silently guess which one is right.
         """
         now = timezone.now()
         PackYear.objects.create(
             year=now.year, start_date=now - datetime.timedelta(days=300), end_date=now + datetime.timedelta(days=60)
         )
-        newer = PackYear.objects.create(
+        PackYear.objects.create(
             year=now.year + 1,
             start_date=now - datetime.timedelta(days=10),
             end_date=now + datetime.timedelta(days=355),
         )
 
-        self.assertEqual(PackYear.objects.current(), newer)
+        with self.assertRaises(PackYear.MultipleObjectsReturned):
+            PackYear.objects.current()
 
     def test_still_raises_when_no_year_covers_today(self):
         now = timezone.now()

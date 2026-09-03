@@ -29,12 +29,12 @@ class PackYearFilter(admin.SimpleListFilter):
         if value == "all":
             return queryset
         if value in (None, ""):
-            current = self.current_year()
+            current = PackYear.get_current()
             return queryset.filter(year=current) if current else queryset
         return queryset.filter(year__pk=value)
 
     def choices(self, changelist):
-        current = self.current_year()
+        current = PackYear.get_current()
         yield {
             "selected": self.value() == "all",
             "query_string": changelist.get_query_string({self.parameter_name: "all"}),
@@ -47,17 +47,6 @@ class PackYearFilter(admin.SimpleListFilter):
                 "query_string": changelist.get_query_string({self.parameter_name: lookup}),
                 "display": title,
             }
-
-    @staticmethod
-    def current_year():
-        """
-        PackYear.objects.current() does a bare get(), so it raises when no year
-        covers today and when two overlap. Neither should break the changelist.
-        """
-        try:
-            return PackYear.objects.current()
-        except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
-            return None
 
 
 class ExpirationFilter(admin.SimpleListFilter):
@@ -142,7 +131,7 @@ class RequirementAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        current = PackYearFilter.current_year()
+        current = PackYear.get_current()
         return (
             super()
             .get_queryset(request)
@@ -174,7 +163,7 @@ class RequirementAdmin(admin.ModelAdmin):
 
     @admin.action(description=_("Open records for the current Pack Year"))
     def sync_records_current_year(self, request, queryset):
-        self._sync(request, queryset, PackYearFilter.current_year(), _("current"))
+        self._sync(request, queryset, PackYear.get_current(), _("current"))
 
     @admin.action(description=_("Open records for the next Pack Year"))
     def sync_records_next_year(self, request, queryset):
