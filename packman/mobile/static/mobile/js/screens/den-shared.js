@@ -37,7 +37,7 @@ export function rosterCard(den) {
                 <span class="row-title">${esc(entry.scout.name)}</span>
                 ${rankTag(entry.scout.rank_key, entry.scout.rank)}
               </div>
-              <div class="mono plain">${esc(entry.parents.map((p) => p.name).join(" & ")) || "&mdash;"}</div>
+              <div class="mono plain">${esc(entry.parents.map((p) => p.first_name).join(" & ")) || "&mdash;"}</div>
             </div>
             <span class="chev">&rsaquo;</span>
           </a>`
@@ -60,7 +60,7 @@ export function parentsCard(den) {
       if (!parents.has(parent.slug)) {
         parents.set(parent.slug, { slug: parent.slug, name: parent.name, avatar: parent.avatar, cubs: [] });
       }
-      parents.get(parent.slug).cubs.push(entry.scout.name);
+      parents.get(parent.slug).cubs.push(entry.scout.first_name);
     });
   });
   const list = [...parents.values()].sort((a, b) => a.name.localeCompare(b.name));

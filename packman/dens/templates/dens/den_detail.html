@@ -56,10 +56,33 @@
              id="den-cubs-pane"
              role="tabpanel"
              aria-labelledby="den-cubs-tab">
-          {% if den.active_cubs.count %}
+          {% if cubs %}
             <div class="list-group list-group-flush">
-              {% for cub in den.active_cubs.all %}
-                {% include 'membership/snippets/list_entry.html' with member=cub.scout %}
+              {% for row in cubs %}
+                <a class="list-group-item list-group-item-action"
+                   href="{{ row.scout.get_absolute_url }}">
+                  <div class="row align-items-center">
+                    <div class="col-lg-2">
+                      {% include "membership/snippets/headshot_thumbnail.html" with member=row.scout %}
+                    </div>
+                    <div class="col">
+                      <h4 class="card-title">{{ row.scout }}</h4>
+                      <p>
+                        {% if row.scout.rank %}{{ row.scout.rank }} —{% endif %}
+                        {% if row.scout.current_den %}<small>{{ row.scout.current_den }}</small>{% endif %}
+                      </p>
+                      {% if row.parents %}
+                        <p>
+                          <small>
+                            {% for parent in row.parents %}
+                              {{ parent.short_name }}{% if not forloop.last %} &amp; {% endif %}
+                            {% endfor %}
+                          </small>
+                        </p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </a>
               {% endfor %}
             </div>
           {% else %}
