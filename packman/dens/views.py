@@ -26,7 +26,27 @@ class DenDetailView(ActiveMemberOrContributorTest, DetailView):
             den=context["den"],
             year=year,
         )
+        context["parents"] = self.get_parents(context["den"])
         return context
+
+    @staticmethod
+    def get_parents(den):
+        """
+        Every parent with a Cub in this den, each paired with only the names
+        of their own Cub(s) who are in this den — never a sibling assigned to
+        a different den.
+        """
+        parents = {}
+        for membership in den.active_cubs().select_related("scout__family"):
+            scout = membership.scout
+            if not scout.family_id:
+                continue
+            for adult in scout.family.adults.all():
+                parents.setdefault(adult, []).append(scout)
+        return sorted(
+            ({"adult": adult, "cubs": cubs} for adult, cubs in parents.items()),
+            key=lambda entry: (entry["adult"].last_name, entry["adult"].get_short_name()),
+        )
 
 
 class DensListView(ActiveMemberOrContributorTest, ListView):

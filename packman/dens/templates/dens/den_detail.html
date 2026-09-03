@@ -29,16 +29,68 @@
   </div>
   <div class="card shadow-sm mt-3">
     <div class="card-body">
-      <h2 class="card-title">Cub{{ den.active_cubs.count|pluralize }}</h2>
-      {% if den.active_cubs.count %}
-        <div class="list-group list-group-flush">
-          {% for cub in den.active_cubs.all %}
-            {% include 'membership/snippets/list_entry.html' with member=cub.scout %}
-          {% endfor %}
+      <ul class="nav nav-pills mb-3" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active"
+                  id="den-cubs-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#den-cubs-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="den-cubs-pane"
+                  aria-selected="true">Cub{{ den.active_cubs.count|pluralize }}</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link"
+                  id="den-parents-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#den-parents-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="den-parents-pane"
+                  aria-selected="false">Parent{{ parents|length|pluralize }}</button>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active"
+             id="den-cubs-pane"
+             role="tabpanel"
+             aria-labelledby="den-cubs-tab">
+          {% if den.active_cubs.count %}
+            <div class="list-group list-group-flush">
+              {% for cub in den.active_cubs.all %}
+                {% include 'membership/snippets/list_entry.html' with member=cub.scout %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="alert alert-light" role="alert">This den has no members</div>
+          {% endif %}
         </div>
-      {% else %}
-        <div class="alert alert-light" role="alert">This den has no members</div>
-      {% endif %}
+        <div class="tab-pane fade" id="den-parents-pane" role="tabpanel" aria-labelledby="den-parents-tab">
+          {% if parents %}
+            <div class="list-group list-group-flush">
+              {% for entry in parents %}
+                <a class="list-group-item list-group-item-action"
+                   href="{{ entry.adult.get_absolute_url }}">
+                  <div class="row align-items-center">
+                    <div class="col-lg-2">
+                      {% include "membership/snippets/headshot_thumbnail.html" with member=entry.adult %}
+                    </div>
+                    <div class="col">
+                      <h4 class="card-title">{{ entry.adult }}</h4>
+                      <p>
+                        <small>{{ entry.cubs|join:" & " }}</small>
+                      </p>
+                    </div>
+                  </div>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="alert alert-light" role="alert">This den has no parents on file</div>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
   {% if leaders.count %}
