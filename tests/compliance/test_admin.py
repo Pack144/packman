@@ -9,7 +9,6 @@ from django.utils import timezone
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
 from packman.compliance.factories import (
     CubRequirementFactory,
-    ExpiredRecordFactory,
     FamilyRequirementFactory,
     RequirementRecordFactory,
 )
@@ -99,17 +98,8 @@ class RequirementRecordAdminTestCase(AdminTestCase):
 
         self.assertEqual(response.context["cl"].queryset.count(), 2)
 
-    def test_expiration_filter_finds_expired_records(self):
-        requirement = CubRequirementFactory(slug="admin-expired")
-        ExpiredRecordFactory(requirement=requirement, year=self.year, member=ActiveScoutFactory())
-        RequirementRecordFactory(requirement=requirement, year=self.year, member=ActiveScoutFactory())
-
-        response = self.client.get(reverse("admin:compliance_requirementrecord_changelist"), {"expiration": "expired"})
-
-        self.assertEqual(response.context["cl"].queryset.count(), 1)
-
-    def test_mark_complete_sets_the_date_and_derives_expiry(self):
-        requirement = CubRequirementFactory(slug="admin-complete", default_duration_days=365)
+    def test_mark_complete_sets_the_date(self):
+        requirement = CubRequirementFactory(slug="admin-complete")
         record = RequirementRecordFactory(requirement=requirement, year=self.year, member=ActiveScoutFactory())
 
         self.client.post(
@@ -119,25 +109,9 @@ class RequirementRecordAdminTestCase(AdminTestCase):
         )
 
         record.refresh_from_db()
-        today = timezone.localdate()
         self.assertEqual(record.status, RequirementRecord.Status.COMPLETE)
-        self.assertEqual(record.completed_on, today)
-        self.assertEqual(record.expires_on, today + timezone.timedelta(days=365))
+        self.assertEqual(record.completed_on, timezone.localdate())
         self.assertEqual(record.recorded_by, self.superuser)
-
-    def test_mark_complete_leaves_non_expiring_requirements_open_ended(self):
-        requirement = FamilyRequirementFactory(slug="admin-dues-complete")
-        record = RequirementRecordFactory(requirement=requirement, year=self.year, member=None, family=FamilyFactory())
-
-        self.client.post(
-            reverse("admin:compliance_requirementrecord_changelist"),
-            {"action": "mark_complete", "_selected_action": [str(record.pk)]},
-            follow=True,
-        )
-
-        record.refresh_from_db()
-        self.assertEqual(record.status, RequirementRecord.Status.COMPLETE)
-        self.assertIsNone(record.expires_on)
 
     def test_mark_waived(self):
         record = RequirementRecordFactory(

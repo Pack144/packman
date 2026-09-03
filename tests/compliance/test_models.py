@@ -2,7 +2,6 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.test import TestCase
-from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory
 from packman.compliance.factories import (
@@ -18,14 +17,6 @@ from packman.membership.factories import ActiveScoutFactory, AdultFactory, Famil
 class RequirementTestCase(TestCase):
     def test_string(self):
         self.assertEqual(str(CubRequirementFactory(name="Pack Dues")), "Pack Dues")
-
-    def test_duration_requires_expiration(self):
-        requirement = CubRequirementFactory.build(tracks_expiration=False, default_duration_days=365)
-
-        with self.assertRaises(ValidationError) as ctx:
-            requirement.clean()
-
-        self.assertIn("default_duration_days", ctx.exception.message_dict)
 
     def test_tracks_member(self):
         self.assertTrue(CubRequirementFactory().tracks_member)
@@ -122,22 +113,6 @@ class RequirementRecordCleanTestCase(TestCase):
             with self.subTest(audience=requirement.applies_to):
                 RequirementRecord(requirement=requirement, year=self.year, member=member).clean()
 
-    def test_expiration_cannot_precede_completion(self):
-        today = timezone.localdate()
-        record = RequirementRecord(
-            requirement=CubRequirementFactory(),
-            year=self.year,
-            member=ActiveScoutFactory(),
-            status=RequirementRecord.Status.COMPLETE,
-            completed_on=today,
-            expires_on=today - timezone.timedelta(days=1),
-        )
-
-        with self.assertRaises(ValidationError) as ctx:
-            record.clean()
-
-        self.assertIn("expires_on", ctx.exception.message_dict)
-
 
 class RequirementRecordFamilyBackfillTestCase(TestCase):
     @classmethod
@@ -181,11 +156,15 @@ class RequirementRecordFamilyBackfillTestCase(TestCase):
         self.assertIsNone(record.family)
 
 
-class EffectiveStatusTestCase(TestCase):
+class IsSatisfiedTestCase(TestCase):
+    """
+    Nothing is derived from dates any more: a record is satisfied when it is
+    recorded complete or waived, and outstanding otherwise.
+    """
+
     @classmethod
     def setUpTestData(cls):
         cls.year = CurrentPackYearFactory()
-        cls.today = timezone.localdate()
 
     def setUp(self):
         cache.clear()
@@ -193,54 +172,14 @@ class EffectiveStatusTestCase(TestCase):
     def build(self, **kwargs):
         return RequirementRecordFactory.build(requirement=CubRequirementFactory(), year=self.year, **kwargs)
 
-    def test_not_started(self):
-        record = self.build(status=RequirementRecord.Status.NOT_STARTED)
+    def test_not_started_is_not_satisfied(self):
+        self.assertFalse(self.build(status=RequirementRecord.Status.NOT_STARTED).is_satisfied)
 
-        self.assertEqual(record.effective_status, RequirementRecord.Health.NOT_STARTED)
-        self.assertFalse(record.is_satisfied)
+    def test_complete_is_satisfied(self):
+        self.assertTrue(self.build(status=RequirementRecord.Status.COMPLETE).is_satisfied)
 
-    def test_waived(self):
-        record = self.build(status=RequirementRecord.Status.WAIVED)
-
-        self.assertEqual(record.effective_status, RequirementRecord.Health.WAIVED)
-        self.assertTrue(record.is_satisfied)
-
-    def test_complete_without_an_expiration(self):
-        record = self.build(status=RequirementRecord.Status.COMPLETE, expires_on=None)
-
-        self.assertEqual(record.effective_status, RequirementRecord.Health.COMPLETE)
-
-    def test_expiration_boundaries(self):
-        cases = (
-            (-1, RequirementRecord.Health.EXPIRED),
-            (0, RequirementRecord.Health.EXPIRING),
-            (59, RequirementRecord.Health.EXPIRING),
-            (60, RequirementRecord.Health.EXPIRING),
-            (61, RequirementRecord.Health.COMPLETE),
-        )
-        for offset, expected in cases:
-            with self.subTest(days=offset):
-                record = self.build(
-                    status=RequirementRecord.Status.COMPLETE,
-                    expires_on=self.today + timezone.timedelta(days=offset),
-                )
-                self.assertEqual(record.effective_status, expected)
-
-    def test_expired_is_not_satisfied(self):
-        record = self.build(
-            status=RequirementRecord.Status.COMPLETE,
-            expires_on=self.today - timezone.timedelta(days=1),
-        )
-
-        self.assertFalse(record.is_satisfied)
-
-    def test_pending_expiration_is_still_satisfied(self):
-        record = self.build(
-            status=RequirementRecord.Status.COMPLETE,
-            expires_on=self.today + timezone.timedelta(days=30),
-        )
-
-        self.assertTrue(record.is_satisfied)
+    def test_waived_is_satisfied(self):
+        self.assertTrue(self.build(status=RequirementRecord.Status.WAIVED).is_satisfied)
 
 
 class RequirementRecordStringTestCase(TestCase):

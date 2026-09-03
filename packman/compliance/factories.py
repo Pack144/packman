@@ -14,7 +14,6 @@ class RequirementFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Requirement {n}")
     slug = factory.Sequence(lambda n: f"requirement-{n}")
     applies_to = Requirement.Audience.CUB
-    tracks_expiration = True
 
 
 class CubRequirementFactory(RequirementFactory):
@@ -27,7 +26,6 @@ class AdultRequirementFactory(RequirementFactory):
 
 class FamilyRequirementFactory(RequirementFactory):
     applies_to = Requirement.Audience.FAMILY
-    tracks_expiration = False
 
 
 class RequirementRecordFactory(factory.django.DjangoModelFactory):
@@ -42,13 +40,3 @@ class RequirementRecordFactory(factory.django.DjangoModelFactory):
 class CompleteRecordFactory(RequirementRecordFactory):
     status = RequirementRecord.Status.COMPLETE
     completed_on = factory.LazyFunction(timezone.localdate)
-    expires_on = factory.LazyFunction(lambda: timezone.localdate() + timezone.timedelta(days=365))
-
-
-class ExpiringRecordFactory(CompleteRecordFactory):
-    expires_on = factory.LazyFunction(lambda: timezone.localdate() + timezone.timedelta(days=30))
-
-
-class ExpiredRecordFactory(CompleteRecordFactory):
-    completed_on = factory.LazyFunction(lambda: timezone.localdate() - timezone.timedelta(days=400))
-    expires_on = factory.LazyFunction(lambda: timezone.localdate() - timezone.timedelta(days=1))

@@ -7,7 +7,7 @@ from packman.calendars.factories import CurrentPackYearFactory
 from packman.compliance.models import Requirement, RequirementRecord
 from packman.membership.factories import ActiveScoutFactory
 
-SEEDED_SLUGS = {"bsa-membership", "medical-form-cub", "medical-form-adult", "pack-dues"}
+SEEDED_SLUGS = {"medical-form-cub", "medical-form-adult", "pack-dues"}
 
 seed = importlib.import_module("packman.compliance.migrations.0002_seed_default_requirements")
 
@@ -18,20 +18,15 @@ class SeedDefaultRequirementsTestCase(TestCase):
     assert the resulting state rather than replaying the migration.
     """
 
-    def test_all_four_requirements_are_seeded(self):
+    def test_all_requirements_are_seeded(self):
         self.assertEqual(set(Requirement.objects.values_list("slug", flat=True)), SEEDED_SLUGS)
 
     def test_audiences(self):
         by_slug = {r.slug: r for r in Requirement.objects.all()}
 
-        self.assertEqual(by_slug["bsa-membership"].applies_to, Requirement.Audience.CUB)
         self.assertEqual(by_slug["medical-form-cub"].applies_to, Requirement.Audience.CUB)
         self.assertEqual(by_slug["medical-form-adult"].applies_to, Requirement.Audience.ADULT)
         self.assertEqual(by_slug["pack-dues"].applies_to, Requirement.Audience.FAMILY)
-
-    def test_only_dues_does_not_expire(self):
-        self.assertFalse(Requirement.objects.get(slug="pack-dues").tracks_expiration)
-        self.assertFalse(Requirement.objects.exclude(slug="pack-dues").filter(tracks_expiration=False).exists())
 
     def test_medical_forms_are_separate_per_audience(self):
         """Cub and adult medical forms are distinct requirements, not one multi-audience type."""
@@ -43,7 +38,7 @@ class SeedDefaultRequirementsTestCase(TestCase):
     def test_seeds_are_ordered_for_display(self):
         self.assertEqual(
             list(Requirement.objects.values_list("slug", flat=True)),
-            ["bsa-membership", "medical-form-cub", "medical-form-adult", "pack-dues"],
+            ["medical-form-cub", "medical-form-adult", "pack-dues"],
         )
 
     def test_seed_is_idempotent(self):
@@ -73,14 +68,14 @@ class RemoveDefaultRequirementsTestCase(TestCase):
     def test_reverse_spares_requirements_that_have_records(self):
         """Rolling back must never discard paperwork leadership already collected."""
         RequirementRecord.objects.create(
-            requirement=Requirement.objects.get(slug="bsa-membership"),
+            requirement=Requirement.objects.get(slug="medical-form-cub"),
             year=CurrentPackYearFactory(),
             member=ActiveScoutFactory(),
         )
 
         seed.remove_default_requirements(FakeApps(), None)
 
-        self.assertTrue(Requirement.objects.filter(slug="bsa-membership").exists())
+        self.assertTrue(Requirement.objects.filter(slug="medical-form-cub").exists())
         self.assertFalse(Requirement.objects.filter(slug="pack-dues").exists())
 
 

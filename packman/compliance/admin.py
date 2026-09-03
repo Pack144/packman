@@ -49,34 +49,6 @@ class PackYearFilter(admin.SimpleListFilter):
             }
 
 
-class ExpirationFilter(admin.SimpleListFilter):
-    title = _("expiration")
-    parameter_name = "expiration"
-
-    def lookups(self, request, model_admin):
-        return (
-            ("expired", _("Expired")),
-            ("expiring_30", _("Expiring within 30 days")),
-            ("expiring_60", _("Expiring within 60 days")),
-            ("current", _("Complete and current")),
-            ("outstanding", _("Not started")),
-        )
-
-    def queryset(self, request, queryset):
-        match self.value():
-            case "expired":
-                return queryset.expired()
-            case "expiring_30":
-                return queryset.expiring(within_days=30)
-            case "expiring_60":
-                return queryset.expiring(within_days=60)
-            case "current":
-                return queryset.complete()
-            case "outstanding":
-                return queryset.outstanding()
-        return queryset
-
-
 class MemberRequirementRecordInline(admin.TabularInline):
     """
     Serves both ScoutAdmin and AdultAdmin. The foreign key points at Member,
@@ -87,7 +59,7 @@ class MemberRequirementRecordInline(admin.TabularInline):
     fk_name = "member"
     extra = 0
     autocomplete_fields = ("requirement",)
-    fields = ("requirement", "year", "status", "completed_on", "expires_on", "notes")
+    fields = ("requirement", "year", "status", "completed_on", "notes")
     verbose_name = _("Membership Requirement")
     verbose_name_plural = _("Membership Requirements")
 
@@ -97,7 +69,7 @@ class FamilyRequirementRecordInline(admin.TabularInline):
     fk_name = "family"
     extra = 0
     autocomplete_fields = ("requirement",)
-    fields = ("requirement", "year", "status", "completed_on", "expires_on", "notes")
+    fields = ("requirement", "year", "status", "completed_on", "notes")
     verbose_name = _("Family Requirement")
     verbose_name_plural = _("Family Requirements")
 
@@ -112,7 +84,6 @@ class RequirementAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "applies_to",
-        "tracks_expiration",
         "include_contributors",
         "is_active",
         "sort_order",
@@ -120,14 +91,13 @@ class RequirementAdmin(admin.ModelAdmin):
     )
     list_display_links = ("name",)
     list_editable = ("sort_order", "is_active")
-    list_filter = ("applies_to", "tracks_expiration", "is_active")
+    list_filter = ("applies_to", "is_active")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name", "slug", "description")
     actions = ["sync_records_current_year", "sync_records_next_year"]
     fieldsets = (
         (None, {"fields": ("name", "slug", "description", "is_active", "sort_order")}),
         (_("Who it applies to"), {"fields": ("applies_to", "include_contributors")}),
-        (_("Expiration"), {"fields": ("tracks_expiration", "default_duration_days")}),
     )
 
     def get_queryset(self, request):
@@ -178,15 +148,13 @@ class RequirementRecordAdmin(admin.ModelAdmin):
         "year",
         "status",
         "completed_on",
-        "expires_on",
-        "is_expired",
         "recorded_by",
     )
     list_display_links = ("requirement", "subject")
-    list_filter = ("requirement", PackYearFilter, "status", ExpirationFilter)
+    list_filter = ("requirement", PackYearFilter, "status")
     list_select_related = ("requirement", "year", "member", "family", "recorded_by")
     autocomplete_fields = ("member", "family", "recorded_by")
-    date_hierarchy = "expires_on"
+    date_hierarchy = "completed_on"
     actions = ["mark_complete", "mark_waived"]
     search_fields = (
         "member__first_name",
@@ -198,20 +166,12 @@ class RequirementRecordAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("requirement", "year")}),
         (_("Who"), {"fields": ("member", "family")}),
-        (_("Standing"), {"fields": ("status", "completed_on", "expires_on", "notes", "recorded_by")}),
+        (_("Standing"), {"fields": ("status", "completed_on", "notes", "recorded_by")}),
     )
 
     @admin.display(description=_("who"), ordering="member__last_name")
     def subject(self, obj):
         return obj.subject
-
-    @admin.display(description=_("expired"), boolean=True, ordering="expires_on")
-    def is_expired(self, obj):
-        return bool(obj.expires_on and obj.status == RequirementRecord.Status.COMPLETE and obj.expires_on < self.today)
-
-    @property
-    def today(self):
-        return timezone.localdate()
 
     def save_model(self, request, obj, form, change):
         # Record who entered it, unless someone set that deliberately.
@@ -223,12 +183,9 @@ class RequirementRecordAdmin(admin.ModelAdmin):
     def mark_complete(self, request, queryset):
         today = timezone.localdate()
         updated = 0
-        for record in queryset.select_related("requirement"):
+        for record in queryset:
             record.status = RequirementRecord.Status.COMPLETE
             record.completed_on = today
-            duration = record.requirement.default_duration_days
-            if record.requirement.tracks_expiration and duration and not record.expires_on:
-                record.expires_on = today + timezone.timedelta(days=duration)
             record.recorded_by = request.user
             record.save()
             updated += 1

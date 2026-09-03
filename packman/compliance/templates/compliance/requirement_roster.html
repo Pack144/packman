@@ -39,7 +39,6 @@
             <th scope="col">{% translate 'Who' %}</th>
             <th scope="col">{% translate 'Status' %}</th>
             <th scope="col">{% translate 'Completed' %}</th>
-            <th scope="col">{% translate 'Expires' %}</th>
             <th scope="col">{% translate 'Recorded by' %}</th>
           </tr>
         </thead>
@@ -49,7 +48,6 @@
               <th scope="row" class="fw-normal">{{ row.subject }}</th>
               <td>{% include 'compliance/snippets/status_badge.html' with record=row.record %}</td>
               <td>{{ row.record.completed_on|default:"" }}</td>
-              <td>{{ row.record.expires_on|default:"" }}</td>
               <td class="text-body-secondary">{{ row.record.recorded_by|default:"" }}</td>
             </tr>
           {% empty %}

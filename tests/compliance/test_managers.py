@@ -1,13 +1,10 @@
 from django.core.cache import cache
 from django.test import TestCase
-from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
 from packman.compliance.factories import (
     AdultRequirementFactory,
     CubRequirementFactory,
-    ExpiredRecordFactory,
-    ExpiringRecordFactory,
     FamilyRequirementFactory,
     RequirementFactory,
     RequirementRecordFactory,
@@ -57,44 +54,17 @@ class RequirementRecordQuerySetTestCase(TestCase):
 
         self.assertFalse(RequirementRecord.objects.outstanding().exists())
 
-    def test_expired(self):
-        expired = self.make(ExpiredRecordFactory)
-        self.make(ExpiringRecordFactory)
+    def test_complete(self):
+        self.make()
+        complete = self.make(status=RequirementRecord.Status.COMPLETE)
 
-        self.assertEqual(list(RequirementRecord.objects.expired()), [expired])
+        self.assertEqual(list(RequirementRecord.objects.complete()), [complete])
 
-    def test_expiring_excludes_already_expired(self):
-        self.make(ExpiredRecordFactory)
-        expiring = self.make(ExpiringRecordFactory)
+    def test_waived(self):
+        self.make()
+        waived = self.make(status=RequirementRecord.Status.WAIVED)
 
-        self.assertEqual(list(RequirementRecord.objects.expiring()), [expiring])
-
-    def test_expiring_respects_the_window(self):
-        self.make(
-            status=RequirementRecord.Status.COMPLETE,
-            expires_on=timezone.localdate() + timezone.timedelta(days=45),
-        )
-
-        self.assertEqual(RequirementRecord.objects.expiring(within_days=30).count(), 0)
-        self.assertEqual(RequirementRecord.objects.expiring(within_days=60).count(), 1)
-
-    def test_complete_excludes_expired(self):
-        self.make(ExpiredRecordFactory)
-        current = self.make(status=RequirementRecord.Status.COMPLETE, expires_on=None)
-
-        self.assertEqual(list(RequirementRecord.objects.complete()), [current])
-
-    def test_needs_attention_gathers_everything_to_chase(self):
-        outstanding = self.make()
-        expired = self.make(ExpiredRecordFactory)
-        expiring = self.make(ExpiringRecordFactory)
-        self.make(status=RequirementRecord.Status.COMPLETE, expires_on=None)
-        self.make(status=RequirementRecord.Status.WAIVED)
-
-        self.assertEqual(
-            set(RequirementRecord.objects.needs_attention()),
-            {outstanding, expired, expiring},
-        )
+        self.assertEqual(list(RequirementRecord.objects.waived()), [waived])
 
     def test_for_year(self):
         this_year = self.make()

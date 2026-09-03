@@ -12,8 +12,6 @@ from packman.committees.models import Committee, CommitteeMember
 from packman.compliance.factories import (
     AdultRequirementFactory,
     CubRequirementFactory,
-    ExpiredRecordFactory,
-    ExpiringRecordFactory,
     FamilyRequirementFactory,
     RequirementRecordFactory,
 )
@@ -158,7 +156,12 @@ class DashboardContentTestCase(ComplianceViewTestCase):
     def test_rollup_counts_each_state(self):
         scouts = [ActiveScoutFactory() for _ in range(3)]
         RequirementRecordFactory(requirement=self.requirement, year=self.year, member=scouts[0])
-        ExpiredRecordFactory(requirement=self.requirement, year=self.year, member=scouts[1])
+        RequirementRecordFactory(
+            requirement=self.requirement,
+            year=self.year,
+            member=scouts[1],
+            status=RequirementRecord.Status.COMPLETE,
+        )
         RequirementRecordFactory(
             requirement=self.requirement,
             year=self.year,
@@ -171,7 +174,7 @@ class DashboardContentTestCase(ComplianceViewTestCase):
         rollup = {r.slug: r for r in response.context["requirements"]}[self.requirement.slug]
         self.assertEqual(rollup.total, 3)
         self.assertEqual(rollup.outstanding, 1)
-        self.assertEqual(rollup.expired, 1)
+        self.assertEqual(rollup.complete, 1)
         self.assertEqual(rollup.waived, 1)
 
     def test_matrix_lists_active_families(self):
@@ -180,9 +183,9 @@ class DashboardContentTestCase(ComplianceViewTestCase):
         families = {row["family"] for row in response.context["matrix"]}
         self.assertIn(self.family, families)
 
-    def test_filter_narrows_to_families_with_expired_items(self):
+    def test_filter_narrows_to_families_with_outstanding_items(self):
         dues = FamilyRequirementFactory(slug="content-dues")
-        ExpiredRecordFactory(requirement=dues, year=self.year, member=None, family=self.family)
+        RequirementRecordFactory(requirement=dues, year=self.year, member=None, family=self.family)
         RequirementRecordFactory(
             requirement=dues,
             year=self.year,
@@ -191,7 +194,7 @@ class DashboardContentTestCase(ComplianceViewTestCase):
             status=RequirementRecord.Status.COMPLETE,
         )
 
-        response = self.client.get(reverse("compliance:dashboard"), {"filter": "expired"})
+        response = self.client.get(reverse("compliance:dashboard"), {"filter": "outstanding"})
 
         families = [row["family"] for row in response.context["matrix"]]
         self.assertEqual(families, [self.family])
@@ -467,18 +470,6 @@ class MatrixCellStateTestCase(ComplianceViewTestCase):
         self.record(self.adults[1])
 
         self.assertEqual(self.cell_for(self.family)["state"], "partial")
-
-    def test_expired_still_wins_over_partial(self):
-        ExpiredRecordFactory(requirement=self.requirement, year=self.year, member=self.adults[0])
-        self.record(self.adults[1])
-
-        self.assertEqual(self.cell_for(self.family)["state"], "expired")
-
-    def test_expiring_reads_expiring_when_nothing_is_outstanding(self):
-        ExpiringRecordFactory(requirement=self.requirement, year=self.year, member=self.adults[0])
-        self.record(self.adults[1], status=RequirementRecord.Status.COMPLETE)
-
-        self.assertEqual(self.cell_for(self.family)["state"], "expiring")
 
     def test_partly_done_families_still_match_the_outstanding_filter(self):
         self.record(self.adults[0], status=RequirementRecord.Status.COMPLETE)

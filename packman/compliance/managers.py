@@ -1,11 +1,6 @@
 from django.db import models
-from django.db.models import Q
-from django.utils import timezone
 
 from packman.calendars.models import PackYear
-
-#: Number of days before an expiration date that a record is considered "expiring soon".
-EXPIRING_WINDOW = 60
 
 
 class RequirementQuerySet(models.QuerySet):
@@ -33,11 +28,7 @@ class RequirementRecordQuerySet(models.QuerySet):
         return self.filter(requirement__applies_to=self.model.requirement.field.related_model.Audience.FAMILY)
 
     def complete(self):
-        """Recorded complete and not past its expiration date."""
-        return self.filter(
-            Q(status=self.model.Status.COMPLETE)
-            & (Q(expires_on__isnull=True) | Q(expires_on__gte=timezone.localdate()))
-        )
+        return self.filter(status=self.model.Status.COMPLETE)
 
     def outstanding(self):
         """Nothing recorded yet. Waived records are deliberately excluded."""
@@ -45,26 +36,3 @@ class RequirementRecordQuerySet(models.QuerySet):
 
     def waived(self):
         return self.filter(status=self.model.Status.WAIVED)
-
-    def expired(self):
-        return self.filter(status=self.model.Status.COMPLETE, expires_on__lt=timezone.localdate())
-
-    def expiring(self, within_days=EXPIRING_WINDOW):
-        """Complete, but expiring within the given window."""
-        today = timezone.localdate()
-        return self.filter(
-            status=self.model.Status.COMPLETE,
-            expires_on__gte=today,
-            expires_on__lte=today + timezone.timedelta(days=within_days),
-        )
-
-    def needs_attention(self, within_days=EXPIRING_WINDOW):
-        """Everything leadership needs to chase: outstanding, expired, or expiring soon."""
-        today = timezone.localdate()
-        return self.filter(
-            Q(status=self.model.Status.NOT_STARTED)
-            | Q(
-                status=self.model.Status.COMPLETE,
-                expires_on__lte=today + timezone.timedelta(days=within_days),
-            )
-        )

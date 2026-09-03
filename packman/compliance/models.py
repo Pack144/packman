@@ -4,13 +4,12 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
 from packman.core.models import TimeStampedUUIDModel
 
-from .managers import EXPIRING_WINDOW, RequirementQuerySet, RequirementRecordQuerySet
+from .managers import RequirementQuerySet, RequirementRecordQuerySet
 
 
 class Requirement(TimeStampedUUIDModel):
@@ -42,22 +41,6 @@ class Requirement(TimeStampedUUIDModel):
         default=Audience.CUB,
         help_text=_("Who must satisfy this requirement? Family requirements are tracked once per family."),
     )
-    tracks_expiration = models.BooleanField(
-        _("expires"),
-        default=True,
-        help_text=_(
-            "Check this box only if the requirement goes stale on its own schedule, independently "
-            "of the pack year — a medical form lapses a year after the doctor signed it, which can "
-            "fall mid-year. Leave it unchecked for anything the pack year itself bounds, such as "
-            "dues: those do not lapse, they are simply owed again next year."
-        ),
-    )
-    default_duration_days = models.PositiveIntegerField(
-        _("valid for"),
-        blank=True,
-        null=True,
-        help_text=_("If set, an expiration date is suggested this many days after the completion date."),
-    )
     include_contributors = models.BooleanField(
         _("include friends of the pack"),
         default=False,
@@ -86,13 +69,6 @@ class Requirement(TimeStampedUUIDModel):
 
     def get_absolute_url(self):
         return reverse("compliance:roster", kwargs={"slug": self.slug})
-
-    def clean(self):
-        if self.default_duration_days and not self.tracks_expiration:
-            raise ValidationError(
-                {"default_duration_days": _("A requirement that does not expire cannot have a duration.")},
-                code="invalid",
-            )
 
     @property
     def tracks_member(self):
@@ -159,20 +135,6 @@ class RequirementRecord(TimeStampedUUIDModel):
         COMPLETE = "OK", _("Complete")
         WAIVED = "NA", _("Waived")
 
-    class Health(models.TextChoices):
-        """
-        The state a record is actually in, derived from its status and dates.
-
-        The first three values intentionally match ``Status`` so templates can
-        compare against a single vocabulary.
-        """
-
-        NOT_STARTED = "NEW", _("Not started")
-        COMPLETE = "OK", _("Complete")
-        WAIVED = "NA", _("Waived")
-        EXPIRING = "SOON", _("Expiring soon")
-        EXPIRED = "EXP", _("Expired")
-
     requirement = models.ForeignKey(
         Requirement,
         on_delete=models.CASCADE,
@@ -211,7 +173,6 @@ class RequirementRecord(TimeStampedUUIDModel):
         default=Status.NOT_STARTED,
     )
     completed_on = models.DateField(_("completed"), blank=True, null=True)
-    expires_on = models.DateField(_("expires"), blank=True, null=True)
     notes = models.TextField(
         _("notes"),
         blank=True,
@@ -248,7 +209,6 @@ class RequirementRecord(TimeStampedUUIDModel):
         indexes = [
             models.Index(fields=["year", "requirement", "status"]),
             models.Index(fields=["family", "year"]),
-            models.Index(fields=["expires_on"]),
         ]
         ordering = ("-year", "requirement__sort_order", "requirement__name")
         permissions = [
@@ -302,12 +262,6 @@ class RequirementRecord(TimeStampedUUIDModel):
                     code="invalid",
                 )
 
-        if self.expires_on and self.completed_on and self.expires_on < self.completed_on:
-            raise ValidationError(
-                {"expires_on": _("A requirement cannot expire before it was completed.")},
-                code="invalid",
-            )
-
     @staticmethod
     def member_is_cub(member):
         return hasattr(member, "scout")
@@ -330,24 +284,6 @@ class RequirementRecord(TimeStampedUUIDModel):
         return self.member or self.family
 
     @property
-    def effective_status(self):
-        """
-        The record's real state, derived rather than stored, so that a date
-        passing never requires a data migration.
-        """
-        if self.status != self.Status.COMPLETE:
-            return self.Health(self.status)
-        if not self.expires_on:
-            return self.Health.COMPLETE
-
-        today = timezone.localdate()
-        if self.expires_on < today:
-            return self.Health.EXPIRED
-        if self.expires_on <= today + timezone.timedelta(days=EXPIRING_WINDOW):
-            return self.Health.EXPIRING
-        return self.Health.COMPLETE
-
-    @property
     def is_satisfied(self):
-        """True when nothing more is needed of the family right now."""
-        return self.effective_status in (self.Health.COMPLETE, self.Health.EXPIRING, self.Health.WAIVED)
+        """True when nothing more is needed of the family for this pack year."""
+        return self.status in (self.Status.COMPLETE, self.Status.WAIVED)

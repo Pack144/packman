@@ -1,12 +1,10 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db.models import Count, Min, Prefetch, Q
-from django.utils import timezone
+from django.db.models import Count, Prefetch, Q
 from django.views.generic import DetailView, TemplateView
 
 from packman.membership.mixins import ActiveMemberOrContributorTest
 from packman.membership.models import Family
 
-from .managers import EXPIRING_WINDOW
 from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest
 from .models import Requirement, RequirementRecord
 from .summaries import summarize_family
@@ -21,23 +19,15 @@ class RequirementRollupMixin:
     """
 
     def get_requirement_rollup(self, year):
-        today = timezone.localdate()
-        soon = today + timezone.timedelta(days=EXPIRING_WINDOW)
-        complete = Q(record__status=RequirementRecord.Status.COMPLETE)
         in_year = Q(record__year=year)
-        unexpired = Q(record__expires_on__isnull=True) | Q(record__expires_on__gt=soon)
 
         return (
             Requirement.objects.active()
             .annotate(
                 total=Count("record", filter=in_year, distinct=True),
-                complete=Count("record", filter=in_year & complete & unexpired, distinct=True),
-                expiring=Count(
-                    "record",
-                    filter=in_year & complete & Q(record__expires_on__gte=today, record__expires_on__lte=soon),
-                    distinct=True,
+                complete=Count(
+                    "record", filter=in_year & Q(record__status=RequirementRecord.Status.COMPLETE), distinct=True
                 ),
-                expired=Count("record", filter=in_year & complete & Q(record__expires_on__lt=today), distinct=True),
                 waived=Count(
                     "record", filter=in_year & Q(record__status=RequirementRecord.Status.WAIVED), distinct=True
                 ),
@@ -75,10 +65,6 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         year, and one for the families. Deliberately not the per-row query loop
         that campaigns' OrderLeaderboardView uses.
         """
-        today = timezone.localdate()
-        soon = today + timezone.timedelta(days=EXPIRING_WINDOW)
-        complete = Q(status=RequirementRecord.Status.COMPLETE)
-
         cells = {
             (row["family_id"], row["requirement_id"]): row
             for row in RequirementRecord.objects.filter(year=year, family__isnull=False)
@@ -86,9 +72,6 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
             .annotate(
                 total=Count("pk"),
                 outstanding=Count("pk", filter=Q(status=RequirementRecord.Status.NOT_STARTED)),
-                expired=Count("pk", filter=complete & Q(expires_on__lt=today)),
-                expiring=Count("pk", filter=complete & Q(expires_on__gte=today, expires_on__lte=soon)),
-                soonest_expiry=Min("expires_on", filter=complete),
             )
         }
 
@@ -111,23 +94,19 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
     @staticmethod
     def cell_state(cell):
         """
-        The single thing a family's cell should report, most urgent first.
+        The single thing a family's cell should report.
 
-        Partly done sits between expired and not started. A family where one
-        parent has filed a medical form and the other has not should not read
+        Partly done reads differently from nothing started: a family where one
+        parent has filed a medical form and the other has not should not look
         the same as a family where neither has.
         """
-        if cell["expired"]:
-            return "expired"
         if cell["outstanding"]:
             return "partial" if cell["outstanding"] < cell["total"] else "outstanding"
-        if cell["expiring"]:
-            return "expiring"
         return "complete"
 
     @staticmethod
     def row_matches(cells, wanted):
-        if wanted not in ("outstanding", "expiring", "expired"):
+        if wanted != "outstanding":
             return True
         # A partly done family still has outstanding items, so it keeps
         # matching the outstanding filter.

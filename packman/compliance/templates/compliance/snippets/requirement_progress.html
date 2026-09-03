@@ -13,21 +13,11 @@
      aria-valuenow="{{ requirement.complete }}" aria-valuemin="0" aria-valuemax="{{ requirement.total }}">
   {% if requirement.total %}
     {% widthratio requirement.complete requirement.total 100 as complete_pct %}
-    {% widthratio requirement.expiring requirement.total 100 as expiring_pct %}
-    {% widthratio requirement.expired requirement.total 100 as expired_pct %}
     {% widthratio requirement.waived requirement.total 100 as waived_pct %}
     {% widthratio requirement.outstanding requirement.total 100 as outstanding_pct %}
     {% if requirement.complete %}
       <div class="progress-bar bg-success" style="width: {{ complete_pct }}%"
            title="{% blocktranslate count n=requirement.complete %}{{ n }} complete{% plural %}{{ n }} complete{% endblocktranslate %}">{{ requirement.complete }}</div>
-    {% endif %}
-    {% if requirement.expiring %}
-      <div class="progress-bar bg-warning text-dark" style="width: {{ expiring_pct }}%"
-           title="{% blocktranslate count n=requirement.expiring %}{{ n }} expiring soon{% plural %}{{ n }} expiring soon{% endblocktranslate %}">{{ requirement.expiring }}</div>
-    {% endif %}
-    {% if requirement.expired %}
-      <div class="progress-bar bg-danger" style="width: {{ expired_pct }}%"
-           title="{% blocktranslate count n=requirement.expired %}{{ n }} expired{% plural %}{{ n }} expired{% endblocktranslate %}">{{ requirement.expired }}</div>
     {% endif %}
     {% if requirement.waived %}
       <div class="progress-bar bg-light text-dark" style="width: {{ waived_pct }}%"

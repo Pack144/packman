@@ -5,35 +5,21 @@ from django.db import migrations
 # are all configured the same way without anyone having to remember a step.
 DEFAULTS = [
     {
-        "slug": "bsa-membership",
-        "name": "Scouting America Membership",
-        "applies_to": "CUB",
-        "tracks_expiration": True,
-        "default_duration_days": None,
-        "sort_order": 10,
-    },
-    {
         "slug": "medical-form-cub",
         "name": "Medical Form (Cub)",
         "applies_to": "CUB",
-        "tracks_expiration": True,
-        "default_duration_days": 365,
         "sort_order": 20,
     },
     {
         "slug": "medical-form-adult",
         "name": "Medical Form (Adult)",
         "applies_to": "ADULT",
-        "tracks_expiration": True,
-        "default_duration_days": 365,
         "sort_order": 30,
     },
     {
         "slug": "pack-dues",
         "name": "Pack Dues",
         "applies_to": "FAMILY",
-        "tracks_expiration": False,
-        "default_duration_days": None,
         "sort_order": 40,
     },
 ]
