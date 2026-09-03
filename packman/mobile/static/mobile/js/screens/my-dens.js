@@ -1,6 +1,6 @@
 import { denBadge, esc, pluralize, setMyDenCount, titleBar } from "../components.js";
 import { getDirectory, myActiveChildren, myDens } from "../api.js";
-import { denDetailMarkup } from "./den-shared.js";
+import { bindDenViewTabs, denDetailMarkup } from "./den-shared.js";
 
 function denHeaderCard(den) {
   return `
@@ -38,6 +38,7 @@ export async function renderMyDens(container) {
   }
 
   let active = 0;
+  let view = "cubs";
 
   function paint() {
     const den = dens[active];
@@ -61,14 +62,18 @@ export async function renderMyDens(container) {
         </div>`
             : denHeaderCard(den)
         }
-        ${denDetailMarkup(den)}
+        ${denDetailMarkup(den, view)}
       </div>
     `;
-    container.querySelectorAll(".segment").forEach((btn) => {
+    container.querySelectorAll(".segment[data-index]").forEach((btn) => {
       btn.addEventListener("click", () => {
         active = Number(btn.dataset.index);
         paint();
       });
+    });
+    bindDenViewTabs(container, (newView) => {
+      view = newView;
+      paint();
     });
   }
 

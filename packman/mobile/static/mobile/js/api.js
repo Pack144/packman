@@ -639,7 +639,7 @@ function resolveDen(directory, den) {
     },
     parents: (scout.family_slug ? directory.byFamily.get(scout.family_slug) || [] : [])
       .filter((m) => !m.is_scout)
-      .map((adult) => ({ slug: adult.slug, name: adult.short_name })),
+      .map((adult) => ({ slug: adult.slug, name: adult.short_name, avatar: adult.avatar })),
   }));
   return {
     number: den.number,
