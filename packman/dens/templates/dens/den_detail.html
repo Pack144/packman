@@ -69,10 +69,6 @@
                     </div>
                     <div class="col">
                       <h4 class="card-title">{{ row.scout }}</h4>
-                      <p>
-                        {% if row.scout.rank %}{{ row.scout.rank }} —{% endif %}
-                        {% if row.scout.current_den %}<small>{{ row.scout.current_den }}</small>{% endif %}
-                      </p>
                       {% if row.parents %}
                         <p>
                           <small>
