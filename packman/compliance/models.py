@@ -45,7 +45,12 @@ class Requirement(TimeStampedUUIDModel):
     tracks_expiration = models.BooleanField(
         _("expires"),
         default=True,
-        help_text=_("Check this box if the requirement must be renewed, such as a medical form."),
+        help_text=_(
+            "Check this box only if the requirement goes stale on its own schedule, independently "
+            "of the pack year — a medical form lapses a year after the doctor signed it, which can "
+            "fall mid-year. Leave it unchecked for anything the pack year itself bounds, such as "
+            "dues: those do not lapse, they are simply owed again next year."
+        ),
     )
     default_duration_days = models.PositiveIntegerField(
         _("valid for"),

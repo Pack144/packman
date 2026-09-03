@@ -1,8 +1,11 @@
 {% load i18n %}
 {% comment %}
   The member directory tabs. Pass `active` as one of cubs, adults, all, or
-  dens. Extracted from the three list templates that each carried their own
-  copy of this block.
+  dens. Extracted from the list templates that each carried their own copy of
+  this block.
+
+  These are filters over the same directory, so anything that navigates
+  somewhere else belongs in the navbar rather than here.
 {% endcomment %}
 <ul class="nav nav-tabs card-header-tabs">
   <li class="nav-item">
@@ -20,10 +23,4 @@
   <li class="nav-item">
     <a class="nav-link {% if active == 'dens' %}active{% endif %}" href="{% url 'dens:list' %}">Dens</a>
   </li>
-  {% if perms.compliance.view_all_records %}
-    <li class="nav-item">
-      <a class="nav-link {% if active == 'requirements' %}active{% endif %}"
-         href="{% url 'compliance:dashboard' %}">{% translate "Requirements" %}</a>
-    </li>
-  {% endif %}
 </ul>

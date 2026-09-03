@@ -252,36 +252,3 @@ class DirectorySerializer(serializers.Serializer):
     members = DirectoryMemberSerializer(many=True)
     dens = DirectoryDenSerializer(many=True)
     committees = DirectoryCommitteeSerializer(many=True)
-
-
-class RequirementRecordSerializer(serializers.Serializer):
-    """One requirement's standing for one member (or for the household)."""
-
-    requirement = serializers.CharField()
-    # The derived state, not the stored one, so an expiry that has passed
-    # reads as expired without anything having rewritten the record.
-    status = serializers.CharField()
-    status_label = serializers.CharField()
-    expires_on = serializers.DateField(allow_null=True)
-
-
-class RequirementGroupSerializer(serializers.Serializer):
-    """A family member, or the family itself, and what they owe."""
-
-    name = serializers.CharField()
-    # Null for the household group, which has no profile to link to.
-    slug = serializers.CharField(allow_null=True)
-    records = RequirementRecordSerializer(many=True)
-
-
-class FamilyRequirementsSerializer(serializers.Serializer):
-    """
-    The viewer's own family only — see packman.mobile.api.RequirementsView.
-
-    Deliberately not folded into the directory payload: that is shared by
-    every member, and a family's paperwork is theirs alone.
-    """
-
-    year_label = serializers.CharField()
-    outstanding = serializers.IntegerField()
-    groups = RequirementGroupSerializer(many=True)

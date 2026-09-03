@@ -1,0 +1,53 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+  <p class="help">
+    {% blocktranslate %}
+      A record is one Cub, adult, or family's standing against one requirement
+      in one pack year. Records are normally opened in bulk from the
+      Requirements page at the start of the year, then filled in here as
+      paperwork arrives. This list opens on the current pack year; use the
+      "pack year" filter to look back at a previous one.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    <strong>{% translate "Recording something" %}</strong>
+    {% blocktranslate %}
+      — set the status to Complete and fill in the date it was completed. If
+      the requirement expires and has a "valid for" duration configured, the
+      expiration date is suggested for you; otherwise enter the date printed on
+      the card or form. Use Waived when a member does not need to satisfy the
+      requirement at all, so it stops being counted as outstanding without
+      pretending it was collected.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    <strong>{% translate "Expiring and Expired are not statuses you set" %}</strong>
+    {% blocktranslate %}
+      — they are worked out from the expiration date every time a page is
+      loaded. A completed record becomes expiring, then expired, on its own as
+      the date passes. Nothing needs to be re-saved, and there is no
+      end-of-year cleanup to remember.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    <strong>{% translate "Someone who joined mid-year" %}</strong>
+    {% blocktranslate %}
+      — a member who arrives after the records were opened simply has no row
+      here yet. Re-run "Open records for the current Pack Year" from the
+      Requirements page to pick them up; it skips everyone who already has one.
+      A member's records can also be edited directly on their own page under
+      Membership.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    {% blocktranslate %}
+      Notes are for tracking the paperwork itself — who it was handed to, which
+      form is still missing. Never record medical details or anything else from
+      the contents of a form here; the pack only needs to know whether it has
+      been collected, not what it says.
+    {% endblocktranslate %}
+  </p>
+  {{ block.super }}
+{% endblock %}

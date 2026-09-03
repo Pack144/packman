@@ -1,5 +1,5 @@
 import { appBar, avatar, esc, icons, rankTag } from "../components.js";
-import { denLabel, familyOf, getDirectory, getFamilyRequirements } from "../api.js";
+import { denLabel, familyOf, getDirectory } from "../api.js";
 
 function profileBar(member, { me }) {
   const back = me
@@ -110,88 +110,8 @@ function familyCard(family) {
   `;
 }
 
-// Maps the derived status the API sends to the pill that shows it. Keys are
-// RequirementRecord.Health values.
-const REQUIREMENT_TONES = {
-  OK: "ok",
-  SOON: "warn",
-  EXP: "bad",
-  NA: "muted",
-  NEW: "muted",
-};
-
-/**
- * "Sept. 18, 2026" from the wire's ISO date. Split rather than passed to
- * Date(iso), which would read it as UTC and can land a day early west of
- * Greenwich.
- */
-function expiryLabel(iso) {
-  if (!iso) return "";
-  const [year, month, day] = iso.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString([], {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function requirementRow(record) {
-  const tone = REQUIREMENT_TONES[record.status] || "muted";
-  const expires =
-    record.status === "OK" || record.status === "SOON" || record.status === "EXP"
-      ? record.expires_on
-      : null;
-  return `
-    <div class="row req-row">
-      <div class="grow">
-        <div class="row-title">${esc(record.requirement)}</div>
-        ${expires ? `<div class="mono plain">Expires ${esc(expiryLabel(expires))}</div>` : ""}
-      </div>
-      <span class="req-pill ${tone}">${esc(record.status_label)}</span>
-    </div>`;
-}
-
-function requirementGroup(group) {
-  if (!group.records.length) return "";
-  return `
-    <div class="req-group">
-      <div class="req-who">${esc(group.name)}</div>
-      <div class="card row-divided">
-        ${group.records.map(requirementRow).join("")}
-      </div>
-    </div>`;
-}
-
-/**
- * The whole family's requirements, shown only on the viewer's own Me screen.
- * Someone else's profile never carries this: their paperwork isn't ours.
- */
-function requirementsCard(requirements) {
-  if (!requirements) return "";
-  const groups = requirements.groups.map(requirementGroup).join("");
-  if (!groups) return "";
-  const summary = requirements.outstanding
-    ? `<span class="req-pill warn">${requirements.outstanding} need${
-        requirements.outstanding === 1 ? "s" : ""
-      } attention</span>`
-    : '<span class="req-pill ok">All up to date</span>';
-  return `
-    <div>
-      <h2 class="sect">Membership Requirements</h2>
-      <div class="req-summary">
-        ${summary}
-        <span class="mono plain">${esc(requirements.year_label)}</span>
-      </div>
-      ${groups}
-    </div>
-  `;
-}
-
 export async function renderProfile(container, slug, { me = false } = {}) {
   const directory = await getDirectory();
-  // Only fetched for your own screen, and never blocks it: the section is
-  // supplementary, so an offline or failed call just leaves it out.
-  const requirements = me ? await getFamilyRequirements() : null;
   const member = directory.bySlug.get(slug);
 
   if (!member) {
@@ -213,7 +133,6 @@ export async function renderProfile(container, slug, { me = false } = {}) {
       ${actionButtons(member)}
       ${contactCard(member)}
       ${familyCard(familyOf(directory, member))}
-      ${requirementsCard(requirements)}
     </div>
   `;
 }

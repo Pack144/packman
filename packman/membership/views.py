@@ -2,8 +2,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from packman.compliance.summaries import summarize_family
-
 from .forms import AddressFormSet, AdultCreation, AdultForm, PhoneNumberFormSet, ScoutForm
 from .models import Adult, Family, Member, Scout
 
@@ -252,13 +250,3 @@ class MyFamilyDetail(AdultDetail):
 
     def get_object(self, queryset=None):
         return self.request.user
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Only this page summarises the whole family's requirements; the other
-        # adult pages stay limited to the member being looked at.
-        summary = summarize_family(self.object.family)
-        context["family_requirements"] = summary["groups"]
-        context["family_outstanding"] = summary["outstanding"]
-        context["requirements_year"] = summary["year"]
-        return context

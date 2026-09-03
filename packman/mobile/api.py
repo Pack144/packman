@@ -11,7 +11,6 @@ from rest_framework.response import Response
 from packman.calendars.models import Event, PackYear
 from packman.committees.leadership import LEADERSHIP_TITLES, assignment_title
 from packman.committees.models import Committee, CommitteeMember
-from packman.compliance.summaries import summarize_family
 from packman.dens.models import Den, Membership
 from packman.membership.models import Adult, Family, Member, Scout
 
@@ -19,7 +18,6 @@ from .permissions import IsActiveMemberOrContributor
 from .serializers import (
     DirectorySerializer,
     EventSerializer,
-    FamilyRequirementsSerializer,
     get_avatar_url,
     get_photo_url,
     rank_fields,
@@ -319,52 +317,3 @@ class EventView(GenericAPIView):
             .first()
         )
         return Response({"event": EventSerializer(event).data if event else None})
-
-
-def build_family_requirements(user):
-    """
-    The viewer's own family's requirements for the current pack year.
-
-    Kept out of build_directory() on purpose: that payload is shared with
-    every member of the pack, and a family's paperwork is theirs alone.
-    """
-    summary = summarize_family(user.family)
-    groups = []
-    for group in summary["groups"]:
-        subject = group["subject"]
-        groups.append(
-            {
-                "name": str(subject),
-                # The household group is a Family, which has no profile page.
-                "slug": getattr(subject, "slug", None),
-                "records": [
-                    {
-                        "requirement": record.requirement.name,
-                        "status": record.effective_status.value,
-                        "status_label": record.effective_status.label,
-                        "expires_on": record.expires_on,
-                    }
-                    for record in group["records"]
-                ],
-            }
-        )
-
-    year = summary["year"]
-    return {
-        "year_label": str(year) if year else "",
-        "outstanding": len(summary["outstanding"]),
-        "groups": groups,
-    }
-
-
-class RequirementsView(GenericAPIView):
-    """
-    The signed-in member's family requirements, for the bottom of the Me
-    screen. Separate from DirectoryView because it is scoped to one family
-    and changes on a different cadence than the roster.
-    """
-
-    permission_classes = [IsActiveMemberOrContributor]
-
-    def get(self, request):
-        return Response(FamilyRequirementsSerializer(build_family_requirements(request.user)).data)
