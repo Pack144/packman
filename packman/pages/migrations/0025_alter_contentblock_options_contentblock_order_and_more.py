@@ -10,11 +10,8 @@ def copy_order_from_legacy_field(apps, schema_editor):
     some existing rows (likely created outside the normal admin save path,
     e.g. via fixtures/bulk_create) it was never incremented and is tied at 0
     for multiple blocks on the same page. Copying those ties verbatim would
-    leave `order` just as ambiguous, and the table rebuild that
-    `AlterOrderWithRespectTo(None)` triggers on SQLite doesn't preserve the
-    prior physical row order those ties happened to rely on - so instead we
-    break ties deterministically (by `date_added`, then `pk`) and assign
-    strictly sequential values per page.
+    leave `order` just as ambiguous, so instead we break ties deterministically
+    (by `date_added`, then `pk`) and assign strictly sequential values per page.
     """
     ContentBlock = apps.get_model("pages", "ContentBlock")
     Page = apps.get_model("pages", "Page")
