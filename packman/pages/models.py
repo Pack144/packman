@@ -162,12 +162,6 @@ class ContentBlock(TimeStampedUUIDModel):
             models.UniqueConstraint(fields=("page", "bookmark"), name="unique_bookmark_for_page"),
         ]
         indexes = [models.Index(fields=["heading", "published_on"])]
-        # "order" must come first: django-admin-sortable2's `manage.py reorder`
-        # command resolves the field to renumber from Meta.ordering[0], not
-        # from the admin's `ordering` override. All real queries already
-        # filter to a single page (e.g. `page.content_blocks.all()`), so
-        # "page" here is only a tie-breaker for any hypothetical
-        # cross-page listing.
         ordering = ("order", "page")
         verbose_name = _("Content Block")
         verbose_name_plural = _("Content Blocks")
