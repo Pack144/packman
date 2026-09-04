@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
         migrations.AlterModelOptions(
             name="contentblock",
             options={
-                "ordering": ("page", "order"),
+                "ordering": ("order", "page"),
                 "verbose_name": "Content Block",
                 "verbose_name_plural": "Content Blocks",
             },
