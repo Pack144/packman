@@ -6,13 +6,23 @@ from django.db import migrations, models
 def copy_order_from_legacy_field(apps, schema_editor):
     """Populate the new `order` field from the auto-generated `_order` field.
 
-    `_order` was scoped per `page` by `order_with_respect_to = "page"`, so we
-    can copy the values across directly without needing to re-group them.
+    `_order` was scoped per `page` by `order_with_respect_to = "page"`, but on
+    some existing rows (likely created outside the normal admin save path,
+    e.g. via fixtures/bulk_create) it was never incremented and is tied at 0
+    for multiple blocks on the same page. Copying those ties verbatim would
+    leave `order` just as ambiguous, and the table rebuild that
+    `AlterOrderWithRespectTo(None)` triggers on SQLite doesn't preserve the
+    prior physical row order those ties happened to rely on - so instead we
+    break ties deterministically (by `date_added`, then `pk`) and assign
+    strictly sequential values per page.
     """
     ContentBlock = apps.get_model("pages", "ContentBlock")
-    for content_block in ContentBlock.objects.all():
-        content_block.order = content_block._order
-        content_block.save(update_fields=["order"])
+    Page = apps.get_model("pages", "Page")
+    for page in Page.objects.all():
+        content_blocks = ContentBlock.objects.filter(page=page).order_by("_order", "date_added", "pk")
+        for index, content_block in enumerate(content_blocks):
+            content_block.order = index
+            content_block.save(update_fields=["order"])
 
 
 def copy_order_to_legacy_field(apps, schema_editor):
