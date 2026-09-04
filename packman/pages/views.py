@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Max
 from django.http import JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -18,6 +19,25 @@ from .forms import ContactForm, ContentBlockFormSet, PageForm
 from .models import Page
 
 logger = logging.getLogger(__name__)
+
+
+def save_contentblock_formset(formset):
+    """Save a `ContentBlockFormSet`, assigning `order` to any newly added blocks.
+
+    This formset doesn't expose `order` as a field (there's no drag-to-reorder
+    support here), so unlike the old `order_with_respect_to` behavior - which
+    transparently numbered new rows on save regardless of which code path
+    created them - newly added blocks need `order` set explicitly, or they'd
+    all default to 0 and collide with existing blocks on the same page.
+    """
+    instances = formset.save(commit=False)
+    next_order = (formset.instance.content_blocks.aggregate(Max("order"))["order__max"] or -1) + 1
+    for instance in instances:
+        if instance._state.adding:
+            instance.order = next_order
+            next_order += 1
+        instance.save()
+    formset.save_m2m()
 
 
 def get_link_list(request):
@@ -62,7 +82,7 @@ class PageCreateView(PermissionRequiredMixin, SuccessMessageMixin, CreateView):
         if contentblock_formset.is_valid():
             self.object = form.save()
             contentblock_formset.instance = self.object
-            contentblock_formset.save()
+            save_contentblock_formset(contentblock_formset)
         else:
             return super().form_invalid(form)
         return super().form_valid(form)
@@ -98,7 +118,7 @@ class PageUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
         contentblock_formset = context["contentblock_formset"]
         if contentblock_formset.is_valid():
             contentblock_formset.instance = self.object
-            contentblock_formset.save()
+            save_contentblock_formset(contentblock_formset)
         else:
             return super().form_invalid(form)
         return super().form_valid(form)
