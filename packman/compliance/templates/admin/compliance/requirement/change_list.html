@@ -1,6 +1,18 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
 
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    /* The changelist's "Add" button (ul.object-tools) floats right with a
+       -48px top margin, so it is pulled up over the end of the help text
+       above unless that much clearance is reserved for it. */
+    .object-tools-clearance {
+      height: 48px;
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
   <p class="help">
     {% blocktranslate %}
@@ -50,5 +62,6 @@
       requirement deletes every record of it, for every year.
     {% endblocktranslate %}
   </p>
+  <div class="object-tools-clearance" aria-hidden="true"></div>
   {{ block.super }}
 {% endblock %}
