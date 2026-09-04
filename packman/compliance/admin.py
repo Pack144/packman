@@ -154,7 +154,6 @@ class RequirementRecordAdmin(admin.ModelAdmin):
     list_filter = ("requirement", PackYearFilter, "status")
     list_select_related = ("requirement", "year", "member", "family", "recorded_by")
     autocomplete_fields = ("member", "family", "recorded_by")
-    date_hierarchy = "completed_on"
     actions = ["mark_complete", "mark_waived"]
     search_fields = (
         "member__first_name",
