@@ -74,10 +74,11 @@ class ContactForm(forms.Form):
 class ContentBlockForm(forms.ModelForm):
     class Meta:
         model = ContentBlock
-        fields = ("heading", "bookmark", "visibility", "body")
+        fields = ("heading", "bookmark", "visibility", "body", "order")
         widgets = {
             "body": TinyMCE(mce_attrs={"link_list": "api/v1/pages/link_list/"}),
             "visibility": forms.RadioSelect,
+            "order": forms.HiddenInput,
         }
 
 
