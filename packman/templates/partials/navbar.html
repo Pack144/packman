@@ -123,10 +123,13 @@
                 </a>
               {% endif %}
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-                <i class="fa-solid fa-sign-out-alt fa-fw"></i>
-                <span class="ms-1">{% translate 'Log out' %}</span>
-              </a>
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item text-danger">
+                  <i class="fa-solid fa-sign-out-alt fa-fw"></i>
+                  <span class="ms-1">{% translate 'Log out' %}</span>
+                </button>
+              </form>
             </div>
           </li>
         {% else %}
