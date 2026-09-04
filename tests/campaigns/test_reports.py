@@ -21,8 +21,12 @@ class CampaignReportTestCase(TestCase):
         self.factory = RequestFactory()
         self.current_year = PackYearFactory(year=2026)
         self.previous_year = PackYearFactory(year=2025)
-        self.previous_campaign = self.create_campaign(self.previous_year, timezone.datetime(2025, 9, 1).date())
-        self.current_campaign = self.create_campaign(self.current_year, timezone.datetime(2026, 9, 1).date())
+        # Anchor the campaign windows to "today" (well outside Campaign.objects.current()'s
+        # 90-day lookback) rather than hardcoded calendar dates, so these tests don't become
+        # flaky/incorrect depending on what day they happen to run.
+        today = timezone.now().date()
+        self.previous_campaign = self.create_campaign(self.previous_year, today - timezone.timedelta(days=400))
+        self.current_campaign = self.create_campaign(self.current_year, today - timezone.timedelta(days=200))
 
         content_type = ContentType.objects.get_for_model(Campaign)
         self.permission = Permission.objects.get(codename="generate_order_report", content_type=content_type)

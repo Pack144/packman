@@ -15,11 +15,26 @@
       <ul class="navbar-nav me-auto">
         {% if user.is_authenticated %}
           {% if fundraiser %}
-            <li class="nav-item {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
-              <a class="nav-link" href="{% url 'campaigns:order_list' %}">Fundraiser</a>
-            </li>
-            <li class="nav-item {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
-              <a class="nav-link" href="{% url 'campaigns:order_leaderboard' %}">NCC Leaderboard</a>
+            <li class="nav-item dropdown {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
+              <a class="nav-link dropdown-toggle"
+                 href="#"
+                 id="navbarNccDropdown"
+                 role="button"
+                 data-bs-toggle="dropdown"
+                 aria-haspopup="true"
+                 aria-expanded="false">NCC</a>
+              <div class="dropdown-menu" aria-labelledby="navbarNccDropdown">
+                <a class="dropdown-item" href="{% url 'campaigns:order_list' %}">{% translate 'Fundraiser' %}</a>
+                {% if fundraiser.can_select_prizes %}
+                  <a class="dropdown-item" href="{% url 'campaigns:prize_selection' %}">{% translate 'Prize Selection' %}</a>
+                {% endif %}
+                <a class="dropdown-item" href="{% url 'campaigns:order_leaderboard' %}">{% translate 'Leaderboard' %}</a>
+                <a class="dropdown-item" href="{% url 'campaigns:product_list' %}">{% translate 'Products' %}</a>
+                <a class="dropdown-item" href="{% url 'pages:detail' 'nccinfo' %}">{% translate 'Information' %}</a>
+                {% if perms.campaigns.generate_order_report %}
+                  <a class="dropdown-item" href="{% url 'campaigns:order_report' %}">{% translate 'Order Report' %}</a>
+                {% endif %}
+              </div>
             </li>
           {% endif %}
           <li class="nav-item {% if 'calendars' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
