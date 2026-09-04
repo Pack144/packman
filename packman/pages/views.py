@@ -25,10 +25,8 @@ def save_contentblock_formset(formset):
     """Save a `ContentBlockFormSet`, assigning `order` to any newly added blocks.
 
     This formset doesn't expose `order` as a field (there's no drag-to-reorder
-    support here), so unlike the old `order_with_respect_to` behavior - which
-    transparently numbered new rows on save regardless of which code path
-    created them - newly added blocks need `order` set explicitly, or they'd
-    all default to 0 and collide with existing blocks on the same page.
+    support here), so newly added blocks need it set explicitly, or they'd all
+    default to 0 and collide with existing blocks on the same page.
     """
     instances = formset.save(commit=False)
     next_order = (formset.instance.content_blocks.aggregate(Max("order"))["order__max"] or -1) + 1
