@@ -41,6 +41,7 @@ urlpatterns = [
     # Local Apps
     path("calendar/", include("packman.calendars.urls")),
     path("committees/", include("packman.committees.urls")),
+    path("compliance/", include("packman.compliance.urls")),
     path("dens/", include("packman.dens.urls")),
     path("documents/", include("packman.documents.urls")),
     path("mail/", include("packman.mail.urls")),

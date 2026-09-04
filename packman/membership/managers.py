@@ -8,11 +8,23 @@ from packman.dens.models import Rank
 
 
 class FamilyQuerySet(models.QuerySet):
+    def active_in(self, year):
+        """
+        Families with a Cub who was active in the given pack year, or in any of
+        them if passed an iterable.
+
+        Both conditions belong in a single filter() so that the same child has
+        to satisfy each of them; chaining would let one child supply the den
+        membership and a sibling supply the active status.
+        """
+        scout = self.model.children.rel.related_model
+        year_lookup = "children__den_memberships__year_assigned"
+        if hasattr(year, "__iter__"):
+            year_lookup += "__in"
+        return self.filter(**{year_lookup: year, "children__status": scout.ACTIVE}).distinct()
+
     def active(self):
-        return self.filter(
-            children__den_memberships__year_assigned=PackYear.objects.current(),
-            children__status=self.model.children.rel.related_model.ACTIVE,
-        )
+        return self.active_in(PackYear.objects.current())
 
     def in_den(self, den_list):
         return self.active().filter(
@@ -34,6 +46,9 @@ class FamilyManager(models.Manager):
     def active(self):
         return self.get_queryset().active()
 
+    def active_in(self, year):
+        return self.get_queryset().active_in(year)
+
     def in_den(self, den_list):
         return self.get_queryset().in_den(den_list=den_list)
 
@@ -42,8 +57,12 @@ class FamilyManager(models.Manager):
 
 
 class MemberQuerySet(models.QuerySet):
+    def active_in(self, year):
+        family = self.model.family.field.related_model
+        return self.filter(family__in=family.objects.active_in(year).values("pk"))
+
     def active(self):
-        return self.filter(family__in=self.model.family.field.related_model.objects.active())
+        return self.filter(family__in=self.model.family.field.related_model.objects.active().values("pk"))
 
     def in_den(self, den_list):
         return self.active().filter(family__in=self.model.family.field.related_model.objects.in_den(den_list))
@@ -72,6 +91,9 @@ class MemberManager(UserManager):
 
     def active(self):
         return self.get_queryset().active()
+
+    def active_in(self, year):
+        return self.get_queryset().active_in(year)
 
     def in_den(self, den_list):
         return self.get_queryset().in_den(den_list)
@@ -113,11 +135,15 @@ class MemberManager(UserManager):
 
 
 class ScoutQuerySet(models.QuerySet):
+    def active_in(self, year):
+        """Cubs active in the given pack year, or in any of them if passed an iterable."""
+        year_lookup = "den_memberships__year_assigned"
+        if hasattr(year, "__iter__"):
+            year_lookup += "__in"
+        return self.filter(**{year_lookup: year, "status": self.model.ACTIVE}).distinct()
+
     def active(self):
-        return self.filter(
-            den_memberships__year_assigned=PackYear.objects.current(),
-            status=self.model.ACTIVE,
-        )
+        return self.active_in(PackYear.objects.current())
 
     def lions(self):
         return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.LION)
@@ -153,6 +179,9 @@ class ScoutManager(models.Manager):
 
     def active(self):
         return self.get_queryset().active()
+
+    def active_in(self, year):
+        return self.get_queryset().active_in(year)
 
     def lions(self):
         return self.get_queryset().lions()

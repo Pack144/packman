@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate 'Our Requirements' %} | {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+      {% if family %}
+        {% blocktranslate with name=family %}{{ name }} Requirements{% endblocktranslate %}
+      {% else %}
+        {% translate 'Our Requirements' %}
+      {% endif %}
+    </h1>
+    {% include 'compliance/snippets/year_switcher.html' %}
+  </div>
+
+  {% if not family %}
+    <div class="alert alert-info">
+      {% translate 'You are not part of a family in the pack yet, so there is nothing to show here.' %}
+    </div>
+  {% else %}
+    {% if outstanding %}
+      <div class="alert alert-warning">
+        {% blocktranslate count n=outstanding|length %}
+          There is {{ n }} item that still needs attention.
+        {% plural %}
+          There are {{ n }} items that still need attention.
+        {% endblocktranslate %}
+      </div>
+    {% else %}
+      <div class="alert alert-success">
+        {% translate 'Everything is up to date. Thank you!' %}
+      </div>
+    {% endif %}
+
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+      {% for group in groups %}
+        <div class="col">
+          <div class="card shadow-sm h-100">
+            <div class="card-header">{{ group.subject }}</div>
+            <ul class="list-group list-group-flush">
+              {% for record in group.records %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>{{ record.requirement.name }}</div>
+                  {% include 'compliance/snippets/status_badge.html' %}
+                </li>
+              {% empty %}
+                <li class="list-group-item text-body-secondary">
+                  {% translate 'Nothing is being tracked this year.' %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col">
+          <p class="text-body-secondary">{% translate 'Nothing is being tracked for this year.' %}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <p class="text-body-secondary mt-4">
+      <small>
+        {% translate 'Pack leadership keeps these records. If something looks wrong, please get in touch.' %}
+      </small>
+    </p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% load i18n %}
+{% comment %}
+  One member's requirements, grouped by pack year. Pass `member`.
+
+  Deliberately the same card and accordion structure as the Committees Served
+  card it sits beside on the adult detail page. The element ids are prefixed
+  because both accordions appear on that page and duplicate ids would make each
+  one toggle the other.
+
+  Callers are responsible for gating this on ownership or the
+  compliance.view_all_records permission.
+{% endcomment %}
+{% if member.requirement_records.exists %}
+  {% regroup member.requirement_records.all by year as requirements_by_year %}
+  <div class="card">
+    <div class="card-body">
+      {% comment %}
+        A constant label rather than the sibling card's singular/plural pair.
+        "Membership Requirement" reads as a mistake when someone happens to
+        have exactly one.
+      {% endcomment %}
+      <h3 class="card-title">{% translate 'Membership Requirements' %}</h3>
+      <div class="accordion" id="requirements-accordion">
+        {% for year in requirements_by_year %}
+          <div class="accordion-item">
+            <div class="accordion-header" id="requirements-heading-{{ year.grouper.year }}">
+              <h2 class="mb-0">
+                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#requirements-collapse-{{ year.grouper.year }}"
+                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                        aria-controls="requirements-collapse-{{ year.grouper.year }}">{{ year.grouper }}</button>
+              </h2>
+            </div>
+            <div id="requirements-collapse-{{ year.grouper.year }}"
+                 class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                 aria-labelledby="requirements-heading-{{ year.grouper.year }}"
+                 data-bs-parent="#requirements-accordion">
+              <div class="accordion-body">
+                <div class="list-group list-group-flush">
+                  {% for record in year.list %}
+                    <div class="list-group-item border-bottom-0 d-flex justify-content-between align-items-center">
+                      <span>
+                        <strong>{{ record.requirement }}</strong>
+                      </span>
+                      {% include 'compliance/snippets/status_badge.html' %}
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endif %}

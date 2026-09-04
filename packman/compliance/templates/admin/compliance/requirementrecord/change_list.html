@@ -1,0 +1,56 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    /* The changelist's "Add" button (ul.object-tools) floats right with a
+       -48px top margin, so it is pulled up over the end of the help text
+       above unless that much clearance is reserved for it. */
+    .object-tools-clearance {
+      height: 48px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <p class="help">
+    {% blocktranslate %}
+      A record is one Cub, adult, or family's standing against one requirement
+      in one pack year. Records are normally opened in bulk from the
+      Requirements page at the start of the year, then filled in here as
+      paperwork arrives. This list opens on the current pack year; use the
+      "pack year" filter to look back at a previous one.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    <strong>{% translate "Recording something" %}</strong>
+    {% blocktranslate %}
+      — set the status to Complete and fill in the date it was completed. Use
+      Waived when a member does not need to satisfy the requirement at all, so
+      it stops being counted as outstanding without pretending it was
+      collected. A record covers one pack year only: next year's paperwork is a
+      new record rather than a change to this one.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    <strong>{% translate "Someone who joined mid-year" %}</strong>
+    {% blocktranslate %}
+      — a member who arrives after the records were opened simply has no row
+      here yet. Re-run "Open records for the current Pack Year" from the
+      Requirements page to pick them up; it skips everyone who already has one.
+      A member's records can also be edited directly on their own page under
+      Membership.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    {% blocktranslate %}
+      Notes are for tracking the paperwork itself — who it was handed to, which
+      form is still missing. Never record medical details or anything else from
+      the contents of a form here; the pack only needs to know whether it has
+      been collected, not what it says.
+    {% endblocktranslate %}
+  </p>
+  <div class="object-tools-clearance" aria-hidden="true"></div>
+  {{ block.super }}
+{% endblock %}

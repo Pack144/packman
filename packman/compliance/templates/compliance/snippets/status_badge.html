@@ -1,0 +1,18 @@
+{% load i18n %}
+{% comment %}
+  One record as a badge. Pass `record`; a missing record reads as not started,
+  since a Cub who joined mid-year has no row until someone records against them.
+{% endcomment %}
+{% if record.status == 'OK' %}
+  <span class="badge text-bg-success" title="{% translate 'Complete' %}">
+    <i class="fa-solid fa-circle-check fa-fw"></i> {% translate 'Complete' %}
+  </span>
+{% elif record.status == 'NA' %}
+  <span class="badge text-bg-light" title="{% translate 'Waived by pack leadership' %}">
+    <i class="fa-solid fa-circle-minus fa-fw"></i> {% translate 'Waived' %}
+  </span>
+{% else %}
+  <span class="badge text-bg-secondary" title="{% translate 'Nothing recorded yet' %}">
+    <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Not started' %}
+  </span>
+{% endif %}

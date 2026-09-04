@@ -15,7 +15,13 @@ from packman.dens.models import Den, Membership
 from packman.membership.models import Adult, Family, Member, Scout
 
 from .permissions import IsActiveMemberOrContributor
-from .serializers import DirectorySerializer, EventSerializer, get_avatar_url, get_photo_url, rank_fields
+from .serializers import (
+    DirectorySerializer,
+    EventSerializer,
+    get_avatar_url,
+    get_photo_url,
+    rank_fields,
+)
 
 
 def visible_members():

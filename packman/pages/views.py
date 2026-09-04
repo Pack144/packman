@@ -8,9 +8,11 @@ from django.http import JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, UpdateView
 
-from packman.calendars.models import Event
+from packman.calendars.models import Event, PackYear
+from packman.compliance.models import RequirementRecord
 from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from packman.membership.models import Family
 
@@ -142,7 +144,45 @@ class HomePageView(PageDetailView):
                 },
             )
 
+        self.notify_outstanding_requirements()
+
         return obj
+
+    def notify_outstanding_requirements(self):
+        """
+        Tell a family on their way in that the pack is still waiting on
+        paperwork, and send them to the page that says which.
+
+        Silent when there is nothing outstanding: the home page should not
+        carry a banner saying nothing is wrong.
+        """
+        user = self.request.user
+        if not user.is_authenticated or not user.family_id:
+            return
+
+        # get_current() rather than objects.current(): a stray overlapping pack
+        # year should not take the home page down over a supplementary banner.
+        year = PackYear.get_current()
+        if year is None:
+            return
+
+        # family_id rather than family, so the banner costs one query, not two.
+        outstanding = RequirementRecord.objects.for_family(user.family_id).for_year(year).outstanding().count()
+        if not outstanding:
+            return
+
+        messages.add_message(
+            self.request,
+            messages.WARNING,
+            ngettext(
+                "<strong>%(count)d membership requirement needs attention.</strong> "
+                "See <a class='alert-link' href='%(url)s'>My Requirements</a> for what is outstanding.",
+                "<strong>%(count)d membership requirements need attention.</strong> "
+                "See <a class='alert-link' href='%(url)s'>My Requirements</a> for what is outstanding.",
+                outstanding,
+            )
+            % {"count": outstanding, "url": reverse("compliance:my_family")},
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

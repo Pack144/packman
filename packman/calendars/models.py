@@ -120,10 +120,16 @@ class PackYear(models.Model):
 
     @staticmethod
     def get_current():
+        """
+        A safe alternative to ``objects.current()`` for callers that must not
+        raise, such as a model field default or the admin changelist -- both
+        need to keep working even when no year covers today, or a stray
+        overlapping year was entered by hand.
+        """
         try:
             return PackYear.objects.current()
-        except PackYear.DoesNotExist:
-            return PackYear.objects.none()
+        except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
+            return None
 
     @classmethod
     def get_current_id(cls):

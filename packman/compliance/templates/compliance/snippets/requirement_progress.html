@@ -1,0 +1,31 @@
+{% load i18n %}
+{% comment %}
+  A stacked bar for one annotated requirement. Segment widths come straight
+  from the annotation, so there is no arithmetic in the template.
+{% endcomment %}
+<div class="d-flex justify-content-between align-items-baseline">
+  <a href="{% url 'compliance:roster_by_year' slug=requirement.slug year=year.year %}">{{ requirement.name }}</a>
+  <small class="text-body-secondary">
+    {% blocktranslate with done=requirement.complete total=requirement.total %}{{ done }} of {{ total }}{% endblocktranslate %}
+  </small>
+</div>
+<div class="progress mb-3" role="progressbar" style="height: 1.25rem"
+     aria-valuenow="{{ requirement.complete }}" aria-valuemin="0" aria-valuemax="{{ requirement.total }}">
+  {% if requirement.total %}
+    {% widthratio requirement.complete requirement.total 100 as complete_pct %}
+    {% widthratio requirement.waived requirement.total 100 as waived_pct %}
+    {% widthratio requirement.outstanding requirement.total 100 as outstanding_pct %}
+    {% if requirement.complete %}
+      <div class="progress-bar bg-success" style="width: {{ complete_pct }}%"
+           title="{% blocktranslate count n=requirement.complete %}{{ n }} complete{% plural %}{{ n }} complete{% endblocktranslate %}">{{ requirement.complete }}</div>
+    {% endif %}
+    {% if requirement.waived %}
+      <div class="progress-bar bg-light text-dark" style="width: {{ waived_pct }}%"
+           title="{% blocktranslate count n=requirement.waived %}{{ n }} waived{% plural %}{{ n }} waived{% endblocktranslate %}">{{ requirement.waived }}</div>
+    {% endif %}
+    {% if requirement.outstanding %}
+      <div class="progress-bar bg-secondary" style="width: {{ outstanding_pct }}%"
+           title="{% blocktranslate count n=requirement.outstanding %}{{ n }} not started{% plural %}{{ n }} not started{% endblocktranslate %}">{{ requirement.outstanding }}</div>
+    {% endif %}
+  {% endif %}
+</div>

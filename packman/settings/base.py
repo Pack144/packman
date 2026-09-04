@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "packman.calendars",
     "packman.campaigns",
     "packman.committees",
+    "packman.compliance",
     "packman.core",
     "packman.dens",
     "packman.documents",

@@ -1,0 +1,289 @@
+from django.apps import apps
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Q
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+
+from packman.calendars.models import PackYear
+from packman.core.models import TimeStampedUUIDModel
+
+from .managers import RequirementQuerySet, RequirementRecordQuerySet
+
+
+class Requirement(TimeStampedUUIDModel):
+    """
+    A membership requirement the pack tracks each year, such as a Scouting
+    America membership, a medical form, or pack dues.
+
+    Requirements are configured by leadership rather than hard-coded, so a new
+    one (Youth Protection Training, a background check) can be added without a
+    code change.
+    """
+
+    class Audience(models.TextChoices):
+        CUB = "CUB", _("Cubs")
+        ADULT = "ADULT", _("Adults")
+        FAMILY = "FAMILY", _("Families")
+
+    name = models.CharField(_("name"), max_length=100)
+    slug = models.SlugField(_("slug"), unique=True)
+    description = models.TextField(
+        _("description"),
+        blank=True,
+        help_text=_("Shown to families so they know what is being asked of them and how to satisfy it."),
+    )
+    applies_to = models.CharField(
+        _("applies to"),
+        max_length=6,
+        choices=Audience.choices,
+        default=Audience.CUB,
+        help_text=_("Who must satisfy this requirement? Family requirements are tracked once per family."),
+    )
+    include_contributors = models.BooleanField(
+        _("include friends of the pack"),
+        default=False,
+        help_text=_(
+            "Also track this requirement for adults who are Friends of the Pack "
+            "rather than a parent or guardian of an active Cub."
+        ),
+    )
+    is_active = models.BooleanField(
+        _("active"),
+        default=True,
+        help_text=_("Uncheck to stop tracking this requirement without deleting the records already collected."),
+    )
+    sort_order = models.IntegerField(_("sort order"), blank=True, null=True)
+
+    objects = RequirementQuerySet.as_manager()
+
+    class Meta:
+        indexes = [models.Index(fields=["slug", "applies_to", "is_active"])]
+        ordering = ("sort_order", "name")
+        verbose_name = _("Requirement")
+        verbose_name_plural = _("Requirements")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("compliance:roster", kwargs={"slug": self.slug})
+
+    @property
+    def tracks_member(self):
+        """True when this requirement is recorded against a person rather than a family."""
+        return self.applies_to in (self.Audience.CUB, self.Audience.ADULT)
+
+    def subjects_for(self, year):
+        """The Cubs, adults, or families this requirement applies to in a given pack year."""
+        Family = apps.get_model("membership", "Family")
+
+        if self.applies_to == self.Audience.CUB:
+            return apps.get_model("membership", "Scout").objects.active_in(year)
+
+        if self.applies_to == self.Audience.ADULT:
+            Adult = apps.get_model("membership", "Adult")
+            criteria = Q(family__in=Family.objects.active_in(year).values("pk"))
+            if self.include_contributors:
+                criteria |= Q(role=Adult.CONTRIBUTOR)
+            return Adult.objects.filter(criteria, is_active=True).distinct()
+
+        return Family.objects.filter(pk__in=Family.objects.active_in(year).values("pk"))
+
+    def sync_records(self, year=None):
+        """
+        Open a record for every active subject that does not have one yet, and
+        return those created.
+
+        This is a convenience for the start of a pack year, not an invariant
+        anything else relies on -- a Cub who joins in October simply has no row
+        until someone records against them.
+        """
+        year = year or PackYear.objects.current()
+        record_model = self.records.model
+        for_family = self.applies_to == self.Audience.FAMILY
+        subject_field = "family_id" if for_family else "member_id"
+        already_tracked = set(self.records.filter(year=year).values_list(subject_field, flat=True))
+
+        pending = []
+        for subject in self.subjects_for(year):
+            if subject.pk in already_tracked:
+                continue
+            if for_family:
+                pending.append(record_model(requirement=self, year=year, family=subject))
+            else:
+                # bulk_create() skips save(), so the family has to be set here.
+                pending.append(record_model(requirement=self, year=year, member_id=subject.pk, family=subject.family))
+
+        return record_model.objects.bulk_create(pending, ignore_conflicts=True)
+
+
+class RequirementRecord(TimeStampedUUIDModel):
+    """
+    One family's or member's standing against a single Requirement for a
+    single pack year.
+
+    The subject is either a member or a whole family. ``member`` points at
+    ``membership.Member`` rather than Scout or Adult, because both inherit from
+    it -- one foreign key covers both. ``family`` is set on every record,
+    including member-scoped ones, so a family's page is a single indexed query.
+    """
+
+    class Status(models.TextChoices):
+        NOT_STARTED = "NEW", _("Not started")
+        COMPLETE = "OK", _("Complete")
+        WAIVED = "NA", _("Waived")
+
+    requirement = models.ForeignKey(
+        Requirement,
+        on_delete=models.CASCADE,
+        related_name="records",
+        related_query_name="record",
+    )
+    year = models.ForeignKey(
+        PackYear,
+        on_delete=models.CASCADE,
+        default=PackYear.get_current,
+        related_name="requirement_records",
+        related_query_name="requirement_record",
+        verbose_name=_("pack year"),
+    )
+    member = models.ForeignKey(
+        "membership.Member",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="requirement_records",
+        related_query_name="requirement_record",
+        help_text=_("Leave blank for requirements tracked once for the whole family."),
+    )
+    family = models.ForeignKey(
+        "membership.Family",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="requirement_records",
+        related_query_name="requirement_record",
+    )
+    status = models.CharField(
+        _("status"),
+        max_length=3,
+        choices=Status.choices,
+        default=Status.NOT_STARTED,
+    )
+    completed_on = models.DateField(_("completed"), blank=True, null=True)
+    notes = models.TextField(
+        _("notes"),
+        blank=True,
+        help_text=_("Do not record medical details here. Note only what is needed to track the paperwork."),
+    )
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="recorded_requirement_records",
+        verbose_name=_("recorded by"),
+    )
+
+    objects = RequirementRecordQuerySet.as_manager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["requirement", "year", "member"],
+                condition=Q(member__isnull=False),
+                name="unique_member_requirement_per_year",
+            ),
+            models.UniqueConstraint(
+                fields=["requirement", "year", "family"],
+                condition=Q(member__isnull=True),
+                name="unique_family_requirement_per_year",
+            ),
+            models.CheckConstraint(
+                condition=Q(member__isnull=False) | Q(family__isnull=False),
+                name="requirement_record_has_a_subject",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["year", "requirement", "status"]),
+            models.Index(fields=["family", "year"]),
+        ]
+        ordering = ("-year", "requirement__sort_order", "requirement__name")
+        permissions = [
+            ("manage_records", _("Can record and edit membership requirements for any family")),
+            ("view_all_records", _("Can view membership requirement status for all families")),
+        ]
+        verbose_name = _("Requirement Record")
+        verbose_name_plural = _("Requirement Records")
+
+    def __str__(self):
+        return f"{self.year}: {self.subject} - {self.requirement}"
+
+    def get_absolute_url(self):
+        return reverse("compliance:record_update", kwargs={"pk": self.pk})
+
+    def save(self, *args, **kwargs):
+        # Denormalize the family from the member so that every record, whether
+        # member- or family-scoped, can be found with a single filter.
+        if self.member_id and not self.family_id:
+            self.family = self.family_for_member(self.member)
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        audience = self.requirement.applies_to if self.requirement_id else None
+
+        if audience == Requirement.Audience.FAMILY:
+            if self.member_id:
+                raise ValidationError(
+                    {
+                        "member": _("%(requirement)s is tracked for the whole family.")
+                        % {"requirement": self.requirement}
+                    },
+                    code="invalid",
+                )
+            if not self.family_id:
+                raise ValidationError({"family": _("Select the family this record belongs to.")}, code="invalid")
+
+        elif audience in (Requirement.Audience.CUB, Requirement.Audience.ADULT):
+            if not self.member_id:
+                raise ValidationError({"member": _("Select the member this record belongs to.")}, code="invalid")
+            expected_cub = audience == Requirement.Audience.CUB
+            if self.member_is_cub(self.member) is not expected_cub:
+                raise ValidationError(
+                    {
+                        "member": _("%(requirement)s applies to %(audience)s.")
+                        % {
+                            "requirement": self.requirement,
+                            "audience": self.requirement.get_applies_to_display().lower(),
+                        }
+                    },
+                    code="invalid",
+                )
+
+    @staticmethod
+    def member_is_cub(member):
+        return hasattr(member, "scout")
+
+    @staticmethod
+    def family_for_member(member):
+        """
+        ``Member`` itself has no family; it is declared separately on Adult and
+        on Scout, so we have to ask the subclass.
+        """
+        for attr in ("scout", "adult"):
+            child = getattr(member, attr, None)
+            if child is not None:
+                return child.family
+        return None
+
+    @property
+    def subject(self):
+        """The member or family this record is about."""
+        return self.member or self.family
+
+    @property
+    def is_satisfied(self):
+        """True when nothing more is needed of the family for this pack year."""
+        return self.status in (self.Status.COMPLETE, self.Status.WAIVED)

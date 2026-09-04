@@ -34,11 +34,19 @@ class PackYearFactory(factory.django.DjangoModelFactory):
 
 
 class CurrentPackYearFactory(PackYearFactory):
-    class Params:
-        follows_calendar = True
-        django_get_or_create = ("year",)
+    """
+    The Pack Year the app itself considers current.
 
-    year = timezone.now().year
+    A pack year starts in PACK_YEAR_BEGIN_MONTH, so it is not the calendar
+    year. Building one that ran January to December left two overlapping years
+    covering today, which made PackYear.objects.current() raise
+    MultipleObjectsReturned. Leaving the dates unset lets PackYear.save()
+    derive the right window.
+    """
+
+    year = factory.LazyFunction(lambda: PackYear.get_pack_year()["end_date"].year)
+    start_date = None
+    end_date = None
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):

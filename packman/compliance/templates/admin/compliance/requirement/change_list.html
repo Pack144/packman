@@ -1,0 +1,67 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    /* The changelist's "Add" button (ul.object-tools) floats right with a
+       -48px top margin, so it is pulled up over the end of the help text
+       above unless that much clearance is reserved for it. */
+    .object-tools-clearance {
+      height: 48px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <p class="help">
+    {% blocktranslate %}
+      A Requirement is something the pack asks of its members each year — a
+      Scouting America membership, a medical form, dues. Requirements are
+      configured here rather than written into the code, so adding a new one
+      (Youth Protection Training, a background check) needs no developer.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    <strong>{% translate "At the start of a pack year" %}</strong>
+    {% blocktranslate %}
+      — select the requirements you want to collect and run the "Open records
+      for the current Pack Year" action. That opens one blank record for every
+      active Cub, adult, or family the requirement applies to, which is what
+      the dashboard and each family's page then read from. Running it twice is
+      safe: members who already have a record are skipped, so it is also how
+      you pick up anyone who joined after you last ran it.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    {% blocktranslate %}
+      "Open records for the next Pack Year" does the same thing a year ahead,
+      for when you want to start collecting before the new year begins.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    <strong>{% translate "Who it applies to" %}</strong>
+    {% blocktranslate %}
+      — Cub and Adult requirements are recorded once per person. Family
+      requirements are recorded once for the whole household, so dues are not
+      asked of each parent separately. "Include friends of the pack" extends an
+      adult requirement to Friends of the Pack, who have no Cub of their own.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    {% blocktranslate %}
+      A requirement is either satisfied for a pack year or it is not; nothing
+      lapses part way through. Anything that needs renewing is simply asked for
+      again in the following year's records.
+    {% endblocktranslate %}
+  </p>
+  <p class="help">
+    {% blocktranslate %}
+      To stop collecting something without throwing away the paperwork already
+      recorded against it, uncheck "active" rather than deleting it. Deleting a
+      requirement deletes every record of it, for every year.
+    {% endblocktranslate %}
+  </p>
+  <div class="object-tools-clearance" aria-hidden="true"></div>
+  {{ block.super }}
+{% endblock %}

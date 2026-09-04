@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {{ requirement.name }} | {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h1>{{ requirement.name }}</h1>
+    {% include 'compliance/snippets/year_switcher.html' %}
+  </div>
+  <p class="text-body-secondary">
+    <a href="{% url 'compliance:dashboard_by_year' year=years.viewing.year %}">← {% translate 'All requirements' %}</a>
+  </p>
+  {% if requirement.description %}<p>{{ requirement.description }}</p>{% endif %}
+
+  {% if counts %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        {% include 'compliance/snippets/requirement_progress.html' with requirement=counts year=years.viewing %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="card shadow-sm">
+    <div class="card-header">
+      {% blocktranslate with audience=requirement.get_applies_to_display|lower count n=rows|length %}
+        {{ n }} {{ audience }}
+      {% plural %}
+        {{ n }} {{ audience }}
+      {% endblocktranslate %}
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{% translate 'Who' %}</th>
+            <th scope="col">{% translate 'Status' %}</th>
+            <th scope="col">{% translate 'Completed' %}</th>
+            <th scope="col">{% translate 'Recorded by' %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <th scope="row" class="fw-normal">{{ row.subject }}</th>
+              <td>{% include 'compliance/snippets/status_badge.html' with record=row.record %}</td>
+              <td>{{ row.record.completed_on|default:"" }}</td>
+              <td class="text-body-secondary">{{ row.record.recorded_by|default:"" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-body-secondary py-4">
+                {% translate 'Nobody is being tracked for this requirement this year.' %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

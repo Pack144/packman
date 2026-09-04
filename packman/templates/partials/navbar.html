@@ -43,8 +43,14 @@
           <li class="nav-item me-lg-3">
             <a class="nav-link {% if 'membership' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'membership:scouts' %}">{% translate 'Members' %}</a>
           </li>
+          {% if perms.compliance.view_all_records %}
+            <li class="nav-item me-lg-3">
+              <a class="nav-link {% if 'compliance' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'compliance:dashboard' %}">{% translate 'Requirements' %}</a>
+            </li>
+          {% endif %}
           <li class="nav-item me-lg-3">
             <a class="nav-link {% if 'committees' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'committees:list' %}">{% translate 'Committees' %}</a>
+
           </li>
           <li class="nav-item me-lg-3">
             <a class="nav-link {% if 'documents' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'documents:list' %}">{% translate 'Documents' %}</a>
@@ -97,6 +103,10 @@
               <a class="dropdown-item" href="{% url 'membership:my-family' %}">
                 <i class="fa-solid fa-user-friends fa-fw"></i>
                 <span class="ms-1">{% translate 'My Family' %}</span>
+              </a>
+              <a class="dropdown-item" href="{% url 'compliance:my_family' %}">
+                <i class="fa-solid fa-clipboard-check fa-fw"></i>
+                <span class="ms-1">{% translate 'My Requirements' %}</span>
               </a>
               <a class="dropdown-item" href="{% url 'mobile:index' %}">
                 <svg class="packmate-icon"

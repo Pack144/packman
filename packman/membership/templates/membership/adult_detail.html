@@ -10,6 +10,9 @@
   </div>
   <div class="card-group mb-5">
     {% include 'membership/snippets/detail_card.html' with member_email=email member_addresses=addresses member_phone_numbers=phone_numbers %}
+    {% if user.family == member.family or perms.compliance.view_all_records %}
+      {% include 'compliance/snippets/member_requirements_card.html' %}
+    {% endif %}
     {% if member.committee_memberships.exists %}
       {% regroup member.committee_memberships.all by year as assignments_by_year %}
       <div class="card">
