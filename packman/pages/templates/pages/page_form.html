@@ -51,6 +51,22 @@
   {{ contentblock_formset.media }}
   <script src="{% static 'dynamic_formsets/jquery.formset.js' %}"></script>
   <script>
+    function renumberContentBlocks() {
+      // Keep each content block's hidden `order` field in sync with its
+      // visual position, so drag-and-drop reordering (and appending new
+      // blocks) actually persists on save.
+      const rows = document.querySelectorAll('#{{ contentblock_formset.prefix }} .contentblock-dynamic-form');
+      let order = 0;
+      rows.forEach((row) => {
+        if (row.style.display === 'none') return;  // skip blocks marked for deletion
+        const orderInput = row.querySelector('input[name$="-order"]');
+        if (orderInput) {
+          orderInput.value = order;
+          order += 1;
+        }
+      });
+    }
+
     $('#{{ contentblock_formset.prefix }}').formset({
       addCssClass: "btn btn-primary",
       deleteCssClass: "btn btn-outline-danger",
@@ -59,6 +75,10 @@
       uiText: {
         addPrompt: "<i class='fas fa-plus-circle me-1'></i> {% translate 'section' %}",
         removePrompt: "<i class='fas fa-trash-alt'></i>"
+      },
+      callbacks: {
+        onAdd: renumberContentBlocks,
+        onRemove: renumberContentBlocks
       }
     })
   </script>
@@ -72,6 +92,9 @@
           crossorigin="anonymous"></script>
   <script>
     const blocks = document.getElementById("{{ contentblock_formset.prefix }}");
-    let sortable = Sortable.create(blocks, {});
+    let sortable = Sortable.create(blocks, {
+      onEnd: renumberContentBlocks,
+    });
+    renumberContentBlocks();
   </script>
 {% endblock js %}

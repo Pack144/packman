@@ -1,6 +1,6 @@
 import { appBar, denBadge, esc, pluralize, rankTag, rankTextColor, titleBar } from "../components.js";
 import { allDens, denByNumber, getDirectory } from "../api.js";
-import { denDetailMarkup } from "./den-shared.js";
+import { bindDenViewTabs, denDetailMarkup } from "./den-shared.js";
 
 export async function renderDens(container) {
   const directory = await getDirectory();
@@ -58,18 +58,28 @@ export async function renderDens(container) {
 export async function renderDenDetail(container, number) {
   const directory = await getDirectory();
   const den = denByNumber(directory, number);
-  // User-supplied values are escaped via esc() before interpolation.
-  // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
-  container.innerHTML = `
-    ${appBar(`
-      <a href="#/dens" style="color:#fff;font-size:22px;line-height:1;padding-right:2px">&lsaquo;</a>
-      <div class="appbar-title">Den ${den.number}${den.rank_plural ? ` · ${esc(den.rank_plural)}` : ""}</div>
-      <div class="appbar-meta">${den.grade ? esc(den.grade.toUpperCase()) + " · " : ""}${esc(
-    pluralize(den.cub_count, "CUB")
-  )}</div>
-    `)}
-    <div class="screen-scroll">
-      ${denDetailMarkup(den)}
-    </div>
-  `;
+  let view = "cubs";
+
+  function paint() {
+    // User-supplied values are escaped via esc() before interpolation.
+    // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
+    container.innerHTML = `
+      ${appBar(`
+        <a href="#/dens" style="color:#fff;font-size:22px;line-height:1;padding-right:2px">&lsaquo;</a>
+        <div class="appbar-title">Den ${den.number}${den.rank_plural ? ` · ${esc(den.rank_plural)}` : ""}</div>
+        <div class="appbar-meta">${den.grade ? esc(den.grade.toUpperCase()) + " · " : ""}${esc(
+      pluralize(den.cub_count, "CUB")
+    )}</div>
+      `)}
+      <div class="screen-scroll">
+        ${denDetailMarkup(den, view)}
+      </div>
+    `;
+    bindDenViewTabs(container, (newView) => {
+      view = newView;
+      paint();
+    });
+  }
+
+  paint();
 }

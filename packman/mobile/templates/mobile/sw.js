@@ -1,4 +1,4 @@
-{% load static %}const VERSION = "v15";
+{% load static %}const VERSION = "v17";
 const SHELL_CACHE = `pack-directory-shell-${VERSION}`;
 const DATA_CACHE = `pack-directory-data-${VERSION}`;
 const FONT_CACHE = `pack-directory-fonts-${VERSION}`;

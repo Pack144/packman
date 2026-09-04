@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
+
 from .forms import PageForm
 from .models import ContentBlock, Page
 
 
-class ContentBlockInline(admin.StackedInline):
+class ContentBlockInline(SortableInlineAdminMixin, admin.StackedInline):
     model = ContentBlock
     extra = 0
     prepopulated_fields = {"bookmark": ("heading",)}
@@ -12,7 +14,7 @@ class ContentBlockInline(admin.StackedInline):
 
 
 @admin.register(Page)
-class PageAdmin(admin.ModelAdmin):
+class PageAdmin(SortableAdminBase, admin.ModelAdmin):
     form = PageForm
     inlines = [ContentBlockInline]
     list_display = ("title", "page", "last_updated")

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     # Third party packages
+    "adminsortable2",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_ical",

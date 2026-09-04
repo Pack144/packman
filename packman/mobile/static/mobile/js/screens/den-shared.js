@@ -37,7 +37,7 @@ export function rosterCard(den) {
                 <span class="row-title">${esc(entry.scout.name)}</span>
                 ${rankTag(entry.scout.rank_key, entry.scout.rank)}
               </div>
-              <div class="mono plain">${esc(entry.parents.map((p) => p.name).join(" & ")) || "&mdash;"}</div>
+              <div class="mono plain">${esc(entry.parents.map((p) => p.first_name).join(" & ")) || "&mdash;"}</div>
             </div>
             <span class="chev">&rsaquo;</span>
           </a>`
@@ -50,9 +50,71 @@ export function rosterCard(den) {
   `;
 }
 
-export function denDetailMarkup(den) {
+/** Same den roster, grouped by parent instead of by Cub. Each parent's cub
+ * list only ever includes names from this den's own roster, so a parent with
+ * kids in multiple dens never shows a sibling from another den here. */
+export function parentsCard(den) {
+  const parents = new Map();
+  den.roster.forEach((entry) => {
+    entry.parents.forEach((parent) => {
+      if (!parents.has(parent.slug)) {
+        parents.set(parent.slug, { slug: parent.slug, name: parent.name, avatar: parent.avatar, cubs: [] });
+      }
+      parents.get(parent.slug).cubs.push(entry.scout.first_name);
+    });
+  });
+  const list = [...parents.values()].sort((a, b) => a.name.localeCompare(b.name));
+  return `
+    <section>
+      <h2 class="sect">Parents</h2>
+      <div class="card row-divided">
+        ${
+          list.length
+            ? list
+                .map(
+                  (parent) => `
+          <a class="row" href="#/profile/${encodeURIComponent(parent.slug)}">
+            ${avatar(parent.avatar, parent.name, "sm")}
+            <div class="grow">
+              <div class="row-title">${esc(parent.name)}</div>
+              <div class="mono plain">${esc(parent.cubs.join(" & "))}</div>
+            </div>
+            <span class="chev">&rsaquo;</span>
+          </a>`
+                )
+                .join("")
+            : '<p class="empty" style="padding:16px">No parents found for this den yet.</p>'
+        }
+      </div>
+    </section>
+  `;
+}
+
+/** Segmented Cubs/Parents toggle shown above a den's roster. */
+export function denViewTabs(view) {
+  return `
+    <div class="segmented">
+      <button class="segment${view === "cubs" ? " on" : ""}" data-den-view="cubs">
+        <div class="seg-title">Cubs</div>
+      </button>
+      <button class="segment${view === "parents" ? " on" : ""}" data-den-view="parents">
+        <div class="seg-title">Parents</div>
+      </button>
+    </div>
+  `;
+}
+
+/** Wires clicks on the tabs rendered by denViewTabs() within `container`. */
+export function bindDenViewTabs(container, onChange) {
+  container.querySelectorAll("[data-den-view]").forEach((btn) => {
+    btn.addEventListener("click", () => onChange(btn.dataset.denView));
+  });
+}
+
+export function denDetailMarkup(den, view = "cubs") {
   return `
     ${leaderCards(den.leaders)}
-    ${rosterCard(den)}
+    ${denViewTabs(view)}
+    ${view === "parents" ? parentsCard(den) : rosterCard(den)}
   `;
 }
