@@ -153,6 +153,7 @@ class ContentBlock(TimeStampedUUIDModel):
         blank=True,
         null=True,
     )
+    order = models.PositiveIntegerField(_("order"), default=0, db_index=True)
 
     objects = ContentBlockManager()
 
@@ -161,7 +162,7 @@ class ContentBlock(TimeStampedUUIDModel):
             models.UniqueConstraint(fields=("page", "bookmark"), name="unique_bookmark_for_page"),
         ]
         indexes = [models.Index(fields=["heading", "published_on"])]
-        order_with_respect_to = "page"
+        ordering = ("page", "order")
         verbose_name = _("Content Block")
         verbose_name_plural = _("Content Blocks")
 
