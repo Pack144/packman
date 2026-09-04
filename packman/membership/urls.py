@@ -8,6 +8,7 @@ urlpatterns = [
     path("adults/", views.AdultList.as_view(), name="parents"),
     path("adult/add/", views.AdultCreate.as_view(), name="parent_create"),
     path("adults/<slug:slug>/", views.AdultDetail.as_view(), name="parent_detail"),
+    path("adults/<slug:slug>/vcard/", views.AdultVCard.as_view(), name="parent_vcard"),
     path("adult/<uuid:pk>/update/", views.AdultUpdate.as_view(), name="parent_update"),
     path("cubs/", views.ScoutList.as_view(), name="scouts"),
     path("cub/add/", views.ScoutCreate.as_view(), name="scout_create"),
