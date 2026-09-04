@@ -15,8 +15,8 @@
       <ul class="navbar-nav me-auto">
         {% if user.is_authenticated %}
           {% if fundraiser %}
-            <li class="nav-item dropdown {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
-              <a class="nav-link dropdown-toggle"
+            <li class="nav-item dropdown me-lg-3">
+              <a class="nav-link dropdown-toggle {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %}"
                  href="#"
                  id="navbarNccDropdown"
                  role="button"
@@ -24,46 +24,46 @@
                  aria-haspopup="true"
                  aria-expanded="false">NCC</a>
               <div class="dropdown-menu" aria-labelledby="navbarNccDropdown">
-                <a class="dropdown-item" href="{% url 'campaigns:order_list' %}">{% translate 'Fundraiser' %}</a>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'order_list' or request.resolver_match.url_name == 'order_list_by_campaign' %}active{% endif %}" href="{% url 'campaigns:order_list' %}">{% translate 'Fundraiser' %}</a>
                 {% if fundraiser.can_select_prizes %}
-                  <a class="dropdown-item" href="{% url 'campaigns:prize_selection' %}">{% translate 'Prize Selection' %}</a>
+                  <a class="dropdown-item {% if request.resolver_match.url_name == 'prize_selection' %}active{% endif %}" href="{% url 'campaigns:prize_selection' %}">{% translate 'Prize Selection' %}</a>
                 {% endif %}
-                <a class="dropdown-item" href="{% url 'campaigns:order_leaderboard' %}">{% translate 'Leaderboard' %}</a>
-                <a class="dropdown-item" href="{% url 'campaigns:product_list' %}">{% translate 'Products' %}</a>
-                <a class="dropdown-item" href="{% url 'pages:detail' 'nccinfo' %}">{% translate 'Information' %}</a>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'order_leaderboard' %}active{% endif %}" href="{% url 'campaigns:order_leaderboard' %}">{% translate 'Leaderboard' %}</a>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'campaigns:product_list' %}">{% translate 'Products' %}</a>
+                <a class="dropdown-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'nccinfo' %}active{% endif %}" href="{% url 'pages:detail' 'nccinfo' %}">{% translate 'Information' %}</a>
                 {% if perms.campaigns.generate_order_report %}
-                  <a class="dropdown-item" href="{% url 'campaigns:order_report' %}">{% translate 'Order Report' %}</a>
+                  <a class="dropdown-item {% if request.resolver_match.url_name == 'order_report' or request.resolver_match.url_name == 'order_report_by_campaign' %}active{% endif %}" href="{% url 'campaigns:order_report' %}">{% translate 'Order Report' %}</a>
                 {% endif %}
               </div>
             </li>
           {% endif %}
-          <li class="nav-item {% if 'calendars' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
-            <a class="nav-link" href="{% url 'calendars:list' %}">{% translate 'Calendar' %}</a>
+          <li class="nav-item me-lg-3">
+            <a class="nav-link {% if 'calendars' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'calendars:list' %}">{% translate 'Calendar' %}</a>
           </li>
-          <li class="nav-item {% if 'membership' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
-            <a class="nav-link" href="{% url 'membership:scouts' %}">{% translate 'Members' %}</a>
+          <li class="nav-item me-lg-3">
+            <a class="nav-link {% if 'membership' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'membership:scouts' %}">{% translate 'Members' %}</a>
           </li>
-          <li class="nav-item {% if 'committees' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
-            <a class="nav-link" href="{% url 'committees:list' %}">{% translate 'Committees' %}</a>
+          <li class="nav-item me-lg-3">
+            <a class="nav-link {% if 'committees' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'committees:list' %}">{% translate 'Committees' %}</a>
           </li>
-          <li class="nav-item {% if 'documents' in request.resolver_match.app_names %}active{% endif %} me-lg-3">
-            <a class="nav-link" href="{% url 'documents:list' %}">{% translate 'Documents' %}</a>
+          <li class="nav-item me-lg-3">
+            <a class="nav-link {% if 'documents' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'documents:list' %}">{% translate 'Documents' %}</a>
           </li>
         {% else %}
-          <li class="nav-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'contact-us' %} active {% endif %} me-lg-3">
-            <a class="nav-link" href="{% url 'pages:contact' %}">{% translate 'Contact Us' %}</a>
+          <li class="nav-item me-lg-3">
+            <a class="nav-link {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'contact' %} active {% endif %}" href="{% url 'pages:contact' %}">{% translate 'Contact Us' %}</a>
           </li>
-          <li class="nav-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'about' %}active{% endif %} me-lg-3">
-            <a class="nav-link" href="{% url 'pages:about' %}">{% translate 'About our Pack' %}</a>
+          <li class="nav-item me-lg-3">
+            <a class="nav-link {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'pages:about' %}">{% translate 'About our Pack' %}</a>
           </li>
         {% endif %}
         {% for link in navbar_links %}
-          <li class="nav-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == link.slug %} active {% endif %} me-lg-3">
-            <a class="nav-link" href="{% url 'pages:detail' link.slug %}">{{ link }}</a>
+          <li class="nav-item me-lg-3">
+            <a class="nav-link {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == link.slug %} active {% endif %}" href="{% url 'pages:detail' link.slug %}">{{ link }}</a>
           </li>
         {% endfor %}
-        <li class="nav-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'history' %} active {% endif %} me-lg-3">
-          <a class="nav-link" href="{% url 'pages:history' %}">{% translate 'Our History' %}</a>
+        <li class="nav-item me-lg-3">
+          <a class="nav-link {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'history' %} active {% endif %}" href="{% url 'pages:history' %}">{% translate 'Our History' %}</a>
         </li>
       </ul>
       <ul class="navbar-nav ms-auto">
