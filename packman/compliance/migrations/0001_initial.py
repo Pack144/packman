@@ -64,23 +64,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "tracks_expiration",
-                    models.BooleanField(
-                        default=True,
-                        help_text="Check this box if the requirement must be renewed, such as a medical form.",
-                        verbose_name="expires",
-                    ),
-                ),
-                (
-                    "default_duration_days",
-                    models.PositiveIntegerField(
-                        blank=True,
-                        help_text="If set, an expiration date is suggested this many days after the completion date.",
-                        null=True,
-                        verbose_name="valid for",
-                    ),
-                ),
-                (
                     "include_contributors",
                     models.BooleanField(
                         default=False,
@@ -142,7 +125,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("completed_on", models.DateField(blank=True, null=True, verbose_name="completed")),
-                ("expires_on", models.DateField(blank=True, null=True, verbose_name="expires")),
                 (
                     "notes",
                     models.TextField(
@@ -217,7 +199,6 @@ class Migration(migrations.Migration):
                 "indexes": [
                     models.Index(fields=["year", "requirement", "status"], name="compliance__year_id_23158b_idx"),
                     models.Index(fields=["family", "year"], name="compliance__family__0ba9a4_idx"),
-                    models.Index(fields=["expires_on"], name="compliance__expires_f58263_idx"),
                 ],
                 "constraints": [
                     models.UniqueConstraint(
