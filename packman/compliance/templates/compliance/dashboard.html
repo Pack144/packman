@@ -32,12 +32,19 @@
     {% translate 'By family' as family_label %}
     {% include 'compliance/snippets/collapsible_header.html' with target='by-family' label=family_label summary=family_summary %}
     <div id="by-family" class="collapse">
-      <div class="card-body pb-0 d-flex justify-content-end">
-        <div class="btn-group btn-group-sm" role="group">
-          <a class="btn btn-outline-secondary {% if not filter %}active{% endif %}"
-             href="{% url 'compliance:dashboard_by_year' year=years.viewing.year %}">{% translate 'All' %}</a>
-          <a class="btn btn-outline-secondary {% if filter == 'outstanding' %}active{% endif %}"
-             href="?filter=outstanding">{% translate 'Not started' %}</a>
+      <div class="card-body pb-0">
+        <div class="mb-3">
+          {% for requirement in requirements %}
+            {% include 'compliance/snippets/requirement_progress.html' with year=years.viewing %}
+          {% endfor %}
+        </div>
+        <div class="d-flex justify-content-end mb-3">
+          <div class="btn-group btn-group-sm" role="group">
+            <a class="btn btn-outline-secondary {% if not filter %}active{% endif %}"
+               href="{% url 'compliance:dashboard_by_year' year=years.viewing.year %}">{% translate 'All' %}</a>
+            <a class="btn btn-outline-secondary {% if filter == 'outstanding' %}active{% endif %}"
+               href="?filter=outstanding">{% translate 'Not started' %}</a>
+          </div>
         </div>
       </div>
       <div class="table-responsive">
