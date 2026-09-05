@@ -24,22 +24,8 @@ class AdultRequirementFactory(RequirementFactory):
     applies_to = Requirement.Audience.ADULT
 
 
-class LeaderRequirementFactory(RequirementFactory):
-    applies_to = Requirement.Audience.LEADER
-
-
 class FamilyRequirementFactory(RequirementFactory):
     applies_to = Requirement.Audience.FAMILY
-
-
-class ScoutingMembershipCubFactory(CubRequirementFactory):
-    """A Cub requirement whose standing is read off the member."""
-
-    source = Requirement.Source.SCOUTING_MEMBERSHIP
-
-
-class ScoutingMembershipLeaderFactory(LeaderRequirementFactory):
-    source = Requirement.Source.SCOUTING_MEMBERSHIP
 
 
 class RequirementRecordFactory(factory.django.DjangoModelFactory):

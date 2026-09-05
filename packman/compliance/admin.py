@@ -59,18 +59,9 @@ class MemberRequirementRecordInline(admin.TabularInline):
     fk_name = "member"
     extra = 0
     autocomplete_fields = ("requirement",)
-    fields = ("requirement", "year", "status", "standing", "completed_on", "notes")
-    readonly_fields = ("standing",)
+    fields = ("requirement", "year", "status", "completed_on", "notes")
     verbose_name = _("Membership Requirement")
     verbose_name_plural = _("Membership Requirements")
-
-    @admin.display(description=_("reads as"))
-    def standing(self, obj):
-        """
-        What the row reports today. Worth showing beside the editable status
-        because a derived requirement ignores that status entirely.
-        """
-        return obj.get_effective_status_display() if obj.pk else ""
 
 
 class FamilyRequirementRecordInline(admin.TabularInline):
@@ -93,7 +84,6 @@ class RequirementAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "applies_to",
-        "source",
         "include_contributors",
         "is_active",
         "sort_order",
@@ -101,14 +91,13 @@ class RequirementAdmin(admin.ModelAdmin):
     )
     list_display_links = ("name",)
     list_editable = ("sort_order", "is_active")
-    list_filter = ("applies_to", "source", "is_active")
+    list_filter = ("applies_to", "is_active")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name", "slug", "description")
     actions = ["sync_records_current_year", "sync_records_next_year"]
     fieldsets = (
         (None, {"fields": ("name", "slug", "description", "is_active", "sort_order")}),
         (_("Who it applies to"), {"fields": ("applies_to", "include_contributors")}),
-        (_("How it is satisfied"), {"fields": ("source",)}),
     )
 
     def get_queryset(self, request):
@@ -158,7 +147,6 @@ class RequirementRecordAdmin(admin.ModelAdmin):
         "subject",
         "year",
         "status",
-        "standing",
         "completed_on",
         "recorded_by",
     )
@@ -177,18 +165,12 @@ class RequirementRecordAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("requirement", "year")}),
         (_("Who"), {"fields": ("member", "family")}),
-        (_("Standing"), {"fields": (("status", "standing"), "completed_on", "notes", "recorded_by")}),
+        (_("Standing"), {"fields": ("status", "completed_on", "notes", "recorded_by")}),
     )
-    readonly_fields = ("standing",)
 
     @admin.display(description=_("who"), ordering="member__last_name")
     def subject(self, obj):
         return obj.subject
-
-    @admin.display(description=_("reads as"))
-    def standing(self, obj):
-        """A derived requirement ignores the status column; show the truth."""
-        return obj.get_effective_status_display() if obj.pk else ""
 
     def save_model(self, request, obj, form, change):
         # Record who entered it, unless someone set that deliberately.

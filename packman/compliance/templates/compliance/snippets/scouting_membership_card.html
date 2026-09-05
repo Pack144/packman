@@ -1,0 +1,105 @@
+{% load i18n %}
+
+{% comment %}
+  Scouting America registrations for the year's active Cubs. Pass
+  `scouting_membership`, the summary from compliance.scouting_membership.
+
+  Its own card rather than a row in the requirements table above, because it is
+  not a Requirement: nothing is recorded against a Cub for it, and it can lapse
+  part way through the year where the tracked requirements cannot.
+{% endcomment %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>{% translate 'Scouting America registration' %}</span>
+    <small class="text-body-secondary">
+      {% blocktranslate with done=scouting_membership.current total=scouting_membership.total %}
+        {{ done }} of {{ total }} Cubs registered
+      {% endblocktranslate %}
+    </small>
+  </div>
+  <div class="card-body">
+    {% if scouting_membership.total %}
+      <div class="progress mb-3"
+           role="progressbar"
+           style="height: 1.25rem"
+           aria-valuenow="{{ scouting_membership.current }}"
+           aria-valuemin="0"
+           aria-valuemax="{{ scouting_membership.total }}">
+        {% widthratio scouting_membership.current scouting_membership.total 100 as current_pct %}
+        {% widthratio scouting_membership.expired scouting_membership.total 100 as expired_pct %}
+        {% widthratio scouting_membership.missing scouting_membership.total 100 as missing_pct %}
+        {% if scouting_membership.current %}
+          <div class="progress-bar bg-success"
+               style="width: {{ current_pct }}%"
+               title="{% blocktranslate count n=scouting_membership.current %}{{ n }} registered{% plural %}{{ n }} registered{% endblocktranslate %}">
+            {{ scouting_membership.current }}
+          </div>
+        {% endif %}
+        {% if scouting_membership.expired %}
+          <div class="progress-bar bg-danger"
+               style="width: {{ expired_pct }}%"
+               title="{% blocktranslate count n=scouting_membership.expired %}{{ n }} expired{% plural %}{{ n }} expired{% endblocktranslate %}">
+            {{ scouting_membership.expired }}
+          </div>
+        {% endif %}
+        {% if scouting_membership.missing %}
+          <div class="progress-bar bg-secondary"
+               style="width: {{ missing_pct }}%"
+               title="{% blocktranslate count n=scouting_membership.missing %}{{ n }} not on file{% plural %}{{ n }} not on file{% endblocktranslate %}">
+            {{ scouting_membership.missing }}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{% translate 'Cub' %}</th>
+            <th scope="col">{% translate 'Status' %}</th>
+            <th scope="col">{% translate 'Membership ID' %}</th>
+            <th scope="col">{% translate 'Expires' %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in scouting_membership.rows %}
+            <tr>
+              <th scope="row" class="fw-normal">
+                {% comment %}
+                  Reversed here rather than through Member.get_absolute_url,
+                  which asks hasattr(self, "adult") to work out which page a
+                  member belongs on -- a query per row. These are all Cubs.
+                {% endcomment %}
+                <a href="{% url 'membership:scout_detail' slug=row.cub.slug %}">{{ row.cub }}</a>
+              </th>
+              <td>
+                {% if row.standing == 'CURRENT' %}
+                  <span class="badge text-bg-success" title="{% translate 'Registered through the expiration date shown' %}">
+                    <i class="fa-solid fa-circle-check fa-fw"></i> {% translate 'Registered' %}
+                  </span>
+                {% elif row.standing == 'EXPIRED' %}
+                  <span class="badge text-bg-danger" title="{% translate 'On file, but the expiration date has passed' %}">
+                    <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
+                  </span>
+                {% else %}
+                  <span class="badge text-bg-secondary" title="{% translate 'No membership ID and expiration date recorded' %}">
+                    <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Not on file' %}
+                  </span>
+                {% endif %}
+              </td>
+              <td>{{ row.cub.scouting_membership_id|default:"" }}</td>
+              <td class="text-body-secondary">{{ row.cub.scouting_membership_expires_on|default:"" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-body-secondary py-4">
+                {% translate 'No Cubs were active this year.' %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

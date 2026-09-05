@@ -7,10 +7,8 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
-from packman.committees.leadership import leadership_q
 from packman.core.models import TimeStampedUUIDModel
 
-from .derived import scouting_membership_expired, scouting_membership_satisfied
 from .managers import RequirementQuerySet, RequirementRecordQuerySet
 
 
@@ -27,14 +25,7 @@ class Requirement(TimeStampedUUIDModel):
     class Audience(models.TextChoices):
         CUB = "CUB", _("Cubs")
         ADULT = "ADULT", _("Adults")
-        LEADER = "LEADER", _("Pack Leaders")
         FAMILY = "FAMILY", _("Families")
-
-    class Source(models.TextChoices):
-        """Where a record's standing comes from."""
-
-        MANUAL = "MANUAL", _("Recorded by leadership")
-        SCOUTING_MEMBERSHIP = "SA_MEMBERSHIP", _("Scouting America membership on the member")
 
     name = models.CharField(_("name"), max_length=100)
     slug = models.SlugField(_("slug"), unique=True)
@@ -63,17 +54,6 @@ class Requirement(TimeStampedUUIDModel):
         default=True,
         help_text=_("Uncheck to stop tracking this requirement without deleting the records already collected."),
     )
-    source = models.CharField(
-        _("source"),
-        max_length=13,
-        choices=Source.choices,
-        default=Source.MANUAL,
-        help_text=_(
-            "Most requirements are marked off by leadership. A derived one reads "
-            "its standing off the member instead, and can lapse part way through "
-            "the year."
-        ),
-    )
     sort_order = models.IntegerField(_("sort order"), blank=True, null=True)
 
     objects = RequirementQuerySet.as_manager()
@@ -93,12 +73,7 @@ class Requirement(TimeStampedUUIDModel):
     @property
     def tracks_member(self):
         """True when this requirement is recorded against a person rather than a family."""
-        return self.applies_to in (self.Audience.CUB, self.Audience.ADULT, self.Audience.LEADER)
-
-    @property
-    def is_derived(self):
-        """True when nobody marks this off by hand; see compliance.derived."""
-        return self.source != self.Source.MANUAL
+        return self.applies_to in (self.Audience.CUB, self.Audience.ADULT)
 
     def subjects_for(self, year):
         """The Cubs, adults, or families this requirement applies to in a given pack year."""
@@ -106,10 +81,6 @@ class Requirement(TimeStampedUUIDModel):
 
         if self.applies_to == self.Audience.CUB:
             return apps.get_model("membership", "Scout").objects.active_in(year)
-
-        if self.applies_to == self.Audience.LEADER:
-            Adult = apps.get_model("membership", "Adult")
-            return Adult.objects.filter(leadership_q(year), is_active=True).distinct()
 
         if self.applies_to == self.Audience.ADULT:
             Adult = apps.get_model("membership", "Adult")
@@ -163,9 +134,6 @@ class RequirementRecord(TimeStampedUUIDModel):
         NOT_STARTED = "NEW", _("Not started")
         COMPLETE = "OK", _("Complete")
         WAIVED = "NA", _("Waived")
-        # Only ever derived, never stored: a manual requirement is satisfied
-        # for the pack year or it is not, and nothing lapses part way through.
-        EXPIRED = "EXP", _("Expired")
 
     requirement = models.ForeignKey(
         Requirement,
@@ -278,11 +246,7 @@ class RequirementRecord(TimeStampedUUIDModel):
             if not self.family_id:
                 raise ValidationError({"family": _("Select the family this record belongs to.")}, code="invalid")
 
-        elif audience in (
-            Requirement.Audience.CUB,
-            Requirement.Audience.ADULT,
-            Requirement.Audience.LEADER,
-        ):
+        elif audience in (Requirement.Audience.CUB, Requirement.Audience.ADULT):
             if not self.member_id:
                 raise ValidationError({"member": _("Select the member this record belongs to.")}, code="invalid")
             expected_cub = audience == Requirement.Audience.CUB
@@ -320,30 +284,6 @@ class RequirementRecord(TimeStampedUUIDModel):
         return self.member or self.family
 
     @property
-    def effective_status(self):
-        """
-        What this record actually reads as today.
-
-        For most requirements that is simply the stored status. A derived one
-        ignores it and asks the member instead, so a registration that lapsed
-        last week stops reading as complete without anyone editing anything.
-        Waiving still wins either way -- it is leadership excusing someone.
-
-        Mirrored in SQL by compliance.derived.status_q(), for the aggregates
-        the dashboard runs.
-        """
-        if self.status == self.Status.WAIVED or not self.requirement.is_derived:
-            return self.status
-        if scouting_membership_satisfied(self.member):
-            return self.Status.COMPLETE
-        if scouting_membership_expired(self.member):
-            return self.Status.EXPIRED
-        return self.Status.NOT_STARTED
-
-    def get_effective_status_display(self):
-        return self.Status(self.effective_status).label
-
-    @property
     def is_satisfied(self):
         """True when nothing more is needed of the family for this pack year."""
-        return self.effective_status in (self.Status.COMPLETE, self.Status.WAIVED)
+        return self.status in (self.Status.COMPLETE, self.Status.WAIVED)
