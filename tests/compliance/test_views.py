@@ -183,7 +183,7 @@ class DashboardContentTestCase(ComplianceViewTestCase):
     def test_matrix_lists_active_families(self):
         response = self.client.get(reverse("compliance:dashboard"))
 
-        families = {row["family"] for row in response.context["matrix"]}
+        families = {row["family"] for row in response.context["families"]["rows"]}
         self.assertIn(self.family, families)
 
     def test_filter_narrows_to_families_with_outstanding_items(self):
@@ -199,7 +199,7 @@ class DashboardContentTestCase(ComplianceViewTestCase):
 
         response = self.client.get(reverse("compliance:dashboard"), {"filter": "outstanding"})
 
-        families = [row["family"] for row in response.context["matrix"]]
+        families = [row["family"] for row in response.context["families"]["rows"]]
         self.assertEqual(families, [self.family])
 
     def test_dashboard_does_not_scale_queries_with_families(self):
@@ -440,7 +440,7 @@ class MatrixCellStateTestCase(ComplianceViewTestCase):
 
     def cell_for(self, family):
         response = self.client.get(reverse("compliance:dashboard"))
-        row = next(r for r in response.context["matrix"] if r["family"] == family)
+        row = next(r for r in response.context["families"]["rows"] if r["family"] == family)
         index = [r.slug for r in response.context["requirements"]].index(self.requirement.slug)
         return row["cells"][index]
 
@@ -480,7 +480,7 @@ class MatrixCellStateTestCase(ComplianceViewTestCase):
 
         response = self.client.get(reverse("compliance:dashboard"), {"filter": "outstanding"})
 
-        self.assertIn(self.family, [row["family"] for row in response.context["matrix"]])
+        self.assertIn(self.family, [row["family"] for row in response.context["families"]["rows"]])
 
     def test_partial_renders_a_yellow_badge(self):
         self.record(self.adults[0], status=RequirementRecord.Status.COMPLETE)
@@ -589,3 +589,73 @@ class ScoutingMembershipDashboardTestCase(ComplianceViewTestCase):
             return len(captured.captured_queries)
 
         self.assertEqual(count(4), count(10))
+
+
+class CollapsibleSectionsTestCase(ComplianceViewTestCase):
+    """
+    Both tables collapse; their totals stay in the header either way, which is
+    the point of collapsing them.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.login(self.leader)
+
+    def test_both_tables_are_collapsible(self):
+        response = self.client.get(reverse("compliance:dashboard"))
+
+        self.assertContains(response, 'data-bs-target="#scouting-membership"')
+        self.assertContains(response, 'id="scouting-membership" class="collapse"')
+        self.assertContains(response, 'data-bs-target="#by-family"')
+        self.assertContains(response, 'id="by-family" class="collapse"')
+
+    def test_the_headers_carry_the_totals(self):
+        response = self.client.get(reverse("compliance:dashboard"))
+
+        self.assertContains(response, "of 2 Cubs registered")
+        self.assertContains(response, "families square")
+
+    def test_family_totals_count_the_whole_pack(self):
+        requirement = FamilyRequirementFactory(slug="collapse-dues")
+        requirement.sync_records(year=self.year)
+        RequirementRecordFactory(
+            requirement=CubRequirementFactory(slug="collapse-cub"),
+            year=self.year,
+            member=self.family.children.first(),
+            status=RequirementRecord.Status.COMPLETE,
+        )
+
+        families = self.client.get(reverse("compliance:dashboard")).context["families"]
+
+        self.assertEqual(families["total"], 2)
+        self.assertEqual(families["outstanding"], 2)
+        self.assertEqual(families["complete"], 0)
+
+    def test_totals_ignore_the_outstanding_filter(self):
+        """
+        The header says how many families are square out of the whole pack, so
+        it must not shrink to match a filtered table.
+        """
+        requirement = FamilyRequirementFactory(slug="collapse-filtered")
+        requirement.sync_records(year=self.year)
+        record = RequirementRecord.objects.get(requirement=requirement, family=self.family)
+        record.status = RequirementRecord.Status.COMPLETE
+        record.save()
+
+        unfiltered = self.client.get(reverse("compliance:dashboard")).context["families"]
+        filtered = self.client.get(reverse("compliance:dashboard"), {"filter": "outstanding"}).context["families"]
+
+        self.assertEqual(unfiltered["total"], filtered["total"])
+        self.assertEqual(unfiltered["complete"], filtered["complete"])
+        self.assertEqual(len(unfiltered["rows"]), 2)
+        self.assertEqual(len(filtered["rows"]), 1)
+
+    def test_a_family_with_nothing_outstanding_counts_as_square(self):
+        requirement = FamilyRequirementFactory(slug="collapse-square")
+        requirement.sync_records(year=self.year)
+        RequirementRecord.objects.filter(requirement=requirement).update(status=RequirementRecord.Status.COMPLETE)
+
+        families = self.client.get(reverse("compliance:dashboard")).context["families"]
+
+        self.assertEqual(families["complete"], families["total"])
+        self.assertEqual(families["outstanding"], 0)

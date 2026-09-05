@@ -9,15 +9,11 @@
   part way through the year where the tracked requirements cannot.
 {% endcomment %}
 <div class="card shadow-sm mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span>{% translate 'Scouting America registration' %}</span>
-    <small class="text-body-secondary">
-      {% blocktranslate with done=scouting_membership.current total=scouting_membership.total %}
-        {{ done }} of {{ total }} Cubs registered
-      {% endblocktranslate %}
-    </small>
-  </div>
-  <div class="card-body">
+  {% blocktranslate asvar registration_summary with done=scouting_membership.current total=scouting_membership.total %}{{ done }} of {{ total }} Cubs registered{% endblocktranslate %}
+  {% translate 'Scouting America registration' as registration_label %}
+  {% include 'compliance/snippets/collapsible_header.html' with target='scouting-membership' label=registration_label summary=registration_summary %}
+
+  <div class="card-body pb-0">
     {% if scouting_membership.total %}
       <div class="progress mb-3"
            role="progressbar"
@@ -50,8 +46,12 @@
           </div>
         {% endif %}
       </div>
+    {% else %}
+      <p class="text-body-secondary">{% translate 'No Cubs were active this year.' %}</p>
     {% endif %}
+  </div>
 
+  <div id="scouting-membership" class="collapse">
     <div class="table-responsive">
       <table class="table table-hover mb-0 align-middle">
         <thead>
@@ -75,15 +75,18 @@
               </th>
               <td>
                 {% if row.standing == 'CURRENT' %}
-                  <span class="badge text-bg-success" title="{% translate 'Registered through the expiration date shown' %}">
+                  <span class="badge text-bg-success"
+                        title="{% translate 'Registered through the expiration date shown' %}">
                     <i class="fa-solid fa-circle-check fa-fw"></i> {% translate 'Registered' %}
                   </span>
                 {% elif row.standing == 'EXPIRED' %}
-                  <span class="badge text-bg-danger" title="{% translate 'On file, but the expiration date has passed' %}">
+                  <span class="badge text-bg-danger"
+                        title="{% translate 'On file, but the expiration date has passed' %}">
                     <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
                   </span>
                 {% else %}
-                  <span class="badge text-bg-secondary" title="{% translate 'No membership ID and expiration date recorded' %}">
+                  <span class="badge text-bg-secondary"
+                        title="{% translate 'No membership ID and expiration date recorded' %}">
                     <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Not on file' %}
                   </span>
                 {% endif %}
