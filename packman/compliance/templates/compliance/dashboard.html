@@ -12,32 +12,23 @@
     {% include 'compliance/snippets/year_switcher.html' %}
   </div>
 
-  <div class="card shadow-sm mb-4">
-    <div class="card-header">{% translate 'Where the pack stands' %}</div>
-    <div class="card-body">
-      {% for requirement in requirements %}
-        {% include 'compliance/snippets/requirement_progress.html' with year=years.viewing %}
-      {% empty %}
-        <p class="mb-0 text-body-secondary">
-          {% translate 'No requirements are being tracked. Add one in the admin to get started.' %}
-        </p>
-      {% endfor %}
-    </div>
-  </div>
-
   {% include 'compliance/snippets/scouting_membership_card.html' %}
 
   <div class="card shadow-sm">
     {% blocktranslate asvar family_summary with done=families.complete total=families.total %}{{ done }} of {{ total }} families square{% endblocktranslate %}
     {% translate 'By family' as family_label %}
     {% include 'compliance/snippets/collapsible_header.html' with target='by-family' label=family_label summary=family_summary %}
+    <div class="card-body pb-0">
+      {% for requirement in requirements %}
+        {% include 'compliance/snippets/requirement_progress.html' with year=years.viewing %}
+      {% empty %}
+        <p class="mb-3 text-body-secondary">
+          {% translate 'No requirements are being tracked. Add one in the admin to get started.' %}
+        </p>
+      {% endfor %}
+    </div>
     <div id="by-family" class="collapse">
-      <div class="card-body pb-0">
-        <div class="mb-3">
-          {% for requirement in requirements %}
-            {% include 'compliance/snippets/requirement_progress.html' with year=years.viewing %}
-          {% endfor %}
-        </div>
+      <div class="card-body pt-0 pb-0">
         <div class="d-flex justify-content-end mb-3">
           <div class="btn-group btn-group-sm" role="group">
             <a class="btn btn-outline-secondary {% if not filter %}active{% endif %}"
