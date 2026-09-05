@@ -14,6 +14,8 @@ spelling of the rule is worth more here than an aggregate that could drift from
 it.
 """
 
+import datetime
+
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -21,16 +23,21 @@ from django.utils.translation import gettext_lazy as _
 from packman.calendars.models import PackYear
 from packman.membership.models import Scout
 
+# How long before a registration lapses we start calling it "expiring soon", for
+# callers that ask to be warned (the family page). The dashboard does not.
+RENEWAL_WINDOW = datetime.timedelta(days=60)
+
 
 class Standing(models.TextChoices):
     """What a Cub's registration reads as today."""
 
     CURRENT = "CURRENT", _("Registered")
+    EXPIRING_SOON = "EXPIRING_SOON", _("Expiring soon")
     EXPIRED = "EXPIRED", _("Expired")
     MISSING = "MISSING", _("Not on file")
 
 
-def standing_for(member, as_of=None):
+def standing_for(member, as_of=None, warn_within=None):
     """
     One member's registration standing.
 
@@ -38,13 +45,22 @@ def standing_for(member, as_of=None):
     whether the registration is still good, so it does not count as on file.
     The expiration date is the last day the registration is held, so a
     registration expiring today is still current.
+
+    Pass ``warn_within`` (a ``timedelta``) to get ``EXPIRING_SOON`` back for a
+    registration that is still good but lapses within that window. Left unset it
+    is never returned, so callers that only care whether a registration is good
+    today (the dashboard) are unaffected.
     """
     as_of = as_of or timezone.localdate()
     expires_on = member.scouting_membership_expires_on
 
     if not member.scouting_membership_id or expires_on is None:
         return Standing.MISSING
-    return Standing.CURRENT if expires_on >= as_of else Standing.EXPIRED
+    if expires_on < as_of:
+        return Standing.EXPIRED
+    if warn_within is not None and expires_on <= as_of + warn_within:
+        return Standing.EXPIRING_SOON
+    return Standing.CURRENT
 
 
 def summarize_active_cubs(year=None, as_of=None):

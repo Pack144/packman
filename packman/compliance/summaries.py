@@ -8,6 +8,7 @@ without importing a view or duplicating the grouping.
 from packman.calendars.models import PackYear
 
 from .models import RequirementRecord
+from .scouting_membership import RENEWAL_WINDOW, standing_for
 
 
 def records_for_family(family, year=None):
@@ -18,12 +19,24 @@ def records_for_family(family, year=None):
     )
 
 
+def membership_standing(member):
+    """A member's Scouting America registration for the family page: a warn-ahead
+    standing plus the ID and expiration date to show alongside it."""
+    return {
+        "standing": standing_for(member, warn_within=RENEWAL_WINDOW),
+        "id": member.scouting_membership_id,
+        "expires_on": member.scouting_membership_expires_on,
+    }
+
+
 def group_by_subject(family, records):
     """
     One group per person, plus one for the household, so a parent can see at a
     glance who still owes what.
 
-    Cubs come first because they are usually what a parent is looking for.
+    Cubs come first because they are usually what a parent is looking for. Each
+    person also carries their registration standing; the household does not hold
+    one.
     """
     by_member = {}
     household = []
@@ -33,10 +46,16 @@ def group_by_subject(family, records):
         else:
             household.append(record)
 
-    groups = [{"subject": scout, "records": by_member.get(scout.pk, [])} for scout in family.children.all()]
-    groups += [{"subject": adult, "records": by_member.get(adult.pk, [])} for adult in family.adults.all()]
+    groups = [
+        {"subject": scout, "records": by_member.get(scout.pk, []), "membership": membership_standing(scout)}
+        for scout in family.children.all()
+    ]
+    groups += [
+        {"subject": adult, "records": by_member.get(adult.pk, []), "membership": membership_standing(adult)}
+        for adult in family.adults.all()
+    ]
     if household:
-        groups.append({"subject": family, "records": household})
+        groups.append({"subject": family, "records": household, "membership": None})
     return groups
 
 

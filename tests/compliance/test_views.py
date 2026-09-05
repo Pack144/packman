@@ -8,6 +8,7 @@ from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.formats import date_format
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
 from packman.committees.models import Committee, CommitteeMember
@@ -18,7 +19,14 @@ from packman.compliance.factories import (
     RequirementRecordFactory,
 )
 from packman.compliance.models import Requirement, RequirementRecord
-from packman.membership.factories import ActiveScoutFactory, AdultFactory, CompleteFamilyFactory, FamilyFactory
+from packman.compliance.scouting_membership import Standing
+from packman.membership.factories import (
+    ActiveScoutFactory,
+    AdultFactory,
+    CompleteFamilyFactory,
+    FamilyFactory,
+    ScoutFactory,
+)
 from packman.membership.models import Adult, Family
 from packman.membership.models import Scout as ActiveScout
 
@@ -148,6 +156,87 @@ class MyFamilyViewTestCase(ComplianceViewTestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertIsNone(response.context["family"])
         self.assertEqual(response.context["groups"], [])
+
+
+class MyFamilyMembershipTestCase(ComplianceViewTestCase):
+    """The Scouting America registration row and footer on each person's card."""
+
+    def setUp(self):
+        super().setUp()
+        self.login(self.parent)
+        self.cub = self.family.children.first()
+
+    def get_page(self):
+        response = self.client.get(reverse("compliance:my_family"))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        return response
+
+    def register(self, expires_on, membership_id="137042891"):
+        self.cub.scouting_membership_id = membership_id
+        self.cub.scouting_membership_expires_on = expires_on
+        self.cub.save()
+
+    def membership_of(self, response, subject):
+        return {group["subject"]: group["membership"] for group in response.context["groups"]}[subject]
+
+    def test_a_registration_lapsing_within_sixty_days_reads_as_expiring_soon(self):
+        self.register(timezone.localdate() + datetime.timedelta(days=30))
+
+        response = self.get_page()
+
+        self.assertEqual(self.membership_of(response, self.cub)["standing"], Standing.EXPIRING_SOON)
+        self.assertContains(response, "Expiring Soon")
+
+    def test_a_registration_well_in_the_future_reads_as_current(self):
+        self.register(timezone.localdate() + datetime.timedelta(days=200))
+
+        self.assertEqual(self.membership_of(self.get_page(), self.cub)["standing"], Standing.CURRENT)
+
+    def test_a_lapsed_registration_reads_as_expired(self):
+        self.register(timezone.localdate() - datetime.timedelta(days=1))
+
+        self.assertEqual(self.membership_of(self.get_page(), self.cub)["standing"], Standing.EXPIRED)
+
+    def test_the_footer_shows_the_membership_id_and_expiration_date(self):
+        expires_on = timezone.localdate() + datetime.timedelta(days=30)
+        self.register(expires_on)
+
+        response = self.get_page()
+
+        self.assertContains(response, "Membership ID")
+        self.assertContains(response, "137042891")
+        self.assertContains(response, date_format(expires_on, "SHORT_DATE_FORMAT"))
+
+    def test_a_member_with_nothing_on_file_shows_a_row_but_no_footer(self):
+        response = self.get_page()
+
+        # The Cub and the parent each get a standing row...
+        self.assertEqual(self.membership_of(response, self.cub)["standing"], Standing.MISSING)
+        self.assertEqual(self.membership_of(response, self.parent)["standing"], Standing.MISSING)
+        self.assertContains(response, "Not on file", count=2)
+        # ...but with nothing recorded there is no ID/Expires footer.
+        self.assertNotContains(response, "Membership ID")
+
+    def test_the_household_group_carries_no_registration(self):
+        requirement = FamilyRequirementFactory(slug="family-conduct")
+        requirement.sync_records(year=self.year)
+
+        household = [g for g in self.get_page().context["groups"] if g["subject"] == self.family]
+
+        self.assertEqual([g["membership"] for g in household], [None])
+
+    def test_the_page_does_not_scale_queries_with_family_size(self):
+        def count(children):
+            while self.family.children.count() < children:
+                ScoutFactory(family=self.family)
+            cache.clear()
+            self.client.get(reverse("compliance:my_family"))
+            cache.clear()
+            with CaptureQueriesContext(connection) as captured:
+                self.client.get(reverse("compliance:my_family"))
+            return len(captured.captured_queries)
+
+        self.assertEqual(count(2), count(6))
 
 
 class DashboardContentTestCase(ComplianceViewTestCase):

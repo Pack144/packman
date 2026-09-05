@@ -1,0 +1,22 @@
+{% load i18n %}
+{% comment %}
+  One member's Scouting America registration standing as a badge. Pass `standing`
+  (a Standing value string). A member with nothing on file reads as not on file.
+{% endcomment %}
+{% if standing == 'CURRENT' %}
+  <span class="badge text-bg-success" title="{% translate 'Registration is current' %}">
+    <i class="fa-solid fa-circle-check fa-fw"></i> {% translate 'Current' %}
+  </span>
+{% elif standing == 'EXPIRING_SOON' %}
+  <span class="badge text-bg-warning" title="{% translate 'Registration lapses soon' %}">
+    <i class="fa-solid fa-triangle-exclamation fa-fw"></i> {% translate 'Expiring Soon' %}
+  </span>
+{% elif standing == 'EXPIRED' %}
+  <span class="badge text-bg-danger" title="{% translate 'Registration has lapsed' %}">
+    <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
+  </span>
+{% else %}
+  <span class="badge text-bg-secondary" title="{% translate 'No registration on file' %}">
+    <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Not on file' %}
+  </span>
+{% endif %}

@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
-from packman.compliance.scouting_membership import Standing, standing_for, summarize_active_cubs
+from packman.compliance.scouting_membership import RENEWAL_WINDOW, Standing, standing_for, summarize_active_cubs
 from packman.dens.factories import MembershipFactory
 from packman.membership.factories import ActiveScoutFactory, ScoutFactory
 from packman.membership.models import Scout
@@ -52,6 +52,33 @@ class StandingForTestCase(TestCase):
 
         self.assertEqual(standing_for(cub, as_of=expires_on), Standing.CURRENT)
         self.assertEqual(standing_for(cub, as_of=expires_on + datetime.timedelta(days=1)), Standing.EXPIRED)
+
+    def test_without_warn_within_a_soon_to_lapse_registration_is_still_current(self):
+        """The default caller (the dashboard) only asks whether it is good today."""
+        cub = ScoutFactory.build(
+            scouting_membership_id="12345678",
+            scouting_membership_expires_on=TODAY + datetime.timedelta(days=1),
+        )
+
+        self.assertEqual(standing_for(cub), Standing.CURRENT)
+
+    def test_warn_within_flags_a_registration_that_lapses_inside_the_window(self):
+        def standing(days_out):
+            cub = ScoutFactory.build(
+                scouting_membership_id="12345678",
+                scouting_membership_expires_on=TODAY + datetime.timedelta(days=days_out),
+            )
+            return standing_for(cub, warn_within=RENEWAL_WINDOW)
+
+        self.assertEqual(standing(90), Standing.CURRENT)
+        self.assertEqual(standing(30), Standing.EXPIRING_SOON)
+        self.assertEqual(standing(0), Standing.EXPIRING_SOON)
+        self.assertEqual(standing(-1), Standing.EXPIRED)
+
+    def test_warn_within_still_needs_both_fields_on_file(self):
+        cub = ScoutFactory.build(scouting_membership_id="", scouting_membership_expires_on=TOMORROW)
+
+        self.assertEqual(standing_for(cub, warn_within=RENEWAL_WINDOW), Standing.MISSING)
 
 
 class SummarizeActiveCubsTestCase(TestCase):

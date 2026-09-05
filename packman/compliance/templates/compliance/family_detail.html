@@ -43,17 +43,39 @@
           <div class="card shadow-sm h-100">
             <div class="card-header">{{ group.subject }}</div>
             <ul class="list-group list-group-flush">
+              {% if group.membership %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>{% translate 'Membership' %}</div>
+                  {% include 'compliance/snippets/membership_standing_badge.html' with standing=group.membership.standing %}
+                </li>
+              {% endif %}
               {% for record in group.records %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                   <div>{{ record.requirement.name }}</div>
                   {% include 'compliance/snippets/status_badge.html' %}
                 </li>
               {% empty %}
-                <li class="list-group-item text-body-secondary">
-                  {% translate 'Nothing is being tracked this year.' %}
-                </li>
+                {% if not group.membership %}
+                  <li class="list-group-item text-body-secondary">
+                    {% translate 'Nothing is being tracked this year.' %}
+                  </li>
+                {% endif %}
               {% endfor %}
             </ul>
+            {% if group.membership.id %}
+              <div class="card-footer">
+                <div class="row small">
+                  <div class="col">
+                    <div class="text-body-secondary text-uppercase">{% translate 'Membership ID' %}</div>
+                    <div>{{ group.membership.id }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="text-body-secondary text-uppercase">{% translate 'Expires' %}</div>
+                    <div>{{ group.membership.expires_on|date:"SHORT_DATE_FORMAT" }}</div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
           </div>
         </div>
       {% empty %}
