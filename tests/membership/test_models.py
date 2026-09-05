@@ -73,6 +73,32 @@ class MemberTestCase(TestCase):
             Member.objects.create(first_name="Another", last_name="Member", suffix="2")
 
 
+class ScoutingMembershipFieldsTestCase(TestCase):
+    def test_the_membership_id_is_stripped_on_save(self):
+        """
+        Compliance asks whether an ID is on file in Python and in SQL, and both
+        read "" as absent; an untrimmed value would answer the two differently.
+        """
+        member = Member.objects.create(first_name="Wilma", last_name="Wolf", scouting_membership_id="  12345678  ")
+
+        member.refresh_from_db()
+
+        self.assertEqual(member.scouting_membership_id, "12345678")
+
+    def test_a_whitespace_only_id_becomes_empty(self):
+        member = Member.objects.create(first_name="Barney", last_name="Bear", scouting_membership_id="   ")
+
+        member.refresh_from_db()
+
+        self.assertEqual(member.scouting_membership_id, "")
+
+    def test_both_fields_are_optional(self):
+        member = Member.objects.create(first_name="Betty", last_name="Bobcat")
+
+        self.assertEqual(member.scouting_membership_id, "")
+        self.assertIsNone(member.scouting_membership_expires_on)
+
+
 class AdultTestCase(TestCase):
     pass
 

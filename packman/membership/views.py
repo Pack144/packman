@@ -1,6 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
+
+from packman.compliance.models import RequirementRecord
 
 from .forms import AddressFormSet, AdultCreation, AdultForm, PhoneNumberFormSet, ScoutForm
 from .models import Adult, Family, Member, Scout
@@ -142,7 +144,31 @@ class AdultCreate(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class AdultDetail(LoginRequiredMixin, DetailView):
+class MemberRequirementsPrefetchMixin:
+    """
+    Fetch the requirements card's records with their requirement and pack year.
+
+    compliance/snippets/member_requirements_card.html names the requirement,
+    regroups on the year, and asks each record for its effective_status, which
+    reads the requirement's source. Left to the template that is a query a row.
+    The member needs no select_related: prefetching the reverse relation
+    already points each record back at the member it came from.
+    """
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "requirement_records",
+                    queryset=RequirementRecord.objects.select_related("requirement", "year"),
+                )
+            )
+        )
+
+
+class AdultDetail(MemberRequirementsPrefetchMixin, LoginRequiredMixin, DetailView):
     model = Adult
     context_object_name = "member"
     template_name = "membership/adult_detail.html"
@@ -229,7 +255,7 @@ class ScoutCreate(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ScoutDetail(LoginRequiredMixin, DetailView):
+class ScoutDetail(MemberRequirementsPrefetchMixin, LoginRequiredMixin, DetailView):
     model = Scout
     context_object_name = "member"
     template_name = "membership/scout_detail.html"

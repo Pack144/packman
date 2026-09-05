@@ -35,11 +35,21 @@
     <div class="table-responsive">
       <table class="table table-hover mb-0 align-middle">
         <thead>
+          {% comment %}
+            A derived requirement has no completed_on and nobody records it, so
+            those two columns are replaced by what leadership actually chases:
+            the membership number and the date it lapses.
+          {% endcomment %}
           <tr>
             <th scope="col">{% translate 'Who' %}</th>
             <th scope="col">{% translate 'Status' %}</th>
-            <th scope="col">{% translate 'Completed' %}</th>
-            <th scope="col">{% translate 'Recorded by' %}</th>
+            {% if requirement.is_derived %}
+              <th scope="col">{% translate 'Membership ID' %}</th>
+              <th scope="col">{% translate 'Expires' %}</th>
+            {% else %}
+              <th scope="col">{% translate 'Completed' %}</th>
+              <th scope="col">{% translate 'Recorded by' %}</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -47,12 +57,17 @@
             <tr>
               <th scope="row" class="fw-normal">{{ row.subject }}</th>
               <td>{% include 'compliance/snippets/status_badge.html' with record=row.record %}</td>
-              <td>{{ row.record.completed_on|default:"" }}</td>
-              <td class="text-body-secondary">{{ row.record.recorded_by|default:"" }}</td>
+              {% if requirement.is_derived %}
+                <td>{{ row.subject.scouting_membership_id|default:"" }}</td>
+                <td class="text-body-secondary">{{ row.subject.scouting_membership_expires_on|default:"" }}</td>
+              {% else %}
+                <td>{{ row.record.completed_on|default:"" }}</td>
+                <td class="text-body-secondary">{{ row.record.recorded_by|default:"" }}</td>
+              {% endif %}
             </tr>
           {% empty %}
             <tr>
-              <td colspan="5" class="text-center text-body-secondary py-4">
+              <td colspan="4" class="text-center text-body-secondary py-4">
                 {% translate 'Nobody is being tracked for this requirement this year.' %}
               </td>
             </tr>

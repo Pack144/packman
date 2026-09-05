@@ -76,6 +76,22 @@ class Member(TimeStampedUUIDModel):
     )
     date_of_birth = models.DateField(_("Birthday"), blank=True, null=True)
 
+    # Scouting America registration. Held here rather than on Adult or Scout
+    # because both are tracked: every active Cub needs one, as does every
+    # Akela, Assistant Akela and Den Leader.
+    scouting_membership_id = models.CharField(
+        _("Scouting America Membership ID"),
+        max_length=32,
+        blank=True,
+        help_text=_("The member ID printed on the Scouting America membership card."),
+    )
+    scouting_membership_expires_on = models.DateField(
+        _("Membership Expires"),
+        blank=True,
+        null=True,
+        help_text=_("The date the member's Scouting America registration lapses if it is not renewed."),
+    )
+
     # Administrative
     slug = models.SlugField(
         unique=True,
@@ -99,6 +115,11 @@ class Member(TimeStampedUUIDModel):
         return self.get_full_name()
 
     def save(self, *args, **kwargs):  # sourcery skip: hoist-if-from-if
+        # Canonicalize the membership ID. Compliance asks whether one is on
+        # file both in Python and in SQL, and both read "" as absent -- an
+        # untrimmed "  " would otherwise answer the two differently.
+        self.scouting_membership_id = self.scouting_membership_id.strip()
+
         if not self.slug:
             candidates = [self.get_full_name()]
             if self.middle_name and self.suffix:

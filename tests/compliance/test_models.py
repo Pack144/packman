@@ -222,5 +222,5 @@ class AudienceTestCase(TestCase):
     def test_audience_values(self):
         self.assertEqual(
             set(Requirement.Audience.values),
-            {"CUB", "ADULT", "FAMILY"},
+            {"CUB", "ADULT", "LEADER", "FAMILY"},
         )

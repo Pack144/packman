@@ -2,12 +2,20 @@
 {% comment %}
   One record as a badge. Pass `record`; a missing record reads as not started,
   since a Cub who joined mid-year has no row until someone records against them.
+
+  Reads effective_status, not status: a derived requirement keeps its standing
+  on the member, so a lapsed Scouting America membership must not still show as
+  complete. See compliance/derived.py.
 {% endcomment %}
-{% if record.status == 'OK' %}
+{% if record.effective_status == 'OK' %}
   <span class="badge text-bg-success" title="{% translate 'Complete' %}">
     <i class="fa-solid fa-circle-check fa-fw"></i> {% translate 'Complete' %}
   </span>
-{% elif record.status == 'NA' %}
+{% elif record.effective_status == 'EXP' %}
+  <span class="badge text-bg-danger" title="{% translate 'On file, but the expiration date has passed' %}">
+    <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
+  </span>
+{% elif record.effective_status == 'NA' %}
   <span class="badge text-bg-light" title="{% translate 'Waived by pack leadership' %}">
     <i class="fa-solid fa-circle-minus fa-fw"></i> {% translate 'Waived' %}
   </span>

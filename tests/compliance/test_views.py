@@ -1,3 +1,4 @@
+import datetime
 from http import HTTPStatus
 
 from django.contrib.auth.models import Permission
@@ -6,18 +7,23 @@ from django.db import connection
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory
+from packman.committees.factories import AkelaFactory
 from packman.committees.models import Committee, CommitteeMember
 from packman.compliance.factories import (
     AdultRequirementFactory,
     CubRequirementFactory,
     FamilyRequirementFactory,
     RequirementRecordFactory,
+    ScoutingMembershipCubFactory,
+    ScoutingMembershipLeaderFactory,
 )
 from packman.compliance.models import RequirementRecord
 from packman.membership.factories import ActiveScoutFactory, AdultFactory, CompleteFamilyFactory, FamilyFactory
 from packman.membership.models import Adult, Family
+from packman.membership.models import Scout as ActiveScout
 
 
 def grant_leadership(adult, year, *codenames):
@@ -487,3 +493,176 @@ class MatrixCellStateTestCase(ComplianceViewTestCase):
 
         self.assertContains(response, "still to do")
         self.assertContains(response, "text-bg-warning")
+
+
+class ScoutingMembershipReportingTestCase(ComplianceViewTestCase):
+    """
+    A derived requirement, end to end through the report.
+
+    The interesting case throughout is a registration that was recorded and has
+    since lapsed: the record's own status column still says complete, and the
+    report must not.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.requirement = ScoutingMembershipCubFactory(slug="sa-membership-cub", name="SA Membership (Cub)")
+
+    def cub_with(self, membership_id, expires_on, status=RequirementRecord.Status.COMPLETE):
+        """A Cub whose record claims complete, so only the derivation can say otherwise."""
+        cub = self.family.children.first()
+        cub.scouting_membership_id = membership_id
+        cub.scouting_membership_expires_on = expires_on
+        cub.save()
+        return RequirementRecordFactory(requirement=self.requirement, year=self.year, member=cub, status=status)
+
+    def rollup(self):
+        self.login(self.leader)
+        response = self.client.get(reverse("compliance:dashboard"))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        return next(r for r in response.context["requirements"] if r.pk == self.requirement.pk)
+
+    def test_a_current_registration_rolls_up_as_complete(self):
+        self.cub_with("12345678", timezone.localdate() + datetime.timedelta(days=30))
+
+        rollup = self.rollup()
+
+        self.assertEqual(rollup.complete, 1)
+        self.assertEqual(rollup.expired, 0)
+        self.assertEqual(rollup.outstanding, 0)
+
+    def test_a_lapsed_registration_rolls_up_as_expired(self):
+        self.cub_with("12345678", timezone.localdate() - datetime.timedelta(days=1))
+
+        rollup = self.rollup()
+
+        self.assertEqual(rollup.complete, 0)
+        self.assertEqual(rollup.expired, 1)
+        self.assertEqual(rollup.outstanding, 1)
+        self.assertEqual(rollup.not_started, 0)
+
+    def test_nothing_on_file_rolls_up_as_not_started(self):
+        self.cub_with("", None)
+
+        rollup = self.rollup()
+
+        self.assertEqual(rollup.complete, 0)
+        self.assertEqual(rollup.expired, 0)
+        self.assertEqual(rollup.not_started, 1)
+        self.assertEqual(rollup.outstanding, 1)
+
+    def test_waiving_still_excuses_a_leader(self):
+        self.cub_with("", None, status=RequirementRecord.Status.WAIVED)
+
+        rollup = self.rollup()
+
+        self.assertEqual(rollup.waived, 1)
+        self.assertEqual(rollup.outstanding, 0)
+
+    def test_the_family_cell_reports_outstanding(self):
+        self.cub_with("12345678", timezone.localdate() - datetime.timedelta(days=1))
+        self.login(self.leader)
+
+        response = self.client.get(reverse("compliance:dashboard"))
+
+        row = next(r for r in response.context["matrix"] if r["family"] == self.family)
+        cell = next(c for c in row["cells"] if c)
+        self.assertEqual(cell["state"], "outstanding")
+
+    def test_the_roster_shows_the_expired_badge_and_the_membership_columns(self):
+        self.cub_with("12345678", timezone.localdate() - datetime.timedelta(days=1))
+        self.login(self.leader)
+
+        response = self.client.get(reverse("compliance:roster", kwargs={"slug": self.requirement.slug}))
+
+        self.assertContains(response, "Expired")
+        self.assertContains(response, "Membership ID")
+        self.assertContains(response, "12345678")
+        self.assertNotContains(response, "Recorded by")
+
+    def test_a_manual_roster_keeps_its_own_columns(self):
+        requirement = CubRequirementFactory(slug="manual-roster")
+        RequirementRecordFactory(requirement=requirement, year=self.year, member=self.family.children.first())
+        self.login(self.leader)
+
+        response = self.client.get(reverse("compliance:roster", kwargs={"slug": requirement.slug}))
+
+        self.assertContains(response, "Recorded by")
+        self.assertNotContains(response, "Membership ID")
+
+    def test_the_family_page_lists_a_lapsed_registration_as_outstanding(self):
+        self.cub_with("12345678", timezone.localdate() - datetime.timedelta(days=1))
+        self.login(self.parent)
+
+        response = self.client.get(reverse("compliance:my_family"))
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(len(response.context["outstanding"]), 1)
+        self.assertContains(response, "Expired")
+
+
+class ScoutingMembershipLeaderRosterTestCase(ComplianceViewTestCase):
+    def test_the_roster_is_built_from_who_holds_a_leadership_title(self):
+        requirement = ScoutingMembershipLeaderFactory(slug="sa-membership-leader")
+        AkelaFactory(year=self.year, member=self.parent)
+        self.login(self.leader)
+
+        response = self.client.get(reverse("compliance:roster", kwargs={"slug": requirement.slug}))
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        subjects = [row["subject"] for row in response.context["rows"]]
+        self.assertEqual(subjects, [self.parent])
+
+
+class DerivedQueryBudgetTestCase(ComplianceViewTestCase):
+    """
+    effective_status reads the requirement and the member, so a page that shows
+    a badge per row has to fetch them with the records or it becomes a query a
+    row. Same guard as the dashboard's, from the other two directions.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.requirement = ScoutingMembershipCubFactory(slug="budget-sa-cub")
+
+    def count(self, url, cubs):
+        while ActiveScout.objects.filter(status=ActiveScout.ACTIVE).count() < cubs:
+            CompleteFamilyFactory(adults=1, active_children=1)
+        self.requirement.sync_records(year=self.year)
+        cache.clear()
+        self.client.get(url)  # warm anything cached per process
+        cache.clear()
+
+        with CaptureQueriesContext(connection) as captured:
+            self.client.get(url)
+        return len(captured.captured_queries)
+
+    def test_the_roster_does_not_scale_queries_with_cubs(self):
+        self.login(self.leader)
+        url = reverse("compliance:roster", kwargs={"slug": self.requirement.slug})
+
+        self.assertEqual(self.count(url, cubs=4), self.count(url, cubs=10))
+
+    def test_the_member_card_does_not_scale_queries_with_records(self):
+        cub = self.family.children.first()
+        self.login(self.leader)
+        url = cub.get_absolute_url()
+
+        def count_with(records):
+            while self.year.requirement_records.filter(member=cub).count() < records:
+                n = self.year.requirement_records.filter(member=cub).count()
+                RequirementRecordFactory(
+                    requirement=CubRequirementFactory(slug=f"budget-extra-{n}"),
+                    year=self.year,
+                    member=cub,
+                )
+            cache.clear()
+            self.client.get(url)
+            cache.clear()
+            with CaptureQueriesContext(connection) as captured:
+                self.client.get(url)
+            return len(captured.captured_queries)
+
+        self.assertEqual(count_with(2), count_with(6))

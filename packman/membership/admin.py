@@ -205,6 +205,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "family__adults__first_name",
         "family__adults__nickname",
         "family__adults__last_name",
+        "scouting_membership_id",
     )
     formfield_overrides = {
         ThumbnailerImageField: {"widget": ImageClearableFileInput},
@@ -221,6 +222,13 @@ class ScoutAdmin(admin.ModelAdmin):
                     "status",
                     "slug",
                 )
+            },
+        ),
+        (
+            _("Scouting America Membership"),
+            {
+                "fields": (("scouting_membership_id", "scouting_membership_expires_on"),),
+                "description": _("Required for active Cubs and for Akelas, Assistant Akelas and Den Leaders."),
             },
         ),
         (_("Family"), {"fields": ("family", "get_adults")}),
@@ -515,6 +523,7 @@ class AdultAdmin(UserAdmin):
         "family__children__first_name",
         "family__children__nickname",
         "family__children__last_name",
+        "scouting_membership_id",
     )
     formfield_overrides = {
         ThumbnailerImageField: {"widget": ImageClearableFileInput},
@@ -531,6 +540,13 @@ class AdultAdmin(UserAdmin):
                     "role",
                     "slug",
                 )
+            },
+        ),
+        (
+            _("Scouting America Membership"),
+            {
+                "fields": (("scouting_membership_id", "scouting_membership_expires_on"),),
+                "description": _("Required for active Cubs and for Akelas, Assistant Akelas and Den Leaders."),
             },
         ),
         (_("Family"), {"fields": ("family", "get_children")}),

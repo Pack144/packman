@@ -6,6 +6,8 @@ and the main site's PackMate promotion ask the same question of the same
 CommitteeMember rows.
 """
 
+from django.db.models import Q
+
 from packman.calendars.models import PackYear
 from packman.committees.models import CommitteeMember
 
@@ -36,6 +38,31 @@ def assignment_title(assignment):
         return None
     name = assignment.committee.name.strip().removesuffix("s").casefold()
     return next((title for title in LEADERSHIP_TITLES.values() if title.casefold() == name), None)
+
+
+def leadership_q(year, prefix="committee_membership__"):
+    """
+    Adults carrying a Pack leadership title in ``year``, as a Q against Adult.
+
+    The queryset twin of assignment_title(), and it mirrors both of that
+    function's paths: the explicit position, and the fallback to a committee
+    flagged as Pack Leadership and named for the title. It lives beside that
+    function so the two cannot drift apart.
+
+    Every term belongs to a single filter() so that they all have to hold of
+    the same assignment. Split across chained filters, an adult who led a den
+    one year and sat on the popcorn committee the next would read as
+    leadership in both.
+    """
+    # Committee names are plural where the position labels are singular, the
+    # same allowance assignment_title() makes with removesuffix("s").
+    named = Q(**{f"{prefix}committee__leadership": True})
+    titles = Q()
+    for title in LEADERSHIP_TITLES.values():
+        titles |= Q(**{f"{prefix}committee__name__iexact": title})
+        titles |= Q(**{f"{prefix}committee__name__iexact": f"{title}s"})
+
+    return Q(**{f"{prefix}year": year}) & (Q(**{f"{prefix}position__in": list(LEADERSHIP_TITLES)}) | (named & titles))
 
 
 def leadership_title(adult):

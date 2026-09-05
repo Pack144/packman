@@ -14,7 +14,8 @@
   {% if requirement.total %}
     {% widthratio requirement.complete requirement.total 100 as complete_pct %}
     {% widthratio requirement.waived requirement.total 100 as waived_pct %}
-    {% widthratio requirement.outstanding requirement.total 100 as outstanding_pct %}
+    {% widthratio requirement.expired requirement.total 100 as expired_pct %}
+    {% widthratio requirement.not_started requirement.total 100 as not_started_pct %}
     {% if requirement.complete %}
       <div class="progress-bar bg-success" style="width: {{ complete_pct }}%"
            title="{% blocktranslate count n=requirement.complete %}{{ n }} complete{% plural %}{{ n }} complete{% endblocktranslate %}">{{ requirement.complete }}</div>
@@ -23,9 +24,13 @@
       <div class="progress-bar bg-light text-dark" style="width: {{ waived_pct }}%"
            title="{% blocktranslate count n=requirement.waived %}{{ n }} waived{% plural %}{{ n }} waived{% endblocktranslate %}">{{ requirement.waived }}</div>
     {% endif %}
-    {% if requirement.outstanding %}
-      <div class="progress-bar bg-secondary" style="width: {{ outstanding_pct }}%"
-           title="{% blocktranslate count n=requirement.outstanding %}{{ n }} not started{% plural %}{{ n }} not started{% endblocktranslate %}">{{ requirement.outstanding }}</div>
+    {% if requirement.expired %}
+      <div class="progress-bar bg-danger" style="width: {{ expired_pct }}%"
+           title="{% blocktranslate count n=requirement.expired %}{{ n }} expired{% plural %}{{ n }} expired{% endblocktranslate %}">{{ requirement.expired }}</div>
+    {% endif %}
+    {% if requirement.not_started %}
+      <div class="progress-bar bg-secondary" style="width: {{ not_started_pct }}%"
+           title="{% blocktranslate count n=requirement.not_started %}{{ n }} not started{% plural %}{{ n }} not started{% endblocktranslate %}">{{ requirement.not_started }}</div>
     {% endif %}
   {% endif %}
 </div>

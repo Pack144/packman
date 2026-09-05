@@ -5,6 +5,7 @@ from django.views.generic import DetailView, TemplateView
 from packman.membership.mixins import ActiveMemberOrContributorTest
 from packman.membership.models import Family
 
+from .derived import status_q
 from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest
 from .models import Requirement, RequirementRecord
 from .summaries import summarize_family
@@ -20,19 +21,23 @@ class RequirementRollupMixin:
 
     def get_requirement_rollup(self, year):
         in_year = Q(record__year=year)
+        Status = RequirementRecord.Status
+        # status_q() rather than a plain status filter: a derived requirement
+        # keeps its standing on the member, not in the record's own column.
+        at = {status: status_q(status) for status in (Status.COMPLETE, Status.WAIVED, Status.EXPIRED)}
 
         return (
             Requirement.objects.active()
             .annotate(
                 total=Count("record", filter=in_year, distinct=True),
-                complete=Count(
-                    "record", filter=in_year & Q(record__status=RequirementRecord.Status.COMPLETE), distinct=True
-                ),
-                waived=Count(
-                    "record", filter=in_year & Q(record__status=RequirementRecord.Status.WAIVED), distinct=True
-                ),
+                complete=Count("record", filter=in_year & at[Status.COMPLETE], distinct=True),
+                waived=Count("record", filter=in_year & at[Status.WAIVED], distinct=True),
+                expired=Count("record", filter=in_year & at[Status.EXPIRED], distinct=True),
+                not_started=Count("record", filter=in_year & status_q(Status.NOT_STARTED), distinct=True),
                 outstanding=Count(
-                    "record", filter=in_year & Q(record__status=RequirementRecord.Status.NOT_STARTED), distinct=True
+                    "record",
+                    filter=in_year & (status_q(Status.NOT_STARTED) | at[Status.EXPIRED]),
+                    distinct=True,
                 ),
             )
             .order_by("sort_order", "name")
@@ -65,13 +70,17 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         year, and one for the families. Deliberately not the per-row query loop
         that campaigns' OrderLeaderboardView uses.
         """
+        Status = RequirementRecord.Status
+        outstanding = status_q(Status.NOT_STARTED, prefix="", source_prefix="requirement__") | status_q(
+            Status.EXPIRED, prefix="", source_prefix="requirement__"
+        )
         cells = {
             (row["family_id"], row["requirement_id"]): row
             for row in RequirementRecord.objects.filter(year=year, family__isnull=False)
             .values("family_id", "requirement_id")
             .annotate(
                 total=Count("pk"),
-                outstanding=Count("pk", filter=Q(status=RequirementRecord.Status.NOT_STARTED)),
+                outstanding=Count("pk", filter=outstanding),
             )
         }
 

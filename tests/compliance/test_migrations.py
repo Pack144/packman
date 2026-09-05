@@ -8,8 +8,10 @@ from packman.compliance.models import Requirement, RequirementRecord
 from packman.membership.factories import ActiveScoutFactory
 
 SEEDED_SLUGS = {"medical-form-cub", "medical-form-adult", "pack-dues"}
+SCOUTING_SLUGS = {"scouting-membership-cub", "scouting-membership-leader"}
 
 seed = importlib.import_module("packman.compliance.migrations.0002_seed_default_requirements")
+scouting_seed = importlib.import_module("packman.compliance.migrations.0004_seed_scouting_membership_requirements")
 
 
 class SeedDefaultRequirementsTestCase(TestCase):
@@ -19,7 +21,7 @@ class SeedDefaultRequirementsTestCase(TestCase):
     """
 
     def test_all_requirements_are_seeded(self):
-        self.assertEqual(set(Requirement.objects.values_list("slug", flat=True)), SEEDED_SLUGS)
+        self.assertEqual(set(Requirement.objects.values_list("slug", flat=True)), SEEDED_SLUGS | SCOUTING_SLUGS)
 
     def test_audiences(self):
         by_slug = {r.slug: r for r in Requirement.objects.all()}
@@ -38,13 +40,20 @@ class SeedDefaultRequirementsTestCase(TestCase):
     def test_seeds_are_ordered_for_display(self):
         self.assertEqual(
             list(Requirement.objects.values_list("slug", flat=True)),
-            ["medical-form-cub", "medical-form-adult", "pack-dues"],
+            [
+                "scouting-membership-cub",
+                "scouting-membership-leader",
+                "medical-form-cub",
+                "medical-form-adult",
+                "pack-dues",
+            ],
         )
 
     def test_seed_is_idempotent(self):
         seed.create_default_requirements(FakeApps(), None)
+        scouting_seed.create_scouting_membership_requirements(FakeApps(), None)
 
-        self.assertEqual(Requirement.objects.count(), len(SEEDED_SLUGS))
+        self.assertEqual(Requirement.objects.count(), len(SEEDED_SLUGS | SCOUTING_SLUGS))
 
     def test_seed_does_not_overwrite_local_edits(self):
         Requirement.objects.filter(slug="pack-dues").update(name="Pack Dues and Fees", sort_order=99)
@@ -54,6 +63,31 @@ class SeedDefaultRequirementsTestCase(TestCase):
         dues = Requirement.objects.get(slug="pack-dues")
         self.assertEqual(dues.name, "Pack Dues and Fees")
         self.assertEqual(dues.sort_order, 99)
+
+
+class SeedScoutingMembershipRequirementsTestCase(TestCase):
+    def test_audiences(self):
+        by_slug = {r.slug: r for r in Requirement.objects.filter(slug__in=SCOUTING_SLUGS)}
+
+        self.assertEqual(by_slug["scouting-membership-cub"].applies_to, Requirement.Audience.CUB)
+        self.assertEqual(by_slug["scouting-membership-leader"].applies_to, Requirement.Audience.LEADER)
+
+    def test_both_are_derived_from_the_member(self):
+        for requirement in Requirement.objects.filter(slug__in=SCOUTING_SLUGS):
+            self.assertEqual(requirement.source, Requirement.Source.SCOUTING_MEMBERSHIP)
+            self.assertTrue(requirement.is_derived)
+
+    def test_reverse_spares_requirements_that_have_records(self):
+        RequirementRecord.objects.create(
+            requirement=Requirement.objects.get(slug="scouting-membership-cub"),
+            year=CurrentPackYearFactory(),
+            member=ActiveScoutFactory(),
+        )
+
+        scouting_seed.remove_scouting_membership_requirements(FakeApps(), None)
+
+        self.assertTrue(Requirement.objects.filter(slug="scouting-membership-cub").exists())
+        self.assertFalse(Requirement.objects.filter(slug="scouting-membership-leader").exists())
 
 
 class RemoveDefaultRequirementsTestCase(TestCase):
