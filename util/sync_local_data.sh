@@ -77,13 +77,12 @@ esac
 
 [ -n "$SSH_HOST" ] || error "No SSH host given — pass --ssh-host USER@HOST or set SYNC_SSH_HOST in .env"
 require_cmd ssh
+require_cmd uv
 
 header "Sync local data from $DB_ENV ($SSH_HOST)"
 
 # ── Database ──────────────────────────────────────────────────────────────────
 if [ "$RUN_DB" = true ]; then
-    require_cmd uv
-
     DUMP_FILE="$(mktemp -t packman_sync_db.XXXXXX)"
     DUMP_FILE="${DUMP_FILE}.sql.gz"
     cleanup_dump() { rm -f "$DUMP_FILE"; }
