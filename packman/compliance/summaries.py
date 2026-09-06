@@ -41,7 +41,7 @@ def membership_standing(member):
     }
 
 
-def group_by_subject(family, records, expected_cub_ids=frozenset()):
+def group_by_subject(family, records, active_cub_ids=frozenset()):
     """
     One group per person, plus one for the household, so a parent can see at a
     glance who still owes what.
@@ -50,10 +50,15 @@ def group_by_subject(family, records, expected_cub_ids=frozenset()):
     person also carries their registration standing; the household does not hold
     one.
 
+    Only the Cubs in `active_cub_ids` are shown: a sibling who has graduated or
+    withdrawn is not part of the pack this year and reads as clutter on their
+    family's page. A Cub who left part way through still appears if the year
+    holds records for them, so nothing already on file quietly disappears.
+
     `registration_due` marks the standings the family is being asked to act on,
-    and only for the Cubs in `expected_cub_ids`. Everyone else is shown their
-    standing as a statement of fact: a parent who is not a registered leader has
-    nothing on file and owes nothing.
+    and again only for those Cubs. Everyone else is shown their standing as a
+    statement of fact: a parent who is not a registered leader has nothing on
+    file and owes nothing.
     """
     by_member = {}
     household = []
@@ -69,10 +74,14 @@ def group_by_subject(family, records, expected_cub_ids=frozenset()):
             "subject": scout,
             "records": by_member.get(scout.pk, []),
             "membership": membership,
-            "registration_due": scout.pk in expected_cub_ids and membership["standing"] != Standing.CURRENT,
+            "registration_due": scout.pk in active_cub_ids and membership["standing"] != Standing.CURRENT,
         }
 
-    groups = [cub_group(scout) for scout in family.children.all()]
+    groups = [
+        cub_group(scout)
+        for scout in family.children.all()
+        if scout.pk in active_cub_ids or by_member.get(scout.pk)
+    ]
     groups += [
         {
             "subject": adult,

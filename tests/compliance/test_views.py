@@ -20,6 +20,7 @@ from packman.compliance.factories import (
 )
 from packman.compliance.models import Requirement, RequirementRecord
 from packman.compliance.scouting_membership import Standing
+from packman.dens.factories import MembershipFactory
 from packman.membership.factories import (
     ActiveScoutFactory,
     AdultFactory,
@@ -227,8 +228,9 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
 
     def test_the_page_does_not_scale_queries_with_family_size(self):
         def count(children):
+            # Active Cubs, so the extra children actually get rendered a card.
             while self.family.children.count() < children:
-                ScoutFactory(family=self.family)
+                ActiveScoutFactory(family=self.family)
             cache.clear()
             self.client.get(reverse("compliance:my_family"))
             cache.clear()
@@ -297,16 +299,6 @@ class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
         self.assertEqual(self.parent.scouting_membership_id, "")
         self.assertEqual(response.context["needs_attention"], 0)
 
-    def test_a_sibling_who_is_not_active_this_year_is_not_counted(self):
-        """A graduated brother still gets a card, but nobody is asking him to renew."""
-        self.register(self.cub, timezone.localdate() + datetime.timedelta(days=200))
-        sibling = ScoutFactory(family=self.family)
-
-        response = self.get_page()
-
-        self.assertIn(sibling, [group["subject"] for group in response.context["groups"]])
-        self.assertEqual(response.context["needs_attention"], 0)
-
     def test_records_and_registrations_are_counted_together(self):
         RequirementRecordFactory(
             requirement=CubRequirementFactory(slug="attention-cub"),
@@ -319,6 +311,52 @@ class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
         self.assertEqual(len(response.context["outstanding"]), 1)
         self.assertEqual(response.context["registrations_due"], [self.cub])
         self.assertEqual(response.context["needs_attention"], 2)
+
+
+class InactiveScoutTestCase(ComplianceViewTestCase):
+    """Who gets a card. A sibling who has left the pack is clutter, not news."""
+
+    def setUp(self):
+        super().setUp()
+        self.login(self.parent)
+        self.cub = self.family.children.first()
+
+    def subjects(self):
+        response = self.client.get(reverse("compliance:my_family"))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.response = response
+        return [group["subject"] for group in response.context["groups"]]
+
+    def test_a_scout_who_is_not_active_this_year_gets_no_card(self):
+        sibling = ScoutFactory(family=self.family)
+
+        subjects = self.subjects()
+
+        self.assertIn(self.cub, subjects)
+        self.assertNotIn(sibling, subjects)
+        self.assertNotContains(self.response, str(sibling))
+
+    def test_a_withdrawn_scout_gets_no_card(self):
+        sibling = ScoutFactory(family=self.family, status=ActiveScout.WITHDRAWN)
+        MembershipFactory(scout=sibling, year_assigned=self.year)
+
+        self.assertNotIn(sibling, self.subjects())
+
+    def test_a_scout_who_left_part_way_through_keeps_their_records_visible(self):
+        """Dropping the card would hide records the banner is still counting."""
+        sibling = ScoutFactory(family=self.family)
+        RequirementRecordFactory(
+            requirement=CubRequirementFactory(slug="inactive-left"),
+            year=self.year,
+            member=sibling,
+        )
+
+        subjects = self.subjects()
+
+        self.assertIn(sibling, subjects)
+        self.assertEqual(len(self.response.context["outstanding"]), 1)
+        # Nobody is asking a Cub who has left to renew a registration.
+        self.assertEqual(self.response.context["registrations_due"], [self.cub])
 
 
 class DashboardContentTestCase(ComplianceViewTestCase):
