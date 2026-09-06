@@ -27,7 +27,7 @@
 #   --no-media               Skip the media sync
 #   --no-reset-password      Skip resetting the password (see
 #                            util/reset_local_password.py — reads
-#                            SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD
+#                            SYNC_RESET_PW_EMAIL/SYNC_RESET_PW
 #                            from .env)
 #   -h, --help                Show this help message
 

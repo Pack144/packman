@@ -4,7 +4,7 @@ reset_local_password.py — Reset a local user's password.
 
 Called by util/sync_local_data.sh after syncing a beta/production database
 backup, so there's a known login for local development — e.g. for Copilot
-to use. Reads SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD/DATABASE_URL
+to use. Reads SYNC_RESET_PW_EMAIL/SYNC_RESET_PW/DATABASE_URL
 from .env; does nothing if the email/password aren't set.
 
 Usage:
@@ -39,10 +39,10 @@ def main():
 
     # django.setup() triggers settings import, which loads .env into
     # os.environ — so these are only available after this point.
-    email = os.environ.get("SYNC_RESET_PASSWORD_EMAIL")
-    password = os.environ.get("SYNC_RESET_PASSWORD")
+    email = os.environ.get("SYNC_RESET_PW_EMAIL")
+    password = os.environ.get("SYNC_RESET_PW")
     if not email or not password:
-        print("⚠️  No SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD configured in .env — skipping")
+        print("⚠️  No SYNC_RESET_PW_EMAIL/SYNC_RESET_PW configured in .env — skipping")
         return
 
     from django.contrib.auth import get_user_model
