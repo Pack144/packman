@@ -7,6 +7,8 @@
 # in this checkout. Also rsyncs any new or changed files from the remote
 # media directory into the local media directory (existing local-only
 # files are left alone — this only fills in what's missing/changed).
+# Skips the documents, doc_backups, and mail folders, which are large and
+# not generally needed for local dev.
 #
 # Meant to be run from a base workspace checkout (the one other worktrees
 # share via start_local.sh --base-workspace) so every worktree benefits
@@ -130,7 +132,11 @@ if [ "$RUN_MEDIA" = true ]; then
         mkdir -p "$LOCAL_MEDIA_DIR"
 
         header "Syncing media from $SSH_HOST:$REMOTE_MEDIA_DIR"
-        rsync -az "$SSH_HOST:${REMOTE_MEDIA_DIR%/}/" "${LOCAL_MEDIA_DIR%/}/" \
+        rsync -az \
+            --exclude=documents \
+            --exclude=doc_backups \
+            --exclude=mail \
+            "$SSH_HOST:${REMOTE_MEDIA_DIR%/}/" "${LOCAL_MEDIA_DIR%/}/" \
             || error "rsync failed — see output above"
         success "Media directory up to date ($LOCAL_MEDIA_DIR)"
     fi
