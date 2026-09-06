@@ -93,9 +93,7 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
         }
 
     groups = [
-        cub_group(scout)
-        for scout in family.children.all()
-        if scout.pk in active_cub_ids or by_member.get(scout.pk)
+        cub_group(scout) for scout in family.children.all() if scout.pk in active_cub_ids or by_member.get(scout.pk)
     ]
     groups += [
         {
