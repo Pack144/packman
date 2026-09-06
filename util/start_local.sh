@@ -5,10 +5,17 @@
 #   ./util/start_local.sh [OPTIONS]
 #
 # Options:
-#   --port PORT       Port to run on (default: 8000)
-#   --no-migrate      Skip running migrations
-#   --no-install      Skip dependency install check
-#   -h, --help        Show this help message
+#   --port PORT              Port to run on (default: 8000)
+#   --no-migrate             Skip running migrations
+#   --no-install             Skip dependency install check
+#   --base-workspace PATH    Reuse an already set-up checkout (e.g. the main
+#                            worktree) at PATH: shares its uv virtualenv and
+#                            symlinks node_modules/.env so a fresh worktree
+#                            doesn't have to redownload everything. Defaults
+#                            to $PACKMAN_BASE_WORKSPACE, or is auto-detected
+#                            from `git worktree list` when this checkout is a
+#                            worktree. Pass --base-workspace "" to disable.
+#   -h, --help               Show this help message
 
 set -euo pipefail
 
@@ -19,13 +26,16 @@ cd "$PROJECT_ROOT"
 PORT=8000
 RUN_MIGRATE=true
 RUN_INSTALL=true
+BASE_WORKSPACE="${PACKMAN_BASE_WORKSPACE:-}"
+BASE_WORKSPACE_SET=false
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --port)       PORT="$2"; shift 2 ;;
-        --no-migrate) RUN_MIGRATE=false; shift ;;
-        --no-install) RUN_INSTALL=false; shift ;;
+        --port)           PORT="$2"; shift 2 ;;
+        --no-migrate)     RUN_MIGRATE=false; shift ;;
+        --no-install)     RUN_INSTALL=false; shift ;;
+        --base-workspace) BASE_WORKSPACE="$2"; BASE_WORKSPACE_SET=true; shift 2 ;;
         -h|--help)
             sed -n '/^# Usage:/,/^[^#]/{ /^[^#]/d; s/^# \{0,2\}//; p }' "$0"
             exit 0 ;;
@@ -40,7 +50,39 @@ warn()    { echo "⚠️  $*"; }
 error()   { echo "❌ $*" >&2; exit 1; }
 header()  { echo; echo "══════════════════════════════════════"; echo "  $*"; echo "══════════════════════════════════════"; }
 
+# ── Auto-detect a base workspace to reuse ────────────────────────────────────
+# When running from a git worktree (e.g. a Copilot session checkout) and no
+# --base-workspace/PACKMAN_BASE_WORKSPACE was given, reuse the main checkout
+# so we don't redo a full uv sync / npm install on every fresh worktree.
+if [ "$BASE_WORKSPACE_SET" = false ] && [ -z "$BASE_WORKSPACE" ] && command -v git &>/dev/null; then
+    MAIN_WORKTREE="$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2; exit}')"
+    if [ -n "$MAIN_WORKTREE" ] && [ "$MAIN_WORKTREE" != "$PROJECT_ROOT" ]; then
+        BASE_WORKSPACE="$MAIN_WORKTREE"
+    fi
+fi
+if [ -n "$BASE_WORKSPACE" ]; then
+    BASE_WORKSPACE="$(cd "$BASE_WORKSPACE" 2>/dev/null && pwd || echo "$BASE_WORKSPACE")"
+    if [ "$BASE_WORKSPACE" = "$PROJECT_ROOT" ] || [ ! -d "$BASE_WORKSPACE" ]; then
+        BASE_WORKSPACE=""
+    fi
+fi
+
 header "Packman Local Development Server"
+
+# ── Base workspace reuse ──────────────────────────────────────────────────────
+if [ -n "$BASE_WORKSPACE" ]; then
+    info "Reusing base workspace: $BASE_WORKSPACE"
+
+    if [ ! -e ".env" ] && [ -f "$BASE_WORKSPACE/.env" ]; then
+        cp "$BASE_WORKSPACE/.env" .env
+        success "Copied .env from base workspace"
+    fi
+
+    if [ ! -e "node_modules" ] && [ -d "$BASE_WORKSPACE/node_modules" ]; then
+        ln -s "$BASE_WORKSPACE/node_modules" node_modules
+        success "Linked node_modules from base workspace"
+    fi
+fi
 
 # ── .env setup ────────────────────────────────────────────────────────────────
 if [ ! -f ".env" ]; then
@@ -61,6 +103,11 @@ export DJANGO_SETTINGS_MODULE="packman.settings.local"
 if command -v uv &>/dev/null; then
     info "Using uv"
     PYTHON="uv run python"
+
+    if [ -n "$BASE_WORKSPACE" ] && [ -d "$BASE_WORKSPACE/.venv" ] && [ ! -d ".venv" ]; then
+        export UV_PROJECT_ENVIRONMENT="$BASE_WORKSPACE/.venv"
+        success "Sharing .venv from base workspace ($UV_PROJECT_ENVIRONMENT)"
+    fi
 
     if [ "$RUN_INSTALL" = true ]; then
         info "Syncing dependencies..."
