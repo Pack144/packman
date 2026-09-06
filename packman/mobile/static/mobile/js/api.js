@@ -696,8 +696,11 @@ export function committeeYear(committee, year) {
     year: chosenYear,
     year_label: chosenYear ? packYearLabel(chosenYear) : "",
     // Positions are already server-ordered (most senior first); flattening
-    // Object.values() preserves that order across positions.
-    members: Object.values(byPosition).flat(),
+    // Object.entries() preserves that order across positions, and each
+    // member keeps its position (e.g. "Chair") for display.
+    members: Object.entries(byPosition).flatMap(([position, entries]) =>
+      entries.map((entry) => ({ ...entry, position }))
+    ),
   };
 }
 

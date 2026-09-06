@@ -1,4 +1,4 @@
-import { appBar, esc } from "../components.js";
+import { appBar, avatar, esc } from "../components.js";
 import { committeeYear, getDirectory, packYearLabel } from "../api.js";
 
 function memberRow(member) {
@@ -7,13 +7,21 @@ function memberRow(member) {
   if (!member.linked) {
     return `
       <div class="row row-disabled">
-        <div class="grow"><div class="row-title">${esc(member.name)}</div></div>
+        ${avatar(member.avatar, member.name, "sm")}
+        <div class="grow">
+          <div class="row-title">${esc(member.name)}</div>
+          <div class="mono plain">${esc(member.position)}</div>
+        </div>
       </div>
     `;
   }
   return `
     <a class="row" href="#/profile/${encodeURIComponent(member.slug)}">
-      <div class="grow"><div class="row-title">${esc(member.name)}</div></div>
+      ${avatar(member.avatar, member.name, "sm")}
+      <div class="grow">
+        <div class="row-title">${esc(member.name)}</div>
+        <div class="mono plain">${esc(member.position)}</div>
+      </div>
       <span class="chev">&rsaquo;</span>
     </a>
   `;
