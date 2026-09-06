@@ -73,11 +73,6 @@ header "Packman Local Development Server"
 if [ -n "$BASE_WORKSPACE" ]; then
     info "Reusing base workspace: $BASE_WORKSPACE"
 
-    if [ ! -e ".env" ] && [ -f "$BASE_WORKSPACE/.env" ]; then
-        cp "$BASE_WORKSPACE/.env" .env
-        success "Copied .env from base workspace"
-    fi
-
     if [ ! -e "node_modules" ] && [ -d "$BASE_WORKSPACE/node_modules" ]; then
         ln -s "$BASE_WORKSPACE/node_modules" node_modules
         success "Linked node_modules from base workspace"
@@ -86,7 +81,11 @@ fi
 
 # ── .env setup ────────────────────────────────────────────────────────────────
 if [ ! -f ".env" ]; then
-    if [ -f "env.example" ]; then
+    if [ -n "$BASE_WORKSPACE" ] && [ -f "$BASE_WORKSPACE/.env" ]; then
+        info "No .env file found — copying from base workspace"
+        cp "$BASE_WORKSPACE/.env" .env
+        success "Copied .env from base workspace"
+    elif [ -f "env.example" ]; then
         warn "No .env file found — copying from env.example"
         cp env.example .env
         warn "Review .env before running (especially SECRET_KEY and DATABASE_URL)"
