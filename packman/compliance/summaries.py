@@ -20,8 +20,8 @@ def records_for_family(family, year=None):
 
 
 def membership_standing(member):
-    """A member's Scouting America registration for the family page: a warn-ahead
-    standing plus the ID and expiration date to show alongside it."""
+    """A member's Scouting America registration as the member-facing pages show
+    it: a warn-ahead standing plus the ID and expiration date to sit alongside."""
     return {
         "standing": standing_for(member, warn_within=RENEWAL_WINDOW),
         "id": member.scouting_membership_id,
