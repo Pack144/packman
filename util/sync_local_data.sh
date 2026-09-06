@@ -82,6 +82,8 @@ header "Sync local data from $DB_ENV ($SSH_HOST)"
 # ── Database ──────────────────────────────────────────────────────────────────
 if [ "$RUN_DB" = true ]; then
     require_cmd ssh
+    command -v uv &>/dev/null \
+        || error "uv not found — install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"
 
     DUMP_FILE="$(mktemp -t packman_sync_db.XXXXXX)"
     DUMP_FILE="${DUMP_FILE}.sql.gz"
@@ -97,11 +99,7 @@ if [ "$RUN_DB" = true ]; then
     DB_OUTPUT="$PROJECT_ROOT/db.sqlite3"
     DB_TMP_OUTPUT="${DB_OUTPUT}.new"
     rm -f "$DB_TMP_OUTPUT"
-    if command -v uv &>/dev/null; then
-        uv run python util/pg_to_sqlite.py "$DUMP_FILE" --output "$DB_TMP_OUTPUT" --django
-    else
-        python3 util/pg_to_sqlite.py "$DUMP_FILE" --output "$DB_TMP_OUTPUT" --django
-    fi
+    uv run python util/pg_to_sqlite.py "$DUMP_FILE" --output "$DB_TMP_OUTPUT" --django
     mv -f "$DB_TMP_OUTPUT" "$DB_OUTPUT"
     success "Replaced $DB_OUTPUT with a fresh copy of $DB_ENV"
 else
