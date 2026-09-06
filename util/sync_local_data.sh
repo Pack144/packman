@@ -76,12 +76,12 @@ case "$DB_ENV" in
 esac
 
 [ -n "$SSH_HOST" ] || error "No SSH host given — pass --ssh-host USER@HOST or set SYNC_SSH_HOST in .env"
+require_cmd ssh
 
 header "Sync local data from $DB_ENV ($SSH_HOST)"
 
 # ── Database ──────────────────────────────────────────────────────────────────
 if [ "$RUN_DB" = true ]; then
-    require_cmd ssh
     command -v uv &>/dev/null \
         || error "uv not found — install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"
 
