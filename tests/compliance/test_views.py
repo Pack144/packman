@@ -214,9 +214,17 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
         # The Cub and the parent each get a standing row...
         self.assertEqual(self.membership_of(response, self.cub)["standing"], Standing.MISSING)
         self.assertEqual(self.membership_of(response, self.parent)["standing"], Standing.MISSING)
-        self.assertContains(response, "Not on file", count=2)
-        # ...but with nothing recorded there is no ID/Expires footer.
+        # ...but only the Cub is being asked for one, so only the Cub owes it.
+        self.assertContains(response, "Required", count=1)
+        self.assertContains(response, "Not on file", count=1)
+        # With nothing recorded there is no ID/Expires footer either way.
         self.assertNotContains(response, "Membership ID")
+
+    def test_nothing_on_file_reads_as_required_only_for_the_cub(self):
+        response = self.get_page()
+
+        self.assertTrue(self.membership_of(response, self.cub)["expected"])
+        self.assertFalse(self.membership_of(response, self.parent)["expected"])
 
     def test_the_household_group_carries_no_registration(self):
         requirement = FamilyRequirementFactory(slug="family-conduct")
@@ -678,7 +686,7 @@ class MemberProfileMembershipTestCase(ComplianceViewTestCase):
 
         self.assertNotContains(response, "Membership Requirements")
 
-    def test_a_tracked_member_with_no_registration_reads_as_not_on_file(self):
+    def test_a_cub_with_no_registration_reads_as_required(self):
         RequirementRecordFactory(
             requirement=CubRequirementFactory(slug="profile-cub"),
             year=self.year,
@@ -688,8 +696,22 @@ class MemberProfileMembershipTestCase(ComplianceViewTestCase):
         response = self.scout_page()
 
         self.assertContains(response, "<strong>Membership</strong>")
-        self.assertContains(response, "Not on file")
+        self.assertContains(response, "Required")
+        self.assertNotContains(response, "Not on file")
         self.assertNotContains(response, "Membership ID")
+
+    def test_an_adult_with_no_registration_still_reads_as_not_on_file(self):
+        """Only Akelas and Den Leaders need one, so a parent's empty row owes nothing."""
+        RequirementRecordFactory(
+            requirement=AdultRequirementFactory(slug="profile-adult"),
+            year=self.year,
+            member=self.parent,
+        )
+
+        response = self.client.get(reverse("membership:parent_detail", kwargs={"slug": self.parent.slug}))
+
+        self.assertContains(response, "Not on file")
+        self.assertNotContains(response, "Required")
 
     def test_the_row_appears_on_an_adult_page(self):
         self.register(self.parent, timezone.localdate() - datetime.timedelta(days=1))

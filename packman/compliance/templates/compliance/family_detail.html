@@ -46,7 +46,7 @@
               {% if group.membership %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                   <div>{% translate 'Membership' %}</div>
-                  {% include 'compliance/snippets/membership_standing_badge.html' with standing=group.membership.standing %}
+                  {% include 'compliance/snippets/membership_standing_badge.html' with standing=group.membership.standing required=group.membership.expected %}
                 </li>
               {% endif %}
               {% for record in group.records %}

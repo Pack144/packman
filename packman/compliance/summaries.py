@@ -31,6 +31,18 @@ def active_cub_ids(family, year):
     return set(Scout.objects.active_in(year).filter(family=family).values_list("pk", flat=True))
 
 
+def registration_expected(member):
+    """
+    Whether the pack is asking this member for a registration at all.
+
+    Every active Cub needs one. Adults do not, or rather only Akelas and Den
+    Leaders do and which adults those are is not tracked here, so an empty row
+    on a parent is a statement of fact rather than something they owe. Reads the
+    member in hand, no query, so the profile pages can ask it too.
+    """
+    return isinstance(member, Scout) and member.status == Scout.ACTIVE
+
+
 def membership_standing(member):
     """A member's Scouting America registration as the member-facing pages show
     it: a warn-ahead standing plus the ID and expiration date to sit alongside."""
@@ -38,6 +50,9 @@ def membership_standing(member):
         "standing": standing_for(member, warn_within=RENEWAL_WINDOW),
         "id": member.scouting_membership_id,
         "expires_on": member.scouting_membership_expires_on,
+        # Nothing on file reads as "Required" for a Cub and "Not on file" for
+        # everyone else.
+        "expected": registration_expected(member),
     }
 
 

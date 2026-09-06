@@ -1,7 +1,9 @@
 {% load i18n %}
 {% comment %}
   One member's Scouting America registration standing as a badge. Pass `standing`
-  (a Standing value string). A member with nothing on file reads as not on file.
+  (a Standing value string), and `required` when the pack is asking this member
+  for a registration: nothing on file then reads as something they owe rather
+  than a bare statement of fact.
 {% endcomment %}
 {% if standing == 'CURRENT' %}
   <span class="badge text-bg-success" title="{% translate 'Registration is current' %}">
@@ -14,6 +16,10 @@
 {% elif standing == 'EXPIRED' %}
   <span class="badge text-bg-danger" title="{% translate 'Registration has lapsed' %}">
     <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
+  </span>
+{% elif required %}
+  <span class="badge text-bg-secondary" title="{% translate 'Every active Cub needs a registration' %}">
+    <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Required' %}
   </span>
 {% else %}
   <span class="badge text-bg-secondary" title="{% translate 'No registration on file' %}">

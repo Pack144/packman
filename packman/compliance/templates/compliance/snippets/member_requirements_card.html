@@ -30,7 +30,7 @@
           <span>
             <strong>{% translate 'Membership' %}</strong>
           </span>
-          {% include 'compliance/snippets/membership_standing_badge.html' with standing=membership.standing %}
+          {% include 'compliance/snippets/membership_standing_badge.html' with standing=membership.standing required=membership.expected %}
         </div>
       </div>
       <div class="accordion" id="requirements-accordion">
