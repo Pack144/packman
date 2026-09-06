@@ -49,7 +49,6 @@ export async function renderSearch(container) {
         ${result.type === "cub" ? rankTag(result.rank_key, result.rank) : '<span class="chev">&rsaquo;</span>'}
       </a>`;
   }
-  }
 
   function denRows(dens) {
     return `
