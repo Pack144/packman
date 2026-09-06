@@ -194,6 +194,8 @@ class FamilyComplianceView(UserIsOwnFamilyOrLeadershipTest, PackYearContextMixin
         summary = summarize_family(family, context["years"]["viewing"])
         context["groups"] = summary["groups"]
         context["outstanding"] = summary["outstanding"]
+        context["registrations_due"] = summary["registrations_due"]
+        context["needs_attention"] = summary["needs_attention"]
         return context
 
 

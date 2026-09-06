@@ -23,9 +23,9 @@
       {% translate 'You are not part of a family in the pack yet, so there is nothing to show here.' %}
     </div>
   {% else %}
-    {% if outstanding %}
+    {% if needs_attention %}
       <div class="alert alert-warning">
-        {% blocktranslate count n=outstanding|length %}
+        {% blocktranslate count n=needs_attention %}
           There is {{ n }} item that still needs attention.
         {% plural %}
           There are {{ n }} items that still need attention.

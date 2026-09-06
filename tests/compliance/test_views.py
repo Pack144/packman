@@ -239,6 +239,88 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
         self.assertEqual(count(2), count(6))
 
 
+class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
+    """
+    What the banner counts. A Cub the pack is still waiting on a registration
+    for is an open item, so the page cannot call itself up to date while one is.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.login(self.parent)
+        self.cub = self.family.children.first()
+
+    def register(self, member, expires_on, membership_id="137042891"):
+        member.scouting_membership_id = membership_id
+        member.scouting_membership_expires_on = expires_on
+        member.save()
+
+    def get_page(self):
+        response = self.client.get(reverse("compliance:my_family"))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        return response
+
+    def test_an_active_cub_with_no_registration_needs_attention(self):
+        """The page used to read "everything is up to date" with nothing on file at all."""
+        response = self.get_page()
+
+        self.assertEqual(response.context["registrations_due"], [self.cub])
+        self.assertEqual(response.context["needs_attention"], 1)
+        self.assertContains(response, "still needs attention")
+        self.assertNotContains(response, "Everything is up to date")
+
+    def test_a_registered_cub_leaves_the_family_up_to_date(self):
+        self.register(self.cub, timezone.localdate() + datetime.timedelta(days=200))
+
+        response = self.get_page()
+
+        self.assertEqual(response.context["needs_attention"], 0)
+        self.assertContains(response, "Everything is up to date")
+
+    def test_an_expiring_or_lapsed_registration_still_needs_attention(self):
+        """Anything the card does not badge green is something to act on."""
+        for label, expires_on in (
+            ("expiring soon", timezone.localdate() + datetime.timedelta(days=30)),
+            ("lapsed", timezone.localdate() - datetime.timedelta(days=1)),
+        ):
+            with self.subTest(label):
+                self.register(self.cub, expires_on)
+
+                self.assertEqual(self.get_page().context["registrations_due"], [self.cub])
+
+    def test_an_adult_without_a_registration_is_not_counted(self):
+        """Only Akelas and Den Leaders need one, and which adults those are is not tracked here."""
+        self.register(self.cub, timezone.localdate() + datetime.timedelta(days=200))
+
+        response = self.get_page()
+
+        self.assertEqual(self.parent.scouting_membership_id, "")
+        self.assertEqual(response.context["needs_attention"], 0)
+
+    def test_a_sibling_who_is_not_active_this_year_is_not_counted(self):
+        """A graduated brother still gets a card, but nobody is asking him to renew."""
+        self.register(self.cub, timezone.localdate() + datetime.timedelta(days=200))
+        sibling = ScoutFactory(family=self.family)
+
+        response = self.get_page()
+
+        self.assertIn(sibling, [group["subject"] for group in response.context["groups"]])
+        self.assertEqual(response.context["needs_attention"], 0)
+
+    def test_records_and_registrations_are_counted_together(self):
+        RequirementRecordFactory(
+            requirement=CubRequirementFactory(slug="attention-cub"),
+            year=self.year,
+            member=self.cub,
+        )
+
+        response = self.get_page()
+
+        self.assertEqual(len(response.context["outstanding"]), 1)
+        self.assertEqual(response.context["registrations_due"], [self.cub])
+        self.assertEqual(response.context["needs_attention"], 2)
+
+
 class DashboardContentTestCase(ComplianceViewTestCase):
     def setUp(self):
         super().setUp()
