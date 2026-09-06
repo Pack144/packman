@@ -18,11 +18,9 @@
 # Options:
 #   --env beta|prod          Remote environment to pull from (default: beta)
 #   --ssh-host USER@HOST     SSH destination for the remote server. Falls
-#                            back to the SYNC_SSH_HOST environment variable
-#                            or .env.
+#                            back to SYNC_SSH_HOST in .env.
 #   --remote-media-dir DIR   Remote media directory to rsync from. Falls
-#                            back to the SYNC_REMOTE_MEDIA_DIR environment
-#                            variable or .env.
+#                            back to SYNC_REMOTE_MEDIA_DIR in .env.
 #   --no-db                  Skip the database sync
 #   --no-media               Skip the media sync
 #   --no-reset-password      Skip resetting the password (see
@@ -47,13 +45,8 @@ require_cmd() {
     command -v "$1" &>/dev/null || error "Required command '$1' not found on PATH"
 }
 
-# Read KEY from the shell environment if set, otherwise KEY="value" or
-# KEY=value from .env, stripping surrounding quotes.
+# Read KEY="value" or KEY=value from .env, stripping surrounding quotes.
 env_value() {
-    if [ -n "${!1:-}" ]; then
-        echo "${!1}"
-        return 0
-    fi
     [ -f ".env" ] || return 0
     grep -E "^$1=" .env | tail -n1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' || true
 }
