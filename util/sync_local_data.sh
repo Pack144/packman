@@ -82,8 +82,7 @@ header "Sync local data from $DB_ENV ($SSH_HOST)"
 
 # ── Database ──────────────────────────────────────────────────────────────────
 if [ "$RUN_DB" = true ]; then
-    command -v uv &>/dev/null \
-        || error "uv not found — install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    require_cmd uv
 
     DUMP_FILE="$(mktemp -t packman_sync_db.XXXXXX)"
     DUMP_FILE="${DUMP_FILE}.sql.gz"
