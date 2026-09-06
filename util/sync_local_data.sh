@@ -21,17 +21,12 @@
 #                            back to SYNC_SSH_HOST in .env.
 #   --remote-media-dir DIR   Remote media directory to rsync from. Falls
 #                            back to SYNC_REMOTE_MEDIA_DIR in .env.
-#   --reset-password-email EMAIL
-#                            Email of the user to reset the password for
-#                            after syncing, so it can be used to log in
-#                            locally. Falls back to SYNC_RESET_PASSWORD_EMAIL
-#                            in .env.
-#   --reset-password PASSWORD
-#                            New password to set for --reset-password-email.
-#                            Falls back to SYNC_RESET_PASSWORD in .env.
 #   --no-db                  Skip the database sync
 #   --no-media               Skip the media sync
-#   --no-reset-password      Skip resetting the password
+#   --no-reset-password      Skip resetting the password (see
+#                            util/reset_local_password.py — reads
+#                            SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD
+#                            from .env)
 #   -h, --help                Show this help message
 
 set -euo pipefail
@@ -60,8 +55,6 @@ env_value() {
 DB_ENV="beta"
 SSH_HOST="$(env_value SYNC_SSH_HOST)"
 REMOTE_MEDIA_DIR="$(env_value SYNC_REMOTE_MEDIA_DIR)"
-RESET_PASSWORD_EMAIL="$(env_value SYNC_RESET_PASSWORD_EMAIL)"
-RESET_PASSWORD="$(env_value SYNC_RESET_PASSWORD)"
 RUN_DB=true
 RUN_MEDIA=true
 RUN_RESET_PASSWORD=true
@@ -72,8 +65,6 @@ while [[ $# -gt 0 ]]; do
         --env)                 DB_ENV="$2"; shift 2 ;;
         --ssh-host)            SSH_HOST="$2"; shift 2 ;;
         --remote-media-dir)    REMOTE_MEDIA_DIR="$2"; shift 2 ;;
-        --reset-password-email) RESET_PASSWORD_EMAIL="$2"; shift 2 ;;
-        --reset-password)      RESET_PASSWORD="$2"; shift 2 ;;
         --no-db)               RUN_DB=false; shift ;;
         --no-media)            RUN_MEDIA=false; shift ;;
         --no-reset-password)   RUN_RESET_PASSWORD=false; shift ;;
@@ -117,19 +108,9 @@ if [ "$RUN_DB" = true ]; then
     success "Replaced $DB_OUTPUT with a fresh copy of $DB_ENV"
 
     if [ "$RUN_RESET_PASSWORD" = true ]; then
-        if [ -z "$RESET_PASSWORD_EMAIL" ] || [ -z "$RESET_PASSWORD" ]; then
-            warn "No reset-password email/password configured — skipping (see --reset-password-email/--reset-password or SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD in .env)"
-        else
-            header "Resetting password for $RESET_PASSWORD_EMAIL"
-            if uv run python util/reset_local_password.py \
-                --email "$RESET_PASSWORD_EMAIL" \
-                --password "$RESET_PASSWORD" \
-                --database-url "sqlite:///$DB_OUTPUT"; then
-                success "Password reset for $RESET_PASSWORD_EMAIL"
-            else
-                warn "Password reset failed — see output above"
-            fi
-        fi
+        header "Resetting local password (if configured)"
+        uv run python util/reset_local_password.py --database-url "sqlite:///$DB_OUTPUT" \
+            || warn "Password reset failed — see output above"
     else
         warn "Skipping password reset (--no-reset-password)"
     fi
