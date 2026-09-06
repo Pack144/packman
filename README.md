@@ -99,63 +99,12 @@ You should now be able to access the development server at http://localhost:8000
 * [npm](https://www.npmjs.com/)
 
 
-## Running locally with a backup of production Postgres on SQLite
+## Running locally with a copy of beta or production data
 
-You can run the site locally against a copy of the production PostgreSQL database,
-converted to SQLite — no local Postgres installation required.
-
-### 1. Obtain a production pg_dump
-
-Get a `.sql` or `.sql.gz` dump from the production server.
-(See IT Committee Notes document for more details)
-
-### 2. Convert the dump to SQLite
-
-```bash
-uv run python util/pg_to_sqlite.py /path/to/django-YYYYMMDDHHII.sql.gz \
-    --output /path/to/output.sqlite3
-```
-
-Add `--django` to also run Django migrations after the data is loaded (useful
-if the dump is slightly behind the current schema):
-
-```bash
-uv run python util/pg_to_sqlite.py /path/to/django-YYYYMMDDHHII.sql.gz \
-    --output /path/to/output.sqlite3 \
-    --django
-```
-
-Run `uv run python util/pg_to_sqlite.py --help` for all options.
-
-### 3. Point your .env at the SQLite file
-
-Copy `env.example-local` to `.env` (if you haven't already), then set `DATABASE_URL`
-to the absolute path of the file you just created:
-
-```bash
-# in .env
-DATABASE_URL="sqlite:////path/to/output.sqlite3"
-```
-
-> Note the four slashes — three are part of the `sqlite:///` scheme, the fourth
-> begins the absolute path.
-
-### 4. Start the development server
-
-```bash
-./util/start_local.sh
-```
-
-`util/start_local.sh` sets `DJANGO_SETTINGS_MODULE=packman.settings.local` and runs
-`manage.py migrate` automatically before starting the server. You should now be
-able to access the site at http://localhost:8000 with production data.
-
-
-## Refreshing local data from beta or production
-
-Instead of manually grabbing a `pg_dump` (above), you can use
-[sync_local_data.sh](util/sync_local_data.sh) to pull a fresh copy of the
-database and media files over SSH in one step:
+You can run the site locally against a copy of the beta or production
+PostgreSQL database, converted to SQLite — no local Postgres installation
+required. Use [sync_local_data.sh](util/sync_local_data.sh) to pull a fresh
+copy of the database and media files over SSH in one step:
 
 ```bash
 ./util/sync_local_data.sh --ssh-host user@example.com --remote-media-dir /home/user/apps/beta/media
@@ -170,6 +119,16 @@ changed files from the remote media directory into the local media directory
 `--ssh-host` and `--remote-media-dir` can also be set once via `SYNC_SSH_HOST`
 and `SYNC_REMOTE_MEDIA_DIR` in `.env` so you don't have to pass them every
 time. Run `./util/sync_local_data.sh --help` for all options.
+
+Once it's done, start the development server as usual:
+
+```bash
+./util/start_local.sh
+```
+
+`util/start_local.sh` sets `DJANGO_SETTINGS_MODULE=packman.settings.local` and runs
+`manage.py migrate` automatically before starting the server. You should now be
+able to access the site at http://localhost:8000 with beta or production data.
 
 
 ## Running tests
