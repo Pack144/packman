@@ -50,7 +50,9 @@ warn()    { echo "⚠️  $*"; }
 error()   { echo "❌ $*" >&2; exit 1; }
 header()  { echo; echo "══════════════════════════════════════"; echo "  $*"; echo "══════════════════════════════════════"; }
 
-# ── Auto-detect a base workspace to reuse ────────────────────────────────────
+header "Packman Local Development Server"
+
+# ── Base workspace reuse ──────────────────────────────────────────────────────
 # When running from a git worktree (e.g. a Copilot session checkout) and no
 # --base-workspace/PACKMAN_BASE_WORKSPACE was given, reuse the main checkout
 # so we don't redo a full uv sync / npm install on every fresh worktree.
@@ -66,10 +68,6 @@ if [ -n "$BASE_WORKSPACE" ]; then
         BASE_WORKSPACE=""
     fi
 fi
-
-header "Packman Local Development Server"
-
-# ── Base workspace reuse ──────────────────────────────────────────────────────
 if [ -n "$BASE_WORKSPACE" ]; then
     info "Reusing base workspace: $BASE_WORKSPACE"
 fi
