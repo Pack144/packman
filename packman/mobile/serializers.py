@@ -146,6 +146,11 @@ class DirectoryMemberSerializer(serializers.Serializer):
     slug = serializers.CharField()
     name = serializers.CharField()
     short_name = serializers.CharField()
+    # Surfaced separately from `name` so the frontend can sort a mixed
+    # roster (cubs and parents together) by last name, then first — the way
+    # printed rosters read — without having to guess where a display name
+    # splits.
+    last_name = serializers.CharField()
     avatar = serializers.CharField(allow_null=True)
     photo = serializers.CharField(allow_null=True)
     is_scout = serializers.BooleanField()

@@ -6,7 +6,15 @@ const FILTERS = [
   { key: "cub", label: "Cubs" },
   { key: "parent", label: "Parents" },
   { key: "den", label: "By Den" },
+  { key: "committee", label: "By Committee" },
 ];
+
+// Marks a committee as Pack Leadership (Akela, Assistant Akelas, Den
+// Leaders) in the list — drawn with currentColor so `.committee-star` can
+// tint it gold without a second icon variant.
+function starIcon() {
+  return '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.6l-6.1 3.3 1.5-6.8-5.2-4.6 6.9-.7z"/></svg>';
+}
 
 function highlight(name, query) {
   const safe = esc(name);
@@ -20,14 +28,9 @@ function highlight(name, query) {
   );
 }
 
-function resultSection(title, rows) {
+function resultList(rows) {
   if (!rows.length) return "";
-  return `
-    <div>
-      <h2 class="sect">${esc(title)}</h2>
-      <div class="card row-divided">${rows.join("")}</div>
-    </div>
-  `;
+  return `<div class="card row-divided">${rows.join("")}</div>`;
 }
 
 export async function renderSearch(container) {
@@ -35,7 +38,7 @@ export async function renderSearch(container) {
   let query = "";
   let type = "all";
 
-  function cubRow(result) {
+  function personRow(result) {
     return `
       <a class="row" href="#/profile/${encodeURIComponent(result.slug)}">
         ${avatar(result.avatar, result.name, "sm")}
@@ -43,19 +46,7 @@ export async function renderSearch(container) {
           <div class="row-title">${highlight(result.name, query)}</div>
           <div class="mono plain">${esc(result.subtitle)}</div>
         </div>
-        ${rankTag(result.rank_key, result.rank)}
-      </a>`;
-  }
-
-  function parentRow(result) {
-    return `
-      <a class="row" href="#/profile/${encodeURIComponent(result.slug)}">
-        ${avatar(result.avatar, result.name, "sm")}
-        <div class="grow">
-          <div class="row-title">${highlight(result.name, query)}</div>
-          <div class="mono plain">${esc(result.subtitle)}</div>
-        </div>
-        <span class="chev">&rsaquo;</span>
+        ${result.type === "cub" ? rankTag(result.rank_key, result.rank) : '<span class="chev">&rsaquo;</span>'}
       </a>`;
   }
 
@@ -74,6 +65,22 @@ export async function renderSearch(container) {
             )}</div>
             </div>
             <span class="chev">&rsaquo;</span>
+          </a>`
+          )
+          .join("")}
+      </div>`;
+  }
+
+  function committeeRows(committees) {
+    if (!committees.length) return '<p class="empty">No committees have been set up yet.</p>';
+    return `
+      <div class="card row-divided">
+        ${committees
+          .map(
+            (committee) => `
+          <a class="row" href="#/committees/${encodeURIComponent(committee.slug)}">
+            <div class="grow"><span class="committee-name">${esc(committee.name)}</span></div>
+            ${committee.leadership ? `<span class="committee-star">${starIcon()}</span>` : ""}
           </a>`
           )
           .join("")}
@@ -118,14 +125,14 @@ export async function renderSearch(container) {
     });
   }
 
-  function paintResults(cubs, parents) {
-    const cubSection = resultSection("Cubs", cubs.map(cubRow));
-    const parentSection = resultSection("Parents", parents.map(parentRow));
-    if (!cubSection && !parentSection) {
-      paint(`<p class="empty">No matches for &ldquo;${esc(query)}&rdquo;.</p>`);
+  function paintResults(results) {
+    const list = resultList(results.map(personRow));
+    if (!list) {
+      const message = query.trim() ? `No matches for &ldquo;${esc(query)}&rdquo;.` : "No members to show.";
+      paint(`<p class="empty">${message}</p>`);
       return false;
     }
-    paint(cubSection + parentSection);
+    paint(list);
     return true;
   }
 
@@ -134,13 +141,13 @@ export async function renderSearch(container) {
       paint(denRows(allDens(directory)));
       return;
     }
-    if (!query.trim()) {
-      paint("");
+    if (type === "committee") {
+      paint(committeeRows(directory.committees));
       return;
     }
-    const { cubs, parents } = searchLocal(directory, query, type);
-    paintResults(cubs, parents);
+    const results = searchLocal(directory, query, type);
+    paintResults(results);
   }
 
-  paint("");
+  refresh();
 }

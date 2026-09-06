@@ -81,6 +81,7 @@ def _build_member_entry(member, *, active, den, title):
         "slug": member.slug,
         "name": member.get_full_name(),
         "short_name": member.short_name,
+        "last_name": member.last_name,
         "avatar": get_avatar_url(member),
         "photo": get_photo_url(member),
         "active": active,
