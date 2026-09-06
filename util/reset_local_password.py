@@ -2,21 +2,15 @@
 """
 reset_local_password.py — Reset a local user's password.
 
-Useful after syncing a beta/production database backup (see
-util/sync_local_data.sh) so there's a known login for local development —
-e.g. for Copilot to use.
-
-Defaults to the SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD values in
-.env; if neither --email/--password nor those are set, does nothing.
+Called by util/sync_local_data.sh after syncing a beta/production database
+backup, so there's a known login for local development — e.g. for Copilot
+to use. Reads SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD from .env; does
+nothing if either is unset.
 
 Usage:
     uv run python util/reset_local_password.py [OPTIONS]
 
 Options:
-    --email EMAIL         Email of the user to update. Falls back to
-                          SYNC_RESET_PASSWORD_EMAIL in .env.
-    --password PASSWORD   New password to set. Falls back to
-                          SYNC_RESET_PASSWORD in .env.
     --database-url URL    Override DATABASE_URL for this run
     -h, --help             Show this help message
 """
@@ -40,12 +34,6 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    parser.add_argument(
-        "--email", help="Email of the user to update (defaults to SYNC_RESET_PASSWORD_EMAIL in .env)"
-    )
-    parser.add_argument(
-        "--password", help="New password to set (defaults to SYNC_RESET_PASSWORD in .env)"
-    )
     parser.add_argument("--database-url", help="Override DATABASE_URL for this run")
     args = parser.parse_args()
 
@@ -60,10 +48,10 @@ def main():
 
     # django.setup() triggers settings import, which loads .env into
     # os.environ — so these are only available after this point.
-    email = args.email or os.environ.get("SYNC_RESET_PASSWORD_EMAIL")
-    password = args.password or os.environ.get("SYNC_RESET_PASSWORD")
+    email = os.environ.get("SYNC_RESET_PASSWORD_EMAIL")
+    password = os.environ.get("SYNC_RESET_PASSWORD")
     if not email or not password:
-        print("⚠️  No email/password configured — skipping (see --email/--password or SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD in .env)")
+        print("⚠️  No SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD configured in .env — skipping")
         return
 
     from django.contrib.auth import get_user_model
