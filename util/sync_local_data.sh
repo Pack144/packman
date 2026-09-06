@@ -121,28 +121,10 @@ if [ "$RUN_DB" = true ]; then
             warn "No reset-password email/password configured — skipping (see --reset-password-email/--reset-password or SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD in .env)"
         else
             header "Resetting password for $RESET_PASSWORD_EMAIL"
-            if DATABASE_URL="sqlite:///$DB_OUTPUT" \
-               DJANGO_SETTINGS_MODULE="packman.settings.local" \
-               RESET_PASSWORD_EMAIL="$RESET_PASSWORD_EMAIL" \
-               RESET_PASSWORD_VALUE="$RESET_PASSWORD" \
-               uv run python manage.py shell -c "
-import os
-import sys
-
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-email = os.environ['RESET_PASSWORD_EMAIL']
-password = os.environ['RESET_PASSWORD_VALUE']
-try:
-    user = User.objects.get(email__iexact=email)
-except User.DoesNotExist:
-    print(f'No user found with email {email!r}', file=sys.stderr)
-    sys.exit(1)
-user.set_password(password)
-user.save(update_fields=['password'])
-print(f'Password reset for {email}')
-"; then
+            if uv run python util/reset_local_password.py \
+                --email "$RESET_PASSWORD_EMAIL" \
+                --password "$RESET_PASSWORD" \
+                --database-url "sqlite:///$DB_OUTPUT"; then
                 success "Password reset for $RESET_PASSWORD_EMAIL"
             else
                 warn "Password reset failed — see output above"
