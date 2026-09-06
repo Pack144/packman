@@ -55,12 +55,15 @@ env_value() {
 
 # Resolve the local sqlite3 path Django will use, from DATABASE_URL in .env
 # (django-environ: sqlite:///relative/path.sqlite3 or sqlite:////abs/path.sqlite3).
-# Falls back to db.sqlite3 in the project root if DATABASE_URL is unset or
-# isn't a sqlite URL.
+# Falls back to db.sqlite3 in the project root if DATABASE_URL is unset
+# (matching Django's own default); errors if it's set to a non-sqlite URL,
+# since this script only knows how to write a sqlite3 file.
 sqlite_db_path() {
     local db_url db_path
     db_url="$(env_value DATABASE_URL)"
-    if [[ "$db_url" == sqlite://* ]]; then
+    if [ -z "$db_url" ]; then
+        echo "$PROJECT_ROOT/db.sqlite3"
+    elif [[ "$db_url" == sqlite://* ]]; then
         db_path="${db_url#sqlite://}"
         db_path="${db_path#/}"
         if [[ "$db_path" == /* ]]; then
@@ -69,7 +72,7 @@ sqlite_db_path() {
             echo "$PROJECT_ROOT/$db_path"
         fi
     else
-        echo "$PROJECT_ROOT/db.sqlite3"
+        error "DATABASE_URL in .env is not a sqlite URL ('$db_url') — sync_local_data.sh only supports syncing to a sqlite3 database"
     fi
 }
 
