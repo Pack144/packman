@@ -63,10 +63,10 @@ Copy the example environment file and edit it to suit your environment:
 cp env.example-local .env
 ```
 
-Configure your database, secret key, email, etc. in `.env`.
-
-> Want to develop against a copy of real data instead of an empty database?
-> See [Running locally with a copy of beta or production data](#running-locally-with-a-copy-of-beta-or-production-data) below.
+Configure your database, secret key, email, etc. in `.env`. If you set
+`SYNC_SSH_HOST` and `SYNC_REMOTE_MEDIA_DIR` there, you can run
+`./util/sync_local_data.sh` to pull a fresh copy of the beta/production
+database and media files instead of starting from an empty database.
 
 ### Set up the database
 
@@ -102,36 +102,6 @@ You should now be able to access the development server at http://localhost:8000
 * [npm](https://www.npmjs.com/)
 
 
-## Running locally with a copy of beta or production data
-
-You can run the site locally against a copy of the beta or production
-PostgreSQL database, converted to SQLite — no local Postgres installation
-required. Use [sync_local_data.sh](util/sync_local_data.sh) to pull a fresh
-copy of the database and media files over SSH in one step:
-
-```bash
-./util/sync_local_data.sh --ssh-host user@example.com --remote-media-dir /home/user/apps/beta/media
-```
-
-It defaults to pulling from `beta` (pass `--env prod` for production), dumps
-the remote PostgreSQL database over SSH, converts it to SQLite with
-`util/pg_to_sqlite.py`, and replaces `db.sqlite3`. It then `rsync`s any new or
-changed files from the remote media directory into the local media directory
-(local-only files are left alone).
-
-`--ssh-host` and `--remote-media-dir` can also be set once via `SYNC_SSH_HOST`
-and `SYNC_REMOTE_MEDIA_DIR` in `.env` so you don't have to pass them every
-time. Run `./util/sync_local_data.sh --help` for all options.
-
-Once it's done, start the development server as usual:
-
-```bash
-./util/start_local.sh
-```
-
-`util/start_local.sh` sets `DJANGO_SETTINGS_MODULE=packman.settings.local` and runs
-`manage.py migrate` automatically before starting the server. You should now be
-able to access the site at http://localhost:8000 with beta or production data.
 
 
 ## Running tests
