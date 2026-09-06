@@ -53,6 +53,26 @@ env_value() {
     grep -E "^$1=" .env | tail -n1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' || true
 }
 
+# Resolve the local sqlite3 path Django will use, from DATABASE_URL in .env
+# (django-environ: sqlite:///relative/path.sqlite3 or sqlite:////abs/path.sqlite3).
+# Falls back to db.sqlite3 in the project root if DATABASE_URL is unset or
+# isn't a sqlite URL.
+sqlite_db_path() {
+    local db_url db_path
+    db_url="$(env_value DATABASE_URL)"
+    if [[ "$db_url" == sqlite://* ]]; then
+        db_path="${db_url#sqlite://}"
+        db_path="${db_path#/}"
+        if [[ "$db_path" == /* ]]; then
+            echo "$db_path"
+        else
+            echo "$PROJECT_ROOT/$db_path"
+        fi
+    else
+        echo "$PROJECT_ROOT/db.sqlite3"
+    fi
+}
+
 # ── Defaults ──────────────────────────────────────────────────────────────────
 DB_ENV="beta"
 SSH_HOST="$(env_value SYNC_SSH_HOST)"
@@ -102,7 +122,7 @@ if [ "$RUN_DB" = true ]; then
     success "Dump written to $DUMP_FILE"
 
     header "Converting dump to SQLite"
-    DB_OUTPUT="$PROJECT_ROOT/db.sqlite3"
+    DB_OUTPUT="$(sqlite_db_path)"
     DB_TMP_OUTPUT="${DB_OUTPUT}.new"
     rm -f "$DB_TMP_OUTPUT"
     uv run python util/pg_to_sqlite.py "$DUMP_FILE" --output "$DB_TMP_OUTPUT" --django
