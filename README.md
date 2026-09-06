@@ -65,6 +65,9 @@ cp env.example-local .env
 
 Configure your database, secret key, email, etc. in `.env`.
 
+> Want to develop against a copy of real data instead of an empty database?
+> See [Running locally with a copy of beta or production data](#running-locally-with-a-copy-of-beta-or-production-data) below.
+
 ### Set up the database
 
 ```bash
