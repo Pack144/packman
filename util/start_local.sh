@@ -72,11 +72,6 @@ header "Packman Local Development Server"
 # ── Base workspace reuse ──────────────────────────────────────────────────────
 if [ -n "$BASE_WORKSPACE" ]; then
     info "Reusing base workspace: $BASE_WORKSPACE"
-
-    if [ ! -e "node_modules" ] && [ -d "$BASE_WORKSPACE/node_modules" ]; then
-        ln -s "$BASE_WORKSPACE/node_modules" node_modules
-        success "Linked node_modules from base workspace"
-    fi
 fi
 
 # ── .env setup ────────────────────────────────────────────────────────────────
@@ -120,6 +115,11 @@ fi
 
 # ── npm / static assets ───────────────────────────────────────────────────────
 if [ "$RUN_INSTALL" = true ] && [ -f "package.json" ]; then
+    if [ ! -e "node_modules" ] && [ -n "$BASE_WORKSPACE" ] && [ -d "$BASE_WORKSPACE/node_modules" ]; then
+        ln -s "$BASE_WORKSPACE/node_modules" node_modules
+        success "Linked node_modules from base workspace"
+    fi
+
     if [ ! -d "node_modules" ]; then
         info "node_modules not found — running npm install..."
         npm install \
