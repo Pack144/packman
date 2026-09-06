@@ -1,39 +1,5 @@
-import { appBar, esc, titleBar } from "../components.js";
+import { appBar, esc } from "../components.js";
 import { committeeYear, getDirectory, packYearLabel } from "../api.js";
-
-// Marks a committee as Pack Leadership (Akela, Assistant Akelas, Den
-// Leaders) in the list — drawn with currentColor so `.committee-star` can
-// tint it gold without a second icon variant.
-function starIcon() {
-  return '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.6l-6.1 3.3 1.5-6.8-5.2-4.6 6.9-.7z"/></svg>';
-}
-
-export async function renderCommittees(container) {
-  const directory = await getDirectory();
-  const committees = directory.committees;
-  // User-supplied values are escaped via esc() before interpolation.
-  // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
-  container.innerHTML = `
-    ${titleBar("Committees")}
-    <div class="screen-scroll">
-      ${
-        committees.length
-          ? `<div class="card row-divided">
-        ${committees
-          .map(
-            (committee) => `
-          <a class="row" href="#/committees/${encodeURIComponent(committee.slug)}">
-            <div class="grow"><span class="committee-name">${esc(committee.name)}</span></div>
-            ${committee.leadership ? `<span class="committee-star">${starIcon()}</span>` : ""}
-          </a>`
-          )
-          .join("")}
-      </div>`
-          : '<p class="empty">No committees have been set up yet.</p>'
-      }
-    </div>
-  `;
-}
 
 function memberRow(member) {
   // A committee roster can span years; someone who served a while back may
@@ -61,7 +27,7 @@ export async function renderCommitteeDetail(container, slug) {
     // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
     container.innerHTML = `
       ${appBar(`
-        <a href="#/committees" style="color:#fff;font-size:22px;line-height:1;padding-right:2px" aria-label="Back to Committees">&lsaquo;</a>
+        <a href="#/search" style="color:#fff;font-size:22px;line-height:1;padding-right:2px" aria-label="Back to Search">&lsaquo;</a>
         <div class="appbar-title">Committees</div>
       `)}
       <div class="screen-scroll"><p class="empty">This committee could not be found.</p></div>
@@ -82,7 +48,7 @@ export async function renderCommitteeDetail(container, slug) {
     // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
     container.innerHTML = `
       ${appBar(`
-        <a href="#/committees" style="color:#fff;font-size:22px;line-height:1;padding-right:2px" aria-label="Back to Committees">&lsaquo;</a>
+        <a href="#/search" style="color:#fff;font-size:22px;line-height:1;padding-right:2px" aria-label="Back to Search">&lsaquo;</a>
         <div class="appbar-title">Committees</div>
       `)}
       <div class="screen-scroll">

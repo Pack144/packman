@@ -6,7 +6,15 @@ const FILTERS = [
   { key: "cub", label: "Cubs" },
   { key: "parent", label: "Parents" },
   { key: "den", label: "By Den" },
+  { key: "committee", label: "By Committee" },
 ];
+
+// Marks a committee as Pack Leadership (Akela, Assistant Akelas, Den
+// Leaders) in the list — drawn with currentColor so `.committee-star` can
+// tint it gold without a second icon variant.
+function starIcon() {
+  return '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.6l-6.1 3.3 1.5-6.8-5.2-4.6 6.9-.7z"/></svg>';
+}
 
 function highlight(name, query) {
   const safe = esc(name);
@@ -80,6 +88,22 @@ export async function renderSearch(container) {
       </div>`;
   }
 
+  function committeeRows(committees) {
+    if (!committees.length) return '<p class="empty">No committees have been set up yet.</p>';
+    return `
+      <div class="card row-divided">
+        ${committees
+          .map(
+            (committee) => `
+          <a class="row" href="#/committees/${encodeURIComponent(committee.slug)}">
+            <div class="grow"><span class="committee-name">${esc(committee.name)}</span></div>
+            ${committee.leadership ? `<span class="committee-star">${starIcon()}</span>` : ""}
+          </a>`
+          )
+          .join("")}
+      </div>`;
+  }
+
   function paint(body) {
     // User-supplied values are escaped via esc() before interpolation.
     // nosemgrep: javascript.browser.security.insecure-document-method, javascript.browser.security.insecure-innerhtml
@@ -132,6 +156,10 @@ export async function renderSearch(container) {
   function refresh() {
     if (type === "den") {
       paint(denRows(allDens(directory)));
+      return;
+    }
+    if (type === "committee") {
+      paint(committeeRows(directory.committees));
       return;
     }
     if (!query.trim()) {

@@ -11,7 +11,6 @@ export function menuLayer() {
     <div class="menu-backdrop" id="menu-backdrop" hidden></div>
     <div class="menu-popover" id="menu-popover" hidden>
       <a class="menu-item" href="#/me">${icons.me}<span>Me</span></a>
-      <a class="menu-item" href="#/committees">${icons.committees}<span>Committees</span></a>
       <button type="button" class="menu-item" id="menu-refresh">${icons.refresh}<span>Refresh Data</span></button>
     </div>
   `;
@@ -22,7 +21,7 @@ function setOpen(open) {
   document.getElementById("menu-backdrop")?.toggleAttribute("hidden", !open);
   document.getElementById("menu-popover")?.toggleAttribute("hidden", !open);
   // Stay highlighted while open, and fall back to whether we're already on a
-  // menu screen (Me/Committees) once it closes, rather than always going grey.
+  // menu screen (Me) once it closes, rather than always going grey.
   if (tab) tab.classList.toggle("on", open || tab.dataset.active === "true");
 }
 
