@@ -109,7 +109,7 @@ if [ "$RUN_DB" = true ]; then
 
     if [ "$RUN_RESET_PASSWORD" = true ]; then
         header "Resetting local password (if configured)"
-        uv run python util/reset_local_password.py --database-url "sqlite:///$DB_OUTPUT" \
+        uv run python util/reset_local_password.py \
             || warn "Password reset failed — see output above"
     else
         warn "Skipping password reset (--no-reset-password)"

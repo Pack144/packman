@@ -4,18 +4,13 @@ reset_local_password.py — Reset a local user's password.
 
 Called by util/sync_local_data.sh after syncing a beta/production database
 backup, so there's a known login for local development — e.g. for Copilot
-to use. Reads SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD from .env; does
-nothing if either is unset.
+to use. Reads SYNC_RESET_PASSWORD_EMAIL/SYNC_RESET_PASSWORD/DATABASE_URL
+from .env; does nothing if the email/password aren't set.
 
 Usage:
-    uv run python util/reset_local_password.py [OPTIONS]
-
-Options:
-    --database-url URL    Override DATABASE_URL for this run
-    -h, --help             Show this help message
+    uv run python util/reset_local_password.py [-h]
 """
 
-import argparse
 import os
 import sys
 from pathlib import Path
@@ -29,17 +24,13 @@ def error(msg):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Reset a local user's password.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__,
-    )
-    parser.add_argument("--database-url", help="Override DATABASE_URL for this run")
-    args = parser.parse_args()
+    if len(sys.argv) > 1:
+        if sys.argv[1] in ("-h", "--help"):
+            print(__doc__)
+            return
+        error(f"Unknown option: {sys.argv[1]}")
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "packman.settings.local")
-    if args.database_url:
-        os.environ["DATABASE_URL"] = args.database_url
 
     sys.path.insert(0, str(ROOT))
     import django
