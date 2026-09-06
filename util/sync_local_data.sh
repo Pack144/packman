@@ -126,10 +126,8 @@ if [ "$RUN_DB" = true ]; then
 
     header "Converting dump to SQLite"
     DB_OUTPUT="$(sqlite_db_path)"
-    DB_TMP_OUTPUT="${DB_OUTPUT}.new"
-    rm -f "$DB_TMP_OUTPUT"
-    uv run python util/pg_to_sqlite.py "$DUMP_FILE" --output "$DB_TMP_OUTPUT" --django
-    mv -f "$DB_TMP_OUTPUT" "$DB_OUTPUT"
+    rm -f "$DB_OUTPUT"
+    uv run python util/pg_to_sqlite.py "$DUMP_FILE" --output "$DB_OUTPUT" --django
     success "Replaced $DB_OUTPUT with a fresh copy of $DB_ENV"
 
     if [ "$RUN_RESET_PASSWORD" = true ]; then
