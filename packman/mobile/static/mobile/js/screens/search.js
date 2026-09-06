@@ -28,14 +28,9 @@ function highlight(name, query) {
   );
 }
 
-function resultSection(title, rows) {
+function resultList(rows) {
   if (!rows.length) return "";
-  return `
-    <div>
-      <h2 class="sect">${esc(title)}</h2>
-      <div class="card row-divided">${rows.join("")}</div>
-    </div>
-  `;
+  return `<div class="card row-divided">${rows.join("")}</div>`;
 }
 
 export async function renderSearch(container) {
@@ -43,7 +38,7 @@ export async function renderSearch(container) {
   let query = "";
   let type = "all";
 
-  function cubRow(result) {
+  function personRow(result) {
     return `
       <a class="row" href="#/profile/${encodeURIComponent(result.slug)}">
         ${avatar(result.avatar, result.name, "sm")}
@@ -51,20 +46,9 @@ export async function renderSearch(container) {
           <div class="row-title">${highlight(result.name, query)}</div>
           <div class="mono plain">${esc(result.subtitle)}</div>
         </div>
-        ${rankTag(result.rank_key, result.rank)}
+        ${result.type === "cub" ? rankTag(result.rank_key, result.rank) : '<span class="chev">&rsaquo;</span>'}
       </a>`;
   }
-
-  function parentRow(result) {
-    return `
-      <a class="row" href="#/profile/${encodeURIComponent(result.slug)}">
-        ${avatar(result.avatar, result.name, "sm")}
-        <div class="grow">
-          <div class="row-title">${highlight(result.name, query)}</div>
-          <div class="mono plain">${esc(result.subtitle)}</div>
-        </div>
-        <span class="chev">&rsaquo;</span>
-      </a>`;
   }
 
   function denRows(dens) {
@@ -142,15 +126,14 @@ export async function renderSearch(container) {
     });
   }
 
-  function paintResults(cubs, parents) {
-    const cubSection = resultSection("Cubs", cubs.map(cubRow));
-    const parentSection = resultSection("Parents", parents.map(parentRow));
-    if (!cubSection && !parentSection) {
+  function paintResults(results) {
+    const list = resultList(results.map(personRow));
+    if (!list) {
       const message = query.trim() ? `No matches for &ldquo;${esc(query)}&rdquo;.` : "No members to show.";
       paint(`<p class="empty">${message}</p>`);
       return false;
     }
-    paint(cubSection + parentSection);
+    paint(list);
     return true;
   }
 
@@ -163,8 +146,8 @@ export async function renderSearch(container) {
       paint(committeeRows(directory.committees));
       return;
     }
-    const { cubs, parents } = searchLocal(directory, query, type);
-    paintResults(cubs, parents);
+    const results = searchLocal(directory, query, type);
+    paintResults(results);
   }
 
   refresh();

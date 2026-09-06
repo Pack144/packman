@@ -726,6 +726,8 @@ function searchRow(directory, member) {
   return {
     slug: member.slug,
     name: member.name,
+    last_name: member.last_name,
+    first_name: member.short_name,
     type: member.is_scout ? "cub" : "parent",
     subtitle,
     avatar: member.avatar,
@@ -734,12 +736,18 @@ function searchRow(directory, member) {
   };
 }
 
-/** Every linkable profile in the cached directory, sorted by display name. */
+/**
+ * Every linkable profile in the cached directory — cubs and parents
+ * interleaved — sorted by last name then first, the way a printed roster
+ * reads, instead of grouping cubs before parents.
+ */
 export function peopleIndex(directory) {
   return [...directory.bySlug.values()]
     .filter((member) => member.linkable)
     .map((member) => searchRow(directory, member))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort(
+      (a, b) => a.last_name.localeCompare(b.last_name) || a.first_name.localeCompare(b.first_name)
+    );
 }
 
 /**
@@ -748,15 +756,16 @@ export function peopleIndex(directory) {
  * middle name or someone's legal first name finds nothing here — there's no
  * server fallback anymore, since there's no per-query endpoint left to ask.
  * An empty query lists everyone (of the requested type) instead of nothing,
- * so the Search screen has something to show before a reader types.
+ * so the Search screen has something to show before a reader types. Results
+ * stay sorted by last name then first (see peopleIndex()) rather than
+ * grouped by cub/parent, so "All" reads as one interleaved roster.
  */
 export function searchLocal(directory, query, type = "all") {
   const needle = query.trim().toLowerCase();
   const hits = needle
     ? peopleIndex(directory).filter((person) => person.name.toLowerCase().includes(needle))
     : peopleIndex(directory);
-  return {
-    cubs: type === "parent" ? [] : hits.filter((person) => person.type === "cub"),
-    parents: type === "cub" ? [] : hits.filter((person) => person.type === "parent"),
-  };
+  if (type === "cub") return hits.filter((person) => person.type === "cub");
+  if (type === "parent") return hits.filter((person) => person.type === "parent");
+  return hits;
 }
