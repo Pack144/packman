@@ -63,15 +63,21 @@ Copy the example environment file and edit it to suit your environment:
 cp env.example-local .env
 ```
 
-Configure your database, secret key, email, etc. in `.env`. If you set
-`SYNC_SSH_HOST` and `SYNC_REMOTE_MEDIA_DIR` there, you can run
-`./util/sync_local_data.sh` to pull a fresh copy of the beta/production
-database and media files instead of starting from an empty database.
+Configure your database, secret key, email, etc. in `.env`.
 
 ### Set up the database
 
+Either start with a blank database:
+
 ```bash
 uv run python manage.py migrate
+```
+
+Or, if you set `SYNC_SSH_HOST` and `SYNC_REMOTE_MEDIA_DIR` in `.env`, pull a
+fresh copy of the beta/production database and media files instead:
+
+```bash
+./util/sync_local_data.sh
 ```
 
 ### Create a superuser
