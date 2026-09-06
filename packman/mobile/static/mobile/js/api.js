@@ -747,12 +747,14 @@ export function peopleIndex(directory) {
  * the display name (`nickname or first_name` plus the last name), so a
  * middle name or someone's legal first name finds nothing here — there's no
  * server fallback anymore, since there's no per-query endpoint left to ask.
+ * An empty query lists everyone (of the requested type) instead of nothing,
+ * so the Search screen has something to show before a reader types.
  */
 export function searchLocal(directory, query, type = "all") {
   const needle = query.trim().toLowerCase();
-  if (!needle) return { cubs: [], parents: [] };
-
-  const hits = peopleIndex(directory).filter((person) => person.name.toLowerCase().includes(needle));
+  const hits = needle
+    ? peopleIndex(directory).filter((person) => person.name.toLowerCase().includes(needle))
+    : peopleIndex(directory);
   return {
     cubs: type === "parent" ? [] : hits.filter((person) => person.type === "cub"),
     parents: type === "cub" ? [] : hits.filter((person) => person.type === "parent"),

@@ -146,7 +146,8 @@ export async function renderSearch(container) {
     const cubSection = resultSection("Cubs", cubs.map(cubRow));
     const parentSection = resultSection("Parents", parents.map(parentRow));
     if (!cubSection && !parentSection) {
-      paint(`<p class="empty">No matches for &ldquo;${esc(query)}&rdquo;.</p>`);
+      const message = query.trim() ? `No matches for &ldquo;${esc(query)}&rdquo;.` : "No members to show.";
+      paint(`<p class="empty">${message}</p>`);
       return false;
     }
     paint(cubSection + parentSection);
@@ -162,13 +163,9 @@ export async function renderSearch(container) {
       paint(committeeRows(directory.committees));
       return;
     }
-    if (!query.trim()) {
-      paint("");
-      return;
-    }
     const { cubs, parents } = searchLocal(directory, query, type);
     paintResults(cubs, parents);
   }
 
-  paint("");
+  refresh();
 }
