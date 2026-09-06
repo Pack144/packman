@@ -73,8 +73,7 @@ Either start with a blank database:
 uv run python manage.py migrate
 ```
 
-Or, if you set `SYNC_SSH_HOST` and `SYNC_REMOTE_MEDIA_DIR` in `.env`, pull a
-fresh copy of the beta/production database and media files instead:
+Or pull a fresh copy of the beta/production database and media files instead:
 
 ```bash
 ./util/sync_local_data.sh
