@@ -39,7 +39,7 @@
           </div>
         {% endif %}
         {% if scouting_membership.missing %}
-          <div class="progress-bar bg-secondary"
+          <div class="progress-bar bg-warning text-dark"
                style="width: {{ missing_pct }}%"
                title="{% blocktranslate count n=scouting_membership.missing %}{{ n }} not on file{% plural %}{{ n }} not on file{% endblocktranslate %}">
             {{ scouting_membership.missing }}
@@ -85,7 +85,7 @@
                     <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
                   </span>
                 {% else %}
-                  <span class="badge text-bg-secondary"
+                  <span class="badge text-bg-warning"
                         title="{% translate 'No membership ID and expiration date recorded' %}">
                     <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Not on file' %}
                   </span>

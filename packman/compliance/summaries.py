@@ -29,27 +29,25 @@ def active_cub_ids(family, year):
     return set(Scout.objects.active_in(year).filter(family=family).values_list("pk", flat=True))
 
 
-def registration_expected(scout):
+def membership_standing(scout, expected):
     """
-    Whether the pack is asking this Cub for a registration at all.
+    One Cub's Scouting America registration as the family page shows it: a
+    warn-ahead standing plus the ID and expiration date to sit alongside.
 
-    Every active Cub needs one; a graduated or withdrawn Cub is not being asked
-    for anything, so their empty row is a statement of fact rather than
-    something the family owes. Reads the Cub in hand, no query.
+    `expected` says whether the pack is asking this Cub for one, which decides
+    whether nothing on file reads as "Required" or as "Not on file". It is
+    passed in rather than worked out here so that it cannot disagree with
+    registration_due: asking the Cub's own status looks equivalent but is not,
+    because active_in() wants a den membership for the year as well. A Cub who
+    is ACTIVE but not in a den this year would have been badged as owing a
+    registration the page had already decided not to count, which is the same
+    banner-contradicts-badge bug the count was added to close.
     """
-    return scout.status == Scout.ACTIVE
-
-
-def membership_standing(scout):
-    """One Cub's Scouting America registration as the family page shows it: a
-    warn-ahead standing plus the ID and expiration date to sit alongside."""
     return {
         "standing": standing_for(scout, warn_within=RENEWAL_WINDOW),
         "id": scout.scouting_membership_id,
         "expires_on": scout.scouting_membership_expires_on,
-        # Nothing on file reads as "Required" for an active Cub and "Not on
-        # file" for one who has left.
-        "expected": registration_expected(scout),
+        "expected": expected,
     }
 
 
@@ -81,12 +79,15 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
             household.append(record)
 
     def cub_group(scout):
-        membership = membership_standing(scout)
+        # One definition of "the pack is asking this Cub", shared by the badge
+        # and the count so the two cannot tell the family different things.
+        expected = scout.pk in active_cub_ids
+        membership = membership_standing(scout, expected)
         return {
             "subject": scout,
             "records": by_member.get(scout.pk, []),
             "membership": membership,
-            "registration_due": scout.pk in active_cub_ids and membership["standing"] != Standing.CURRENT,
+            "registration_due": expected and membership["standing"] != Standing.CURRENT,
         }
 
     groups = [

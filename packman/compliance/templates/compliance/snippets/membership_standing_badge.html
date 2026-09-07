@@ -5,6 +5,13 @@
   a registration: nothing on file then reads as something the family owes rather
   than a bare statement of fact. A Cub who has graduated or withdrawn still
   shows their standing but is not being asked for anything.
+
+  Hence the two colours for one standing. Owed is amber, the same as the "needs
+  attention" alert at the top of the family page, because it is one of the items
+  that alert is counting. Grey stays for the Cub nobody is asking, and is also
+  what a Not started requirement wears -- an owed registration in grey was
+  indistinguishable from a requirement nobody had got to yet, which is exactly
+  how it was read in review.
 {% endcomment %}
 {% if standing == 'CURRENT' %}
   <span class="badge text-bg-success" title="{% translate 'Registration is current' %}">
@@ -19,7 +26,7 @@
     <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
   </span>
 {% elif required %}
-  <span class="badge text-bg-secondary" title="{% translate 'Every active Cub needs a registration' %}">
+  <span class="badge text-bg-warning" title="{% translate 'Every active Cub needs a registration' %}">
     <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Required' %}
   </span>
 {% else %}

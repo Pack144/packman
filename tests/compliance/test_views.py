@@ -1,4 +1,5 @@
 import datetime
+import re
 from http import HTTPStatus
 
 from django.contrib.auth.models import Permission
@@ -65,6 +66,18 @@ class ComplianceViewTestCase(TestCase):
 
     def login(self, adult):
         self.client.force_login(adult)
+
+    def badge_class_for(self, response, label):
+        """
+        The Bootstrap colour class on the badge carrying `label`, or None.
+
+        Colour is the whole point of these badges - it is what a parent reads
+        before the words - so the tests have to be able to see it, not just the
+        text beside it.
+        """
+        pattern = r'<span class="badge ([\w-]+)"[^>]*>\s*<i[^>]*></i>\s*' + re.escape(label)
+        match = re.search(pattern, response.content.decode())
+        return match[1] if match else None
 
 
 class DashboardAccessTestCase(ComplianceViewTestCase):
@@ -237,6 +250,35 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
 
         self.assertTrue(self.membership_of(response, self.cub)["expected"])
 
+    def test_an_owed_registration_is_amber_not_grey(self):
+        """
+        Review read the grey "Required" pill as a missing requirement, because
+        grey is exactly what an unrecorded requirement wears. Amber matches the
+        "needs attention" alert at the top of the page, which is counting it.
+        """
+        RequirementRecordFactory(
+            requirement=CubRequirementFactory(slug="colour-cub"),
+            year=self.year,
+            member=self.cub,
+        )
+
+        response = self.get_page()
+
+        self.assertEqual(self.badge_class_for(response, "Required"), "text-bg-warning")
+        # The requirement beside it stays grey, which is the whole distinction.
+        self.assertEqual(self.badge_class_for(response, "Not started"), "text-bg-secondary")
+
+    def test_each_registration_standing_gets_its_own_colour(self):
+        for label, expires_on, expected in (
+            ("Current", timezone.localdate() + datetime.timedelta(days=200), "text-bg-success"),
+            ("Expiring Soon", timezone.localdate() + datetime.timedelta(days=30), "text-bg-warning"),
+            ("Expired", timezone.localdate() - datetime.timedelta(days=1), "text-bg-danger"),
+        ):
+            with self.subTest(label):
+                self.register(expires_on)
+
+                self.assertEqual(self.badge_class_for(self.get_page(), label), expected)
+
     def test_an_adult_carries_no_registration_row(self):
         """
         The pack tracks its Cubs' registrations. Akelas and Den Leaders hold one
@@ -331,6 +373,32 @@ class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
         self.assertEqual([g["membership"] for g in adult_groups], [None])
         self.assertEqual(response.context["needs_attention"], 0)
 
+    def test_a_cub_with_no_den_this_year_is_not_badged_as_owing_one(self):
+        """
+        active_in() wants a den membership for the year as well as ACTIVE
+        status. Reading the Cub's status alone let the badge say "Required"
+        for a Cub the count had already excluded, so the page could offer
+        "Everything is up to date" directly above an amber pill.
+        """
+        stray = ScoutFactory(family=self.family, status=ActiveScout.ACTIVE)
+        RequirementRecordFactory(
+            requirement=CubRequirementFactory(slug="attention-stray"),
+            year=self.year,
+            member=stray,
+            status=RequirementRecord.Status.COMPLETE,
+        )
+        self.register(self.cub, timezone.localdate() + datetime.timedelta(days=200))
+
+        response = self.get_page()
+
+        groups = {group["subject"]: group for group in response.context["groups"]}
+        self.assertIn(stray, groups)
+        self.assertFalse(groups[stray]["membership"]["expected"])
+        self.assertFalse(groups[stray]["registration_due"])
+        self.assertEqual(response.context["needs_attention"], 0)
+        self.assertContains(response, "Everything is up to date")
+        self.assertNotContains(response, "Required")
+
     def test_records_and_registrations_are_counted_together(self):
         RequirementRecordFactory(
             requirement=CubRequirementFactory(slug="attention-cub"),
@@ -358,6 +426,9 @@ class InactiveScoutTestCase(ComplianceViewTestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.response = response
         return [group["subject"] for group in response.context["groups"]]
+
+    def membership_of(self, response, subject):
+        return {group["subject"]: group["membership"] for group in response.context["groups"]}[subject]
 
     def test_a_scout_who_is_not_active_this_year_gets_no_card(self):
         sibling = ScoutFactory(family=self.family)
@@ -389,6 +460,12 @@ class InactiveScoutTestCase(ComplianceViewTestCase):
         self.assertEqual(len(self.response.context["outstanding"]), 1)
         # Nobody is asking a Cub who has left to renew a registration.
         self.assertEqual(self.response.context["registrations_due"], [self.cub])
+        # So their empty registration stays grey: a fact, not an open item. The
+        # sibling is ACTIVE but has no den membership for the year, which is
+        # what active_in() asks for - the badge has to agree with the count.
+        self.assertFalse(self.membership_of(self.response, sibling)["expected"])
+        self.assertEqual(self.badge_class_for(self.response, "Not on file"), "text-bg-secondary")
+        self.assertEqual(self.badge_class_for(self.response, "Required"), "text-bg-warning")
 
 
 class DashboardContentTestCase(ComplianceViewTestCase):
@@ -835,6 +912,29 @@ class ScoutingMembershipDashboardTestCase(ComplianceViewTestCase):
         self.assertContains(response, "Scouting America registration")
         self.assertContains(response, str(self.cub))
         self.assertContains(response, "Membership ID")
+
+    def test_an_unregistered_cub_is_amber_and_a_lapsed_one_red(self):
+        """
+        Every row here is an active Cub, so nothing on file is always something
+        to chase. Grey said otherwise and matched the unrecorded-requirement
+        pill in the table above it.
+        """
+        self.register("12345678", timezone.localdate() - datetime.timedelta(days=1))
+
+        response = self.get_dashboard()
+
+        self.assertEqual(self.badge_class_for(response, "Not on file"), "text-bg-warning")
+        self.assertEqual(self.badge_class_for(response, "Expired"), "text-bg-danger")
+
+    def test_the_progress_bar_colours_match_the_badges(self):
+        self.register("12345678", timezone.localdate() + datetime.timedelta(days=200))
+
+        response = self.get_dashboard()
+
+        # One registered Cub and one with nothing on file: green and amber.
+        self.assertContains(response, "progress-bar bg-success")
+        self.assertContains(response, "progress-bar bg-warning")
+        self.assertNotContains(response, "progress-bar bg-secondary")
 
     def test_it_does_not_depend_on_any_requirement_record(self):
         """The whole point: no Requirement is seeded or recorded against."""
