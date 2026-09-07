@@ -13,14 +13,14 @@ const INSTALLED_KEY = "packman:installed";
 // it, which is what splits the banner into its two forms below.
 let deferredPrompt = null;
 
-export function isStandalone() {
+function isStandalone() {
   // navigator.standalone is the iOS-only spelling, and the only one Safari sets.
   return (
     window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true
   );
 }
 
-export function isIos() {
+function isIos() {
   // iPadOS 13+ reports itself as a Mac; the touch points are what give it away.
   return (
     /iphone|ipad|ipod/i.test(navigator.userAgent) ||

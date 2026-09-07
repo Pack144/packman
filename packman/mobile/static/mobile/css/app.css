@@ -88,13 +88,15 @@ body {
   max-width: 480px;
   margin: 0 auto;
 
-  /* The safe-area insets are consumed here and nowhere else. They used to be
-     applied again inside .appbar and .tbar, which double-counted them wherever
-     the viewport was already inset by the system: the tab bar ended up pushed
-     a full inset clear of the screen edge, stranded above a band it could not
-     paint into. One consumer makes that arithmetic impossible to get wrong.
-     safe-area.js overrides --safe-top/--safe-bottom when it measures that the
-     viewport has already had the insets taken out of it. */
+  /* The safe-area insets are consumed here and nowhere else — .appbar, .tbar,
+     .menu-popover and .menu-backdrop all read these vars rather than env()
+     directly, so the insets can only ever be applied once.
+
+     env() is authoritative and is left alone: it reports where system UI
+     overlaps *this viewport*, which is the question we actually need answered.
+     An earlier pass tried to second-guess it in JS and got the edges backwards
+     — the screen/viewport gap is a single number, and a viewport inset at the
+     top is indistinguishable from one cut short at the bottom. */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);

@@ -1,4 +1,4 @@
-{% load static %}const VERSION = "v19";
+{% load static %}const VERSION = "v20";
 const SHELL_CACHE = `pack-directory-shell-${VERSION}`;
 const DATA_CACHE = `pack-directory-data-${VERSION}`;
 const FONT_CACHE = `pack-directory-fonts-${VERSION}`;
@@ -25,7 +25,6 @@ const PRECACHE_URLS = [
   "{% static 'mobile/js/components.js' %}",
   "{% static 'mobile/js/install.js' %}",
   "{% static 'mobile/js/menu.js' %}",
-  "{% static 'mobile/js/safe-area.js' %}",
   "{% static 'mobile/js/screens/den-shared.js' %}",
   "{% static 'mobile/js/screens/home.js' %}",
   "{% static 'mobile/js/screens/my-dens.js' %}",
