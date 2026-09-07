@@ -69,13 +69,9 @@ body {
   display: flex;
   flex-direction: column;
 
-  /* Anchored straight to the visual viewport frame rather than sized with a
-     viewport-height unit. iOS WKWebView's 100dvh is unreliable in standalone
-     mode and can resolve shorter than the real window height, leaving a
-     strip of bare `body` below #app that no safe-area padding *inside* #app
-     can reach. position: fixed + inset: 0 removes the viewport-height unit
-     from the equation: there's nothing left outside the box for iOS to
-     leave uncovered.
+  /* inset: 0 is right in a browser tab, where it tracks the viewport as the
+     toolbars come and go. Installed on iOS it resolves short — see the
+     display-mode: standalone override below.
 
      width: 100% keeps max-width/margin: 0 auto centering deterministic — a
      fixed box with left/right: 0 doesn't reliably stretch-to-fill via
@@ -113,6 +109,29 @@ body {
     linear-gradient(var(--navy), var(--navy)) top / 100% var(--safe-top) no-repeat,
     linear-gradient(var(--surface), var(--surface)) bottom / 100% var(--safe-bottom) no-repeat,
     var(--bg);
+}
+
+/* Installed on iOS the window and the reported viewport disagree. Measured
+   standalone on an iPhone 16 Pro (874pt screen):
+
+     100vh 874   100lvh 874   100dvh 812   100svh 812   innerHeight 812
+
+   inset: 0 resolves against the initial containing block, which follows the
+   short 812 — so #app stopped 62pt above the bottom of the screen and left a
+   strip of bare `body` showing beneath it. Because body's background is
+   --surface, the same colour as the tab bar, it read as the tab bar having
+   grown a dead band rather than as a gap.
+
+   #138 diagnosed this as 100dvh resolving short, which is true, and moved to
+   position: fixed + inset: 0 — which resolves short the same way. vh/lvh are
+   the units that see the real window height. Scoped to standalone because in
+   a browser tab vh is the toolbars-hidden height, and using it there would
+   push the tab bar underneath the toolbar. */
+@media (display-mode: standalone) {
+  #app {
+    bottom: auto;
+    height: 100vh;
+  }
 }
 
 a {
