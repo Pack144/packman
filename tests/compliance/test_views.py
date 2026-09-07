@@ -913,17 +913,17 @@ class ScoutingMembershipDashboardTestCase(ComplianceViewTestCase):
         self.assertContains(response, str(self.cub))
         self.assertContains(response, "Membership ID")
 
-    def test_an_unregistered_cub_is_amber_and_a_lapsed_one_red(self):
+    def test_nothing_on_file_stays_grey_here_and_a_lapsed_one_reads_red(self):
         """
-        Every row here is an active Cub, so nothing on file is always something
-        to chase. Grey said otherwise and matched the unrecorded-requirement
-        pill in the table above it.
+        Grey, where the family page badges the same standing amber. This is
+        leadership's own worklist rather than a page telling one family what
+        they owe, and nothing on file is its ordinary starting state.
         """
         self.register("12345678", timezone.localdate() - datetime.timedelta(days=1))
 
         response = self.get_dashboard()
 
-        self.assertEqual(self.badge_class_for(response, "Not on file"), "text-bg-warning")
+        self.assertEqual(self.badge_class_for(response, "Not on file"), "text-bg-secondary")
         self.assertEqual(self.badge_class_for(response, "Expired"), "text-bg-danger")
 
     def test_the_progress_bar_colours_match_the_badges(self):
@@ -931,10 +931,10 @@ class ScoutingMembershipDashboardTestCase(ComplianceViewTestCase):
 
         response = self.get_dashboard()
 
-        # One registered Cub and one with nothing on file: green and amber.
+        # One registered Cub and one with nothing on file: green and grey.
         self.assertContains(response, "progress-bar bg-success")
-        self.assertContains(response, "progress-bar bg-warning")
-        self.assertNotContains(response, "progress-bar bg-secondary")
+        self.assertContains(response, "progress-bar bg-secondary")
+        self.assertNotContains(response, "progress-bar bg-warning")
 
     def test_it_does_not_depend_on_any_requirement_record(self):
         """The whole point: no Requirement is seeded or recorded against."""
