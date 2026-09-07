@@ -109,9 +109,10 @@ def _build_dashboards_items(request):
     if request.user.is_staff:
         items.append(_link(_("Admin"), reverse("admin:index"), False))
     if request.user.has_perm("compliance.view_all_records"):
-        items.append(_link(_("Requirements"), reverse("compliance:dashboard"), _is_active(request, apps=["compliance"])))
+        items.append(
+            _link(_("Requirements"), reverse("compliance:dashboard"), _is_active(request, apps=["compliance"]))
+        )
     return items
-
 
 
 def _build_about_items(request, navbar_links):
