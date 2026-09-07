@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<nav class="navbar navbar-expand-lg navbar-dark m-0">
+<nav class="navbar navbar-expand-xl navbar-dark m-0">
   <div class="container-fluid">
     <button class="navbar-toggler"
             type="button"
@@ -12,63 +12,56 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarCollapse">
+      {# navbar_items is prebuilt in packman.pages.context_processors.populate_navbar: each entry is #}
+      {# either a top-level link or a dropdown, with visibility, grouping, and "active" state already #}
+      {# resolved in Python so this template only has to render, not decide. #}
       <ul class="navbar-nav me-auto">
-        {% if user.is_authenticated %}
-          {% if fundraiser %}
-            <li class="nav-item dropdown me-lg-3">
-              <a class="nav-link dropdown-toggle {% if 'campaigns' in request.resolver_match.app_names %}active{% endif %}"
+        {% for item in navbar_items %}
+          {% if item.kind == 'dropdown' %}
+            <li class="nav-item dropdown me-xl-3">
+              <a class="nav-link dropdown-toggle {% if item.active %}active{% endif %}"
                  href="#"
-                 id="navbarNccDropdown"
+                 id="{{ item.id }}"
                  role="button"
                  data-bs-toggle="dropdown"
                  aria-haspopup="true"
-                 aria-expanded="false">NCC</a>
-              <div class="dropdown-menu" aria-labelledby="navbarNccDropdown">
-                <a class="dropdown-item {% if request.resolver_match.url_name == 'order_list' or request.resolver_match.url_name == 'order_list_by_campaign' %}active{% endif %}" href="{% url 'campaigns:order_list' %}">{% translate 'Fundraiser' %}</a>
-                {% if fundraiser.can_select_prizes %}
-                  <a class="dropdown-item {% if request.resolver_match.url_name == 'prize_selection' %}active{% endif %}" href="{% url 'campaigns:prize_selection' %}">{% translate 'Prize Selection' %}</a>
-                {% endif %}
-                <a class="dropdown-item {% if request.resolver_match.url_name == 'order_leaderboard' %}active{% endif %}" href="{% url 'campaigns:order_leaderboard' %}">{% translate 'Leaderboard' %}</a>
-                <a class="dropdown-item {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'campaigns:product_list' %}">{% translate 'Products' %}</a>
-                <a class="dropdown-item {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == 'nccinfo' %}active{% endif %}" href="{% url 'pages:detail' 'nccinfo' %}">{% translate 'Information' %}</a>
-                {% if perms.campaigns.generate_order_report %}
-                  <a class="dropdown-item {% if request.resolver_match.url_name == 'order_report' or request.resolver_match.url_name == 'order_report_by_campaign' %}active{% endif %}" href="{% url 'campaigns:order_report' %}">{% translate 'Order Report' %}</a>
-                {% endif %}
+                 aria-expanded="false">{{ item.label }}</a>
+              <div class="dropdown-menu {% if item.align_end %}dropdown-menu-end{% endif %}" aria-labelledby="{{ item.id }}">
+                {% for sub in item.items %}
+                  <a class="dropdown-item {% if sub.active %}active{% endif %}" href="{{ sub.url }}">{{ sub.label }}</a>
+                {% endfor %}
               </div>
             </li>
-          {% endif %}
-          <li class="nav-item me-lg-3">
-            <a class="nav-link {% if 'calendars' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'calendars:list' %}">{% translate 'Calendar' %}</a>
-          </li>
-          <li class="nav-item me-lg-3">
-            <a class="nav-link {% if 'membership' in request.resolver_match.app_names or 'committees' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'membership:scouts' %}">{% translate 'Members' %}</a>
-          </li>
-          {% if perms.compliance.view_all_records %}
-            <li class="nav-item me-lg-3">
-              <a class="nav-link {% if 'compliance' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'compliance:dashboard' %}">{% translate 'Requirements' %}</a>
+          {% else %}
+            <li class="nav-item me-xl-3">
+              <a class="nav-link {% if item.active %}active{% endif %}" href="{{ item.url }}">{{ item.label }}</a>
             </li>
           {% endif %}
-          <li class="nav-item me-lg-3">
-            <a class="nav-link {% if 'documents' in request.resolver_match.app_names %}active{% endif %}" href="{% url 'documents:list' %}">{% translate 'Documents' %}</a>
-          </li>
-        {% else %}
-          <li class="nav-item me-lg-3">
-            <a class="nav-link {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'contact' %} active {% endif %}" href="{% url 'pages:contact' %}">{% translate 'Contact Us' %}</a>
-          </li>
-          <li class="nav-item me-lg-3">
-            <a class="nav-link {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'pages:about' %}">{% translate 'About our Pack' %}</a>
+        {% endfor %}
+      </ul>
+    </div>
+    {# This account/auth block sits outside the collapsible menu (as a sibling flex item in the #}
+    {# navbar's flex container) so it's always reachable and right-aligned, even on mobile before #}
+    {# the hamburger is opened, instead of being hidden away with the rest of the nav links. #}
+    <ul class="navbar-nav ms-auto flex-row">
+        {% if navbar_admin_dropdown %}
+          <li class="nav-item dropdown me-2">
+            <a class="nav-link dropdown-toggle text-danger"
+               href="#"
+               id="{{ navbar_admin_dropdown.id }}"
+               role="button"
+               data-bs-toggle="dropdown"
+               aria-haspopup="true"
+               aria-expanded="false">
+              <i class="fa-solid fa-shield-halved me-1"></i>{{ navbar_admin_dropdown.label }}
+            </a>
+            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="{{ navbar_admin_dropdown.id }}">
+              {% for sub in navbar_admin_dropdown.items %}
+                <a class="dropdown-item {% if sub.active %}active{% endif %}" href="{{ sub.url }}">{{ sub.label }}</a>
+              {% endfor %}
+            </div>
           </li>
         {% endif %}
-        {% for link in navbar_links %}
-          <li class="nav-item me-lg-3">
-            <a class="nav-link {% if request.resolver_match.app_name == 'pages' and request.resolver_match.kwargs.slug == link.slug %} active {% endif %}" href="{% url 'pages:detail' link.slug %}">{{ link }}</a>
-          </li>
-        {% endfor %}
-        <li class="nav-item me-lg-3">
-          <a class="nav-link {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'history' %} active {% endif %}" href="{% url 'pages:history' %}">{% translate 'Our History' %}</a>
-        </li>
-      </ul>
-      <ul class="navbar-nav ms-auto">
         {% if user.is_authenticated %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-warning"
@@ -122,12 +115,6 @@
                 <i class="fa-solid fa-key fa-fw"></i>
                 <span class="ms-1">{% translate 'Change My Password' %}</span>
               </a>
-              {% if user.is_staff %}
-                <a class="dropdown-item" href="{% url 'admin:index' %}">
-                  <i class="fa-solid fa-toolbox fa-fw"></i>
-                  <span class="ms-1">{% translate 'Admin' %}</span>
-                </a>
-              {% endif %}
               <div class="dropdown-divider"></div>
               <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
@@ -150,7 +137,6 @@
             </div>
           </li>
         {% endif %}
-      </ul>
-    </div>
+    </ul>
   </div>
 </nav>

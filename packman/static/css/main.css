@@ -141,6 +141,36 @@ footer {
     background-color: var(--navbar-background);
 }
 
+/* Bootstrap's navbar JS forces dropdown menus inside `.navbar-nav` to
+   `position: static` so they render in-flow, pushing the navbar taller
+   instead of floating over the page below. Restore the normal floating
+   overlay behavior for all of our nav dropdowns (Pack Info, About,
+   Dashboards, the avatar menu, etc.). */
+.navbar-nav .dropdown-menu {
+    position: absolute;
+}
+
+/* Likewise, the collapsed hamburger menu is in-flow content by default, so
+   opening it grows the navbar's height and pushes the page content down.
+   Below the breakpoint where it's actually collapsible, float it as an
+   overlay panel instead, anchored to the navbar (which Bootstrap already
+   makes `position: relative`). This applies regardless of the collapse/show
+   state (not just `.show`) so the position doesn't change mid-animation,
+   which caused a jarring jump partway through the open/close transition. */
+@media (max-width: 1199.98px) {
+    #navbarCollapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        padding: 0.5rem 1rem;
+        background-color: var(--navbar-background);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+}
+
 .prize-details{
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);

@@ -28,7 +28,7 @@ class Page(TimeStampedUUIDModel):
     PAGE_CHOICES = (
         (HOME, _("Home")),
         (ABOUT, _("About Us")),
-        (HISTORY, _("History")),
+        (HISTORY, _("Our History")),
         (SIGNUP, _("Join Us")),
     )
     title = models.CharField(

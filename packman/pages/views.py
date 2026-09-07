@@ -113,7 +113,7 @@ class AboutPageView(PageDetailView):
         obj, created = self.get_queryset().get_or_create(page=Page.ABOUT)
         if created:
             logger.info = _("About page was requested but none was found in the database.")
-            obj.title = _("About Us")
+            obj.title = obj.get_page_display()
             obj.save()
         return obj
 
@@ -201,7 +201,7 @@ class HistoryPageView(PageDetailView):
         obj, created = self.get_queryset().get_or_create(page=Page.HISTORY)
         if created:
             logger.info = _("History page was requested but none was found in the database.")
-            obj.title = _("Our History")
+            obj.title = obj.get_page_display()
             obj.save()
         return obj
 
