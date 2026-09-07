@@ -69,14 +69,10 @@ body {
   display: flex;
   flex-direction: column;
 
-  /* inset: 0 sizes to the visible viewport. Installed on iOS that is 812pt on
-     an 874pt screen — the window sits at the top of the screen but is only as
-     tall as the screen minus the status bar, so a 62pt strip along the bottom
-     falls outside the web view entirely. Sizing #app past it does not help:
-     100vh reports 874 (the *large* viewport, i.e. the height the window would
-     have with no system UI), so it just pushes the tab bar's labels below the
-     visible edge and makes the shell rubber-band scroll. The strip is not
-     reachable from CSS; see #138.
+  /* inset: 0 is the browser-tab case, where it tracks the viewport as the
+     toolbars come and go. Installed on iOS it resolves against an initial
+     containing block that can be shorter than the window, leaving a strip of
+     bare `body` along the bottom — see the standalone override below.
 
      width: 100% keeps max-width/margin: 0 auto centering deterministic — a
      fixed box with left/right: 0 doesn't reliably stretch-to-fill via
@@ -114,6 +110,33 @@ body {
     linear-gradient(var(--navy), var(--navy)) top / 100% var(--safe-top) no-repeat,
     linear-gradient(var(--surface), var(--surface)) bottom / 100% var(--safe-bottom) no-repeat,
     var(--bg);
+}
+
+/* Installed on iOS, inset: 0 resolved 62pt short of the window on an 874pt
+   screen and left a strip of bare `body` under the tab bar. Because body's
+   background is --surface, the same colour as the tab bar, it read as the bar
+   having grown a dead band rather than as a gap in the shell.
+
+   dvh is the dynamic viewport height — the area actually visible right now —
+   which is the measurement we want. Note vh/lvh are the *large* viewport, the
+   height the window would have with no system UI at all; sizing to those
+   overshoots and pushes the tab bar's labels off the bottom of the screen.
+
+   #138 first tried 100dvh here and abandoned it for inset: 0. Both resolved
+   short at the time, but that was an artefact of the install: what dvh reports
+   depends on the mode iOS launches the web app in, and it moved after a clean
+   reinstall. dvh is the correct unit by definition, so keep it and let it
+   track whatever the window turns out to be.
+
+   @supports guards the unit: without it the height would be dropped as invalid
+   while bottom: auto still applied, collapsing #app to its content height. */
+@supports (height: 100dvh) {
+  @media (display-mode: standalone) {
+    #app {
+      bottom: auto;
+      height: 100dvh;
+    }
+  }
 }
 
 a {
