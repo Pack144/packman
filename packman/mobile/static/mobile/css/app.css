@@ -69,9 +69,14 @@ body {
   display: flex;
   flex-direction: column;
 
-  /* inset: 0 is right in a browser tab, where it tracks the viewport as the
-     toolbars come and go. Installed on iOS it resolves short — see the
-     display-mode: standalone override below.
+  /* inset: 0 sizes to the visible viewport. Installed on iOS that is 812pt on
+     an 874pt screen — the window sits at the top of the screen but is only as
+     tall as the screen minus the status bar, so a 62pt strip along the bottom
+     falls outside the web view entirely. Sizing #app past it does not help:
+     100vh reports 874 (the *large* viewport, i.e. the height the window would
+     have with no system UI), so it just pushes the tab bar's labels below the
+     visible edge and makes the shell rubber-band scroll. The strip is not
+     reachable from CSS; see #138.
 
      width: 100% keeps max-width/margin: 0 auto centering deterministic — a
      fixed box with left/right: 0 doesn't reliably stretch-to-fill via
@@ -109,29 +114,6 @@ body {
     linear-gradient(var(--navy), var(--navy)) top / 100% var(--safe-top) no-repeat,
     linear-gradient(var(--surface), var(--surface)) bottom / 100% var(--safe-bottom) no-repeat,
     var(--bg);
-}
-
-/* Installed on iOS the window and the reported viewport disagree. Measured
-   standalone on an iPhone 16 Pro (874pt screen):
-
-     100vh 874   100lvh 874   100dvh 812   100svh 812   innerHeight 812
-
-   inset: 0 resolves against the initial containing block, which follows the
-   short 812 — so #app stopped 62pt above the bottom of the screen and left a
-   strip of bare `body` showing beneath it. Because body's background is
-   --surface, the same colour as the tab bar, it read as the tab bar having
-   grown a dead band rather than as a gap.
-
-   #138 diagnosed this as 100dvh resolving short, which is true, and moved to
-   position: fixed + inset: 0 — which resolves short the same way. vh/lvh are
-   the units that see the real window height. Scoped to standalone because in
-   a browser tab vh is the toolbars-hidden height, and using it there would
-   push the tab bar underneath the toolbar. */
-@media (display-mode: standalone) {
-  #app {
-    bottom: auto;
-    height: 100vh;
-  }
 }
 
 a {
