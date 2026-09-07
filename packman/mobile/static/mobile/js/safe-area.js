@@ -2,21 +2,26 @@ import { isIos, isStandalone } from "./install.js";
 
 // #app declares --safe-top/--safe-right/--safe-bottom/--safe-left from env() and
 // is the only thing in the stylesheet that consumes the safe-area insets. That
-// is correct whenever the viewport really does extend under the status bar and
-// the home indicator.
+// is correct whenever the viewport really does extend under the system UI.
 //
-// Installed on iOS it sometimes doesn't: the system hands the web view a
-// viewport that has already had the insets taken out of it, while env() goes on
-// reporting them. Padding by env() then counts them twice — the tab bar ends up
-// a full inset clear of the screen edge, stranded above a band no CSS inside the
-// page can reach. This measures whether that is happening and, if so, zeroes the
-// two vertical vars so the insets are honoured exactly once.
+// Installed on iOS it may not. Measured on an iPhone 16 Pro (402x874pt) running
+// standalone: screen.height 874 against innerHeight 812, with env() reporting
+// 62px top and 34px bottom. The viewport had the *top* inset taken out of it
+// already — it starts below the status bar — while still extending under the
+// home indicator, and env() went on reporting both. Padding by env() there adds
+// the top inset a second time: 62px of dead band above an app bar that was
+// already clear of the status bar.
 //
-// Everything here is a no-op unless the app is running standalone on iOS.
+// So the two edges have to be decided separately. The screen/viewport gap says
+// how much the system took out; which insets sum to that gap says which edges it
+// took it from. An edge the system already handled gets zeroed here; an edge it
+// left to us keeps its env() value.
+//
+// All of this is a no-op unless the app is running standalone on iOS.
 
-// The viewport is treated as pre-inset when the screen/viewport gap accounts for
-// the reported insets. A couple of px of rounding slack; anything further off is
-// some other cause and we leave the env() values alone rather than guess.
+// Slack for rounding when matching the gap against a combination of insets.
+// Anything further out than this is a geometry we don't recognise, and we leave
+// env() alone rather than guess at it.
 const TOLERANCE_PX = 2;
 
 let probe = null;
@@ -39,6 +44,30 @@ function insetProbe() {
   };
 }
 
+// Which edges the system has already taken out of the viewport, or null if the
+// gap doesn't correspond to any combination of the reported insets.
+function preInsetEdges(gap, top, bottom) {
+  const splits = [
+    { top: false, bottom: false, total: 0 },
+    { top: true, bottom: false, total: top },
+    { top: false, bottom: true, total: bottom },
+    { top: true, bottom: true, total: top + bottom },
+  ];
+
+  let best = null;
+  let bestError = Infinity;
+  for (const split of splits) {
+    const error = Math.abs(gap - split.total);
+    // Ties go to the earlier entry, so a device whose two insets happen to be
+    // equal is read as top-inset — the case iOS actually produces.
+    if (error < bestError) {
+      bestError = error;
+      best = split;
+    }
+  }
+  return bestError <= TOLERANCE_PX ? best : null;
+}
+
 function measure() {
   const app = document.getElementById("app");
   if (!app) return;
@@ -56,17 +85,17 @@ function measure() {
     ? Math.min(window.screen.width, window.screen.height)
     : Math.max(window.screen.width, window.screen.height);
 
-  const gap = screenHeight - window.innerHeight;
-  const preInset = Math.abs(gap - (top + bottom)) <= TOLERANCE_PX;
+  const edges = preInsetEdges(screenHeight - window.innerHeight, top, bottom);
+  if (!edges) return;
 
   // Idempotent: re-running with the same geometry rewrites the same values, and
-  // clearing lets the stylesheet's env() defaults take back over.
-  if (preInset) {
-    app.style.setProperty("--safe-top", "0px");
-    app.style.setProperty("--safe-bottom", "0px");
-  } else {
-    app.style.removeProperty("--safe-top");
-    app.style.removeProperty("--safe-bottom");
+  // clearing an edge lets the stylesheet's env() default take back over.
+  for (const [name, preInset] of [
+    ["--safe-top", edges.top],
+    ["--safe-bottom", edges.bottom],
+  ]) {
+    if (preInset) app.style.setProperty(name, "0px");
+    else app.style.removeProperty(name);
   }
 }
 
@@ -79,8 +108,8 @@ function schedule() {
 }
 
 export function initSafeArea() {
-  // The gap this looks for also opens up in a plain Safari tab, where it's the
-  // toolbars rather than the safe areas doing the shrinking — zeroing the insets
+  // The gap this reads also opens up in a plain Safari tab, where it's the
+  // toolbars rather than the safe areas doing the shrinking — zeroing an inset
   // there would break a viewport that was fine. Standalone-on-iOS only.
   if (!isIos() || !isStandalone()) return;
 
