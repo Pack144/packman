@@ -6,7 +6,9 @@
   <title>PackMate</title>
 
   <link rel="manifest" href="{% url 'mobile:manifest' %}">
-  <meta name="theme-color" content="#c8202f">
+  <!-- The app bar navy. Not restated in app.css's dark block, so it is the
+       right answer in either colour scheme. -->
+  <meta name="theme-color" content="#1a4aa0">
 
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'mobile/icons/favicon-32.png' %}">
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'mobile/icons/apple-touch-icon.png' %}">

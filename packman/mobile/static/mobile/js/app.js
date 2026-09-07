@@ -3,6 +3,7 @@ import { icons, myDensLabel } from "./components.js";
 import { initInstall } from "./install.js";
 import { initMenu, menuLayer } from "./menu.js";
 import { route, startRouter } from "./router.js";
+import { initSafeArea } from "./safe-area.js";
 import { renderHome } from "./screens/home.js";
 import { renderMyDens } from "./screens/my-dens.js";
 import { renderDens, renderDenDetail } from "./screens/dens.js";
@@ -114,6 +115,10 @@ route("/committees/:slug", (params) => mount((el) => renderCommitteeDetail(el, p
 
 // Drop any directory data cached for a different member before it can render.
 claimCacheFor(window.PACKMAN_MOBILE.user.slug);
+
+// Ahead of the first paint, so the shell is laid out with the insets already
+// corrected rather than reflowing once the first screen is up.
+initSafeArea();
 
 startRouter();
 
