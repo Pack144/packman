@@ -5,8 +5,12 @@ Deliberately outside the Requirement/RequirementRecord machinery. Those track
 paperwork someone marks off for a pack year, and nothing there lapses part way
 through. A registration is not like that: it has a hard expiration date, and the
 answer already lives on the Cub. There is nothing for leadership to record and
-nothing to keep in step, so this asks the members directly rather than opening a
+nothing to keep in step, so this asks the Cubs directly rather than opening a
 record against each of them.
+
+Cubs only. Registered adults -- Akelas, Assistant Akelas, Den Leaders -- hold a
+registration too, but the pack does not administer those and does not track
+them; council is the record of truth and a copy here would only go stale.
 
 The rule is written once, in Python, over an already loaded queryset. A pack has
 tens of Cubs, not thousands, and the dashboard already loads every family; one
@@ -37,9 +41,9 @@ class Standing(models.TextChoices):
     MISSING = "MISSING", _("Not on file")
 
 
-def standing_for(member, as_of=None, warn_within=None):
+def standing_for(cub, as_of=None, warn_within=None):
     """
-    One member's registration standing.
+    One Cub's registration standing.
 
     Both fields are needed: an ID with no expiration date says nothing about
     whether the registration is still good, so it does not count as on file.
@@ -52,9 +56,9 @@ def standing_for(member, as_of=None, warn_within=None):
     today (the dashboard) are unaffected.
     """
     as_of = as_of or timezone.localdate()
-    expires_on = member.scouting_membership_expires_on
+    expires_on = cub.scouting_membership_expires_on
 
-    if not member.scouting_membership_id or expires_on is None:
+    if not cub.scouting_membership_id or expires_on is None:
         return Standing.MISSING
     if expires_on < as_of:
         return Standing.EXPIRED

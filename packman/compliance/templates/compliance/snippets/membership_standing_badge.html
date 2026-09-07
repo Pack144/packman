@@ -1,9 +1,10 @@
 {% load i18n %}
 {% comment %}
-  One member's Scouting America registration standing as a badge. Pass `standing`
-  (a Standing value string), and `required` when the pack is asking this member
-  for a registration: nothing on file then reads as something they owe rather
-  than a bare statement of fact.
+  One Cub's Scouting America registration standing as a badge. Pass `standing`
+  (a Standing value string), and `required` when the pack is asking this Cub for
+  a registration: nothing on file then reads as something the family owes rather
+  than a bare statement of fact. A Cub who has graduated or withdrawn still
+  shows their standing but is not being asked for anything.
 {% endcomment %}
 {% if standing == 'CURRENT' %}
   <span class="badge text-bg-success" title="{% translate 'Registration is current' %}">

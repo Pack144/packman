@@ -24,35 +24,32 @@ def active_cub_ids(family, year):
     """
     Which of a family's Cubs the pack expects to hold a registration this year.
 
-    One query, and only Cubs: a withdrawn or graduated sibling is not being
-    asked to renew, and among adults only Akelas and Den Leaders need one, which
-    is not tracked here.
+    One query. A withdrawn or graduated sibling is not being asked to renew.
     """
     return set(Scout.objects.active_in(year).filter(family=family).values_list("pk", flat=True))
 
 
-def registration_expected(member):
+def registration_expected(scout):
     """
-    Whether the pack is asking this member for a registration at all.
+    Whether the pack is asking this Cub for a registration at all.
 
-    Every active Cub needs one. Adults do not, or rather only Akelas and Den
-    Leaders do and which adults those are is not tracked here, so an empty row
-    on a parent is a statement of fact rather than something they owe. Reads the
-    member in hand, no query, so the profile pages can ask it too.
+    Every active Cub needs one; a graduated or withdrawn Cub is not being asked
+    for anything, so their empty row is a statement of fact rather than
+    something the family owes. Reads the Cub in hand, no query.
     """
-    return isinstance(member, Scout) and member.status == Scout.ACTIVE
+    return scout.status == Scout.ACTIVE
 
 
-def membership_standing(member):
-    """A member's Scouting America registration as the member-facing pages show
-    it: a warn-ahead standing plus the ID and expiration date to sit alongside."""
+def membership_standing(scout):
+    """One Cub's Scouting America registration as the family page shows it: a
+    warn-ahead standing plus the ID and expiration date to sit alongside."""
     return {
-        "standing": standing_for(member, warn_within=RENEWAL_WINDOW),
-        "id": member.scouting_membership_id,
-        "expires_on": member.scouting_membership_expires_on,
-        # Nothing on file reads as "Required" for a Cub and "Not on file" for
-        # everyone else.
-        "expected": registration_expected(member),
+        "standing": standing_for(scout, warn_within=RENEWAL_WINDOW),
+        "id": scout.scouting_membership_id,
+        "expires_on": scout.scouting_membership_expires_on,
+        # Nothing on file reads as "Required" for an active Cub and "Not on
+        # file" for one who has left.
+        "expected": registration_expected(scout),
     }
 
 
@@ -61,9 +58,10 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
     One group per person, plus one for the household, so a parent can see at a
     glance who still owes what.
 
-    Cubs come first because they are usually what a parent is looking for. Each
-    person also carries their registration standing; the household does not hold
-    one.
+    Cubs come first because they are usually what a parent is looking for. Only
+    Cubs carry a registration standing: adults and the household hold None,
+    because the pack tracks registrations for its Cubs and leaves the adults'
+    to council.
 
     Only the Cubs in `active_cub_ids` are shown: a sibling who has graduated or
     withdrawn is not part of the pack this year and reads as clutter on their
@@ -71,9 +69,8 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
     holds records for them, so nothing already on file quietly disappears.
 
     `registration_due` marks the standings the family is being asked to act on,
-    and again only for those Cubs. Everyone else is shown their standing as a
-    statement of fact: a parent who is not a registered leader has nothing on
-    file and owes nothing.
+    and again only for those Cubs. A Cub who has left is shown their standing
+    as a statement of fact and owes nothing.
     """
     by_member = {}
     household = []
@@ -99,7 +96,7 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
         {
             "subject": adult,
             "records": by_member.get(adult.pk, []),
-            "membership": membership_standing(adult),
+            "membership": None,
             "registration_due": False,
         }
         for adult in family.adults.all()

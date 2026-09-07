@@ -213,16 +213,13 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
         self.assertContains(response, date_format(expires_on, "SHORT_DATE_FORMAT"))
         self.assertNotContains(response, "137042891")
 
-    def test_a_member_with_nothing_on_file_shows_a_row_but_no_footer(self):
+    def test_a_cub_with_nothing_on_file_shows_a_row_but_no_footer(self):
         response = self.get_page()
 
-        # The Cub and the parent each get a standing row...
         self.assertEqual(self.membership_of(response, self.cub)["standing"], Standing.MISSING)
-        self.assertEqual(self.membership_of(response, self.parent)["standing"], Standing.MISSING)
-        # ...but only the Cub is being asked for one, so only the Cub owes it.
+        # The Cub is being asked for one, so the empty row reads as owed.
         self.assertContains(response, "Required", count=1)
-        self.assertContains(response, "Not on file", count=1)
-        # With nothing recorded there is no expiration footer either way.
+        # With nothing recorded there is no expiration footer.
         self.assertNotContains(response, "Registration Expires")
 
     def test_an_id_with_no_expiration_date_shows_no_footer(self):
@@ -235,11 +232,22 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
         self.assertEqual(self.membership_of(response, self.cub)["standing"], Standing.MISSING)
         self.assertNotContains(response, "Registration Expires")
 
-    def test_nothing_on_file_reads_as_required_only_for_the_cub(self):
+    def test_an_active_cub_with_nothing_on_file_is_expected_to_have_one(self):
         response = self.get_page()
 
         self.assertTrue(self.membership_of(response, self.cub)["expected"])
-        self.assertFalse(self.membership_of(response, self.parent)["expected"])
+
+    def test_an_adult_carries_no_registration_row(self):
+        """
+        The pack tracks its Cubs' registrations. Akelas and Den Leaders hold one
+        too, but council administers those, so nothing here claims to know.
+        """
+        response = self.get_page()
+
+        self.assertIsNone(self.membership_of(response, self.parent))
+        self.assertNotContains(response, "Not on file")
+        # One registration row on the page, and it is the Cub's.
+        self.assertContains(response, "Scouting America Registration", count=1)
 
     def test_the_household_group_carries_no_registration(self):
         requirement = FamilyRequirementFactory(slug="family-conduct")
@@ -313,13 +321,14 @@ class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
 
                 self.assertEqual(self.get_page().context["registrations_due"], [self.cub])
 
-    def test_an_adult_without_a_registration_is_not_counted(self):
-        """Only Akelas and Den Leaders need one, and which adults those are is not tracked here."""
+    def test_an_adult_cannot_add_to_the_count(self):
+        """Adults hold no registration here at all, so there is nothing to count."""
         self.register(self.cub, timezone.localdate() + datetime.timedelta(days=200))
 
         response = self.get_page()
 
-        self.assertEqual(self.parent.scouting_membership_id, "")
+        adult_groups = [g for g in response.context["groups"] if g["subject"] == self.parent]
+        self.assertEqual([g["membership"] for g in adult_groups], [None])
         self.assertEqual(response.context["needs_attention"], 0)
 
     def test_records_and_registrations_are_counted_together(self):
