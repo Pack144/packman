@@ -198,15 +198,20 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
 
         self.assertEqual(self.membership_of(self.get_page(), self.cub)["standing"], Standing.EXPIRED)
 
-    def test_the_footer_shows_the_membership_id_and_expiration_date(self):
+    def test_the_footer_shows_the_expiration_date_but_not_the_membership_id(self):
+        """
+        The date is what a family can act on. The ID is only needed to transact
+        with council at recharter, so it stays on the dashboard and the admin
+        rather than on a page every family loads.
+        """
         expires_on = timezone.localdate() + datetime.timedelta(days=30)
         self.register(expires_on)
 
         response = self.get_page()
 
-        self.assertContains(response, "Membership ID")
-        self.assertContains(response, "137042891")
+        self.assertContains(response, "Registration Expires")
         self.assertContains(response, date_format(expires_on, "SHORT_DATE_FORMAT"))
+        self.assertNotContains(response, "137042891")
 
     def test_a_member_with_nothing_on_file_shows_a_row_but_no_footer(self):
         response = self.get_page()
@@ -217,8 +222,18 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
         # ...but only the Cub is being asked for one, so only the Cub owes it.
         self.assertContains(response, "Required", count=1)
         self.assertContains(response, "Not on file", count=1)
-        # With nothing recorded there is no ID/Expires footer either way.
-        self.assertNotContains(response, "Membership ID")
+        # With nothing recorded there is no expiration footer either way.
+        self.assertNotContains(response, "Registration Expires")
+
+    def test_an_id_with_no_expiration_date_shows_no_footer(self):
+        """Half a registration is not one, and there is no date to print."""
+        self.cub.scouting_membership_id = "137042891"
+        self.cub.save()
+
+        response = self.get_page()
+
+        self.assertEqual(self.membership_of(response, self.cub)["standing"], Standing.MISSING)
+        self.assertNotContains(response, "Registration Expires")
 
     def test_nothing_on_file_reads_as_required_only_for_the_cub(self):
         response = self.get_page()
@@ -598,52 +613,18 @@ class SiteIntegrationTestCase(ComplianceViewTestCase):
 
         self.assertContains(response, reverse("compliance:my_family"))
 
-    def test_card_appears_on_a_cub_in_your_own_family(self):
-        requirement = CubRequirementFactory(slug="card-own")
-        scout = self.family.children.first()
-        RequirementRecordFactory(requirement=requirement, year=self.year, member=scout)
-        self.login(self.parent)
-
-        response = self.client.get(reverse("membership:scout_detail", kwargs={"slug": scout.slug}))
-
-        self.assertContains(response, "Membership Requirements")
-        self.assertContains(response, requirement.name)
-
-    def test_card_is_hidden_on_another_family_s_cub(self):
-        requirement = CubRequirementFactory(slug="card-other")
-        scout = self.leader_family.children.first()
-        RequirementRecordFactory(requirement=requirement, year=self.year, member=scout)
-        self.login(self.parent)
-
-        response = self.client.get(reverse("membership:scout_detail", kwargs={"slug": scout.slug}))
-
-        self.assertNotContains(response, "Membership Requirements")
-
-    def test_leadership_sees_the_card_on_any_cub(self):
-        requirement = CubRequirementFactory(slug="card-leader")
-        scout = self.family.children.first()
-        RequirementRecordFactory(requirement=requirement, year=self.year, member=scout)
-        self.login(self.leader)
-
-        response = self.client.get(reverse("membership:scout_detail", kwargs={"slug": scout.slug}))
-
-        self.assertContains(response, "Membership Requirements")
-
-    def test_card_appears_on_an_adult_page(self):
-        requirement = AdultRequirementFactory(slug="card-adult")
-        RequirementRecordFactory(requirement=requirement, year=self.year, member=self.parent)
-        self.login(self.parent)
-
-        response = self.client.get(reverse("membership:parent_detail", kwargs={"slug": self.parent.slug}))
-
-        self.assertContains(response, "Membership Requirements")
-
 
 class MemberProfileMembershipTestCase(ComplianceViewTestCase):
     """
-    The registration row and footer on the member detail card, reading the same
-    as the family page. It sits above the accordion because a registration
-    belongs to the member today, not to a pack year.
+    Member profile pages carry no compliance information at all.
+
+    Requirements and registrations used to sit on the profile behind a family
+    or view_all_records check. The check worked, but the page itself is
+    reachable by every logged-in member, which made those three lines of
+    template the only thing standing between a registration ID and the whole
+    pack. What a family still owes is nobody else's business, and there is a
+    gated page for each audience already: My Requirements for your own family,
+    the dashboard for leadership. So the profile carries none of it.
     """
 
     def setUp(self):
@@ -659,70 +640,47 @@ class MemberProfileMembershipTestCase(ComplianceViewTestCase):
     def scout_page(self, scout=None):
         return self.client.get(reverse("membership:scout_detail", kwargs={"slug": (scout or self.cub).slug}))
 
-    def test_the_card_carries_a_membership_row_and_an_id_footer(self):
-        expires_on = timezone.localdate() + datetime.timedelta(days=30)
-        self.register(self.cub, expires_on)
+    def test_your_own_cub_s_profile_carries_no_requirements(self):
+        requirement = CubRequirementFactory(slug="profile-own")
+        RequirementRecordFactory(requirement=requirement, year=self.year, member=self.cub)
 
         response = self.scout_page()
 
-        self.assertContains(response, "<strong>Membership</strong>")
-        self.assertContains(response, "Expiring Soon")
-        self.assertContains(response, "Membership ID")
-        self.assertContains(response, "137042891")
-        self.assertContains(response, date_format(expires_on, "SHORT_DATE_FORMAT"))
-
-    def test_a_registration_alone_is_enough_to_show_the_card(self):
-        """Nothing has ever been recorded against this Cub, but they are registered."""
-        self.register(self.cub, timezone.localdate() + datetime.timedelta(days=200))
-
-        response = self.scout_page()
-
-        self.assertEqual(self.cub.requirement_records.count(), 0)
-        self.assertContains(response, "Membership Requirements")
-        self.assertContains(response, "Registration is current")
-
-    def test_a_member_with_nothing_at_all_still_gets_no_card(self):
-        response = self.scout_page()
-
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertNotContains(response, "Membership Requirements")
+        self.assertNotContains(response, requirement.name)
 
-    def test_a_cub_with_no_registration_reads_as_required(self):
-        RequirementRecordFactory(
-            requirement=CubRequirementFactory(slug="profile-cub"),
-            year=self.year,
-            member=self.cub,
-        )
+    def test_your_own_cub_s_profile_carries_no_registration(self):
+        self.register(self.cub, timezone.localdate() + datetime.timedelta(days=30))
 
         response = self.scout_page()
 
-        self.assertContains(response, "<strong>Membership</strong>")
-        self.assertContains(response, "Required")
-        self.assertNotContains(response, "Not on file")
-        self.assertNotContains(response, "Membership ID")
+        self.assertNotContains(response, "137042891")
+        self.assertNotContains(response, "Expiring Soon")
 
-    def test_an_adult_with_no_registration_still_reads_as_not_on_file(self):
-        """Only Akelas and Den Leaders need one, so a parent's empty row owes nothing."""
-        RequirementRecordFactory(
-            requirement=AdultRequirementFactory(slug="profile-adult"),
-            year=self.year,
-            member=self.parent,
-        )
-
-        response = self.client.get(reverse("membership:parent_detail", kwargs={"slug": self.parent.slug}))
-
-        self.assertContains(response, "Not on file")
-        self.assertNotContains(response, "Required")
-
-    def test_the_row_appears_on_an_adult_page(self):
+    def test_an_adult_profile_carries_neither(self):
+        requirement = AdultRequirementFactory(slug="profile-adult")
+        RequirementRecordFactory(requirement=requirement, year=self.year, member=self.parent)
         self.register(self.parent, timezone.localdate() - datetime.timedelta(days=1))
 
         response = self.client.get(reverse("membership:parent_detail", kwargs={"slug": self.parent.slug}))
 
-        self.assertContains(response, "<strong>Membership</strong>")
-        self.assertContains(response, "Expired")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, "Membership Requirements")
+        self.assertNotContains(response, requirement.name)
+        self.assertNotContains(response, "137042891")
+
+    def test_leadership_gets_nothing_extra_on_a_profile_either(self):
+        """The dashboard is where leadership looks. The profile is not a second one."""
+        self.register(self.cub, timezone.localdate() - datetime.timedelta(days=1))
+        self.login(self.leader)
+
+        response = self.scout_page()
+
+        self.assertNotContains(response, "Membership Requirements")
+        self.assertNotContains(response, "137042891")
 
     def test_another_family_s_registration_is_not_exposed(self):
-        """A registration is not its own reason to show the card to a stranger."""
         other = self.leader_family.children.first()
         self.register(other, timezone.localdate() + datetime.timedelta(days=30), membership_id="999888777")
 
@@ -730,6 +688,13 @@ class MemberProfileMembershipTestCase(ComplianceViewTestCase):
 
         self.assertNotContains(response, "Membership Requirements")
         self.assertNotContains(response, "999888777")
+
+    def test_the_profile_still_renders_the_member(self):
+        """Removing the card must not take the rest of the page with it."""
+        response = self.scout_page()
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, self.cub.get_short_name())
 
 
 class MatrixCellStateTestCase(ComplianceViewTestCase):
