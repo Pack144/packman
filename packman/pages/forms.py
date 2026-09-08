@@ -96,4 +96,4 @@ ContentBlockFormSet = forms.inlineformset_factory(
 class PageForm(forms.ModelForm):
     class Meta:
         model = Page
-        fields = ("title", "slug", "include_in_nav")
+        fields = ("title", "slug", "nav_placement")

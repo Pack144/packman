@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
+from adminsortable2.admin import SortableAdminBase, SortableAdminMixin, SortableInlineAdminMixin
 
 from .forms import PageForm
 from .models import ContentBlock, Page
@@ -14,11 +14,12 @@ class ContentBlockInline(SortableInlineAdminMixin, admin.StackedInline):
 
 
 @admin.register(Page)
-class PageAdmin(SortableAdminBase, admin.ModelAdmin):
+class PageAdmin(SortableAdminMixin, SortableAdminBase, admin.ModelAdmin):
     form = PageForm
     inlines = [ContentBlockInline]
-    list_display = ("title", "page", "last_updated")
-    list_display_links = ("title", "page")
+    list_display = ("title", "nav_placement", "last_updated")
+    list_display_links = ("title",)
+    list_filter = ("nav_placement",)
     prepopulated_fields = {"slug": ("title",)}
     search_fields = [
         "title",

@@ -34,7 +34,7 @@
              data-bs-toggle="tooltip"
              title="{% translate 'Edit this page' %}"><i class="fa-regular fa-pen-to-square"></i></a>
         {% endif %}
-        {% if perms.pages.delete_page and not page.page %}
+        {% if perms.pages.delete_page and not page.is_standard %}
           <a href="{% url 'pages:delete' page.pk %}"
              class="btn btn-outline-danger"
              data-bs-toggle="tooltip"
