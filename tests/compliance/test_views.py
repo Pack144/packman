@@ -255,9 +255,8 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
 
     def test_an_owed_registration_is_amber_not_grey(self):
         """
-        Review read the grey "Required" pill as a missing requirement, because
-        grey is exactly what an unrecorded requirement wears. Amber matches the
-        "needs attention" alert at the top of the page, which is counting it.
+        Grey is what an unrecorded requirement wears, so an owed registration in
+        grey reads as one. Amber matches the "needs attention" alert counting it.
         """
         RequirementRecordFactory(
             requirement=CubRequirementFactory(slug="colour-cub"),
@@ -339,7 +338,7 @@ class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
         return response
 
     def test_an_active_cub_with_no_registration_needs_attention(self):
-        """The page used to read "everything is up to date" with nothing on file at all."""
+        """Nothing on file is an open item, so the page cannot call itself up to date."""
         response = self.get_page()
 
         self.assertEqual(response.context["registrations_due"], [self.cub])
@@ -701,13 +700,9 @@ class MemberProfileMembershipTestCase(ComplianceViewTestCase):
     """
     Member profile pages carry no compliance information at all.
 
-    Requirements and registrations used to sit on the profile behind a family
-    or view_all_records check. The check worked, but the page itself is
-    reachable by every logged-in member, which made those three lines of
-    template the only thing standing between a registration ID and the whole
-    pack. What a family still owes is nobody else's business, and there is a
-    gated page for each audience already: My Requirements for your own family,
-    the dashboard for leadership. So the profile carries none of it.
+    Profiles are reachable by every logged-in member, and what a family owes is
+    nobody else's business. Each audience has a gated page already: My
+    Requirements for your own family, the dashboard for leadership.
     """
 
     def setUp(self):

@@ -67,8 +67,6 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
             household.append(record)
 
     def cub_group(scout):
-        # One definition of "the pack is asking this Cub", shared by the badge
-        # and the count so the two cannot tell the family different things.
         expected = scout.pk in active_cub_ids
         membership = membership_standing(scout)
         return {

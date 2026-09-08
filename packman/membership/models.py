@@ -423,12 +423,9 @@ class Scout(Member):
         through="dens.Membership",
     )
 
-    # Scouting America registration. Cubs only: the pack tracks its own Cubs
-    # because their registration is what lets them take part, and the answer
-    # is not recorded anywhere else. Registered adults -- Akelas, Assistant
-    # Akelas, Den Leaders -- hold one too, but the pack does not administer
-    # those and tracking them here would only invite a second, staler copy of
-    # what council already holds.
+    # Scouting America registration, on the Cub rather than on Member: adults
+    # hold one too, but council keeps that record. See
+    # compliance.scouting_membership for what the pack does with these.
     scouting_membership_id = models.CharField(
         _("Scouting America Membership ID"),
         max_length=32,
@@ -470,9 +467,8 @@ class Scout(Member):
         verbose_name_plural = _("Cubs")
 
     def save(self, *args, **kwargs):
-        # Canonicalize the membership ID. Compliance asks whether one is on
-        # file both in Python and in SQL, and both read "" as absent -- an
-        # untrimmed "  " would otherwise answer the two differently.
+        # An empty membership ID means no registration on file, so whitespace
+        # must not pass for one.
         self.scouting_membership_id = self.scouting_membership_id.strip()
         super().save(*args, **kwargs)
 
