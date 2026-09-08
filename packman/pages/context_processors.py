@@ -14,7 +14,7 @@ PINNED_PAGE_SLUGS = ["trackers"]
 
 # CMS pages that belong under the "About" dropdown instead of "Pack Info".
 # Order here controls their order within the dropdown.
-ABOUT_PAGE_SLUGS = ["membership-requirements", "discipline-policy"]
+ABOUT_PAGE_SLUGS = ["membership-requirements", "discipline-policy", "mod-6"]
 
 # Fixed nav labels for the About/History links, always the same as their
 # Page.PAGE_CHOICES display label rather than whatever a given Page row's
