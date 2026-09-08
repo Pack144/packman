@@ -6,21 +6,6 @@ from django.utils.translation import gettext as _
 from packman.campaigns.models import Campaign
 from packman.pages.models import Page
 
-# CMS pages that get a permanent, pinned slot in the top nav instead of being
-# grouped under "Pack Info". The link label comes from the page's own CMS
-# title, so it stays in sync if that's ever edited. Order here controls their
-# order among the pinned links.
-PINNED_PAGE_SLUGS = ["trackers"]
-
-# CMS pages that belong under the "About" dropdown instead of "Pack Info".
-# Order here controls their order within the dropdown.
-ABOUT_PAGE_SLUGS = ["membership-requirements", "discipline-policy", "mod-6"]
-
-# Fixed nav labels for the About/History links, always the same as their
-# Page.PAGE_CHOICES display label rather than whatever a given Page row's
-# (admin-editable) title happens to be.
-PAGE_LABELS = dict(Page.PAGE_CHOICES)
-
 
 def _is_active(request, *, apps=None, url_names=None, slug=None):
     """Determine whether a nav entry corresponds to the current page."""
@@ -51,10 +36,21 @@ def _dropdown(nav_id, label, items, *, align_end=False):
     }
 
 
-def _page_link(page_or_slug, request, label=None):
-    slug = page_or_slug if isinstance(page_or_slug, str) else page_or_slug.slug
-    label = label or str(page_or_slug)
-    return _link(label, reverse("pages:detail", kwargs={"slug": slug}), _is_active(request, slug=slug))
+def _page_link(page, request, label=None):
+    label = label or str(page)
+    return _link(label, reverse("pages:detail", kwargs={"slug": page.slug}), _is_active(request, slug=page.slug))
+
+
+def _group_navbar_links(navbar_links):
+    """
+    Split pages by their admin-editable nav_placement. navbar_links is
+    already ordered (Page.Meta.ordering), so each group keeps that relative
+    order.
+    """
+    groups = {placement: [] for placement in Page.NAV_GROUP_PLACEMENTS}
+    for page in navbar_links:
+        groups[page.nav_placement].append(page)
+    return groups
 
 
 def _build_ncc_items(request, fundraiser):
@@ -83,7 +79,12 @@ def _build_ncc_items(request, fundraiser):
     items.append(
         _link(_("Products"), reverse("campaigns:product_list"), _is_active(request, url_names=["product_list"]))
     )
-    items.append(_page_link("nccinfo", request, label=_("Information")))
+    ncc_pages = [
+        page
+        for page in Page.objects.get_visible_content(user=request.user).filter(nav_placement=Page.NavPlacement.NCC)
+        if page.content_blocks.count()
+    ]
+    items.extend(_page_link(page, request) for page in ncc_pages)
     if request.user.has_perm("campaigns.generate_order_report"):
         items.append(
             _link(
@@ -95,41 +96,33 @@ def _build_ncc_items(request, fundraiser):
     return items
 
 
-def _build_pack_info_items(request, navbar_links):
+def _build_pack_info_items(request, pack_info_pages):
     items = [_link(_("Documents"), reverse("documents:list"), _is_active(request, apps=["documents"]))]
-    skip_slugs = set(PINNED_PAGE_SLUGS) | set(ABOUT_PAGE_SLUGS)
-    for page in navbar_links:
-        if page.slug not in skip_slugs:
-            items.append(_page_link(page, request))
+    items.extend(_page_link(page, request) for page in pack_info_pages)
     return items
 
 
 def _build_dashboards_items(request):
     items = []
     if request.user.is_staff:
-        items.append(_link(_("Admin"), reverse("admin:index"), False))
+        items.append(_link(_("Site Admin"), reverse("admin:index"), False))
     if request.user.has_perm("compliance.view_all_records"):
         items.append(
-            _link(_("Requirements"), reverse("compliance:dashboard"), _is_active(request, apps=["compliance"]))
+            _link(
+                _("Requirements Dashboard"), reverse("compliance:dashboard"), _is_active(request, apps=["compliance"])
+            )
         )
     return items
 
 
-def _build_about_items(request, navbar_links):
-    items = [
-        _link(PAGE_LABELS[Page.ABOUT], reverse("pages:about"), _is_active(request, url_names=["about"])),
-        _link(PAGE_LABELS[Page.HISTORY], reverse("pages:history"), _is_active(request, url_names=["history"])),
-    ]
-    pages_by_slug = {page.slug: page for page in navbar_links}
-    for slug in ABOUT_PAGE_SLUGS:
-        page = pages_by_slug.get(slug)
-        if page:
-            items.append(_page_link(page, request))
+def _build_about_items(request, about_pages):
+    items = [_page_link(page, request) for page in about_pages]
     items.append(_link(_("Contact Us"), reverse("pages:contact"), _is_active(request, url_names=["contact"])))
     return items
 
 
 def _build_authenticated_nav(request, navbar_links, fundraiser):
+    navbar_groups = _group_navbar_links(navbar_links)
     items = []
     if fundraiser:
         items.append(_dropdown("navbarNccDropdown", "NCC", _build_ncc_items(request, fundraiser)))
@@ -141,17 +134,19 @@ def _build_authenticated_nav(request, navbar_links, fundraiser):
             _is_active(request, apps=["membership", "committees"]),
         )
     )
-    pages_by_slug = {page.slug: page for page in navbar_links}
-    for slug in PINNED_PAGE_SLUGS:
-        page = pages_by_slug.get(slug)
-        if page:
-            items.append(_page_link(page, request))
-    items.append(_dropdown("navbarPackInfoDropdown", _("Pack Info"), _build_pack_info_items(request, navbar_links)))
+    items.extend(_page_link(page, request) for page in navbar_groups[Page.NavPlacement.PINNED])
+    items.append(
+        _dropdown(
+            "navbarPackInfoDropdown",
+            _("Pack Info"),
+            _build_pack_info_items(request, navbar_groups[Page.NavPlacement.PACK_INFO]),
+        )
+    )
     items.append(
         _dropdown(
             "navbarAboutDropdown",
             _("About"),
-            _build_about_items(request, navbar_links),
+            _build_about_items(request, navbar_groups[Page.NavPlacement.ABOUT]),
             align_end=True,
         )
     )
@@ -159,11 +154,9 @@ def _build_authenticated_nav(request, navbar_links, fundraiser):
 
 
 def _build_anonymous_nav(request, navbar_links):
-    items = [
-        _link(PAGE_LABELS[Page.ABOUT], reverse("pages:about"), _is_active(request, url_names=["about"])),
-        _link(PAGE_LABELS[Page.HISTORY], reverse("pages:history"), _is_active(request, url_names=["history"])),
-    ]
-    items.extend(_page_link(page, request) for page in navbar_links)
+    # Anonymous visitors don't see enough links to warrant grouping them into
+    # dropdowns, so just show them all in whatever order they're already in.
+    items = [_page_link(page, request) for page in navbar_links]
     items.append(_link(_("Contact Us"), reverse("pages:contact"), _is_active(request, url_names=["contact"])))
     return items
 
@@ -171,10 +164,23 @@ def _build_anonymous_nav(request, navbar_links):
 def populate_navbar(request):
     navbar_links = [
         page
-        for page in Page.objects.get_visible_content(user=request.user).filter(include_in_nav=True)
+        for page in Page.objects.get_visible_content(user=request.user).filter(
+            nav_placement__in=Page.NAV_GROUP_PLACEMENTS
+        )
         if page.content_blocks.count()
     ]
-    navbar = {
+
+    navbar_admin_dropdown = None
+    if request.user.is_authenticated:
+        fundraiser = Campaign.objects.current()
+        navbar_items = _build_authenticated_nav(request, navbar_links, fundraiser)
+        dashboards_items = _build_dashboards_items(request)
+        if dashboards_items:
+            navbar_admin_dropdown = _dropdown("navbarDashboardsDropdown", _("Admin"), dashboards_items, align_end=True)
+    else:
+        navbar_items = _build_anonymous_nav(request, navbar_links)
+
+    return {
         "pack": {
             "name": settings.PACK_NAME,
             "shortname": settings.PACK_SHORTNAME,
@@ -182,19 +188,9 @@ def populate_navbar(request):
             "tagline": settings.PACK_TAGLINE,
         },
         "site": get_current_site(request),
+        "navbar_items": navbar_items,
         # Rendered separately from navbar_items, on the right side of the nav
         # next to the account menu, so it reads as an "admin area" rather
         # than just another content link.
-        "navbar_admin_dropdown": None,
+        "navbar_admin_dropdown": navbar_admin_dropdown,
     }
-    if request.user.is_authenticated:
-        fundraiser = Campaign.objects.current()
-        navbar["navbar_items"] = _build_authenticated_nav(request, navbar_links, fundraiser)
-        dashboards_items = _build_dashboards_items(request)
-        if dashboards_items:
-            navbar["navbar_admin_dropdown"] = _dropdown(
-                "navbarDashboardsDropdown", _("Dashboards"), dashboards_items, align_end=True
-            )
-    else:
-        navbar["navbar_items"] = _build_anonymous_nav(request, navbar_links)
-    return navbar
