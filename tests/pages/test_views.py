@@ -10,23 +10,25 @@ from packman.compliance.factories import CubRequirementFactory, RequirementRecor
 from packman.compliance.models import RequirementRecord
 from packman.membership.factories import ActiveScoutFactory, AdultFactory, CompleteFamilyFactory
 from packman.membership.models import Adult
-from packman.pages.views import AboutPageView, HistoryPageView, HomePageView, SignUpPageView
+from packman.pages.models import ContentBlock, Page
+from packman.pages.views import HomePageView, PageDetailView, SignUpPageView
 
 
 class AboutPageTests(TestCase):
     def setUp(self):
-        url = reverse("pages:about")
-        self.response = self.client.get(url)
+        self.page = Page.objects.create(title="About Us", slug="about", nav_placement=Page.NavPlacement.ABOUT)
+        ContentBlock.objects.create(page=self.page, body="<p>About us.</p>", visibility=ContentBlock.Visibility.PUBLIC)
+        self.response = self.client.get(reverse("pages:detail", kwargs={"slug": "about"}))
 
     def test_aboutpage_status_code(self):
         self.assertEqual(self.response.status_code, 200)
 
     def test_aboutpage_template(self):
-        self.assertTemplateUsed(self.response, "pages/about_page.html")
+        self.assertTemplateUsed(self.response, "pages/page_detail.html")
 
-    def test_aboutpage_url_resolves_aboutpageview(self):
+    def test_aboutpage_url_resolves_pagedetailview(self):
         view = resolve("/about/")
-        self.assertEqual(view.func.__name__, AboutPageView.as_view().__name__)
+        self.assertEqual(view.func.__name__, PageDetailView.as_view().__name__)
 
 
 class HomePageTests(TestCase):
@@ -47,18 +49,21 @@ class HomePageTests(TestCase):
 
 class HistoryPageTests(TestCase):
     def setUp(self):
-        url = reverse("pages:history")
-        self.response = self.client.get(url)
+        self.page = Page.objects.create(title="Our History", slug="history", nav_placement=Page.NavPlacement.ABOUT)
+        ContentBlock.objects.create(
+            page=self.page, body="<p>Our history.</p>", visibility=ContentBlock.Visibility.PUBLIC
+        )
+        self.response = self.client.get(reverse("pages:detail", kwargs={"slug": "history"}))
 
     def test_historypage_status_code(self):
         self.assertEqual(self.response.status_code, 200)
 
     def test_historypage_template(self):
-        self.assertTemplateUsed(self.response, "pages/history_page.html")
+        self.assertTemplateUsed(self.response, "pages/page_detail.html")
 
-    def test_historypage_url_resolves_historypageview(self):
+    def test_historypage_url_resolves_pagedetailview(self):
         view = resolve("/history/")
-        self.assertEqual(view.func.__name__, HistoryPageView.as_view().__name__)
+        self.assertEqual(view.func.__name__, PageDetailView.as_view().__name__)
 
 
 class SignUpPageTests(TestCase):

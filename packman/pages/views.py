@@ -106,23 +106,11 @@ class PageUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().form_valid(form)
 
 
-class AboutPageView(PageDetailView):
-    template_name = "pages/about_page.html"
-
-    def get_object(self):
-        obj, created = self.get_queryset().get_or_create(page=Page.ABOUT)
-        if created:
-            logger.info = _("About page was requested but none was found in the database.")
-            obj.title = _("About Us")
-            obj.save()
-        return obj
-
-
 class HomePageView(PageDetailView):
     template_name = "pages/home_page.html"
 
     def get_object(self):
-        obj, created = self.get_queryset().get_or_create(page=Page.HOME)
+        obj, created = self.get_queryset().get_or_create(nav_placement=Page.NavPlacement.HOME)
         if created:
             logger.info = _("Home page was requested but none was found in the database.")
 
@@ -194,18 +182,6 @@ class HomePageView(PageDetailView):
         return context
 
 
-class HistoryPageView(PageDetailView):
-    template_name = "pages/history_page.html"
-
-    def get_object(self):
-        obj, created = self.get_queryset().get_or_create(page=Page.HISTORY)
-        if created:
-            logger.info = _("History page was requested but none was found in the database.")
-            obj.title = _("Our History")
-            obj.save()
-        return obj
-
-
 class ContactPageView(SuccessMessageMixin, FormView):
     form_class = ContactForm
     success_message = _(
@@ -241,7 +217,9 @@ class SignUpPageView(CreateView):
             context["address_formset"] = AddressFormSet()
             context["phonenumber_formset"] = PhoneNumberFormSet()
         try:
-            context["page"] = Page.objects.get_visible_content(user=self.request.user).get(page=Page.SIGNUP)
+            context["page"] = Page.objects.get_visible_content(user=self.request.user).get(
+                nav_placement=Page.NavPlacement.SIGNUP
+            )
         except Page.DoesNotExist:
             context["page"] = None
         return context

@@ -1,6 +1,12 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
+
+from packman.address_book.models import Address, PhoneNumber
 
 from .forms import AddressFormSet, AdultCreation, AdultForm, PhoneNumberFormSet, ScoutForm
 from .models import Adult, Family, Member, Scout
@@ -152,7 +158,84 @@ class AdultDetail(LoginRequiredMixin, DetailView):
         context["email"] = self.object.email if self.object.is_published else None
         context["addresses"] = self.object.addresses.filter(published__exact=True)
         context["phone_numbers"] = self.object.phone_numbers.filter(published__exact=True)
+        context["has_publishable_contact_info"] = bool(
+            context["email"] or context["addresses"] or context["phone_numbers"]
+        )
         return context
+
+
+def _vcard_escape(value):
+    """Escape a value for use in a vCard field per RFC 2426."""
+    return str(value).replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
+
+
+class AdultVCard(LoginRequiredMixin, View):
+    """
+    Generate a downloadable vCard (.vcf) for an Adult member, respecting the
+    same email/address/phone `published` flags used on the member's profile
+    page. Any logged-in member may request the vCard for any adult.
+    """
+
+    # Map our internal type codes to the vCard TYPE values, with sensible
+    # defaults for records that don't specify a type.
+    PHONE_TYPE_MAP = {
+        PhoneNumber.HOME: "HOME",
+        PhoneNumber.MOBILE: "CELL",
+        PhoneNumber.WORK: "WORK",
+        PhoneNumber.OTHER: "OTHER",
+    }
+    ADDRESS_TYPE_MAP = {
+        Address.HOME: "HOME",
+        Address.WORK: "WORK",
+        Address.OTHER: "OTHER",
+    }
+
+    def get(self, request, *args, **kwargs):
+        adult = get_object_or_404(Adult, slug=kwargs["slug"])
+
+        email = adult.email if adult.is_published else None
+        addresses = adult.addresses.filter(published__exact=True)
+        phone_numbers = adult.phone_numbers.filter(published__exact=True)
+
+        lines = ["BEGIN:VCARD", "VERSION:3.0"]
+        lines.append(
+            "N:{last};{first};{middle};;{suffix}".format(
+                last=_vcard_escape(adult.last_name),
+                first=_vcard_escape(adult.first_name),
+                middle=_vcard_escape(adult.middle_name),
+                suffix=_vcard_escape(adult.suffix),
+            )
+        )
+        lines.append(f"FN:{_vcard_escape(adult.get_full_name())}")
+        if adult.nickname:
+            lines.append(f"NICKNAME:{_vcard_escape(adult.nickname)}")
+        if email:
+            lines.append(f"EMAIL;TYPE=HOME:{_vcard_escape(email)}")
+        for phone in phone_numbers:
+            vcard_type = self.PHONE_TYPE_MAP.get(phone.type, "CELL")
+            lines.append(f"TEL;TYPE={vcard_type}:{_vcard_escape(phone.number.as_e164)}")
+        for address in addresses:
+            vcard_type = self.ADDRESS_TYPE_MAP.get(address.type, "HOME")
+            street = address.street
+            if address.street2:
+                street = f"{street} {address.street2}"
+            lines.append(
+                "ADR;TYPE={type}:;;{street};{city};{state};{zip_code};".format(
+                    type=vcard_type,
+                    street=_vcard_escape(street),
+                    city=_vcard_escape(address.city),
+                    state=_vcard_escape(address.state),
+                    zip_code=_vcard_escape(address.zip_code),
+                )
+            )
+        lines.append(f"item1.URL:{request.build_absolute_uri(adult.get_absolute_url())}")
+        lines.append(f"item1.X-ABLabel:{_vcard_escape(settings.PACK_SHORTNAME)}")
+        lines.append("END:VCARD")
+
+        content = "\r\n".join(lines) + "\r\n"
+        response = HttpResponse(content, content_type="text/vcard")
+        response["Content-Disposition"] = f'attachment; filename="{adult.slug}.vcf"'
+        return response
 
 
 class AdultUpdate(LoginRequiredMixin, UpdateView):

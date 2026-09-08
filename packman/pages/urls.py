@@ -9,8 +9,6 @@ urlpatterns = [
         views.HomePageView.as_view(),
         name="home",
     ),
-    path("about/", views.AboutPageView.as_view(), name="about"),
-    path("history/", views.HistoryPageView.as_view(), name="history"),
     path("signup/", views.SignUpPageView.as_view(), name="signup"),
     path("contact-us/", views.ContactPageView.as_view(), name="contact"),
     path("<slug:slug>/", views.PageDetailView.as_view(), name="detail"),

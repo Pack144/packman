@@ -1,8 +1,8 @@
 {% load i18n %}
 {% comment %}
-  The member directory tabs. Pass `active` as one of cubs, adults, all, or
-  dens. Extracted from the list templates that each carried their own copy of
-  this block.
+  The member directory tabs. Pass `active` as one of cubs, adults, all, dens,
+  or committees. Extracted from the list templates that each carried their
+  own copy of this block.
 
   These are filters over the same directory, so anything that navigates
   somewhere else belongs in the navbar rather than here.
@@ -21,6 +21,11 @@
        href="{% url 'membership:all' %}">{% translate "All Members" %}</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link {% if active == 'dens' %}active{% endif %}" href="{% url 'dens:list' %}">Dens</a>
+    <a class="nav-link {% if active == 'dens' %}active{% endif %}"
+       href="{% url 'dens:list' %}">{% translate "By Den" %}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active == 'committees' %}active{% endif %}"
+       href="{% url 'committees:list' %}">{% translate "By Committee" %}</a>
   </li>
 </ul>

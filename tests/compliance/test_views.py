@@ -666,7 +666,7 @@ class SiteIntegrationTestCase(ComplianceViewTestCase):
                 response = self.client.get(reverse(name))
 
                 self.assertEqual(response.status_code, HTTPStatus.OK)
-                for tab in ("Cubs", "Adults", "All Members", "Dens"):
+                for tab in ("Cubs", "Adults", "All Members", "By Den", "By Committee"):
                     self.assertContains(response, tab)
 
     def dashboard_link(self):

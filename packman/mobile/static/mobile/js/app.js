@@ -8,14 +8,14 @@ import { renderMyDens } from "./screens/my-dens.js";
 import { renderDens, renderDenDetail } from "./screens/dens.js";
 import { renderSearch } from "./screens/search.js";
 import { renderProfile } from "./screens/profile.js";
-import { renderCommittees, renderCommitteeDetail } from "./screens/committees.js";
+import { renderCommitteeDetail } from "./screens/committees.js";
 
 const TABS = [
   { key: "home", label: "Home", path: "/home", icon: icons.home },
   { key: "my-dens", label: "My Dens", path: "/my-dens", icon: icons.myDens },
   { key: "dens", label: "Dens", path: "/dens", icon: icons.dens },
   { key: "search", label: "Search", path: "/search", icon: icons.search },
-  // No `path`: this tab opens the Me/Committees popover in place instead of
+  // No `path`: this tab opens the Me popover in place instead of
   // navigating (see menu.js), so it's rendered as a button below.
   { key: "menu", label: "Menu", icon: icons.menu },
 ];
@@ -109,8 +109,7 @@ route("/dens/:number", (params) => mount((el) => renderDenDetail(el, params.numb
 route("/search", () => mount(renderSearch, "search"));
 route("/me", () => mount((el) => renderProfile(el, window.PACKMAN_MOBILE.user.slug, { me: true }), "menu"));
 route("/profile/:slug", (params) => mount((el) => renderProfile(el, params.slug), null));
-route("/committees", () => mount(renderCommittees, "menu"));
-route("/committees/:slug", (params) => mount((el) => renderCommitteeDetail(el, params.slug), "menu"));
+route("/committees/:slug", (params) => mount((el) => renderCommitteeDetail(el, params.slug), "search"));
 
 // Drop any directory data cached for a different member before it can render.
 claimCacheFor(window.PACKMAN_MOBILE.user.slug);

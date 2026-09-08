@@ -1,5 +1,6 @@
 import logging
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -21,16 +22,6 @@ class Page(TimeStampedUUIDModel):
     Base model used to define a web page. Used by Dynamic and Static pages.
     """
 
-    HOME = "HOME"
-    ABOUT = "ABOUT"
-    HISTORY = "HISTORY"
-    SIGNUP = "SIGNUP"
-    PAGE_CHOICES = (
-        (HOME, _("Home")),
-        (ABOUT, _("About Us")),
-        (HISTORY, _("History")),
-        (SIGNUP, _("Join Us")),
-    )
     title = models.CharField(
         _("title"),
         max_length=64,
@@ -40,14 +31,6 @@ class Page(TimeStampedUUIDModel):
         ),
     )
 
-    page = models.CharField(
-        max_length=8,
-        choices=PAGE_CHOICES,
-        unique=True,
-        blank=True,
-        null=True,
-        help_text=_("If this is going to be one of the standard pages, specify which " "one here."),
-    )
     slug = models.SlugField(
         _("slug"),
         unique=True,
@@ -61,44 +44,94 @@ class Page(TimeStampedUUIDModel):
             "the slug simply is ‘slug’."
         ),
     )
-    include_in_nav = models.BooleanField(
-        _("Include in navigation"),
-        default=False,
+
+    class NavPlacement(models.IntegerChoices):
+        PACK_INFO = 1, _("Pack Info dropdown")
+        PINNED = 2, _("Pinned top-level link")
+        ABOUT = 3, _("About dropdown")
+        HOME = 4, _("The home page")
+        SIGNUP = 5, _("The join us / sign-up page")
+        NCC = 6, _("NCC dropdown")
+
+    # Placements a page picks to appear somewhere in the nav dropdowns/links.
+    # HOME, SIGNUP, and NCC are not part of this: HOME/SIGNUP each mark a
+    # single fixed page (the home page, the sign-up page); NCC marks any
+    # number of pages to show inside the NCC dropdown. All three are looked
+    # up individually rather than shown as regular nav links.
+    NAV_GROUP_PLACEMENTS = (NavPlacement.PACK_INFO, NavPlacement.PINNED, NavPlacement.ABOUT)
+
+    nav_placement = models.PositiveSmallIntegerField(
+        _("navigation placement"),
+        choices=NavPlacement.choices,
+        blank=True,
+        null=True,
+        default=None,
         help_text=_(
-            "Checking this option will add this page to the site's navigation "
-            "bar. Not used for standard pages (e.g. Home, About, Sign-up, "
-            "etc.) since they will always be included."
+            "Where this page should appear in the site's navigation bar, if "
+            "at all. Leave blank to keep this page out of the navigation bar "
+            "entirely. 'The home page' and 'The join us / sign-up page' are "
+            "special: only one page may hold each, and it will be used in "
+            "place of the site's default one."
+        ),
+    )
+    order = models.PositiveIntegerField(
+        _("order"),
+        default=0,
+        db_index=True,
+        help_text=_(
+            "Controls the order pages are listed, both in the admin and "
+            "within whichever navigation group they are placed in."
         ),
     )
 
     objects = PageManager()
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["nav_placement"],
+                # NavPlacement.HOME: nested classes can't see Page's namespace here.
+                condition=models.Q(nav_placement=4),
+                name="unique_home_page",
+            ),
+            models.UniqueConstraint(
+                fields=["nav_placement"],
+                # NavPlacement.SIGNUP: nested classes can't see Page's namespace here.
+                condition=models.Q(nav_placement=5),
+                name="unique_signup_page",
+            ),
+        ]
         indexes = [models.Index(fields=["title"])]
+        ordering = ("order", "title")
         verbose_name = _("Page")
         verbose_name_plural = _("Pages")
 
     def __str__(self):
         return self.title
 
+    @property
+    def is_standard(self):
+        """Whether this page fills one of the site's fixed roles (home / sign-up)."""
+        return self.nav_placement in (self.NavPlacement.HOME, self.NavPlacement.SIGNUP)
+
     def get_absolute_url(self):
-        if self.page == self.HOME:
+        if self.nav_placement == self.NavPlacement.HOME:
             return reverse("pages:home")
-        elif self.page == self.ABOUT:
-            return reverse("pages:about")
-        elif self.page == self.HISTORY:
-            return reverse("pages:history")
-        elif self.page == self.SIGNUP:
+        elif self.nav_placement == self.NavPlacement.SIGNUP:
             return reverse("pages:signup")
         else:
             return reverse("pages:detail", kwargs={"slug": self.slug})
 
     def clean(self):
         super().clean()
-        if self.page and self.include_in_nav:
-            self.include_in_nav = False
-            logger.warning(_("Default pages will always appear in navbar. Setting is redundant"))
-        if not self.page and not self.slug:
+        if self.is_standard:
+            already_taken = Page.objects.exclude(pk=self.pk).filter(nav_placement=self.nav_placement).exists()
+            if already_taken:
+                raise ValidationError(
+                    _("Another page is already set as %(placement)s. Change that page first.")
+                    % {"placement": self.get_nav_placement_display()}
+                )
+        if not self.slug:
             self.slug = slugify(self.title)
             logger.warning(
                 _("%(page)s does not include a slug. Setting slug to %(slug)s") % {"page": self, "slug": self.slug}
