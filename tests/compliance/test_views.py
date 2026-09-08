@@ -193,6 +193,9 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
     def membership_of(self, response, subject):
         return {group["subject"]: group["membership"] for group in response.context["groups"]}[subject]
 
+    def group_of(self, response, subject):
+        return {group["subject"]: group for group in response.context["groups"]}[subject]
+
     def test_a_registration_lapsing_within_sixty_days_reads_as_expiring_soon(self):
         self.register(timezone.localdate() + datetime.timedelta(days=30))
 
@@ -248,7 +251,7 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
     def test_an_active_cub_with_nothing_on_file_is_expected_to_have_one(self):
         response = self.get_page()
 
-        self.assertTrue(self.membership_of(response, self.cub)["expected"])
+        self.assertTrue(self.group_of(response, self.cub)["expected"])
 
     def test_an_owed_registration_is_amber_not_grey(self):
         """
@@ -373,13 +376,9 @@ class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
         self.assertEqual([g["membership"] for g in adult_groups], [None])
         self.assertEqual(response.context["needs_attention"], 0)
 
-    def test_a_cub_with_no_den_this_year_is_not_badged_as_owing_one(self):
-        """
-        active_in() wants a den membership for the year as well as ACTIVE
-        status. Reading the Cub's status alone let the badge say "Required"
-        for a Cub the count had already excluded, so the page could offer
-        "Everything is up to date" directly above an amber pill.
-        """
+    def test_a_cub_who_is_not_active_this_year_is_not_badged_as_owing_one(self):
+        """A Cub the pack is not asking for a registration is shown their
+        standing as a fact; the badge and the attention count agree."""
         stray = ScoutFactory(family=self.family, status=ActiveScout.ACTIVE)
         RequirementRecordFactory(
             requirement=CubRequirementFactory(slug="attention-stray"),
@@ -393,7 +392,7 @@ class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
 
         groups = {group["subject"]: group for group in response.context["groups"]}
         self.assertIn(stray, groups)
-        self.assertFalse(groups[stray]["membership"]["expected"])
+        self.assertFalse(groups[stray]["expected"])
         self.assertFalse(groups[stray]["registration_due"])
         self.assertEqual(response.context["needs_attention"], 0)
         self.assertContains(response, "Everything is up to date")
@@ -427,8 +426,8 @@ class InactiveScoutTestCase(ComplianceViewTestCase):
         self.response = response
         return [group["subject"] for group in response.context["groups"]]
 
-    def membership_of(self, response, subject):
-        return {group["subject"]: group["membership"] for group in response.context["groups"]}[subject]
+    def group_of(self, response, subject):
+        return {group["subject"]: group for group in response.context["groups"]}[subject]
 
     def test_a_scout_who_is_not_active_this_year_gets_no_card(self):
         sibling = ScoutFactory(family=self.family)
@@ -460,10 +459,8 @@ class InactiveScoutTestCase(ComplianceViewTestCase):
         self.assertEqual(len(self.response.context["outstanding"]), 1)
         # Nobody is asking a Cub who has left to renew a registration.
         self.assertEqual(self.response.context["registrations_due"], [self.cub])
-        # So their empty registration stays grey: a fact, not an open item. The
-        # sibling is ACTIVE but has no den membership for the year, which is
-        # what active_in() asks for - the badge has to agree with the count.
-        self.assertFalse(self.membership_of(self.response, sibling)["expected"])
+        # So their empty registration stays grey: a fact, not an open item.
+        self.assertFalse(self.group_of(self.response, sibling)["expected"])
         self.assertEqual(self.badge_class_for(self.response, "Not on file"), "text-bg-secondary")
         self.assertEqual(self.badge_class_for(self.response, "Required"), "text-bg-warning")
 

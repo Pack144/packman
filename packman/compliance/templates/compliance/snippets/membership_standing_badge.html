@@ -1,17 +1,11 @@
 {% load i18n %}
 {% comment %}
-  One Cub's Scouting America registration standing as a badge. Pass `standing`
-  (a Standing value string), and `required` when the pack is asking this Cub for
-  a registration: nothing on file then reads as something the family owes rather
-  than a bare statement of fact. A Cub who has graduated or withdrawn still
-  shows their standing but is not being asked for anything.
+  One Cub's Scouting America registration standing, as a badge.
 
-  Hence the two colours for one standing. Owed is amber, the same as the "needs
-  attention" alert at the top of the family page, because it is one of the items
-  that alert is counting. Grey stays for the Cub nobody is asking, and is also
-  what a Not started requirement wears -- an owed registration in grey was
-  indistinguishable from a requirement nobody had got to yet, which is exactly
-  how it was read in review.
+  `standing` is a Standing value. `required` is true when the pack is asking this
+  Cub for a registration (an active Cub) and only changes how "nothing on file"
+  reads: an amber "Required" when the pack is waiting on it, a plain grey "Not on
+  file" for a Cub who has graduated or withdrawn.
 {% endcomment %}
 {% if standing == 'CURRENT' %}
   <span class="badge text-bg-success" title="{% translate 'Registration is current' %}">

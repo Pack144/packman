@@ -22,32 +22,19 @@ def records_for_family(family, year=None):
 
 def active_cub_ids(family, year):
     """
-    Which of a family's Cubs the pack expects to hold a registration this year.
-
-    One query. A withdrawn or graduated sibling is not being asked to renew.
+    Which of a family's Cubs are active this year, in one query. A withdrawn or
+    graduated sibling is not being asked to renew.
     """
     return set(Scout.objects.active_in(year).filter(family=family).values_list("pk", flat=True))
 
 
-def membership_standing(scout, expected):
-    """
-    One Cub's Scouting America registration as the family page shows it: a
-    warn-ahead standing plus the ID and expiration date to sit alongside.
-
-    `expected` says whether the pack is asking this Cub for one, which decides
-    whether nothing on file reads as "Required" or as "Not on file". It is
-    passed in rather than worked out here so that it cannot disagree with
-    registration_due: asking the Cub's own status looks equivalent but is not,
-    because active_in() wants a den membership for the year as well. A Cub who
-    is ACTIVE but not in a den this year would have been badged as owing a
-    registration the page had already decided not to count, which is the same
-    banner-contradicts-badge bug the count was added to close.
-    """
+def membership_standing(scout):
+    """One Cub's registration as the family page shows it: a warn-ahead standing
+    plus the ID and expiration date to sit alongside it."""
     return {
         "standing": standing_for(scout, warn_within=RENEWAL_WINDOW),
         "id": scout.scouting_membership_id,
         "expires_on": scout.scouting_membership_expires_on,
-        "expected": expected,
     }
 
 
@@ -66,9 +53,10 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
     family's page. A Cub who left part way through still appears if the year
     holds records for them, so nothing already on file quietly disappears.
 
-    `registration_due` marks the standings the family is being asked to act on,
-    and again only for those Cubs. A Cub who has left is shown their standing
-    as a statement of fact and owes nothing.
+    A group's `expected` says the pack is asking that Cub for a registration;
+    `registration_due` is the same but only while the standing is not current.
+    Both the badge and the attention count read these, so they cannot tell the
+    family different things.
     """
     by_member = {}
     household = []
@@ -82,11 +70,12 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
         # One definition of "the pack is asking this Cub", shared by the badge
         # and the count so the two cannot tell the family different things.
         expected = scout.pk in active_cub_ids
-        membership = membership_standing(scout, expected)
+        membership = membership_standing(scout)
         return {
             "subject": scout,
             "records": by_member.get(scout.pk, []),
             "membership": membership,
+            "expected": expected,
             "registration_due": expected and membership["standing"] != Standing.CURRENT,
         }
 
@@ -98,12 +87,15 @@ def group_by_subject(family, records, active_cub_ids=frozenset()):
             "subject": adult,
             "records": by_member.get(adult.pk, []),
             "membership": None,
+            "expected": False,
             "registration_due": False,
         }
         for adult in family.adults.all()
     ]
     if household:
-        groups.append({"subject": family, "records": household, "membership": None, "registration_due": False})
+        groups.append(
+            {"subject": family, "records": household, "membership": None, "expected": False, "registration_due": False}
+        )
     return groups
 
 
