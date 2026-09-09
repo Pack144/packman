@@ -423,6 +423,22 @@ class Scout(Member):
         through="dens.Membership",
     )
 
+    # Scouting America registration, on the Cub rather than on Member: adults
+    # hold one too, but council keeps that record. See
+    # compliance.scouting_membership for what the pack does with these.
+    scouting_membership_id = models.CharField(
+        _("Scouting America Membership ID"),
+        max_length=32,
+        blank=True,
+        help_text=_("The member ID printed on the Cub's Scouting America membership card."),
+    )
+    scouting_membership_expires_on = models.DateField(
+        _("Membership Expires"),
+        blank=True,
+        null=True,
+        help_text=_("The date the Cub's Scouting America registration lapses if it is not renewed."),
+    )
+
     # Important dates
     started_school = models.IntegerField(
         _("Kindergarten Year"),
@@ -449,6 +465,12 @@ class Scout(Member):
         ordering = ["-date_added"]
         verbose_name = _("Cub")
         verbose_name_plural = _("Cubs")
+
+    def save(self, *args, **kwargs):
+        # An empty membership ID means no registration on file, so whitespace
+        # must not pass for one.
+        self.scouting_membership_id = self.scouting_membership_id.strip()
+        super().save(*args, **kwargs)
 
     def get_siblings(self):
         """Return a list of other Scouts who share the same parent(s)"""

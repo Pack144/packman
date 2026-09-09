@@ -12,7 +12,7 @@ from django.utils.translation import ngettext
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, UpdateView
 
 from packman.calendars.models import Event, PackYear
-from packman.compliance.models import RequirementRecord
+from packman.compliance.summaries import count_needs_attention
 from packman.membership.forms import AddressFormSet, PhoneNumberFormSet, SignupForm
 from packman.membership.models import Family
 
@@ -154,22 +154,24 @@ class HomePageView(PageDetailView):
         if year is None:
             return
 
-        # family_id rather than family, so the banner costs one query, not two.
-        outstanding = RequirementRecord.objects.for_family(user.family_id).for_year(year).outstanding().count()
-        if not outstanding:
+        # family_id rather than family, so the banner does not fetch one to
+        # count against. Same rule as the My Requirements page, so the two
+        # cannot tell a family different numbers.
+        open_items = count_needs_attention(user.family_id, year)
+        if not open_items:
             return
 
         messages.add_message(
             self.request,
             messages.WARNING,
             ngettext(
-                "<strong>%(count)d membership requirement needs attention.</strong> "
+                "<strong>%(count)d membership item needs attention.</strong> "
                 "See <a class='alert-link' href='%(url)s'>My Requirements</a> for what is outstanding.",
-                "<strong>%(count)d membership requirements need attention.</strong> "
+                "<strong>%(count)d membership items need attention.</strong> "
                 "See <a class='alert-link' href='%(url)s'>My Requirements</a> for what is outstanding.",
-                outstanding,
+                open_items,
             )
-            % {"count": outstanding, "url": reverse("compliance:my_family")},
+            % {"count": open_items, "url": reverse("compliance:my_family")},
         )
 
     def get_context_data(self, **kwargs):

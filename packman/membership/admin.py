@@ -205,6 +205,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "family__adults__first_name",
         "family__adults__nickname",
         "family__adults__last_name",
+        "scouting_membership_id",
     )
     formfield_overrides = {
         ThumbnailerImageField: {"widget": ImageClearableFileInput},
@@ -221,6 +222,15 @@ class ScoutAdmin(admin.ModelAdmin):
                     "status",
                     "slug",
                 )
+            },
+        ),
+        (
+            _("Scouting America Membership"),
+            {
+                "fields": (("scouting_membership_id", "scouting_membership_expires_on"),),
+                "description": _(
+                    "Required for every active Cub. Registered adults are tracked with council, not here."
+                ),
             },
         ),
         (_("Family"), {"fields": ("family", "get_adults")}),

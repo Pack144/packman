@@ -13,7 +13,7 @@
     </div>
   {% endif %}
   <div class="d-flex justify-content-between align-items-center">
-    <h1>{% translate 'Orders' %}</h1>
+    <h1>{% translate 'Cubs' %}</h1>
     <div class="btn-group">
       <button type="button" class="btn btn-outline-secondary">{{ campaigns.viewing }}</button>
       <button type="button"
@@ -35,60 +35,153 @@
       </div>
     </div>
   </div>
-  {% regroup order_list by seller as seller_order_list %}
-  {% for seller in seller_order_list %}
-    {% include 'campaigns/snippets/quota_progress.html' with scout=seller.grouper %}
-    <div class="list-group list-group-flush mt-3 mb-5">
-      <ul class="nav nav-tabs">
-        {% with campaign=campaigns.viewing.year.year %}
-          <li class="nav-item">
-            <a class="nav-link {% if not request.GET.filter %}active" aria-current="page{% endif %}"
-               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}">{% translate 'All Orders' %}</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if request.GET.filter == "undelivered" %}active" aria-current="page{% endif %}"
-               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=undelivered">{% translate 'Undelivered' %}</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if request.GET.filter == "delivered" %}active" aria-current="page{% endif %}"
-               href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=delivered">{% translate 'Delivered' %}</a>
-          </li>
-        {% endwith %}
-      </ul>
-      {% for order in seller.list %}
-        <a href="{{ order.get_absolute_url }}"
-           class="list-group-item list-group-item-action">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5>
-              {{ order.customer.name }}
-              {% if order.notes %}
-                <span class="border border-secondary rounded ms-3 px-2 py-1"
-                      data-bs-toggle="tooltip"
-                      title="{{ order.notes }}"><i class="fa-solid fa-align-justify fa-xs fa-fw"></i></span>
-              {% endif %}
-            </h5>
-            <div>
-              <div class="d-flex flex-column align-items-end">
-                {% if order.is_paid %}
-                  <img src="{% static 'img/paid_stamp.svg' %}"
-                       alt="{% translate 'Order Paid' %}"
-                       height="43"
-                       class="position-absolute">
-                {% endif %}
-                <small>{{ order.date_added|naturalday }}</small>
-                <strong class="text-success">${{ order.total|intcomma }}</strong>
-              </div>
-            </div>
-          </div>
-          <small>{{ order.customer.get_address_display }}</small>
-        </a>
-      {% endfor %}
-      <p class="text-end">{{ seller.list|length }} order{{ seller.list|length|pluralize }}</p>
-    </div>
+  {% for scout in sellers %}
+    {% include 'campaigns/snippets/quota_progress.html' with scout=scout %}
   {% endfor %}
+
+  <div class="d-flex justify-content-between align-items-center mt-5">
+    <h1>{% translate 'Orders' %}</h1>
+    {% if family_scout_count > 1 %}
+      <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary">
+          {% if selected_seller %}
+            {{ selected_seller.short_name }}
+          {% else %}
+            {% translate 'All Cubs' %}
+          {% endif %}
+        </button>
+        <button type="button"
+                class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+          <span class="visually-hidden">{% translate 'Toggle Filter' %}</span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+          {% with campaign=campaigns.viewing.year.year %}
+            {% if selected_seller %}
+              <a class="dropdown-item"
+                 href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}{% if request.GET.filter %}?filter={{ request.GET.filter }}{% endif %}">{% translate 'All Cubs' %}</a>
+            {% else %}
+              <div class="dropdown-item active">{% translate 'All Cubs' %}</div>
+            {% endif %}
+            {% for scout in sellers %}
+              {% if scout == selected_seller %}
+                <div class="dropdown-item active">{{ scout.short_name }}</div>
+              {% else %}
+                <a class="dropdown-item"
+                   href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?seller={{ scout.pk }}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">{{ scout.short_name }}</a>
+              {% endif %}
+            {% endfor %}
+          {% endwith %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  <div class="mt-3 mb-5">
+    <ul class="nav nav-tabs">
+      {% with campaign=campaigns.viewing.year.year %}
+        <li class="nav-item">
+          <a class="nav-link {% if not request.GET.filter %}active" aria-current="page{% endif %}"
+             href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}{% if selected_seller %}?seller={{ selected_seller.pk }}{% endif %}">{% translate 'All Orders' %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.GET.filter == "undelivered" %}active" aria-current="page{% endif %}"
+             href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=undelivered{% if selected_seller %}&seller={{ selected_seller.pk }}{% endif %}">{% translate 'Undelivered' %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.GET.filter == "delivered" %}active" aria-current="page{% endif %}"
+             href="{% url 'campaigns:order_list_by_campaign' campaign=campaign %}?filter=delivered{% if selected_seller %}&seller={{ selected_seller.pk }}{% endif %}">{% translate 'Delivered' %}</a>
+        </li>
+      {% endwith %}
+    </ul>
+    <table class="table table-hover align-middle order-table">
+      <caption class="visually-hidden">{% translate 'Orders' %}</caption>
+      <thead id="order_list_header">
+        <tr>
+          <th scope="col"
+              data-sort-header="customer"
+              aria-sort="none"
+              onclick="sortRows('#order_rows tr', '#order_list_header [data-sort-header]', 'customer')">
+            {% translate 'Customer' %}<span aria-hidden="true"></span>
+          </th>
+          {% if not selected_seller and family_scout_count > 1 %}
+            <th scope="col"
+                data-sort-header="seller"
+                aria-sort="none"
+                onclick="sortRows('#order_rows tr', '#order_list_header [data-sort-header]', 'seller')">
+              {% translate 'Seller' %}<span aria-hidden="true"></span>
+            </th>
+          {% endif %}
+          <th scope="col"
+              class="text-end"
+              data-sort-header="date"
+              aria-sort="ascending"
+              onclick="sortRows('#order_rows tr', '#order_list_header [data-sort-header]', 'date')">
+            {% translate 'Date' %}<span aria-hidden="true"></span>
+          </th>
+          <th scope="col"
+              class="text-end"
+              data-sort-header="total"
+              aria-sort="none"
+              onclick="sortRows('#order_rows tr', '#order_list_header [data-sort-header]', 'total')">
+            {% translate 'Total' %}<span aria-hidden="true"></span>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="order_rows">
+        {% for order in order_list %}
+          <tr>
+            <td data-sort-key="customer" data-sort-value="{{ order.customer.name }}">
+              <h5 class="mb-0">
+                <a href="{{ order.get_absolute_url }}" class="link-body-emphasis text-decoration-none">
+                  {{ order.customer.name }}
+                </a>
+                {% if order.notes %}
+                  <span class="border border-secondary rounded ms-3 px-2 py-1"
+                        data-bs-toggle="tooltip"
+                        title="{{ order.notes }}"><i class="fa-solid fa-align-justify fa-xs fa-fw"></i></span>
+                {% endif %}
+              </h5>
+              <small class="text-muted d-block">{{ order.customer.get_address_display }}</small>
+              <small class="text-muted d-md-none">
+                {% if not selected_seller and family_scout_count > 1 %}{{ order.seller.short_name }} &middot; {% endif %}
+                {{ order.date_added|naturalday }} &middot; ${{ order.total|intcomma }}
+              </small>
+            </td>
+            {% if not selected_seller and family_scout_count > 1 %}
+              <td class="d-none d-md-table-cell"
+                  data-sort-key="seller"
+                  data-sort-value="{{ order.seller.short_name }}">
+                <small class="text-muted">{{ order.seller.short_name }}</small>
+              </td>
+            {% endif %}
+            <td class="d-none d-md-table-cell text-end"
+                data-sort-key="date"
+                data-sort-value="{{ order.date_added|date:'U' }}">
+              <small>{{ order.date_added|naturalday }}</small>
+            </td>
+            <td class="d-none d-md-table-cell text-end position-relative"
+                data-sort-key="total"
+                data-sort-value="{{ order.total }}">
+              {% if order.is_paid %}
+                <img src="{% static 'img/paid_stamp.svg' %}"
+                     alt="{% translate 'Order Paid' %}"
+                     height="43"
+                     class="position-absolute">
+              {% endif %}
+              <strong class="text-success">${{ order.total|intcomma }}</strong>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="text-end">{{ order_list|length }} order{{ order_list|length|pluralize }}</p>
+  </div>
 {% endblock content %}
 
 {% block js %}
   {{ block.super }}
+  <script src="{% static 'js/sortable_rows.js' %}"></script>
   <script src="{% static 'js/show_tooltips.js' %}"></script>
 {% endblock js %}

@@ -28,6 +28,18 @@ class OrderListView(LoginRequiredMixin, ListView):
     model = Order
     template_name = "campaigns/order_list.html"
 
+    def _get_viewing_campaign(self):
+        if "campaign" in self.kwargs:
+            return Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
+        current = Campaign.objects.current()
+        if current:
+            return current
+        # No campaign is currently open for ordering (e.g. the gap between one
+        # campaign closing and next year's opening) — fall back to the most
+        # recently *started* campaign instead, never one that hasn't opened
+        # yet.
+        return Campaign.objects.filter(ordering_opens__lte=timezone.now()).order_by("-ordering_opens").first()
+
     def get_queryset(self):
         queryset = super().get_queryset()
 
@@ -36,24 +48,27 @@ class OrderListView(LoginRequiredMixin, ListView):
         elif self.request.GET.get("filter") == "undelivered":
             queryset = queryset.undelivered()
 
-        campaign = (
-            Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
-            if "campaign" in self.kwargs
-            else Campaign.objects.current()
-        )
+        campaign = self._get_viewing_campaign()
 
         if self.request.user.family.is_seperated:
             queryset = queryset.filter(recorded_by=self.request.user)
 
-        return (
+        queryset = (
             queryset.prefetch_related("seller", "customer", "recorded_by")
             .calculate_total()
             .filter(seller__family=self.request.user.family, campaign=campaign)
-            .order_by("-seller__date_of_birth", "date_added")
+            .order_by("date_added")
         )
+
+        seller = self.request.GET.get("seller")
+        if seller:
+            queryset = queryset.filter(seller__pk=seller)
+
+        return queryset
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        viewing = self._get_viewing_campaign()
         context["campaigns"] = {
             "available": Campaign.objects.filter(
                 Q(orders__seller__family=self.request.user.family) | Q(year=PackYear.objects.current())
@@ -61,12 +76,42 @@ class OrderListView(LoginRequiredMixin, ListView):
             .distinct()
             .order_by("-ordering_opens"),
             "current": Campaign.objects.current(),
-            "viewing": (
-                Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
-                if "campaign" in self.kwargs
-                else Campaign.objects.current()
-            ),
+            "viewing": viewing,
         }
+        if viewing == context["campaigns"]["current"]:
+            # Always show active scouts for the current campaign, even
+            # before they have any orders yet, so a new cub can be added.
+            # Active scouts must have a den membership for the campaign's
+            # year — otherwise they don't yet have a quota to show progress
+            # against and rendering quota_progress for them would error.
+            sellers = Scout.objects.filter(
+                Q(
+                    family=self.request.user.family,
+                    status=Scout.ACTIVE,
+                    den_memberships__year_assigned=viewing.year,
+                )
+                | Q(family=self.request.user.family, orders__campaign=viewing)
+            )
+        elif viewing:
+            # Past (or not-yet-open) campaigns only show scouts who actually
+            # sold something.
+            sellers = Scout.objects.filter(family=self.request.user.family, orders__campaign=viewing)
+        else:
+            # No campaign has ever opened for this pack.
+            sellers = Scout.objects.none()
+        context["sellers"] = sellers.distinct().order_by("-date_of_birth")
+        selected_seller = self.request.GET.get("seller")
+        context["selected_seller"] = context["sellers"].filter(pk=selected_seller).first() if selected_seller else None
+        # Whether to show the seller column/filter is based on how many cubs were
+        # actually part of the pack that campaign year, not just how many have
+        # placed an order so far.
+        context["family_scout_count"] = (
+            Scout.objects.filter(family=self.request.user.family, den_memberships__year_assigned=viewing.year)
+            .distinct()
+            .count()
+            if viewing
+            else 0
+        )
         return context
 
 
