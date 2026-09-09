@@ -6,8 +6,10 @@ without importing a view or duplicating the grouping.
 """
 
 from packman.calendars.models import PackYear
+from packman.membership.models import Scout
 
 from .models import RequirementRecord
+from .scouting_membership import RENEWAL_WINDOW, Standing, standing_for
 
 
 def records_for_family(family, year=None):
@@ -18,12 +20,43 @@ def records_for_family(family, year=None):
     )
 
 
-def group_by_subject(family, records):
+def active_cub_ids(family, year):
+    """
+    Which of a family's Cubs are active this year, in one query. A withdrawn or
+    graduated sibling is not being asked to renew.
+    """
+    return set(Scout.objects.active_in(year).filter(family=family).values_list("pk", flat=True))
+
+
+def membership_standing(scout):
+    """One Cub's registration as the family page shows it: a warn-ahead standing
+    plus the ID and expiration date to sit alongside it."""
+    return {
+        "standing": standing_for(scout, warn_within=RENEWAL_WINDOW),
+        "id": scout.scouting_membership_id,
+        "expires_on": scout.scouting_membership_expires_on,
+    }
+
+
+def group_by_subject(family, records, active_cub_ids=frozenset()):
     """
     One group per person, plus one for the household, so a parent can see at a
     glance who still owes what.
 
-    Cubs come first because they are usually what a parent is looking for.
+    Cubs come first because they are usually what a parent is looking for. Only
+    Cubs carry a registration standing: adults and the household hold None,
+    because the pack tracks registrations for its Cubs and leaves the adults'
+    to council.
+
+    Only the Cubs in `active_cub_ids` are shown: a sibling who has graduated or
+    withdrawn is not part of the pack this year and reads as clutter on their
+    family's page. A Cub who left part way through still appears if the year
+    holds records for them, so nothing already on file quietly disappears.
+
+    A group's `expected` says the pack is asking that Cub for a registration;
+    `registration_due` is the same but only while the standing is not current.
+    Both the badge and the attention count read these, so they cannot tell the
+    family different things.
     """
     by_member = {}
     household = []
@@ -33,22 +66,72 @@ def group_by_subject(family, records):
         else:
             household.append(record)
 
-    groups = [{"subject": scout, "records": by_member.get(scout.pk, [])} for scout in family.children.all()]
-    groups += [{"subject": adult, "records": by_member.get(adult.pk, [])} for adult in family.adults.all()]
+    def cub_group(scout):
+        expected = scout.pk in active_cub_ids
+        membership = membership_standing(scout)
+        return {
+            "subject": scout,
+            "records": by_member.get(scout.pk, []),
+            "membership": membership,
+            "expected": expected,
+            "registration_due": expected and membership["standing"] != Standing.CURRENT,
+        }
+
+    groups = [
+        cub_group(scout) for scout in family.children.all() if scout.pk in active_cub_ids or by_member.get(scout.pk)
+    ]
+    groups += [
+        {
+            "subject": adult,
+            "records": by_member.get(adult.pk, []),
+            "membership": None,
+            "expected": False,
+            "registration_due": False,
+        }
+        for adult in family.adults.all()
+    ]
     if household:
-        groups.append({"subject": family, "records": household})
+        groups.append(
+            {"subject": family, "records": household, "membership": None, "expected": False, "registration_due": False}
+        )
     return groups
 
 
 def summarize_family(family, year=None):
-    """The groups and the subset still needing attention, for one pack year."""
+    """The groups and everything still needing attention, for one pack year."""
     if family is None:
-        return {"groups": [], "outstanding": [], "year": year}
+        return {"groups": [], "outstanding": [], "registrations_due": [], "needs_attention": 0, "year": year}
 
     year = year or PackYear.objects.current()
     records = list(records_for_family(family, year))
+    groups = group_by_subject(family, records, active_cub_ids(family, year))
+    outstanding = [record for record in records if not record.is_satisfied]
+    registrations_due = [group["subject"] for group in groups if group["registration_due"]]
     return {
-        "groups": group_by_subject(family, records),
-        "outstanding": [record for record in records if not record.is_satisfied],
+        "groups": groups,
+        "outstanding": outstanding,
+        "registrations_due": registrations_due,
+        # A Cub the pack is waiting on a registration for is as much an open
+        # item as a requirement nobody has recorded, so the page cannot call
+        # itself up to date while either is true.
+        "needs_attention": len(outstanding) + len(registrations_due),
         "year": year,
     }
+
+
+def count_needs_attention(family_id, year):
+    """
+    How many open items a family has: requirement records nobody has recorded,
+    plus active Cubs whose registration is not current.
+
+    Takes family_id rather than a Family so the home page banner stays cheap.
+    summarize_family() answers the same question for a page that needs the
+    detail behind it; the two read the same two sources, so they agree.
+    """
+    outstanding = RequirementRecord.objects.for_family(family_id).for_year(year).outstanding().count()
+    due = sum(
+        1
+        for cub in Scout.objects.active_in(year).filter(family_id=family_id)
+        if standing_for(cub, warn_within=RENEWAL_WINDOW) != Standing.CURRENT
+    )
+    return outstanding + due

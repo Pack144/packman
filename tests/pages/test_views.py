@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.messages.storage.cookie import CookieStorage
 from django.core.cache import cache
 from django.test import RequestFactory, TestCase
@@ -8,7 +10,8 @@ from packman.calendars.factories import CurrentPackYearFactory
 from packman.calendars.models import PackYear
 from packman.compliance.factories import CubRequirementFactory, RequirementRecordFactory
 from packman.compliance.models import RequirementRecord
-from packman.membership.factories import ActiveScoutFactory, AdultFactory, CompleteFamilyFactory
+from packman.compliance.summaries import count_needs_attention, summarize_family
+from packman.membership.factories import ActiveScoutFactory, AdultFactory, CompleteFamilyFactory, ScoutFactory
 from packman.membership.models import Adult
 from packman.pages.models import ContentBlock, Page
 from packman.pages.views import HomePageView, PageDetailView, SignUpPageView
@@ -95,6 +98,17 @@ class HomePageRequirementsNoticeTests(TestCase):
         self.family = CompleteFamilyFactory(adults=1, active_children=2)
         self.parent = self.family.adults.first()
         self.requirement = CubRequirementFactory(slug="home-notice")
+        # The banner counts registrations too, so the Cubs start registered.
+        # These tests are about what the records contribute; the registration
+        # cases below clear a registration to say so explicitly.
+        for cub in self.family.children.all():
+            self.register(cub, timezone.localdate() + datetime.timedelta(days=200))
+
+    @staticmethod
+    def register(cub, expires_on, membership_id="137042891"):
+        cub.scouting_membership_id = membership_id
+        cub.scouting_membership_expires_on = expires_on
+        cub.save()
 
     def record(self, **kwargs):
         return RequirementRecordFactory(
@@ -105,7 +119,7 @@ class HomePageRequirementsNoticeTests(TestCase):
         )
 
     def notice(self, response):
-        return [m for m in response.context["messages"] if "requirement" in str(m)]
+        return [m for m in response.context["messages"] if "attention" in str(m)]
 
     def test_outstanding_paperwork_raises_a_notice(self):
         self.record()
@@ -128,7 +142,7 @@ class HomePageRequirementsNoticeTests(TestCase):
 
         response = self.client.get(self.url)
 
-        self.assertIn("1 membership requirement needs attention", str(self.notice(response)[0]))
+        self.assertIn("1 membership item needs attention", str(self.notice(response)[0]))
 
     def test_nothing_outstanding_is_silent(self):
         self.record(status=RequirementRecord.Status.COMPLETE)
@@ -153,6 +167,46 @@ class HomePageRequirementsNoticeTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(self.notice(response), [])
+
+    def test_a_cub_with_no_registration_raises_the_notice(self):
+        """The gap that started this: registrations count, records or not."""
+        self.register(self.family.children.first(), None, membership_id="")
+        self.client.force_login(self.parent)
+
+        response = self.client.get(self.url)
+
+        self.assertIn("1 membership item needs attention", str(self.notice(response)[0]))
+
+    def test_a_registration_lapsing_soon_counts(self):
+        """The family page warns ahead of the date, so the banner does too."""
+        self.register(self.family.children.first(), timezone.localdate() + datetime.timedelta(days=30))
+        self.client.force_login(self.parent)
+
+        response = self.client.get(self.url)
+
+        self.assertIn("1 membership item needs attention", str(self.notice(response)[0]))
+
+    def test_a_departed_siblings_registration_is_not_counted(self):
+        """Nobody is asking a Cub who has left the pack to renew."""
+        ScoutFactory(family=self.family)
+        self.client.force_login(self.parent)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(self.notice(response), [])
+
+    def test_the_banner_agrees_with_the_my_requirements_page(self):
+        """
+        The two counts drifted apart once already. Records and a registration
+        together, so a difference in either source would show up here.
+        """
+        self.record()
+        self.register(self.family.children.last(), None, membership_id="")
+
+        self.assertEqual(
+            count_needs_attention(self.family.pk, self.year),
+            summarize_family(self.family, self.year)["needs_attention"],
+        )
 
     def test_anonymous_visitors_see_no_notice(self):
         self.record()

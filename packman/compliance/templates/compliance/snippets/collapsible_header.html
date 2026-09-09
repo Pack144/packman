@@ -1,0 +1,24 @@
+{% load i18n %}
+
+{% comment %}
+  A card header that toggles the section below it. Pass `target` (the id of the
+  collapsing element), `label`, and `summary`; optionally `expanded`.
+
+  The summary sits in the header rather than inside the collapse so that a
+  closed section still says where the pack stands -- the point of collapsing
+  these is to lose the rows, not the total.
+{% endcomment %}
+<div class="card-header p-0">
+  <button class="btn btn-link text-body text-decoration-none w-100 text-start d-flex justify-content-between align-items-center gap-2 px-3 py-2 collapse-toggle"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#{{ target }}"
+          aria-expanded="{% if expanded %}true{% else %}false{% endif %}"
+          aria-controls="{{ target }}">
+    <span>
+      <i class="fa-solid fa-chevron-right fa-fw fa-xs collapse-indicator" aria-hidden="true"></i>
+      {{ label }}
+    </span>
+    <small class="text-body-secondary text-end">{{ summary }}</small>
+  </button>
+</div>

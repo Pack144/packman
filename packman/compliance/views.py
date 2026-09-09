@@ -7,6 +7,7 @@ from packman.membership.models import Family
 
 from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest
 from .models import Requirement, RequirementRecord
+from .scouting_membership import summarize_active_cubs
 from .summaries import summarize_family
 
 
@@ -52,18 +53,25 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         requirements = list(self.get_requirement_rollup(year))
 
         context["requirements"] = requirements
-        context["matrix"] = self.get_matrix(year, requirements)
+        context["families"] = self.get_matrix(year, requirements)
         context["filter"] = self.request.GET.get("filter", "")
         context["den"] = self.request.GET.get("den", "")
+        # Registrations are not tracked as a Requirement; they are read off the
+        # Cubs themselves. See compliance.scouting_membership for why.
+        context["scouting_membership"] = summarize_active_cubs(year)
         return context
 
     def get_matrix(self, year, requirements):
         """
-        A family-by-requirement grid.
+        A family-by-requirement grid, and how many families are square.
 
         Three queries: the rollup above, one aggregate over every record in the
         year, and one for the families. Deliberately not the per-row query loop
         that campaigns' OrderLeaderboardView uses.
+
+        The counts are taken before the ``filter`` query parameter is applied,
+        so the header still says how many families are outstanding out of the
+        whole pack while the table below shows only those.
         """
         cells = {
             (row["family_id"], row["requirement_id"]): row
@@ -84,12 +92,22 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
 
         wanted = self.request.GET.get("filter")
         rows = []
+        total = outstanding = 0
         for family in families:
             cell_row = [cells.get((family.pk, requirement.pk)) for requirement in requirements]
+            total += 1
+            if self.row_matches(cell_row, "outstanding"):
+                outstanding += 1
             if wanted and not self.row_matches(cell_row, wanted):
                 continue
             rows.append({"family": family, "cells": cell_row})
-        return rows
+
+        return {
+            "rows": rows,
+            "total": total,
+            "outstanding": outstanding,
+            "complete": total - outstanding,
+        }
 
     @staticmethod
     def cell_state(cell):
@@ -176,6 +194,8 @@ class FamilyComplianceView(UserIsOwnFamilyOrLeadershipTest, PackYearContextMixin
         summary = summarize_family(family, context["years"]["viewing"])
         context["groups"] = summary["groups"]
         context["outstanding"] = summary["outstanding"]
+        context["registrations_due"] = summary["registrations_due"]
+        context["needs_attention"] = summary["needs_attention"]
         return context
 
 
