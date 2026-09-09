@@ -26,9 +26,9 @@
     {% if needs_attention %}
       <div class="alert alert-warning">
         {% blocktranslate count n=needs_attention %}
-          There is {{ n }} item that still needs attention.
+          There is {{ n }} item that still needs attention. Please note that verification is done manually by the membership and treasurer, so updates may take some time to appear in the system.
         {% plural %}
-          There are {{ n }} items that still need attention.
+          There are {{ n }} items that still need attention. Please note that verification is done manually by the membership and treasurer, so updates may take some time to appear in the system.
         {% endblocktranslate %}
       </div>
     {% else %}
