@@ -253,10 +253,11 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
 
         self.assertTrue(self.group_of(response, self.cub)["expected"])
 
-    def test_an_owed_registration_is_amber_not_grey(self):
+    def test_everything_the_family_owes_is_amber(self):
         """
-        Grey is what an unrecorded requirement wears, so an owed registration in
-        grey reads as one. Amber matches the "needs attention" alert counting it.
+        One colour for "you owe this", whether it is a requirement nobody has
+        recorded or a registration nobody has filed. Amber matches the "needs
+        attention" alert at the top of the page, which counts both.
         """
         RequirementRecordFactory(
             requirement=CubRequirementFactory(slug="colour-cub"),
@@ -267,8 +268,7 @@ class MyFamilyMembershipTestCase(ComplianceViewTestCase):
         response = self.get_page()
 
         self.assertEqual(self.badge_class_for(response, "Required"), "text-bg-warning")
-        # The requirement beside it stays grey, which is the whole distinction.
-        self.assertEqual(self.badge_class_for(response, "Not started"), "text-bg-secondary")
+        self.assertEqual(self.badge_class_for(response, "Not started"), "text-bg-warning")
 
     def test_each_registration_standing_gets_its_own_colour(self):
         for label, expires_on, expected in (
@@ -576,6 +576,19 @@ class RosterContentTestCase(ComplianceViewTestCase):
         response = self.client.get(reverse("compliance:roster", kwargs={"slug": requirement.slug}))
 
         self.assertIn(self.parent.pk, [row["subject"].pk for row in response.context["rows"]])
+
+    def test_not_started_stays_grey_here(self):
+        """
+        Amber is for the family page, where it means "you owe this". This is
+        leadership's own worklist, scanned as a whole, where nothing recorded
+        is the ordinary starting state rather than a warning.
+        """
+        requirement = CubRequirementFactory(slug="roster-colour")
+        ActiveScoutFactory()
+
+        response = self.client.get(reverse("compliance:roster", kwargs={"slug": requirement.slug}))
+
+        self.assertEqual(self.badge_class_for(response, "Not started"), "text-bg-secondary")
 
 
 class FamilyContentTestCase(ComplianceViewTestCase):

@@ -117,3 +117,21 @@ def summarize_family(family, year=None):
         "needs_attention": len(outstanding) + len(registrations_due),
         "year": year,
     }
+
+
+def count_needs_attention(family_id, year):
+    """
+    How many open items a family has: requirement records nobody has recorded,
+    plus active Cubs whose registration is not current.
+
+    Takes family_id rather than a Family so the home page banner stays cheap.
+    summarize_family() answers the same question for a page that needs the
+    detail behind it; the two read the same two sources, so they agree.
+    """
+    outstanding = RequirementRecord.objects.for_family(family_id).for_year(year).outstanding().count()
+    due = sum(
+        1
+        for cub in Scout.objects.active_in(year).filter(family_id=family_id)
+        if standing_for(cub, warn_within=RENEWAL_WINDOW) != Standing.CURRENT
+    )
+    return outstanding + due
