@@ -1,6 +1,5 @@
 import decimal
 import json
-from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -147,16 +146,18 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
         # add all cubs with > 0 orders and not in Den 6m and sort in descending order of total
         all_cubs.sort(key=lambda x: x["total"], reverse=True)
 
+        current_campaign = Campaign.objects.current()
+
         # in final week, show all sellers, else obfuscate $0 sellers
-        if (Campaign.objects.current().ordering_closes - date.today()).days < 7:
+        if (current_campaign.ordering_closes - timezone.now()).days < 7:
             context["all_sellers"] = all_cubs
         else:
             context["all_sellers"] = [cub for cub in all_cubs if cub["orders"] > 0]
 
         # hide leaderboard in final days, to keep the surprise of the winner
-        if (Campaign.objects.current().ordering_closes - date.today()).days < 5:
+        if (current_campaign.ordering_closes - timezone.now()).days < 5:
             context["hide_leaderboard"] = True
-            context["days_left"] = (Campaign.objects.current().ordering_closes - date.today()).days
+            context["days_left"] = (current_campaign.ordering_closes - timezone.now()).days
 
         # total up orders for each den from all_cubs and sort from most to least
         all_dens = []

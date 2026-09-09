@@ -45,9 +45,11 @@ class Campaign(TimeStampedModel):
         PackYear, on_delete=models.CASCADE, related_name="campaigns", default=PackYear.get_current
     )
 
-    ordering_opens = models.DateField(_("sales open"), help_text=_("The date when members can start taking orders."))
-    ordering_closes = models.DateField(
-        _("sales close"), help_text=_("The final date when all orders must be submitted.")
+    ordering_opens = models.DateTimeField(
+        _("sales open"), help_text=_("The date and time when members can start taking orders.")
+    )
+    ordering_closes = models.DateTimeField(
+        _("sales close"), help_text=_("The final date and time when all orders must be submitted.")
     )
     delivery_available = models.DateField(
         _("delivery available"), help_text=_("The date when orders will be available to be delivered.")
@@ -81,14 +83,14 @@ class Campaign(TimeStampedModel):
             raise ValidationError(
                 {"prize_window_closes": _("Prize selection window cannot close before it opens.")}, code="invalid"
             )
-        if self.delivery_available < self.ordering_opens:
+        if self.delivery_available < self.ordering_opens.date():
             raise ValidationError(
                 {"delivery_available": _("Orders cannot be delivered prior to taking orders.")}, code="invalid"
             )
 
     @admin.display(boolean=True, description=_("orders open"))
     def can_take_orders(self):
-        return self.ordering_opens <= timezone.now().date() <= self.ordering_closes
+        return self.ordering_opens <= timezone.now() <= self.ordering_closes
 
     @admin.display(boolean=True, description=_("prizes open"))
     def can_select_prizes(self):

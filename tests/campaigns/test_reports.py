@@ -24,7 +24,7 @@ class CampaignReportTestCase(TestCase):
         # Anchor the campaign windows to "today" (well outside Campaign.objects.current()'s
         # 90-day lookback) rather than hardcoded calendar dates, so these tests don't become
         # flaky/incorrect depending on what day they happen to run.
-        today = timezone.now().date()
+        today = timezone.now()
         self.previous_campaign = self.create_campaign(self.previous_year, today - timezone.timedelta(days=400))
         self.current_campaign = self.create_campaign(self.current_year, today - timezone.timedelta(days=200))
 
@@ -120,8 +120,8 @@ class CampaignReportAccessControlTestCase(TestCase):
         current_year = PackYearFactory(year=2026)
         Campaign.objects.create(
             year=current_year,
-            ordering_opens=timezone.datetime(2026, 9, 1).date(),
-            ordering_closes=timezone.datetime(2026, 10, 1).date(),
+            ordering_opens=timezone.make_aware(timezone.datetime(2026, 9, 1)),
+            ordering_closes=timezone.make_aware(timezone.datetime(2026, 10, 1)),
             delivery_available=timezone.datetime(2026, 10, 15).date(),
             prize_window_opens=timezone.datetime(2026, 10, 15).date(),
             prize_window_closes=timezone.datetime(2026, 10, 30).date(),
