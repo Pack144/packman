@@ -41,11 +41,11 @@ class OrderQuerySet(models.QuerySet):
 
     def donations_total(self):
         return self.aggregate(
-            total=Sum("donation"),
+            total=Coalesce(Sum("donation"), decimal.Decimal(0.00)),
         )
 
     def products_total(self):
-        return self.product_total().aggregate(total=Sum("product_total"))
+        return self.product_total().aggregate(total=Coalesce(Sum("product_total"), decimal.Decimal(0.00)))
 
     def product_total(self):
         return self.annotate(

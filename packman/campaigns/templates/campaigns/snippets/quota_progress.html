@@ -1,83 +1,33 @@
-{% load humanize i18n %}
+{% load campaign_extras humanize i18n %}
 
 <h2>{{ scout.short_name }}</h2>
-{# TODO: find a way to show progress in non-current campaigns #}
-{% if campaigns.viewing == campaigns.current %}
-  {% with quota=scout.current_den.quotas.current.target products_total=scout.orders.current_campaign.products_total.total donations_total=scout.orders.current_campaign.donations_total.total total=scout.orders.current_campaign.products_total.total|add:scout.orders.current_campaign.donations_total.total %}
-    {# TODO: don't hard code incentive values #}
-    {% if total < quota %}
-      {% widthratio total quota 100 as quota_progress %}
-      <div class="text-end">
-        <strong>quota: ${{ quota }}</strong>
-      </div>
-    {% elif total < 1000 %}
-      {% widthratio quota quota 65 as quota_progress %}
-      {% widthratio total 1000 35 as bronze_progress %}
-      <div class="text-end">
-        <strong>bronze medal: $1,000</strong>
-      </div>
-    {% elif total < 1500 %}
-      {% widthratio quota quota 44 as quota_progress %}
-      {% widthratio 1000 1000 28 as bronze_progress %}
-      {% widthratio total 1500 28 as silver_progress %}
-      <div class="text-end">
-        <strong>silver medal: $1,500</strong>
-      </div>
-    {% elif total <= 2000 %}
-      {% widthratio quota quota 33 as quota_progress %}
-      {% widthratio 1000 1000 23 as bronze_progress %}
-      {% widthratio 1500 1500 22 as silver_progress %}
-      {% widthratio total 2000 22 as gold_progress %}
-      <div class="text-end">
-        <strong>gold medal: $2,000</strong>
-      </div>
-    {% else %}
-      {% widthratio quota quota 33 as quota_progress %}
-      {% widthratio 1000 1000 23 as bronze_progress %}
-      {% widthratio 1500 1500 22 as silver_progress %}
-      {% widthratio total 2000 22 as gold_progress %}
-      <div class="text-end">
-        <strong>Golden Peanut Contender</strong>
-      </div>
-    {% endif %}
-    <div class="progress-stacked">
-      <div class="progress" role="progressbar" aria-label="{% translate 'Progress towards quota' %}" aria-valuenow="{{ quota_progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ quota_progress }}%">
-        <div class="progress-bar"></div>
-      </div>
-      {% if bronze_progress %}
-        <div class="progress" role="progressbar" aria-label="{% translate 'Progress towards a Bronze metal' %}" aria-valuenow="{{ bronze_progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bronze_progress }}%">
-          <div class="progress-bar" style="background-color: #CD7F32"></div>
-        </div>
-      {% endif %}
-      {% if silver_progress %}
-        <div class="progress" role="progressbar" aria-label="{% translate 'Progress towards a Silver metal' %}" aria-valuenow="{{ silver_progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ silver_progress }}%">
-          <div class="progress-bar" style="background-color: #C0C0C0"></div>
-        </div>
-      {% endif %}
-      {% if gold_progress %}
-        <div class="progress" role="progressbar" aria-label="{% translate 'Progress towards a Gold metal' %}" aria-valuenow="{{ gold_progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ gold_progress }}%">
-          <div class="progress-bar" style="background-color: #FFD700"></div>
-        </div>
-      {% endif %}
+{% quota_progress scout campaigns.viewing as progress %}
+<div class="d-flex justify-content-between">
+  <strong>{{ progress.progress_text }}</strong>
+  <strong>{{ progress.next_tier_label }}</strong>
+</div>
+<div class="progress-stacked" role="progressbar" aria-label="{% translate 'Fundraising progress' %}" aria-valuenow="{{ progress.total }}" aria-valuemin="0">
+  {% for segment in progress.segments %}
+    <div class="progress" style="width: {{ segment.pct }}%">
+      <div class="progress-bar" style="background-color: {{ segment.color }};{% if segment.opacity %} opacity: {{ segment.opacity }};{% endif %}"></div>
     </div>
-    {% if quota %}{% endif %}
-    <table class="table">
-      <thead>
-      <tr>
-        <th scope="col">{% translate 'Product Orders' %}</th>
-        <th scope="col">{% translate 'Donations' %}</th>
-        <th scope="col">{% translate 'Total' %}</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr>
-        <td>$ {{ products_total|intcomma }}</td>
-        <td>$ {{ donations_total|intcomma }}</td>
-        <td>
-          <strong>$ {{ total|intcomma }}</strong>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  {% endwith %}
-{% endif %}
+  {% endfor %}
+</div>
+<table class="table">
+  <thead>
+  <tr>
+    <th scope="col">{% translate 'Product Orders' %}</th>
+    <th scope="col">{% translate 'Donations' %}</th>
+    <th scope="col">{% translate 'Total' %}</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td>$ {{ progress.products_total|intcomma }}</td>
+    <td>$ {{ progress.donations_total|intcomma }}</td>
+    <td>
+      <strong>$ {{ progress.total|intcomma }}</strong>
+    </td>
+  </tr>
+  </tbody>
+</table>

@@ -256,18 +256,32 @@ table.sortable tr td:first-child::before {
     margin-right: 0.5em;
 }
 
-table.sortable th[aria-sort="descending"] span::after {
+table.sortable th[aria-sort="descending"] span::after,
+[data-sort-header][aria-sort="descending"] span::after {
     content: " ▼";
     color: currentcolor;
     font-size: 100%;
     top: 0;
 }
 
-table.sortable th[aria-sort="ascending"] span::after {
+table.sortable th[aria-sort="ascending"] span::after,
+[data-sort-header][aria-sort="ascending"] span::after {
     content: " ▲";
     color: currentcolor;
     font-size: 100%;
     top: 0;
+}
+
+/* Orders table: hide the header row on narrow screens where each order's
+   customer/date/total already collapse into a single stacked cell. */
+.order-table thead {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .order-table thead {
+        display: table-header-group;
+    }
 }
 
 /* Card headers that toggle the section below them, e.g. the compliance
