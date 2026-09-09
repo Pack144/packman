@@ -1,11 +1,18 @@
 from decimal import Decimal
 
 from django.test import TestCase
+from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory
 from packman.campaigns.models import Campaign, Customer, Order, Quota
 from packman.campaigns.templatetags.campaign_extras import quota_progress
 from packman.membership.factories import ActiveScoutFactory, AdultFactory, FamilyFactory
+
+
+def _start_of_day(a_date):
+    """Convert a date into an aware datetime at midnight, for use with Campaign's
+    DateTimeField ordering_opens/ordering_closes."""
+    return timezone.make_aware(timezone.datetime.combine(a_date, timezone.datetime.min.time()))
 
 
 class QuotaProgressTagTest(TestCase):
@@ -16,8 +23,8 @@ class QuotaProgressTagTest(TestCase):
         self.scout = ActiveScoutFactory(family=self.family)
         self.campaign = Campaign.objects.create(
             year=self.pack_year,
-            ordering_opens=self.pack_year.start_date,
-            ordering_closes=self.pack_year.end_date,
+            ordering_opens=_start_of_day(self.pack_year.start_date),
+            ordering_closes=_start_of_day(self.pack_year.end_date),
             delivery_available=self.pack_year.end_date,
             prize_window_opens=self.pack_year.start_date,
             prize_window_closes=self.pack_year.end_date,
