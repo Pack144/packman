@@ -78,8 +78,15 @@ class OrderListView(LoginRequiredMixin, ListView):
         if viewing == context["campaigns"]["current"]:
             # Always show active scouts for the current campaign, even
             # before they have any orders yet, so a new cub can be added.
+            # Active scouts must have a den membership for the campaign's
+            # year — otherwise they don't yet have a quota to show progress
+            # against and rendering quota_progress for them would error.
             sellers = Scout.objects.filter(
-                Q(family=self.request.user.family, status=Scout.ACTIVE)
+                Q(
+                    family=self.request.user.family,
+                    status=Scout.ACTIVE,
+                    den_memberships__year_assigned=viewing.year,
+                )
                 | Q(family=self.request.user.family, orders__campaign=viewing)
             )
         else:
