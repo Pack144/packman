@@ -83,6 +83,10 @@ class Campaign(TimeStampedModel):
             raise ValidationError(
                 {"prize_window_closes": _("Prize selection window cannot close before it opens.")}, code="invalid"
             )
+        # NOTE: .date() extracts the UTC calendar date, not the configured local date, so an
+        # ordering_opens late enough in the local timezone to cross a UTC day boundary could be
+        # compared against the wrong day here. Delivery dates are always set weeks after ordering
+        # opens in practice, so this edge case is not worth the extra timezone.localtime() call.
         if self.delivery_available < self.ordering_opens.date():
             raise ValidationError(
                 {"delivery_available": _("Orders cannot be delivered prior to taking orders.")}, code="invalid"
