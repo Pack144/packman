@@ -94,7 +94,7 @@ class PopulateNavbarTests(TestCase):
         )
 
     def test_all_ncc_placed_pages_appear_in_the_ncc_dropdown(self):
-        today = timezone.now().date()
+        today = timezone.now()
         Campaign.objects.create(
             year=PackYearFactory(),
             ordering_opens=today - timezone.timedelta(days=1),

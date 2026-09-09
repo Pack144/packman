@@ -1,11 +1,18 @@
 import re
 
 from django.test import TestCase
+from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
 from packman.campaigns.models import Campaign, Customer, Order, Quota
 from packman.dens.models import Membership
 from packman.membership.factories import ActiveScoutFactory, AdultFactory, FamilyFactory
+
+
+def _start_of_day(a_date):
+    """Convert a date into an aware datetime at midnight, for use with Campaign's
+    DateTimeField ordering_opens/ordering_closes."""
+    return timezone.make_aware(timezone.datetime.combine(a_date, timezone.datetime.min.time()))
 
 
 class OrderListSmokeTest(TestCase):
@@ -17,8 +24,8 @@ class OrderListSmokeTest(TestCase):
         self.scout2 = ActiveScoutFactory(family=self.family)
         self.campaign = Campaign.objects.create(
             year=self.pack_year,
-            ordering_opens=self.pack_year.start_date,
-            ordering_closes=self.pack_year.end_date,
+            ordering_opens=_start_of_day(self.pack_year.start_date),
+            ordering_closes=_start_of_day(self.pack_year.end_date),
             delivery_available=self.pack_year.end_date,
             prize_window_opens=self.pack_year.start_date,
             prize_window_closes=self.pack_year.end_date,
@@ -75,8 +82,8 @@ class OrderListSmokeTest(TestCase):
         past_year = PackYearFactory(year=self.pack_year.year - 5)
         past_campaign = Campaign.objects.create(
             year=past_year,
-            ordering_opens=past_year.start_date,
-            ordering_closes=past_year.end_date,
+            ordering_opens=_start_of_day(past_year.start_date),
+            ordering_closes=_start_of_day(past_year.end_date),
             delivery_available=past_year.end_date,
             prize_window_opens=past_year.start_date,
             prize_window_closes=past_year.end_date,

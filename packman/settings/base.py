@@ -180,7 +180,7 @@ LANGUAGE_CODE = env("LANGUAGE_CODE", default="en-us")
 
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
-TIME_ZONE = env("TIME_ZONE", default="UTC")
+TIME_ZONE = "America/Los_Angeles"
 
 USE_I18N = True
 

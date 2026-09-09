@@ -17,8 +17,12 @@ class CampaignFilterTestCase(TestCase):
     def setUpTestData(cls):
         cls.previous_year = PackYearFactory(year=2025)
         cls.current_year = PackYearFactory(year=2026)
-        cls.previous_campaign = cls.create_campaign(cls.previous_year, timezone.datetime(2025, 9, 1).date())
-        cls.current_campaign = cls.create_campaign(cls.current_year, timezone.datetime(2026, 9, 1).date())
+        cls.previous_campaign = cls.create_campaign(
+            cls.previous_year, timezone.make_aware(timezone.datetime(2025, 9, 1))
+        )
+        cls.current_campaign = cls.create_campaign(
+            cls.current_year, timezone.make_aware(timezone.datetime(2026, 9, 1))
+        )
 
         cls.previous_order = Order.objects.create(campaign=cls.previous_campaign, seller=ScoutFactory())
         cls.current_order = Order.objects.create(campaign=cls.current_campaign, seller=ScoutFactory())
