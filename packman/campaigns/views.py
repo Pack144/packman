@@ -29,6 +29,18 @@ class OrderListView(LoginRequiredMixin, ListView):
     model = Order
     template_name = "campaigns/order_list.html"
 
+    def _get_viewing_campaign(self):
+        if "campaign" in self.kwargs:
+            return Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
+        current = Campaign.objects.current()
+        if current:
+            return current
+        # No campaign is currently open for ordering (e.g. the gap between one
+        # campaign closing and next year's opening) — fall back to the most
+        # recently *started* campaign instead, never one that hasn't opened
+        # yet.
+        return Campaign.objects.filter(ordering_opens__lte=timezone.now()).order_by("-ordering_opens").first()
+
     def get_queryset(self):
         queryset = super().get_queryset()
 
@@ -37,11 +49,7 @@ class OrderListView(LoginRequiredMixin, ListView):
         elif self.request.GET.get("filter") == "undelivered":
             queryset = queryset.undelivered()
 
-        campaign = (
-            Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
-            if "campaign" in self.kwargs
-            else Campaign.objects.current()
-        )
+        campaign = self._get_viewing_campaign()
 
         if self.request.user.family.is_seperated:
             queryset = queryset.filter(recorded_by=self.request.user)
@@ -61,11 +69,7 @@ class OrderListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        viewing = (
-            Campaign.objects.get(year=PackYear.get_pack_year(self.kwargs["campaign"])["end_date"].year)
-            if "campaign" in self.kwargs
-            else Campaign.objects.current()
-        )
+        viewing = self._get_viewing_campaign()
         context["campaigns"] = {
             "available": Campaign.objects.filter(
                 Q(orders__seller__family=self.request.user.family) | Q(year=PackYear.objects.current())
@@ -89,9 +93,13 @@ class OrderListView(LoginRequiredMixin, ListView):
                 )
                 | Q(family=self.request.user.family, orders__campaign=viewing)
             )
-        else:
-            # Past campaigns only show scouts who actually sold something.
+        elif viewing:
+            # Past (or not-yet-open) campaigns only show scouts who actually
+            # sold something.
             sellers = Scout.objects.filter(family=self.request.user.family, orders__campaign=viewing)
+        else:
+            # No campaign has ever opened for this pack.
+            sellers = Scout.objects.none()
         context["sellers"] = sellers.distinct().order_by("-date_of_birth")
         selected_seller = self.request.GET.get("seller")
         context["selected_seller"] = context["sellers"].filter(pk=selected_seller).first() if selected_seller else None
@@ -102,6 +110,8 @@ class OrderListView(LoginRequiredMixin, ListView):
             Scout.objects.filter(family=self.request.user.family, den_memberships__year_assigned=viewing.year)
             .distinct()
             .count()
+            if viewing
+            else 0
         )
         return context
 
