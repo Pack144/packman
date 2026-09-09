@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from packman.membership.models import Member
+from packman.membership.models import Adult, Member, Scout
 
 
 class MemberTestCase(TestCase):
@@ -71,6 +71,42 @@ class MemberTestCase(TestCase):
             Member.objects.create(first_name="Another", last_name="Member")
             Member.objects.create(first_name="Another", nickname="Wonderful", last_name="Member")
             Member.objects.create(first_name="Another", last_name="Member", suffix="2")
+
+
+class ScoutingMembershipFieldsTestCase(TestCase):
+    """
+    The registration lives on Scout, not on the shared Member. The pack tracks
+    its own Cubs; registered adults are council's record, not ours.
+    """
+
+    def test_the_membership_id_is_stripped_on_save(self):
+        """
+        Compliance asks whether an ID is on file in Python and in SQL, and both
+        read "" as absent; an untrimmed value would answer the two differently.
+        """
+        cub = Scout.objects.create(first_name="Wilma", last_name="Wolf", scouting_membership_id="  12345678  ")
+
+        cub.refresh_from_db()
+
+        self.assertEqual(cub.scouting_membership_id, "12345678")
+
+    def test_a_whitespace_only_id_becomes_empty(self):
+        cub = Scout.objects.create(first_name="Barney", last_name="Bear", scouting_membership_id="   ")
+
+        cub.refresh_from_db()
+
+        self.assertEqual(cub.scouting_membership_id, "")
+
+    def test_both_fields_are_optional(self):
+        cub = Scout.objects.create(first_name="Betty", last_name="Bobcat")
+
+        self.assertEqual(cub.scouting_membership_id, "")
+        self.assertIsNone(cub.scouting_membership_expires_on)
+
+    def test_an_adult_carries_no_registration_at_all(self):
+        """Not blank, not null - the field is not there to be set."""
+        self.assertFalse(hasattr(Adult(), "scouting_membership_id"))
+        self.assertFalse(hasattr(Member(), "scouting_membership_id"))
 
 
 class AdultTestCase(TestCase):

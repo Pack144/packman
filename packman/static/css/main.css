@@ -283,3 +283,20 @@ table.sortable th[aria-sort="ascending"] span::after,
         display: table-header-group;
     }
 }
+
+/* Card headers that toggle the section below them, e.g. the compliance
+   dashboard's tables. Bootstrap's own accordion is the wrong fit there: these
+   are independent cards, not one exclusive group. */
+.collapse-toggle .collapse-indicator {
+    transition: transform 0.2s ease-in-out;
+}
+
+.collapse-toggle[aria-expanded="true"] .collapse-indicator {
+    transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .collapse-toggle .collapse-indicator {
+        transition: none;
+    }
+}
