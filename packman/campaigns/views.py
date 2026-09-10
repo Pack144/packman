@@ -63,6 +63,8 @@ class OrderListView(LoginRequiredMixin, ListView):
         seller = self.request.GET.get("seller")
         if seller:
             queryset = queryset.filter(seller__pk=seller)
+            # Ineligible orders are surfaced for review in All Cubs, not in an individual cub's order list.
+            queryset = queryset.award_eligible()
 
         return queryset
 
@@ -158,7 +160,8 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
             ),
         }
 
-        orders = Order.objects.calculate_total().filter(campaign=context["campaigns"]["viewing"])
+        # Leaderboard rankings exclude explicitly ineligible orders, unlike operational reports.
+        orders = Order.objects.award_eligible().calculate_total().filter(campaign=context["campaigns"]["viewing"])
         cubs = Membership.objects.prefetch_related("scout", "den").filter(
             year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE
         )
@@ -352,6 +355,8 @@ class PrizeSelectionView(LoginRequiredMixin, FormView):
         cubs = self.request.user.family.children.active()
         orders = (
             Order.objects.prefetch_related("seller")
+            # Prize totals exclude explicitly ineligible orders, which remain part of campaign reports.
+            .award_eligible()
             .calculate_total()
             .filter(seller__in=cubs, campaign=Campaign.objects.latest())
         )
@@ -361,14 +366,7 @@ class PrizeSelectionView(LoginRequiredMixin, FormView):
         for cub in cubs:
             quota = Quota.objects.get(den=cub.current_den, campaign=Campaign.objects.latest()).target
             total = orders.filter(seller=cub).totaled()["totaled"]
-            if total < quota:
-                points_earned = 0
-            elif total <= 2000:
-                points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
-            else:
-                points_earned = PrizePoint.objects.order_by("earned_at").last().value + int(
-                    (total - PrizePoint.objects.order_by("earned_at").last().earned_at) / 100
-                )
+            points_earned = PrizePoint.calculate_earned_points(total, quota)
             points_spent = PrizeSelection.objects.filter(
                 campaign=Campaign.objects.latest(), cub=cub
             ).calculate_total_points_spent()["spent"]

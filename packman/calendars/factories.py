@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import random
 
@@ -9,6 +10,12 @@ from factory.faker import faker
 from packman.calendars.models import Category, Event, PackYear
 
 fake = faker.Faker()
+
+
+def _replace_year_clamped(value, year):
+    """Replace a date's year without carrying February 29 into a non-leap year."""
+    day = min(value.day, calendar.monthrange(year, value.month)[1])
+    return value.replace(year=year, day=day)
 
 
 class PackYearFactory(factory.django.DjangoModelFactory):
@@ -26,11 +33,12 @@ class PackYearFactory(factory.django.DjangoModelFactory):
         if self.follows_calendar:
             return datetime.date(year=self.year, month=1, day=1)
         else:
-            return fake.date_object().replace(year=self.year)
+            return _replace_year_clamped(fake.date_object(), self.year)
 
     @factory.lazy_attribute
     def end_date(self):
-        return self.start_date.replace(year=self.start_date.year + 1) - datetime.timedelta(days=1)
+        next_anniversary = _replace_year_clamped(self.start_date, self.start_date.year + 1)
+        return next_anniversary - datetime.timedelta(days=1)
 
 
 class CurrentPackYearFactory(PackYearFactory):

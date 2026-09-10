@@ -61,11 +61,11 @@ class CampaignReportTestCase(TestCase):
         response = generate_weekly_report(self._authorized_request("/reports/weekly/"))
         rows = list(csv.reader(io.StringIO(response.content.decode())))
 
-        self.assertEqual(rows[0], ["Cub", "Den", "Order Count", "Total Sales"])
+        self.assertEqual(rows[0], ["Cub", "Den", "Order Count", "Total Sales", "Eligible Total"])
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[1][0], str(current_member.scout))
         self.assertEqual(rows[1][1], str(current_member.den))
-        self.assertEqual(rows[1][2:], ["1", "25"])
+        self.assertEqual(rows[1][2:], ["1", "25", "25"])
 
     def test_weekly_report_uses_the_den_assigned_for_the_campaign_year(self):
         # A scout who moved dens between pack years must be reported under the
@@ -95,8 +95,46 @@ class CampaignReportTestCase(TestCase):
 
         row = list(report_rows(self.current_campaign))[1]
 
+        self.assertEqual(row[5], decimal.Decimal("100.00"))
+        self.assertEqual(row[8], 55)
+
+    def test_campaign_report_splits_operational_and_award_totals(self):
+        member = MembershipFactory(year_assigned=self.current_year)
+        Quota.objects.create(campaign=self.current_campaign, den=member.den, target=decimal.Decimal("500.00"))
+        PrizePoint.objects.create(earned_at=decimal.Decimal("500.00"), value=5)
+        PrizePoint.objects.create(earned_at=decimal.Decimal("1000.00"), value=10)
+        Order.objects.create(campaign=self.current_campaign, seller=member.scout, donation=decimal.Decimal("100.00"))
+        Order.objects.create(
+            campaign=self.current_campaign,
+            seller=member.scout,
+            donation=decimal.Decimal("1000.00"),
+            award_ineligible=True,
+        )
+
+        rows = list(report_rows(self.current_campaign))
+        row = rows[1]
+
+        self.assertEqual(rows[0][3:6], ["Total", "Eligible Total", "Quota"])
+        self.assertEqual(row[2], 2)
+        self.assertEqual(row[3], decimal.Decimal("1100.00"))
         self.assertEqual(row[4], decimal.Decimal("100.00"))
-        self.assertEqual(row[7], 55)
+        self.assertFalse(row[6])
+        self.assertEqual(row[7], decimal.Decimal("1100.00"))
+        self.assertEqual(row[8], 0)
+
+    def test_weekly_report_includes_award_ineligible_orders(self):
+        member = MembershipFactory(year_assigned=self.current_year)
+        Order.objects.create(
+            campaign=self.current_campaign,
+            seller=member.scout,
+            donation=decimal.Decimal("25.00"),
+            award_ineligible=True,
+        )
+
+        response = generate_weekly_report(self._authorized_request("/reports/weekly/"))
+        rows = list(csv.reader(io.StringIO(response.content.decode())))
+
+        self.assertEqual(rows[1][2:], ["1", "25", "0"])
 
     def test_turn_in_night_report_falls_back_to_latest_campaign_when_none_is_current(self):
         # No campaign's ordering window covers "now", so Campaign.objects.current()

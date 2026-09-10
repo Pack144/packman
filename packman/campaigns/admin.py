@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin, messages
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -94,6 +95,21 @@ class IsPaidFilter(admin.SimpleListFilter):
             return queryset.filter(date_paid__isnull=False)
         if self.value() == "false":
             return queryset.filter(date_paid__isnull=True)
+
+
+class OrderAdminForm(forms.ModelForm):
+    award_ineligible = forms.BooleanField(
+        label=_("Award Ineligible"),
+        required=False,
+        help_text=Order._meta.get_field("award_ineligible").help_text,
+    )
+
+    class Meta:
+        model = Order
+        fields = "__all__"
+
+    def clean_award_ineligible(self):
+        return True if self.cleaned_data["award_ineligible"] else None
 
 
 class OrderInline(admin.StackedInline):
@@ -205,6 +221,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    form = OrderAdminForm
     inlines = [OrderItemInline]
     list_display = [
         "customer",
@@ -212,11 +229,12 @@ class OrderAdmin(admin.ModelAdmin):
         "campaign",
         "is_paid",
         "is_delivered",
+        "is_award_ineligible",
         "product_total",
         "donation",
         "order_total",
     ]
-    list_filter = [IsPaidFilter, IsDeliveredFilter, CampaignFilter, "seller"]
+    list_filter = [IsPaidFilter, IsDeliveredFilter, "award_ineligible", CampaignFilter, "seller"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).calculate_total()
@@ -228,6 +246,10 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.display(description="total", ordering="total")
     def order_total(self, obj):
         return obj.total
+
+    @admin.display(description=_("Award Ineligible"), boolean=True, ordering="award_ineligible")
+    def is_award_ineligible(self, obj):
+        return obj.award_ineligible is True
 
 
 @admin.register(Prize)

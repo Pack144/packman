@@ -49,6 +49,7 @@ def report_rows(campaign):
         "Den",
         "Order Count",
         "Total",
+        "Eligible Total",
         "Quota",
         "Achieved",
         "Amount Owed",
@@ -64,25 +65,12 @@ def report_rows(campaign):
 def generate_cub_row(cub, orders, campaign):
     cub_orders = orders.filter(seller__den_memberships=cub)
     total = cub_orders.totaled()["totaled"]
+    # Award fields exclude explicitly ineligible orders, while financial report fields use every order.
+    award_total = cub_orders.award_eligible().totaled()["totaled"]
     quota_obj = cub.den.quotas.filter(campaign=campaign).first()
     quota = quota_obj.target if quota_obj is not None else 0
 
-    # calculate points earned
-    top_prize_points = PrizePoint.objects.order_by("earned_at").reverse()[:2]
-    last_prize_point = top_prize_points[0]
-    prize_point_earned_at_difference = top_prize_points[0].earned_at - top_prize_points[1].earned_at
-    prize_point_value_difference = top_prize_points[0].value - top_prize_points[1].value
-
-    if total < quota:
-        points_earned = 0
-    elif total <= last_prize_point.earned_at:
-        points_earned = PrizePoint.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
-    else:
-        earned_above_configured_prize_points = total - last_prize_point.earned_at
-        tiers_above_configured_prize_points = int(
-            earned_above_configured_prize_points / prize_point_earned_at_difference
-        )
-        points_earned = last_prize_point.value + (tiers_above_configured_prize_points * prize_point_value_difference)
+    points_earned = PrizePoint.calculate_earned_points(award_total, quota)
 
     points_spent = PrizeSelection.objects.filter(cub=cub.scout, campaign=campaign).calculate_total_points_spent()[
         "spent"
@@ -90,8 +78,8 @@ def generate_cub_row(cub, orders, campaign):
     points_remaining = points_earned - points_spent
 
     # TODO: Don't hard-code the minimum if quota unmet
-    met_quota = total >= quota
-    if not met_quota:
+    met_quota = award_total >= quota
+    if total < quota:
         shortfall = quota - total
         owed = total + shortfall * decimal.Decimal("0.65")
     else:
@@ -102,6 +90,7 @@ def generate_cub_row(cub, orders, campaign):
         cub.den,
         cub_orders.count(),
         total,
+        award_total,
         quota,
         met_quota,
         owed.quantize(decimal.Decimal(".01")),
@@ -125,7 +114,7 @@ def generate_weekly_report(request):
         begin_date = end_date - timezone.timedelta(days=7)
 
     report_name = f"Campaign Weekly Report ({begin_date.month}-{begin_date.day}-{begin_date.year} to {end_date.month}-{end_date.day}-{end_date.year}).csv"  # noqa: E501
-    field_names = ["Cub", "Den", "Order Count", "Total Sales"]
+    field_names = ["Cub", "Den", "Order Count", "Total Sales", "Eligible Total"]
 
     campaign = Campaign.get_latest()
     orders = campaign.orders.filter(date_added__gte=begin_date, date_added__lte=end_date)
@@ -138,6 +127,8 @@ def generate_weekly_report(request):
 
     for cub in members:
         cub_orders = orders.filter(seller__den_memberships=cub)
-        writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"]])
+        # Show award-eligible sales separately without changing the report's inclusive financial total.
+        eligible_total = cub_orders.award_eligible().totaled()["totaled"]
+        writer.writerow([cub.scout, cub.den, cub_orders.count(), cub_orders.totaled()["totaled"], eligible_total])
 
     return response

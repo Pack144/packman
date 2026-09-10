@@ -258,6 +258,31 @@ class PrizePoint(models.Model):
     def __str__(self):
         return str(self.value)
 
+    @classmethod
+    def calculate_earned_points(cls, total, quota):
+        """
+        Calculate points from an award-eligible sales total.
+
+        Sales must first meet the cub's quota. Configured PrizePoint rows define
+        the thresholds through the highest tier; totals above that tier extrapolate
+        from the sales interval and point increase between the top two rows.
+        """
+        # Sales below the cub's den quota earn no points, even if they cross a configured threshold.
+        if total < quota:
+            return 0
+
+        top_prize_points = list(cls.objects.order_by("-earned_at")[:2])
+        highest_tier = top_prize_points[0]
+        # Within the configured range, award the highest threshold at or below the sales total.
+        if total <= highest_tier.earned_at:
+            return cls.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
+
+        # Beyond the configured range, extrapolate a repeating tier size and point increase from the top two rows.
+        earned_at_step = highest_tier.earned_at - top_prize_points[1].earned_at
+        point_step = highest_tier.value - top_prize_points[1].value
+        tiers_above_highest = int((total - highest_tier.earned_at) / earned_at_step)
+        return highest_tier.value + tiers_above_highest * point_step
+
 
 class Customer(TimeStampedUUIDModel):
     """
@@ -345,6 +370,13 @@ class Order(TimeStampedUUIDModel):
 
     date_paid = models.DateTimeField(_("paid"), blank=True, null=True)
     date_delivered = models.DateTimeField(_("delivered"), blank=True, null=True)
+    award_ineligible = models.BooleanField(
+        _("award ineligible"),
+        blank=True,
+        null=True,
+        default=None,
+        help_text=_("Select Yes to exclude this order from leaderboards, quota progress, medals, and prize points."),
+    )
 
     objects = OrderQuerySet.as_manager()
 

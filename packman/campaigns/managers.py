@@ -17,13 +17,12 @@ class CampaignQuerySet(models.QuerySet):
         except self.model.DoesNotExist:
             return None
 
-    def calculate_amount_owed(self):
-        return self.model.orders.field.model.objects.filter(
-            campaign=OuterRef("pk").order_by().calculate_total().values("total")
-        )
-
 
 class OrderQuerySet(models.QuerySet):
+    def award_eligible(self):
+        # Only an explicit opt-out removes an order; legacy/default NULL values remain eligible.
+        return self.exclude(award_ineligible=True)
+
     def donation_only(self):
         # Returns a filtered queryset of orders that contain no items
         return self.filter(item__isnull=True)
@@ -64,9 +63,6 @@ class OrderQuerySet(models.QuerySet):
 
     def calculate_total(self):
         return self.calculate_subtotal().annotate(total=F("subtotal") + Coalesce(F("donation"), decimal.Decimal(0.00)))
-
-    def calculate_prize_points(self):
-        return self.calculate_total().aggregate(prize_points=Sum(F("total") - 550))
 
     def totaled(self):
         return self.calculate_total().aggregate(totaled=Coalesce(Sum("total"), decimal.Decimal(0.00)))
