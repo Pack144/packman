@@ -70,6 +70,18 @@ class QuotaProgressTagTest(TestCase):
         # reduced opacity) rather than left blank.
         self.assertAlmostEqual(self._total_pct(progress), 100, places=1)
 
+    def test_award_ineligible_orders_do_not_advance_progress(self):
+        self._set_quota(Decimal("550"))
+        self._add_order(Decimal("100"))
+        order = self._add_order(Decimal("1000"))
+        order.award_ineligible = True
+        order.save()
+
+        progress = quota_progress(self.scout, self.campaign)
+
+        self.assertEqual(progress["total"], Decimal("100.00"))
+        self.assertEqual(progress["next_tier_label"], "Quota: $550.00")
+
     def test_segments_are_continuous_across_bronze_boundary(self):
         self._set_quota(Decimal("550"))
         self._add_order(Decimal("550"))  # exactly at quota — quota is now considered met

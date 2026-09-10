@@ -145,7 +145,14 @@
               </h5>
               <small class="text-muted d-block">{{ order.customer.get_address_display }}</small>
               <small class="text-muted d-md-none">
-                {% if not selected_seller and family_scout_count > 1 %}{{ order.seller.short_name }} &middot; {% endif %}
+                {% if not selected_seller and family_scout_count > 1 %}
+                  {% if order.award_ineligible %}
+                    {% translate 'Award Ineligible' %}
+                  {% else %}
+                    {{ order.seller.short_name }}
+                  {% endif %}
+                  &middot;
+                {% endif %}
                 {{ order.date_added|naturalday }} &middot; ${{ order.total|intcomma }}
               </small>
             </td>
@@ -153,7 +160,13 @@
               <td class="d-none d-md-table-cell"
                   data-sort-key="seller"
                   data-sort-value="{{ order.seller.short_name }}">
-                <small class="text-muted">{{ order.seller.short_name }}</small>
+                <small class="text-muted">
+                  {% if order.award_ineligible %}
+                    {% translate 'Award Ineligible' %}
+                  {% else %}
+                    {{ order.seller.short_name }}
+                  {% endif %}
+                </small>
               </td>
             {% endif %}
             <td class="d-none d-md-table-cell text-end"

@@ -30,8 +30,10 @@ def quota_progress(scout, campaign):
     den = scout.den_memberships.get(year_assigned=campaign.year).den
     quota = den.quotas.get(campaign=campaign).target
 
-    products_total = scout.orders.filter(campaign=campaign).products_total()["total"]
-    donations_total = scout.orders.filter(campaign=campaign).donations_total()["total"]
+    # Award progress excludes explicitly ineligible orders, which still count in operational reports.
+    eligible_orders = scout.orders.filter(campaign=campaign).award_eligible()
+    products_total = eligible_orders.products_total()["total"]
+    donations_total = eligible_orders.donations_total()["total"]
     total = products_total + donations_total
 
     # Each tier's incentive milestone (in dollars), the color used to

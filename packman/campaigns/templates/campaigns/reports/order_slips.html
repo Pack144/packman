@@ -21,8 +21,11 @@
       <div class="page {% if not forloop.first %}page-break{% endif %} section-break">
         <h1>{{ order.seller }}</h1>
         <h2>{{ order.seller.current_den }}</h2>
-        <p>{{ order.seller.orders.latest_campaign.count }} order{{ order.seller.orders.latest_campaign.count|pluralize }}</p>
-        {% with order.seller.orders.latest_campaign.totaled.totaled as total %}
+        {# Seller award summaries exclude explicitly ineligible orders; each order is still printed below. #}
+        <p>
+          {{ order.seller.orders.latest_campaign.award_eligible.count }} order{{ order.seller.orders.latest_campaign.award_eligible.count|pluralize }}
+        </p>
+        {% with order.seller.orders.latest_campaign.award_eligible.totaled.totaled as total %}
           <p>${{ total|floatformat:"0"|intcomma }} Total Sales</p>
           {% if total > 2000 %}
             <p>Gold Medal Winner!</p>

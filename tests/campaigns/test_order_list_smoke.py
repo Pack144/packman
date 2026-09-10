@@ -58,6 +58,20 @@ class OrderListSmokeTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(list(resp.context["order_list"]), [Order.objects.get(seller=self.scout1)])
 
+    def test_award_ineligible_label_only_appears_for_all_cubs(self):
+        order = Order.objects.get(seller=self.scout1)
+        order.award_ineligible = True
+        order.save()
+        self.client.force_login(self.adult)
+
+        all_cubs_response = self.client.get("/ncc/")
+        selected_cub_response = self.client.get(f"/ncc/?seller={self.scout1.pk}")
+
+        self.assertContains(all_cubs_response, "Award Ineligible")
+        self.assertNotContains(all_cubs_response, "badge text-bg-info")
+        self.assertNotContains(selected_cub_response, "Award Ineligible")
+        self.assertEqual(list(selected_cub_response.context["order_list"]), [])
+
     def test_cub_with_no_orders_still_shown(self):
         scout_no_orders = ActiveScoutFactory(family=self.family)
         self._set_quota(scout_no_orders, 550)
