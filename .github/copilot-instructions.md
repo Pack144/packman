@@ -63,8 +63,7 @@
 - Style admin guidance with Django admin's existing patterns. Use
   `ul.messagelist` with an `info` item for explanatory guidance and a `warning`
   item for cautions. Give longer notices a short, bold heading on its own line,
-  followed by concise prose. Avoid custom tables unless the content is
-  genuinely tabular, and avoid bespoke CSS when admin classes and variables
+  followed by concise prose. Avoid bespoke CSS when admin classes and variables
   provide the needed presentation.
 - Prefer server-rendered Django behavior. For mobile changes, keep the REST
   serializer/API, JavaScript client, screen components, service worker, and
