@@ -1,6 +1,7 @@
 import decimal
 import json
 from datetime import datetime, time
+from math import ceil
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -9,7 +10,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Prefetch, Q, Sum
 from django.db.models.functions import Coalesce, TruncDate
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -20,7 +21,6 @@ from django.views.generic import (
     DetailView,
     FormView,
     ListView,
-    RedirectView,
     TemplateView,
     UpdateView,
 )
@@ -156,39 +156,9 @@ class OrderReportView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class OrderLeaderboardRedirectView(LoginRequiredMixin, RedirectView):
-    permanent = False
-    pattern_name = "campaigns:order_leaderboard"
-    query_string = True
-
-
 class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
     template_name = "campaigns/order_leaderboard.html"
     leaderboard_tabs = {"top-sales", "top-orders", "dens", "all-sellers"}
-
-    def _get_week_options(self, campaign):
-        campaign_start = timezone.localtime(campaign.ordering_opens).date()
-        campaign_end = timezone.localtime(campaign.ordering_closes).date()
-        today = timezone.localtime(timezone.now()).date()
-        current_date = min(max(today, campaign_start), campaign_end)
-        current_week = ((current_date - campaign_start).days // 7) + 1
-
-        options = []
-        for number in range(1, current_week + 1):
-            start_date = campaign_start + timezone.timedelta(weeks=number - 1)
-            end_date = start_date + timezone.timedelta(days=6)
-            options.append(
-                {
-                    "number": number,
-                    "start": start_date,
-                    "end": end_date,
-                    "start_at": timezone.make_aware(datetime.combine(start_date, time.min)),
-                    "end_at": timezone.make_aware(
-                        datetime.combine(start_date + timezone.timedelta(weeks=1), time.min)
-                    ),
-                }
-            )
-        return options
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -198,32 +168,96 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
             if "campaign" in self.kwargs
             else latest_campaign
         )
-        current_campaign = Campaign.objects.current()
+
+        # 1. Campaign navigation is always available, including while leaderboard results are hidden.
         context["campaigns"] = {
             "available": Campaign.objects.select_related("year").all(),
-            "current": current_campaign,
-            "latest": latest_campaign,
             "viewing": viewing_campaign,
         }
+        # Den ranks are not stored historically, so current badges would be inaccurate for past campaigns.
         context["show_den_rank_badges"] = viewing_campaign == latest_campaign
 
-        # Leaderboard rankings exclude explicitly ineligible orders, unlike operational reports.
-        orders = Order.objects.award_eligible().calculate_total().filter(campaign=viewing_campaign)
-        context["leaderboard_weeks"] = self._get_week_options(viewing_campaign)
-        selected_week = next(
-            (week for week in context["leaderboard_weeks"] if str(week["number"]) == self.request.GET.get("week")),
-            None,
+        now = timezone.now()
+        campaign_start_at = timezone.localtime(viewing_campaign.ordering_opens)
+        campaign_end_at = timezone.localtime(viewing_campaign.ordering_closes)
+
+        # 2. Round up so a campaign ending partway through a week still gets a complete final window.
+        campaign_week_count = viewing_campaign.get_ordering_week_count()
+        final_week_end_at = campaign_start_at + timezone.timedelta(weeks=campaign_week_count)
+        # Results become visible at midnight after the final weekly window ends:
+        # Wednesday 5:00 PM -> Wednesday date -> add one day -> Thursday date
+        # -> combine with 00:00 -> Thursday 12:00 AM.
+        leaderboard_reveal_at = timezone.make_aware(
+            datetime.combine(final_week_end_at.date() + timezone.timedelta(days=1), time.min)
         )
+
+        # 3. A campaign remains active through midnight after its final weekly window ends.
+        viewing_active_campaign = campaign_start_at <= now < leaderboard_reveal_at
+
+        # 4. During the final stretch, hide results to avoid spoiling the winner announcement surprise.
+        if viewing_active_campaign and now >= campaign_end_at - timezone.timedelta(days=5):
+            context.update(
+                {
+                    "hide_leaderboard": True,
+                    "hide_week_selector": True,
+                    "now": now,
+                    "campaign_end_at": campaign_end_at,
+                    "leaderboard_reveal_at": leaderboard_reveal_at,
+                }
+            )
+            return context
+
+        # 5-6. Build every historical week, or only the active campaign weeks reached so far.
+        if viewing_active_campaign:
+            campaign_weeks = viewing_campaign.get_ordering_week_windows(
+                ceil((now - campaign_start_at) / timezone.timedelta(weeks=1))
+            )
+        else:
+            campaign_weeks = viewing_campaign.get_ordering_week_windows()
+        context["leaderboard_weeks"] = campaign_weeks
+
+        # 7.1. Validate a selected week; no selection leaves the campaign totals unfiltered.
+        selected_week_number = self.request.GET.get("week")
+        if selected_week_number:
+            try:
+                selected_week_number = int(selected_week_number)
+            except ValueError as error:
+                raise Http404("Unknown leaderboard week") from error
+            if not 1 <= selected_week_number <= len(campaign_weeks):
+                raise Http404("Unknown leaderboard week")
+            selected_week = campaign_weeks[selected_week_number - 1]
+        else:
+            selected_week = None
+
         context["selected_leaderboard_week"] = selected_week
         selected_tab = self.request.GET.get("tab", "top-sales")
         context["selected_leaderboard_tab"] = selected_tab if selected_tab in self.leaderboard_tabs else "top-sales"
+
+        # 7.2. A selected active week shows countdowns until midnight after its window ends.
+        if selected_week and viewing_active_campaign:
+            week_reveal_at = timezone.make_aware(
+                datetime.combine(selected_week["end_at"].date() + timezone.timedelta(days=1), time.min)
+            )
+            if now < week_reveal_at:
+                context.update(
+                    {
+                        "hide_leaderboard": True,
+                        "now": now,
+                        "week_reveal_at": week_reveal_at,
+                    }
+                )
+                return context
+
+        # 7.3. Use all campaign orders unless a visible weekly window was selected.
+        # Leaderboard rankings exclude explicitly ineligible orders, unlike operational reports.
+        orders = Order.objects.award_eligible().calculate_total().filter(campaign=viewing_campaign)
         if selected_week:
             orders = orders.filter(date_added__gte=selected_week["start_at"], date_added__lt=selected_week["end_at"])
 
         cubs = Membership.objects.select_related("scout", "den", "den__rank").filter(
             year_assigned=viewing_campaign.year
         )
-        if viewing_campaign == current_campaign:
+        if viewing_active_campaign:
             cubs = cubs.filter(scout__status=Membership.scout.field.related_model.ACTIVE)
         dens = Den.objects.select_related("rank").filter(scouts__in=cubs).distinct()
 
@@ -255,18 +289,11 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
         # add all cubs with > 0 orders and not in Den 6m and sort in descending order of total
         all_cubs.sort(key=lambda x: x["total"], reverse=True)
 
-        viewing_current_campaign = current_campaign and viewing_campaign == current_campaign
-
         # In the current campaign's final week, show all sellers; otherwise omit $0 sellers.
-        if viewing_current_campaign and (current_campaign.ordering_closes - timezone.now()).days < 7:
+        if viewing_active_campaign and (campaign_end_at - now).days < 7:
             context["all_sellers"] = all_cubs
         else:
             context["all_sellers"] = [cub for cub in all_cubs if cub["orders"] > 0]
-
-        # Hide the current leaderboard in its final days, while keeping historical campaigns available.
-        if viewing_current_campaign and (current_campaign.ordering_closes - timezone.now()).days < 5:
-            context["hide_leaderboard"] = True
-            context["days_left"] = (current_campaign.ordering_closes - timezone.now()).days
 
         # total up orders for each den from all_cubs and sort from most to least
         all_dens = []

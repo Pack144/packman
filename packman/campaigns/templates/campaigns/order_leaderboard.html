@@ -10,7 +10,7 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="mb-0">{% translate 'NCC Leaderboards' %}</h1>
     <div class="d-flex align-items-center gap-2">
-      {% if not hide_leaderboard %}
+      {% if not hide_week_selector %}
         <form method="get" class="d-flex align-items-center gap-2">
           <input type="hidden" name="tab" value="{{ selected_leaderboard_tab }}">
           <label for="leaderboard-week" class="visually-hidden">{% translate 'Leaderboard period' %}</label>
@@ -24,7 +24,7 @@
             {% for week in leaderboard_weeks %}
               <option value="{{ week.number }}"
                       {% if selected_leaderboard_week.number == week.number %}selected{% endif %}>
-                {% blocktranslate with number=week.number start=week.start|date:"M j" end=week.end|date:"M j" %}Week {{ number }} ({{ start }}–{{ end }}){% endblocktranslate %}
+                {% blocktranslate with number=week.number start=week.start_at|date:"M j" end=week.end_at|date:"M j" %}Week {{ number }} ({{ start }}–{{ end }}){% endblocktranslate %}
               </option>
             {% endfor %}
           </select>
@@ -39,7 +39,7 @@
                 class="form-select w-auto"
                 data-leaderboard-navigation>
           {% for campaign in campaigns.available %}
-            <option value="{% if campaign == campaigns.latest %}{% url 'campaigns:order_leaderboard' %}{% else %}{% url 'campaigns:order_leaderboard_by_campaign' campaign=campaign.year.year %}{% endif %}"
+            <option value="{% if forloop.first %}{% url 'campaigns:order_leaderboard' %}{% else %}{% url 'campaigns:order_leaderboard_by_campaign' campaign=campaign.year.year %}{% endif %}"
                     {% if campaign == campaigns.viewing %}selected{% endif %}>{{ campaign }}</option>
           {% endfor %}
         </select>
@@ -50,11 +50,38 @@
     <div class="row">
       <div class="card mb-5">
         <div class="card-body" style="text-align: center; padding-top: 20px;">
-          <h2 class="card-header">{% translate 'Golden Peanut Leaderboard' %}</h2>
-          <h3>Only {{ days_left }} days to go!</h3>
-          <h3>Who will win the coveted Golden Peanut award?</h3>
-          <img src="{% static 'img/golden_peanut.jpeg' %}"
-               alt="{% translate 'Golden Peanut' %}">
+          {% if week_reveal_at %}
+            <h2 class="card-header">
+              {% blocktranslate with number=selected_leaderboard_week.number %}Week {{ number }} Leaderboard{% endblocktranslate %}
+            </h2>
+            <h3>
+              {% if selected_leaderboard_week.end_at > now %}
+                {% blocktranslate with countdown=selected_leaderboard_week.end_at|timeuntil:now %}This week's orders close in {{ countdown }}.{% endblocktranslate %}
+              {% else %}
+                {% blocktranslate with elapsed=selected_leaderboard_week.end_at|timesince:now %}This week's orders closed {{ elapsed }} ago.{% endblocktranslate %}
+              {% endif %}
+            </h3>
+            <h3>
+              {% blocktranslate with countdown=week_reveal_at|timeuntil:now %}This week's leaderboard will be available in {{ countdown }}.{% endblocktranslate %}
+            </h3>
+          {% else %}
+            <h2 class="card-header">{% translate 'Golden Peanut Leaderboard' %}</h2>
+            {% if campaign_end_at > now %}
+              <h3>
+                {% blocktranslate with countdown=campaign_end_at|timeuntil:now %}Campaign orders close in {{ countdown }}.{% endblocktranslate %}
+              </h3>
+            {% else %}
+              <h3>
+                {% blocktranslate with elapsed=campaign_end_at|timesince:now %}Campaign orders closed {{ elapsed }} ago.{% endblocktranslate %}
+              </h3>
+            {% endif %}
+            <h3>
+              {% blocktranslate with countdown=leaderboard_reveal_at|timeuntil:now %}The leaderboard will be available again in {{ countdown }}.{% endblocktranslate %}
+            </h3>
+            <h3>{% translate "Who will win the coveted Golden Peanut award?" %}</h3>
+            <img src="{% static 'img/golden_peanut.jpeg' %}"
+                 alt="{% translate 'Golden Peanut' %}">
+          {% endif %}
         </div>
       </div>
     </div>

@@ -106,8 +106,17 @@ class CampaignFilterTestCase(TestCase):
         prize_point_response = self.client.get(reverse("admin:campaigns_prizepoint_changelist"))
 
         self.assertContains(change_response, "<strong>Note:</strong>", html=True)
-        self.assertContains(change_response, "exactly seven weeks")
-        self.assertContains(change_response, "should not be changed after the campaign starts")
+        self.assertContains(
+            change_response,
+            'The "Sales open" date anchors consecutive seven-day leaderboard and weekly report windows',
+        )
+        self.assertContains(change_response, "Wednesday at 5:00 PM")
+        self.assertContains(change_response, "Wednesday 6:00 PM close")
+        self.assertContains(change_response, "only one hour of orders")
+        self.assertContains(
+            change_response, "Changing Sales open after orders have started shifts every weekly window"
+        )
+        self.assertNotContains(change_response, "exactly seven weeks")
         self.assertContains(change_response, '<li class="warning">')
         self.assertNotContains(change_response, "Duplicate campaign, quotas, and products")
         self.assertNotContains(change_response, "Delete selected campaigns")

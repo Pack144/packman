@@ -73,10 +73,7 @@ def _build_ncc_items(request, fundraiser):
         _link(
             _("Leaderboard"),
             reverse("campaigns:order_leaderboard"),
-            _is_active(
-                request,
-                url_names=["order_leaderboard", "order_leaderboard_by_campaign", "order_leaderboard_legacy"],
-            ),
+            _is_active(request, url_names=["order_leaderboard", "order_leaderboard_by_campaign"]),
         )
     )
     items.append(

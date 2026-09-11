@@ -14,7 +14,9 @@ document.querySelectorAll("[data-leaderboard-navigation]").forEach((select) => {
   select.addEventListener("change", (event) => {
     const url = new URL(event.target.value, window.location.origin);
     const activeTab = document.querySelector('[data-bs-toggle="tab"].active');
-    url.searchParams.set("tab", activeTab.id.replace("-tab", ""));
+    if (activeTab) {
+      url.searchParams.set("tab", activeTab.id.replace("-tab", ""));
+    }
     window.location.assign(url);
   });
 });

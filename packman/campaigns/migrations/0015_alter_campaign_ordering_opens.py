@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
             model_name="campaign",
             name="ordering_opens",
             field=models.DateTimeField(
-                help_text="The date and time when members can start taking orders. This date anchors the seven weekly leaderboard windows and should not be changed after the campaign starts.",
+                help_text="The date and time when members can start taking orders. It anchors consecutive seven-day leaderboard and weekly report windows; changing it after orders have started shifts every weekly window.",
                 verbose_name="sales open",
             ),
         ),

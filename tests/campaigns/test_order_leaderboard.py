@@ -62,15 +62,26 @@ class OrderLeaderboardWeekFilterTest(TestCase):
             timezone.timedelta(hours=hour)
         )
 
-    def get_leaderboard(self, week=None, campaign=None, **query):
+    def get_leaderboard(self, week=None, campaign=None, current_time=None, **query):
         if week is not None:
             query["week"] = week
         url = reverse(
             "campaigns:order_leaderboard_by_campaign",
             kwargs={"campaign": campaign or self.pack_year.year},
         )
-        with mock.patch("packman.campaigns.views.timezone.now", return_value=self.now):
+        with mock.patch("packman.campaigns.views.timezone.now", return_value=current_time or self.now):
             return self.client.get(url, query)
+
+    def test_campaign_week_helpers_round_up_and_share_boundaries(self):
+        self.assertEqual(self.campaign.get_ordering_week_count(), 7)
+
+        weeks = self.campaign.get_ordering_week_windows(3)
+
+        self.assertEqual([week["number"] for week in weeks], [1, 2, 3])
+        self.assertEqual(set(weeks[0]), {"number", "start_at", "end_at"})
+        self.assertEqual(weeks[0]["start_at"], timezone.localtime(self.campaign.ordering_opens))
+        self.assertEqual(weeks[0]["end_at"], weeks[1]["start_at"])
+        self.assertEqual(weeks[1]["end_at"], weeks[2]["start_at"])
 
     def test_dropdown_lists_all_time_then_weeks_in_campaign_order(self):
         self.create_order("100.00", self.campaign_day(2))
@@ -104,6 +115,70 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertLess(content.index("Week 1"), content.index("Week 2"))
         self.assertLess(content.index("Week 2"), content.index("Week 3"))
 
+    def test_hidden_week_shows_countdown_until_midnight_after_it_ends(self):
+        self.create_order("100.00", self.campaign_day(2))
+        self.create_order("200.00", self.campaign_day(9))
+        reveal_midnight = self.campaign_day(15, hour=0)
+
+        before_reveal = self.get_leaderboard(
+            2,
+            current_time=reveal_midnight - timezone.timedelta(microseconds=1),
+        )
+
+        self.assertEqual([week["number"] for week in before_reveal.context["leaderboard_weeks"]], [1, 2, 3])
+        self.assertEqual(before_reveal.context["selected_leaderboard_week"]["number"], 2)
+        self.assertEqual(before_reveal.context["week_reveal_at"], reveal_midnight)
+        self.assertTrue(before_reveal.context["hide_leaderboard"])
+        self.assertContains(before_reveal, "This week's orders closed")
+        self.assertContains(before_reveal, "This week's leaderboard will be available in")
+        self.assertNotContains(before_reveal, 'src="/static/img/golden_peanut.jpeg"')
+
+        current_week = self.get_leaderboard(
+            3,
+            current_time=reveal_midnight - timezone.timedelta(microseconds=1),
+        )
+
+        self.assertEqual(current_week.context["selected_leaderboard_week"]["number"], 3)
+        self.assertEqual(current_week.context["week_reveal_at"], self.campaign_day(22, hour=0))
+        self.assertTrue(current_week.context["hide_leaderboard"])
+        self.assertContains(current_week, "This week's orders close in")
+        self.assertContains(current_week, "This week's leaderboard will be available in")
+
+        at_reveal = self.get_leaderboard(2, current_time=reveal_midnight)
+
+        self.assertEqual(at_reveal.context["selected_leaderboard_week"]["number"], 2)
+        self.assertEqual(at_reveal.context["selected_leaderboard_week"]["end_at"], self.campaign_day(14, hour=10))
+        self.assertEqual(set(at_reveal.context["selected_leaderboard_week"]), {"number", "start_at", "end_at"})
+        self.assertEqual(at_reveal.context["top_sellers"][0]["total"], decimal.Decimal("200.00"))
+
+    def test_final_week_extends_past_campaign_close_before_becoming_available(self):
+        self.campaign.ordering_closes = self.campaign_day(16)
+        self.campaign.save(update_fields=["ordering_closes"])
+        self.create_order("700.00", self.campaign_day(15))
+        final_week_reveal = self.campaign_day(22, hour=0)
+
+        before_reveal = self.get_leaderboard(
+            3,
+            current_time=final_week_reveal - timezone.timedelta(microseconds=1),
+        )
+
+        self.assertEqual(before_reveal.status_code, 200)
+        self.assertTrue(before_reveal.context["hide_leaderboard"])
+        self.assertTrue(before_reveal.context["hide_week_selector"])
+        self.assertEqual(before_reveal.context["campaign_end_at"], self.campaign_day(16))
+        self.assertEqual(before_reveal.context["leaderboard_reveal_at"], final_week_reveal)
+        self.assertContains(before_reveal, "Campaign orders closed")
+        self.assertContains(before_reveal, "The leaderboard will be available again in")
+        self.assertContains(before_reveal, 'src="/static/img/golden_peanut.jpeg"')
+
+        at_reveal = self.get_leaderboard(3, current_time=final_week_reveal)
+
+        self.assertEqual([week["number"] for week in at_reveal.context["leaderboard_weeks"]], [1, 2, 3])
+        self.assertEqual(at_reveal.context["selected_leaderboard_week"]["end_at"], self.campaign_day(21, hour=10))
+        self.assertEqual(at_reveal.context["top_sellers"][0]["total"], decimal.Decimal("700.00"))
+        self.assertNotIn("hide_leaderboard", at_reveal.context)
+        self.assertNotContains(at_reveal, 'src="/static/img/golden_peanut.jpeg"')
+
     def test_selected_week_filters_every_leaderboard_total(self):
         self.create_order("100.00", self.campaign_day(2))
         self.create_order("250.00", self.campaign_day(9))
@@ -121,9 +196,9 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(response.context["dens"][0]["orders"], 1)
         self.assertEqual(response.context["dens"][0]["total"], decimal.Decimal("250.00"))
 
-    def test_week_boundaries_use_local_midnight_and_exclusive_end(self):
-        self.create_order("100.00", self.campaign_day(6, 23))
-        self.create_order("200.00", self.campaign_day(7, 0))
+    def test_week_boundaries_use_campaign_opening_time_and_exclusive_end(self):
+        self.create_order("100.00", self.campaign_day(7, 9))
+        self.create_order("200.00", self.campaign_day(7, 10))
 
         first_week = self.get_leaderboard(1)
         second_week = self.get_leaderboard(2)
@@ -131,15 +206,15 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(first_week.context["top_sellers"][0]["total"], decimal.Decimal("100.00"))
         self.assertEqual(second_week.context["top_sellers"][0]["total"], decimal.Decimal("200.00"))
 
-    def test_invalid_week_falls_back_to_all_time(self):
+    def test_invalid_or_unavailable_week_returns_not_found(self):
         self.create_order("100.00", self.campaign_day(2))
         self.create_order("200.00", self.campaign_day(9))
 
-        response = self.get_leaderboard("not-a-week")
+        for week in ("not-a-week", 4):
+            with self.subTest(week=week):
+                response = self.get_leaderboard(week)
 
-        self.assertIsNone(response.context["selected_leaderboard_week"])
-        self.assertEqual(response.context["top_sellers"][0]["orders"], 2)
-        self.assertEqual(response.context["top_sellers"][0]["total"], decimal.Decimal("300.00"))
+                self.assertEqual(response.status_code, 404)
 
     def test_week_filter_still_excludes_award_ineligible_orders(self):
         self.create_order("100.00", self.campaign_day(9))
@@ -220,7 +295,7 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_invalid_campaign_returns_not_found(self):
-        response = self.client.get("/ncc/leaderboards/invalid/")
+        response = self.client.get("/ncc/leaderboard/invalid/")
 
         self.assertEqual(response.status_code, 404)
 
@@ -231,11 +306,3 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(response.context["campaigns"]["viewing"], self.campaign)
         self.assertEqual(response.context["selected_leaderboard_tab"], "dens")
         self.assertEqual(response.context["selected_leaderboard_week"]["number"], 2)
-
-    def test_legacy_leaderboard_url_redirects_to_base_path_with_query_string(self):
-        response = self.client.get(
-            reverse("campaigns:order_leaderboard_legacy"),
-            {"tab": "dens", "week": 2},
-        )
-
-        self.assertRedirects(response, f"{reverse('campaigns:order_leaderboard')}?tab=dens&week=2")
