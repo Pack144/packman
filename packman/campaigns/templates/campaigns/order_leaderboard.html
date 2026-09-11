@@ -11,54 +11,24 @@
     <h1 class="mb-0">{% translate 'NCC Leaderboards' %}</h1>
     <div class="d-flex align-items-center gap-2">
       {% if not hide_week_selector %}
-        <form method="get" class="d-flex align-items-center gap-2">
-          <input type="hidden" name="tab" value="{{ selected_leaderboard_tab }}">
-          <label for="leaderboard-week" class="visually-hidden">{% translate 'Leaderboard period' %}</label>
-          <select id="leaderboard-week"
-                  name="week"
-                  class="form-select w-auto"
-                  onchange="this.form.submit()">
-            <option value="" {% if not selected_leaderboard_week %}selected{% endif %}>
-              {% translate "Full Campaign" %}
-            </option>
-            {% for week in leaderboard_weeks %}
-              <option value="{{ week.number }}"
-                      {% if selected_leaderboard_week.number == week.number %}selected{% endif %}>
-                {% blocktranslate with number=week.number start=week.start_at|date:"M j" end=week.end_at|date:"M j" %}Week {{ number }} ({{ start }}–{{ end }}){% endblocktranslate %}
-              </option>
-            {% endfor %}
-          </select>
-          <noscript>
-            <button type="submit" class="btn btn-primary">{% translate 'Apply' %}</button>
-          </noscript>
-        </form>
+        {% include "campaigns/snippets/campaign_week_selector.html" with control_id="leaderboard-week" %}
       {% endif %}
-      <div>
-        <label for="leaderboard-campaign" class="visually-hidden">{% translate 'Campaign' %}</label>
-        <select id="leaderboard-campaign"
-                class="form-select w-auto"
-                data-leaderboard-navigation>
-          {% for campaign in campaigns.available %}
-            <option value="{% if forloop.first %}{% url 'campaigns:order_leaderboard' %}{% else %}{% url 'campaigns:order_leaderboard_by_campaign' campaign=campaign.year.year %}{% endif %}"
-                    {% if campaign == campaigns.viewing %}selected{% endif %}>{{ campaign }}</option>
-          {% endfor %}
-        </select>
-      </div>
+      {% include "campaigns/snippets/campaign_selector.html" with control_id="leaderboard-campaign" root_url_name="campaigns:order_leaderboard" campaign_url_name="campaigns:order_leaderboard_by_campaign" %}
     </div>
   </div>
   {% if hide_leaderboard %}
     <div class="row">
-      <div class="card mb-5">
+      <div class="card mb-5" data-campaign-tabs>
         <div class="card-body" style="text-align: center; padding-top: 20px;">
           {% if week_reveal_at %}
             <h2 class="card-header">
-              {% blocktranslate with number=selected_leaderboard_week.number %}Week {{ number }} Leaderboard{% endblocktranslate %}
+              {% blocktranslate with number=selected_week.number %}Week {{ number }} Leaderboard{% endblocktranslate %}
             </h2>
             <h3>
-              {% if selected_leaderboard_week.end_at > now %}
-                {% blocktranslate with countdown=selected_leaderboard_week.end_at|timeuntil:now %}This week's orders close in {{ countdown }}.{% endblocktranslate %}
+              {% if selected_week.end_at > now %}
+                {% blocktranslate with countdown=selected_week.end_at|timeuntil:now %}This week's orders close in {{ countdown }}.{% endblocktranslate %}
               {% else %}
-                {% blocktranslate with elapsed=selected_leaderboard_week.end_at|timesince:now %}This week's orders closed {{ elapsed }} ago.{% endblocktranslate %}
+                {% blocktranslate with elapsed=selected_week.end_at|timesince:now %}This week's orders closed {{ elapsed }} ago.{% endblocktranslate %}
               {% endif %}
             </h3>
             <h3>
@@ -89,63 +59,23 @@
     <div class="card mb-5">
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link {% if selected_leaderboard_tab == 'top-sales' %}active{% endif %}"
-                    id="top-sales-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#top-sales-pane"
-                    type="button"
-                    role="tab"
-                    aria-controls="top-sales-pane"
-                    aria-selected="{% if selected_leaderboard_tab == 'top-sales' %}true{% else %}false{% endif %}">
-              {% if selected_leaderboard_week %}
-                {% translate 'Top Sellers' %}
-              {% else %}
-                {% translate 'Golden Peanut' %}
-              {% endif %}
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link {% if selected_leaderboard_tab == 'top-orders' %}active{% endif %}"
-                    id="top-orders-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#top-orders-pane"
-                    type="button"
-                    role="tab"
-                    aria-controls="top-orders-pane"
-                    aria-selected="{% if selected_leaderboard_tab == 'top-orders' %}true{% else %}false{% endif %}">
-              {% translate 'Top Orders' %}
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link {% if selected_leaderboard_tab == 'dens' %}active{% endif %}"
-                    id="dens-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#dens-pane"
-                    type="button"
-                    role="tab"
-                    aria-controls="dens-pane"
-                    aria-selected="{% if selected_leaderboard_tab == 'dens' %}true{% else %}false{% endif %}">
-              {% translate 'Dens' %}
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link {% if selected_leaderboard_tab == 'all-sellers' %}active{% endif %}"
-                    id="all-sellers-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#all-sellers-pane"
-                    type="button"
-                    role="tab"
-                    aria-controls="all-sellers-pane"
-                    aria-selected="{% if selected_leaderboard_tab == 'all-sellers' %}true{% else %}false{% endif %}">
-              {% translate 'All Sellers' %}
-            </button>
-          </li>
+          {% if selected_week %}
+            {% translate "Top Sellers" as top_sales_tab_label %}
+          {% else %}
+            {% translate "Golden Peanut" as top_sales_tab_label %}
+          {% endif %}
+          {% include "campaigns/snippets/tab_nav_item.html" with slug="top-sales" label=top_sales_tab_label selected_tab=selected_tab only %}
+          {% translate "Top Orders" as top_orders_tab_label %}
+          {% include "campaigns/snippets/tab_nav_item.html" with slug="top-orders" label=top_orders_tab_label selected_tab=selected_tab only %}
+          {% translate "Dens" as dens_tab_label %}
+          {% include "campaigns/snippets/tab_nav_item.html" with slug="dens" label=dens_tab_label selected_tab=selected_tab only %}
+          {% translate "All Sellers" as all_sellers_tab_label %}
+          {% include "campaigns/snippets/tab_nav_item.html" with slug="all-sellers" label=all_sellers_tab_label selected_tab=selected_tab only %}
         </ul>
       </div>
       <div class="card-body">
         <div class="tab-content">
-          <div class="tab-pane fade {% if selected_leaderboard_tab == 'top-sales' %}show active{% endif %}"
+          <div class="tab-pane fade {% if selected_tab == 'top-sales' %}show active{% endif %}"
                id="top-sales-pane"
                role="tabpanel"
                aria-labelledby="top-sales-tab">
@@ -177,7 +107,7 @@
               </tbody>
             </table>
           </div>
-          <div class="tab-pane fade {% if selected_leaderboard_tab == 'top-orders' %}show active{% endif %}"
+          <div class="tab-pane fade {% if selected_tab == 'top-orders' %}show active{% endif %}"
                id="top-orders-pane"
                role="tabpanel"
                aria-labelledby="top-orders-tab">
@@ -209,7 +139,7 @@
               </tbody>
             </table>
           </div>
-          <div class="tab-pane fade {% if selected_leaderboard_tab == 'dens' %}show active{% endif %}"
+          <div class="tab-pane fade {% if selected_tab == 'dens' %}show active{% endif %}"
                id="dens-pane"
                role="tabpanel"
                aria-labelledby="dens-tab">
@@ -257,7 +187,7 @@
               </tbody>
             </table>
           </div>
-          <div class="tab-pane fade {% if selected_leaderboard_tab == 'all-sellers' %}show active{% endif %}"
+          <div class="tab-pane fade {% if selected_tab == 'all-sellers' %}show active{% endif %}"
                id="all-sellers-pane"
                role="tabpanel"
                aria-labelledby="all-sellers-tab">
@@ -308,5 +238,5 @@
 {% block js %}
   {{ block.super }}
   <script src="{% static 'js/sortable_rows.js' %}"></script>
-  <script src="{% static 'js/leaderboard_tabs.js' %}"></script>
+  <script src="{% static 'js/campaign_tabs.js' %}"></script>
 {% endblock js %}

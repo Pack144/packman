@@ -1,0 +1,6 @@
+<li class="nav-item">
+  <a class="nav-link {% if selected_tab == slug %}active{% endif %}"
+     href="{% querystring tab=slug %}"
+     data-campaign-tab="{{ slug }}"
+     {% if selected_tab == slug %}aria-current="page"{% endif %}>{{ label }}</a>
+</li>

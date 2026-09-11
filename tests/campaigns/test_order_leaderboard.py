@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
+from packman.calendars.models import PackYear
 from packman.campaigns.models import Campaign, Customer, Order
 from packman.dens.factories import DenFactory
 from packman.dens.models import Membership, Rank
@@ -88,8 +89,8 @@ class OrderLeaderboardWeekFilterTest(TestCase):
 
         response = self.get_leaderboard()
 
-        self.assertEqual([week["number"] for week in response.context["leaderboard_weeks"]], [1, 2, 3])
-        self.assertIsNone(response.context["selected_leaderboard_week"])
+        self.assertEqual([week["number"] for week in response.context["weeks"]], [1, 2, 3])
+        self.assertIsNone(response.context["selected_week"])
         self.assertContains(response, "<h1", count=1)
         self.assertContains(response, "NCC Leaderboards")
         self.assertContains(response, '<option value="" selected>Full Campaign</option>', html=True)
@@ -125,8 +126,8 @@ class OrderLeaderboardWeekFilterTest(TestCase):
             current_time=reveal_midnight - timezone.timedelta(microseconds=1),
         )
 
-        self.assertEqual([week["number"] for week in before_reveal.context["leaderboard_weeks"]], [1, 2, 3])
-        self.assertEqual(before_reveal.context["selected_leaderboard_week"]["number"], 2)
+        self.assertEqual([week["number"] for week in before_reveal.context["weeks"]], [1, 2, 3])
+        self.assertEqual(before_reveal.context["selected_week"]["number"], 2)
         self.assertEqual(before_reveal.context["week_reveal_at"], reveal_midnight)
         self.assertTrue(before_reveal.context["hide_leaderboard"])
         self.assertContains(before_reveal, "This week's orders closed")
@@ -138,7 +139,7 @@ class OrderLeaderboardWeekFilterTest(TestCase):
             current_time=reveal_midnight - timezone.timedelta(microseconds=1),
         )
 
-        self.assertEqual(current_week.context["selected_leaderboard_week"]["number"], 3)
+        self.assertEqual(current_week.context["selected_week"]["number"], 3)
         self.assertEqual(current_week.context["week_reveal_at"], self.campaign_day(22, hour=0))
         self.assertTrue(current_week.context["hide_leaderboard"])
         self.assertContains(current_week, "This week's orders close in")
@@ -146,9 +147,9 @@ class OrderLeaderboardWeekFilterTest(TestCase):
 
         at_reveal = self.get_leaderboard(2, current_time=reveal_midnight)
 
-        self.assertEqual(at_reveal.context["selected_leaderboard_week"]["number"], 2)
-        self.assertEqual(at_reveal.context["selected_leaderboard_week"]["end_at"], self.campaign_day(14, hour=10))
-        self.assertEqual(set(at_reveal.context["selected_leaderboard_week"]), {"number", "start_at", "end_at"})
+        self.assertEqual(at_reveal.context["selected_week"]["number"], 2)
+        self.assertEqual(at_reveal.context["selected_week"]["end_at"], self.campaign_day(14, hour=10))
+        self.assertEqual(set(at_reveal.context["selected_week"]), {"number", "start_at", "end_at"})
         self.assertEqual(at_reveal.context["top_sellers"][0]["total"], decimal.Decimal("200.00"))
 
     def test_final_week_extends_past_campaign_close_before_becoming_available(self):
@@ -173,8 +174,8 @@ class OrderLeaderboardWeekFilterTest(TestCase):
 
         at_reveal = self.get_leaderboard(3, current_time=final_week_reveal)
 
-        self.assertEqual([week["number"] for week in at_reveal.context["leaderboard_weeks"]], [1, 2, 3])
-        self.assertEqual(at_reveal.context["selected_leaderboard_week"]["end_at"], self.campaign_day(21, hour=10))
+        self.assertEqual([week["number"] for week in at_reveal.context["weeks"]], [1, 2, 3])
+        self.assertEqual(at_reveal.context["selected_week"]["end_at"], self.campaign_day(21, hour=10))
         self.assertEqual(at_reveal.context["top_sellers"][0]["total"], decimal.Decimal("700.00"))
         self.assertNotIn("hide_leaderboard", at_reveal.context)
         self.assertNotContains(at_reveal, 'src="/static/img/golden_peanut.jpeg"')
@@ -186,7 +187,7 @@ class OrderLeaderboardWeekFilterTest(TestCase):
 
         response = self.get_leaderboard(2)
 
-        self.assertEqual(response.context["selected_leaderboard_week"]["number"], 2)
+        self.assertEqual(response.context["selected_week"]["number"], 2)
         self.assertContains(response, "Top Sellers")
         self.assertNotContains(response, "Golden Peanut")
         self.assertEqual(response.context["top_sellers"][0]["orders"], 1)
@@ -267,13 +268,23 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(response.context["top_sellers"][0]["total"], decimal.Decimal("325.00"))
 
         weekly_response = self.client.get(url, {"week": 1})
-        self.assertEqual(weekly_response.context["selected_leaderboard_week"]["number"], 1)
+        self.assertEqual(weekly_response.context["selected_week"]["number"], 1)
         self.assertEqual(weekly_response.context["top_sellers"][0]["total"], decimal.Decimal("325.00"))
+
+    def test_latest_campaign_hides_den_badges_after_pack_year_rollover(self):
+        new_pack_year = PackYearFactory(year=self.pack_year.year + 1)
+
+        with mock.patch.object(PackYear.objects, "current", return_value=new_pack_year):
+            response = self.get_leaderboard()
+
+        self.assertEqual(response.context["campaigns"]["viewing"], self.campaign)
+        self.assertFalse(response.context["show_den_rank_badges"])
+        self.assertNotContains(response, 'src="/static/img/lion.png"')
 
     def test_tab_parameter_selects_tab_and_is_preserved_by_filters(self):
         response = self.get_leaderboard(2, tab="dens")
 
-        self.assertEqual(response.context["selected_leaderboard_tab"], "dens")
+        self.assertEqual(response.context["selected_tab"], "dens")
         self.assertContains(response, 'class="nav-link active"')
         self.assertContains(response, 'class="tab-pane fade show active"')
         self.assertContains(response, 'name="tab" value="dens"', count=1)
@@ -281,7 +292,7 @@ class OrderLeaderboardWeekFilterTest(TestCase):
     def test_invalid_tab_falls_back_to_top_sales(self):
         response = self.get_leaderboard(tab="unknown")
 
-        self.assertEqual(response.context["selected_leaderboard_tab"], "top-sales")
+        self.assertEqual(response.context["selected_tab"], "top-sales")
         self.assertContains(response, 'name="tab" value="top-sales"', count=1)
 
     def test_unknown_campaign_returns_not_found(self):
@@ -304,5 +315,5 @@ class OrderLeaderboardWeekFilterTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["campaigns"]["viewing"], self.campaign)
-        self.assertEqual(response.context["selected_leaderboard_tab"], "dens")
-        self.assertEqual(response.context["selected_leaderboard_week"]["number"], 2)
+        self.assertEqual(response.context["selected_tab"], "dens")
+        self.assertEqual(response.context["selected_week"]["number"], 2)

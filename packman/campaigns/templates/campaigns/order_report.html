@@ -7,43 +7,38 @@
 {% endblock %}
 
 {% block content %}
-  <div class="row">
-    <div class="col-md-9">
-      <div class="d-flex justify-content-between align-items-center mb-5">
-        <h1>{% translate 'Order Report' %}</h1>
-        <div class="btn-group">
-          <button type="button" class="btn btn-outline-secondary">{{ campaigns.viewing }}</button>
-          <button type="button"
-                  class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
-                  data-bs-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false">
-            <span class="visually-hidden">{% translate 'Toggle Dropdown' %}</span>
-          </button>
-          <div class="dropdown-menu dropdown-menu-end">
-            {% for campaign in campaigns.available %}
-              {% if not campaign == campaigns.viewing %}
-                {% if campaign == campaigns.current %}
-                  <a class="dropdown-item" href="{% url 'campaigns:order_report' %}">{{ campaign }}</a>
-                {% else %}
-                  <a class="dropdown-item"
-                     href="{% url 'campaigns:order_report_by_campaign' campaign=campaign.year.year %}">{{ campaign }}</a>
-                {% endif %}
-              {% else %}
-                <div class="dropdown-item active">{{ campaign }}</div>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      <div class="card mb-5" id="daily-order-report">
-        <div class="card-body">
-          <h2 class="card-header">{% translate 'Daily Order Breakdown' %}</h2>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">{% translate 'Order Report' %}</h1>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      {% if selected_tab == 'sales' or selected_tab == 'products' %}
+        {% include "campaigns/snippets/campaign_week_selector.html" with control_id="report-week" %}
+      {% endif %}
+      {% include "campaigns/snippets/campaign_selector.html" with control_id="report-campaign" root_url_name="campaigns:order_report" campaign_url_name="campaigns:order_report_by_campaign" %}
+    </div>
+  </div>
+
+  <div class="card mb-5" data-campaign-tabs>
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        {% translate "Sales" as sales_tab_label %}
+        {% include "campaigns/snippets/tab_nav_link.html" with slug="sales" label=sales_tab_label selected_tab=selected_tab only %}
+        {% translate "Products" as products_tab_label %}
+        {% include "campaigns/snippets/tab_nav_link.html" with slug="products" label=products_tab_label selected_tab=selected_tab only %}
+        {% translate "Details" as details_tab_label %}
+        {% include "campaigns/snippets/tab_nav_link.html" with slug="details" label=details_tab_label selected_tab=selected_tab only %}
+        {% translate "Prize Selections" as prize_selections_tab_label %}
+        {% include "campaigns/snippets/tab_nav_link.html" with slug="prize-selections" label=prize_selections_tab_label selected_tab=selected_tab only %}
+        {% translate "Packing Night" as packing_night_tab_label %}
+        {% include "campaigns/snippets/tab_nav_link.html" with slug="packing-night" label=packing_night_tab_label selected_tab=selected_tab only %}
+      </ul>
+    </div>
+    <div class="card-body">
+      {% if selected_tab == 'sales' %}
+        <div>
           <div>
             <canvas id="order_report_by_date_chart"></canvas>
           </div>
           <table class="table table-hover" id="order_report_by_date_table">
-            <caption>{% translate "Orders received by day" %}</caption>
             <thead class="table-dark">
               <tr>
                 <th scope="col">{% translate 'Date' %}</th>
@@ -52,7 +47,7 @@
               </tr>
             </thead>
             <tbody>
-              {% for day in report.days %}
+              {% for day in sales.days %}
                 <tr>
                   <th scope="row">{{ day.date|naturalday|capfirst }}</th>
                   <td>{{ day.count|intcomma }}</td>
@@ -63,18 +58,15 @@
             <tfoot>
               <tr>
                 <th scope="row">{% translate "Total" %}</th>
-                <td>{{ report.count|intcomma }}</td>
-                <td>${{ report.total|intcomma }}</td>
+                <td>{{ sales.count|intcomma }}</td>
+                <td>${{ sales.total|intcomma }}</td>
               </tr>
             </tfoot>
           </table>
         </div>
-      </div>
-      <div class="card mb-5" id="product-order-report">
-        <div class="card-body">
-          <h2 class="card-header">{% translate 'Product Orders' %}</h2>
+      {% elif selected_tab == 'products' %}
+        <div>
           <table class="table table-hover" id="products_ordered_table">
-            <caption>{% translate 'Products Ordered' %}</caption>
             <thead class="table-dark">
               <tr>
                 <th scope="col">{% translate 'Product' %}</th>
@@ -82,129 +74,175 @@
               </tr>
             </thead>
             <tbody>
-              {% for product in campaigns.viewing.products.quantity %}
+              {% for product in products %}
                 <tr>
                   <th scope="row">{{ product.name }}</th>
-                  <td>{{ product.quantity_ordered }}</td>
+                  <td>{{ product.quantity_ordered|default:0 }}</td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-    <aside class="col-md">
-      <h2>Reports</h2>
-      <ul class="nav flex-column">
-        <li class="nav-item">
-          <a class="nav-link" href="#daily-order-report">Orders by Day</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#product-order-report">Product Order Totals</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'campaigns:prize_selection_report' %}">Prize Selections</a>
-        </li>
-        <li class="nav-item">
-          <a href="{% url 'campaigns:weekly_report' %}" class="nav-link">Weekly Report <i class="fas fa-file-csv"></i></a>
-        </li>
-        <li class="nav-item">
-          <a href="{% url 'campaigns:turn_in_night' %}" class="nav-link">Turn-in Night <i class="fas fa-file-csv"></i></a>
-        </li>
-      </ul>
-      <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false">Packing Night Materials</button>
-        <div class="dropdown-menu">
-          <a class="dropdown-item d-flex flex-column"
-             href="{% url 'campaigns:place_markers' %}"
-             target="_blank">
-            <span>Place Markers</span>
-            <small class="text-body-secondary">Placeholder cards for packing night</small>
-          </a>
-          <a class="dropdown-item d-flex flex-column"
-             href="{% url 'campaigns:pull_sheets' %}"
-             target="_blank">
-            <span>Pull Sheets</span>
-            <small class="text-body-secondary">List of products divided by Den</small>
-          </a>
-          <a class="dropdown-item d-flex flex-column"
-             href="{% url 'campaigns:order_slips' %}"
-             target="_blank">
-            <span>Order Slips</span>
-            <small class="text-body-secondary">Receipt slips to attach to individual orders</small>
-          </a>
+      {% elif selected_tab == 'details' %}
+        <div>
+          <div class="list-group">
+            <a href="{% url 'campaigns:weekly_report' %}" class="list-group-item list-group-item-action">
+              {% translate 'Weekly Report' %} <i class="fas fa-file-csv" aria-hidden="true"></i>
+            </a>
+            <a href="{% url 'campaigns:turn_in_night' %}" class="list-group-item list-group-item-action">
+              {% translate 'Turn-in Night' %} <i class="fas fa-file-csv" aria-hidden="true"></i>
+            </a>
+          </div>
         </div>
-      </div>
-    </aside>
+      {% elif selected_tab == 'prize-selections' %}
+        <div>
+          <h2>{% translate 'All Prizes Selected' %}</h2>
+          <table class="table table-hover" data-sortable-report-table>
+            <caption>{% translate 'All Prizes Selected' %}</caption>
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">{% translate 'Prize' %}</th>
+                <th scope="col">{% translate 'Quantity' %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for prize in prizes %}
+                {% if prize.quantity %}
+                  <tr>
+                    <td>
+                      {% if prize.url %}
+                        <a href="{{ prize.url }}" target="_blank" rel="noopener">{{ prize }}</a>
+                      {% else %}
+                        {{ prize }}
+                      {% endif %}
+                    </td>
+                    <td>{{ prize.quantity }}</td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <h2>{% translate 'Prize Selections by Cub' %}</h2>
+          <table class="table table-hover" data-sortable-report-table>
+            <caption>{% translate 'Prize Selections by Cub' %}</caption>
+            <colgroup>
+              <col span="2" class="table-active">
+              <col span="2">
+            </colgroup>
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">{% translate 'Den' %}</th>
+                <th scope="col">{% translate 'Cub' %}</th>
+                <th scope="col">{% translate 'Prize' %}</th>
+                <th scope="col">{% translate 'Quantity' %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for prize_selection in prize_selections %}
+                <tr>
+                  <th scope="row">
+                    {% with membership=prize_selection.cub.report_memberships.0 %}{{ membership.den.number|default:"" }}{% endwith %}
+                  </th>
+                  <th scope="row">{{ prize_selection.cub }}</th>
+                  <td>{{ prize_selection.prize }}</td>
+                  <td>{{ prize_selection.quantity }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% elif selected_tab == 'packing-night' %}
+        <div>
+          <div class="list-group">
+            <a class="list-group-item list-group-item-action d-flex flex-column"
+               href="{% url 'campaigns:place_markers' %}"
+               target="_blank"
+               rel="noopener">
+              <span>{% translate 'Place Markers' %}</span>
+              <small class="text-body-secondary">{% translate 'Placeholder cards for packing night' %}</small>
+            </a>
+            <a class="list-group-item list-group-item-action d-flex flex-column"
+               href="{% url 'campaigns:pull_sheets' %}"
+               target="_blank"
+               rel="noopener">
+              <span>{% translate 'Pull Sheets' %}</span>
+              <small class="text-body-secondary">{% translate 'List of products divided by Den' %}</small>
+            </a>
+            <a class="list-group-item list-group-item-action d-flex flex-column"
+               href="{% url 'campaigns:order_slips' %}"
+               target="_blank"
+               rel="noopener">
+              <span>{% translate 'Order Slips' %}</span>
+              <small class="text-body-secondary">{% translate 'Receipt slips to attach to individual orders' %}</small>
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
   </div>
 {% endblock content %}
 
 {% block js %}
   {{ block.super }}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"
-          integrity="sha256-+8RZJua0aEWg+QVVKg4LEzEEm/8RFez5Tb4JBNiV5xA="
-          crossorigin="anonymous"></script>
-  {# {{ report.days.all|json_script:"report_data" }} #}
-  <script>
-    window.onload = function () {
-      const labels = [{% for day in report.days %}"{{ day.date|date:'M j' }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
-
+  {% if selected_tab == 'sales' %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"
+            integrity="sha256-+8RZJua0aEWg+QVVKg4LEzEEm/8RFez5Tb4JBNiV5xA="
+            crossorigin="anonymous"></script>
+    <script>
+      const labels = [{% for day in sales.days %}"{{ day.date|date:'M j' }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
       const data = {
         labels: labels,
         datasets: [
           {
-            label: "Count",
+            label: "{% translate 'Count' %}",
             backgroundColor: "rgb(99, 132, 255)",
             borderColor: "rgb(99, 132, 255)",
             yAxisID: "y",
-            data: [{% for day in report.days %}"{{ day.count }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
+            data: [{% for day in sales.days %}"{{ day.count }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
           },
           {
-            label: "Total $",
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
+            label: "{% translate 'Total $' %}",
+            backgroundColor: "rgb(255, 99, 132)",
+            borderColor: "rgb(255, 99, 132)",
             yAxisID: "y1",
-            data: [{% for day in report.days %}"{{ day.order_total }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
+            data: [{% for day in sales.days %}"{{ day.order_total }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
           }
         ]
-      }
-
-      const config = {
-        type: "bar",
-        data: data,
-        options: {
-          scales: {
-            y: {
-              type: "linear",
-              position: "left",
-              title: {
-                display: true,
-                text: "Order Count"
-              }
-            },
-            y1: {
-              type: "linear",
-              position: "right",
-              title: {
-                display: true,
-                text: "Total $"
+      };
+      new Chart(
+        document.getElementById("order_report_by_date_chart"),
+        {
+          type: "bar",
+          data: data,
+          options: {
+            scales: {
+              y: {
+                type: "linear",
+                position: "left",
+                title: {
+                  display: true,
+                  text: "{% translate 'Order Count' %}"
+                }
               },
-              grid: {
-                drawOnChartArea: false
+              y1: {
+                type: "linear",
+                position: "right",
+                title: {
+                  display: true,
+                  text: "{% translate 'Total $' %}"
+                },
+                grid: {
+                  drawOnChartArea: false
+                }
               }
             }
           }
         }
-      };
-
-      const myChar = new Chart(
-        document.getElementById("order_report_by_date_chart"),
-        config
       );
-
-    }
-  </script>
+    </script>
+  {% elif selected_tab == 'prize-selections' %}
+    <script src="{% static 'js/report_tables.js' %}"></script>
+  {% endif %}
+  <script src="{% static 'js/campaign_tabs.js' %}"></script>
 {% endblock js %}

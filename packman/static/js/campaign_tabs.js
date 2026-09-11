@@ -1,4 +1,10 @@
-document.querySelectorAll('[data-bs-toggle="tab"]').forEach((tab) => {
+const campaignTabs = document.querySelector("[data-campaign-tabs]");
+
+function getActiveCampaignTab() {
+  return campaignTabs?.querySelector("[data-campaign-tab].active")?.dataset.campaignTab;
+}
+
+campaignTabs?.querySelectorAll('[data-bs-toggle="tab"]').forEach((tab) => {
   tab.addEventListener("shown.bs.tab", (event) => {
     const selectedTab = event.target.id.replace("-tab", "");
     const url = new URL(window.location);
@@ -10,12 +16,12 @@ document.querySelectorAll('[data-bs-toggle="tab"]').forEach((tab) => {
   });
 });
 
-document.querySelectorAll("[data-leaderboard-navigation]").forEach((select) => {
+document.querySelectorAll("[data-campaign-navigation]").forEach((select) => {
   select.addEventListener("change", (event) => {
     const url = new URL(event.target.value, window.location.origin);
-    const activeTab = document.querySelector('[data-bs-toggle="tab"].active');
+    const activeTab = getActiveCampaignTab();
     if (activeTab) {
-      url.searchParams.set("tab", activeTab.id.replace("-tab", ""));
+      url.searchParams.set("tab", activeTab);
     }
     window.location.assign(url);
   });

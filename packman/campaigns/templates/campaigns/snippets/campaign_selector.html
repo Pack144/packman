@@ -1,0 +1,13 @@
+{% load i18n %}
+
+<div>
+  <label for="{{ control_id }}" class="visually-hidden">{% translate 'Campaign' %}</label>
+  <select id="{{ control_id }}"
+          class="form-select w-auto"
+          data-campaign-navigation>
+    {% for campaign in campaigns.available %}
+      <option value="{% if forloop.first %}{% url root_url_name %}{% else %}{% url campaign_url_name campaign=campaign.year.year %}{% endif %}"
+              {% if campaign == campaigns.viewing %}selected{% endif %}>{{ campaign }}</option>
+    {% endfor %}
+  </select>
+</div>

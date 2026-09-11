@@ -1,0 +1,13 @@
+<li class="nav-item" role="presentation">
+  <button class="nav-link {% if selected_tab == slug %}active{% endif %}"
+          id="{{ slug }}-tab"
+          data-bs-toggle="tab"
+          data-campaign-tab="{{ slug }}"
+          data-bs-target="#{{ slug }}-pane"
+          type="button"
+          role="tab"
+          aria-controls="{{ slug }}-pane"
+          aria-selected="{% if selected_tab == slug %}true{% else %}false{% endif %}">
+    {{ label }}
+  </button>
+</li>
