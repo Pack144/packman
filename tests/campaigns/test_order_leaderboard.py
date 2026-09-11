@@ -155,9 +155,7 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         past_start = self.campaign_start - timezone.timedelta(days=365)
         past_campaign = Campaign.objects.create(
             year=past_year,
-            ordering_opens=timezone.make_aware(
-                timezone.datetime.combine(past_start, timezone.datetime.min.time())
-            ),
+            ordering_opens=timezone.make_aware(timezone.datetime.combine(past_start, timezone.datetime.min.time())),
             ordering_closes=timezone.make_aware(
                 timezone.datetime.combine(past_start + timezone.timedelta(days=28), timezone.datetime.min.time())
             ),
