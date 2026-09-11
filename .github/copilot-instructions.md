@@ -22,6 +22,13 @@
   server. It prepares `.env`, reuses dependencies from the main checkout when
   running in a worktree, syncs Python and npm dependencies, applies pending
   migrations, and starts Django on port 8000.
+- For browser or end-to-end testing, find the local test account email and
+  password in `.env` under `SYNC_RESET_PW_EMAIL` and `SYNC_RESET_PW`. In a
+  fresh worktree, `.env` might not exist yet; look for it in the main/base
+  workspace instead. `./util/start_local.sh` copies that file into the
+  worktree on its first run but does not resync it afterward. Treat these
+  values as credentials: use them for local login only, and never copy them
+  into tracked files, logs, or responses.
 - When a task needs the running site or visual verification, start
   `./util/start_local.sh --detach` directly rather than asking the user to run
   it. Confirm the site is reachable before relying on it.
