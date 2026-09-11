@@ -33,6 +33,11 @@ urlpatterns = [
     path("<uuid:pk>/delete/", OrderDeleteView.as_view(), name="order_delete"),
     path("reports/", OrderReportView.as_view(), name="order_report"),
     path("leaderboard/", OrderLeaderboardView.as_view(), name="order_leaderboard"),
+    path(
+        "leaderboard/<int:campaign>/",
+        OrderLeaderboardView.as_view(),
+        name="order_leaderboard_by_campaign",
+    ),
     path("reports/order_slips/", OrderSlipView.as_view(), name="order_slips"),
     path("reports/place_markers/", PlaceMarkerTemplateView.as_view(), name="place_markers"),
     path("reports/prize_selections/", PrizeSelectionReportView.as_view(), name="prize_selection_report"),

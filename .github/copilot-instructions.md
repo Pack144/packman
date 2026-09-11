@@ -41,6 +41,7 @@
 - Do not duplicate the script's environment, dependency, or migration setup
   with a sequence of ad hoc commands unless the script fails and the failure is
   being diagnosed.
+- The Django admin is mounted at `/administration/`, not `/admin/`.
 
 ## Implementation conventions
 
@@ -56,6 +57,15 @@
 - Use `gettext`/`gettext_lazy` and Django template translation tags for
   user-facing text. Keep templates accessible and consistent with the existing
   Bootstrap 5 markup, including labels, semantic elements, and ARIA attributes.
+- For guidance above an admin changelist, override the `object-tools` block,
+  render `{{ block.super }}` first, and place the guidance after it with
+  `clear: both` so the Add button cannot overlap the guidance.
+- Style admin guidance with Django admin's existing patterns. Use ordinary help
+  text by default. Only use `ul.messagelist` with an `info` or `warning` item
+  when the guidance needs extra prominence, reserving warnings for cautions.
+  Give longer notices a short, bold heading on its own line, followed by concise
+  prose. Avoid bespoke CSS when admin classes and variables provide the needed
+  presentation.
 - Prefer server-rendered Django behavior. For mobile changes, keep the REST
   serializer/API, JavaScript client, screen components, service worker, and
   tests consistent where the data contract crosses those layers.

@@ -1,4 +1,5 @@
 import decimal
+from math import ceil
 
 from django.contrib import admin
 from django.contrib.auth import get_user_model
@@ -46,7 +47,11 @@ class Campaign(TimeStampedModel):
     )
 
     ordering_opens = models.DateTimeField(
-        _("sales open"), help_text=_("The date and time when members can start taking orders.")
+        _("sales open"),
+        help_text=_(
+            "The date and time when members can start taking orders. It anchors consecutive seven-day leaderboard "
+            "and weekly report windows; changing it after orders have started shifts every weekly window."
+        ),
     )
     ordering_closes = models.DateTimeField(
         _("sales close"), help_text=_("The final date and time when all orders must be submitted.")
@@ -73,6 +78,21 @@ class Campaign(TimeStampedModel):
 
     def __str__(self):
         return str(self.year)
+
+    def get_ordering_week_count(self):
+        ordering_opens = timezone.localtime(self.ordering_opens)
+        ordering_closes = timezone.localtime(self.ordering_closes)
+        return ceil((ordering_closes - ordering_opens) / timezone.timedelta(weeks=1))
+
+    def get_ordering_week_windows(self, count=None):
+        count = self.get_ordering_week_count() if count is None else min(count, self.get_ordering_week_count())
+        weeks = []
+        start_at = timezone.localtime(self.ordering_opens)
+        for number in range(1, count + 1):
+            end_at = start_at + timezone.timedelta(weeks=1)
+            weeks.append({"number": number, "start_at": start_at, "end_at": end_at})
+            start_at = end_at
+        return weeks
 
     def clean(self):
         if self.ordering_closes < self.ordering_opens:

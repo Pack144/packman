@@ -1,0 +1,28 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block form_top %}
+  <ul class="messagelist">
+    <li class="warning">
+      <strong>{% translate "Note:" %}</strong>
+      <p>
+        {% blocktranslate trimmed %}
+          The "Sales open" date anchors consecutive seven-day leaderboard and weekly report windows. Changing Sales
+          open after orders have started shifts every weekly window.
+        {% endblocktranslate %}
+      </p>
+      <p>
+        {% blocktranslate trimmed %}
+          A common campaign start time is Wednesday at 5:00 PM, before the pack meeting with the NCC kickoff. This makes
+          each window run until the following Wednesday at 5:00 PM.
+        {% endblocktranslate %}
+      </p>
+      <p>
+        {% blocktranslate trimmed %}
+          Avoid closing sales just after a weekly boundary. For example, when sales open Wednesday at 5:00 PM, a
+          Wednesday 6:00 PM close creates a final leaderboard and report window containing only one hour of orders.
+        {% endblocktranslate %}
+      </p>
+    </li>
+  </ul>
+{% endblock form_top %}

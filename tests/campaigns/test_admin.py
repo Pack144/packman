@@ -99,3 +99,43 @@ class CampaignFilterTestCase(TestCase):
         object_list = list(response.context["cl"].queryset)
         self.assertIn(self.current_product, object_list)
         self.assertNotIn(self.previous_product, object_list)
+
+    def test_campaign_admin_pages_show_contextual_guidance(self):
+        changelist_response = self.client.get(reverse("admin:campaigns_campaign_changelist"))
+        change_response = self.client.get(reverse("admin:campaigns_campaign_change", args=[self.current_campaign.pk]))
+        prize_point_response = self.client.get(reverse("admin:campaigns_prizepoint_changelist"))
+
+        self.assertContains(change_response, "<strong>Note:</strong>", html=True)
+        self.assertContains(
+            change_response,
+            'The "Sales open" date anchors consecutive seven-day leaderboard and weekly report windows',
+        )
+        self.assertContains(change_response, "Wednesday at 5:00 PM")
+        self.assertContains(change_response, "Wednesday 6:00 PM close")
+        self.assertContains(change_response, "only one hour of orders")
+        self.assertContains(
+            change_response, "Changing Sales open after orders have started shifts every weekly window"
+        )
+        self.assertNotContains(change_response, "exactly seven weeks")
+        self.assertContains(change_response, '<li class="warning">')
+        self.assertNotContains(change_response, "Duplicate campaign, quotas, and products")
+        self.assertNotContains(change_response, "Delete selected campaigns")
+
+        self.assertContains(changelist_response, "Starting a new campaign?")
+        self.assertContains(changelist_response, 'class="messagelist" style="clear: both;"')
+        self.assertContains(changelist_response, '<li class="info">')
+        self.assertContains(changelist_response, "Duplicate campaign, quotas, and products")
+        self.assertContains(changelist_response, "Orders are not copied")
+        self.assertNotContains(changelist_response, "Delete selected campaigns")
+        self.assertNotContains(changelist_response, "<strong>Note:</strong>", html=True)
+        self.assertNotContains(changelist_response, "exactly seven weeks")
+        self.assertLess(
+            changelist_response.content.index(b'class="object-tools"'),
+            changelist_response.content.index(b"Starting a new campaign?"),
+        )
+
+        self.assertContains(prize_point_response, 'class="help" style="clear: both;"')
+        self.assertLess(
+            prize_point_response.content.index(b'class="object-tools"'),
+            prize_point_response.content.index(b"Prize Points define"),
+        )
