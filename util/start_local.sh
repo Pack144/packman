@@ -6,6 +6,10 @@
 #
 # Options:
 #   --port PORT              Port to run on (default: 8000)
+#   --kill-existing          Stop the process currently listening on the port
+#                            before starting the development server
+#   --detach                 Start the server in the background and return once
+#                            it is accepting connections
 #   --no-migrate             Skip running migrations
 #   --no-install             Skip dependency install check
 #   --base-workspace PATH    Reuse an already set-up checkout (e.g. the main
@@ -19,11 +23,13 @@
 
 set -euo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$PROJECT_ROOT"
 
 # ── Defaults ──────────────────────────────────────────────────────────────────
 PORT=8000
+KILL_EXISTING=false
+DETACH=false
 RUN_MIGRATE=true
 RUN_INSTALL=true
 BASE_WORKSPACE="${PACKMAN_BASE_WORKSPACE:-}"
@@ -32,12 +38,17 @@ BASE_WORKSPACE_SET=false
 # ── Argument parsing ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --port)           PORT="$2"; shift 2 ;;
+        --port)
+            [ "$#" -ge 2 ] || { echo "Missing value for --port" >&2; exit 1; }
+            PORT="$2"
+            shift 2 ;;
+        --kill-existing)  KILL_EXISTING=true; shift ;;
+        --detach)         DETACH=true; shift ;;
         --no-migrate)     RUN_MIGRATE=false; shift ;;
         --no-install)     RUN_INSTALL=false; shift ;;
         --base-workspace) BASE_WORKSPACE="$2"; BASE_WORKSPACE_SET=true; shift 2 ;;
         -h|--help)
-            sed -n '/^# Usage:/,/^[^#]/{ /^[^#]/d; s/^# \{0,2\}//; p }' "$0"
+            sed -n '/^# Usage:/,/^[^#]/p' "$0" | sed '$d; s/^# \{0,2\}//'
             exit 0 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
@@ -50,7 +61,87 @@ warn()    { echo "⚠️  $*"; }
 error()   { echo "❌ $*" >&2; exit 1; }
 header()  { echo; echo "══════════════════════════════════════"; echo "  $*"; echo "══════════════════════════════════════"; }
 
+if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [ "$PORT" -lt 1 ] || [ "$PORT" -gt 65535 ]; then
+    error "Port must be an integer between 1 and 65535"
+fi
+
+command -v lsof &>/dev/null || error "lsof is required to check the development server port"
+
+listening_pids() {
+    lsof -nP -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | sort -u
+}
+
+port_is_available() {
+    ! lsof -nP -iTCP:"$PORT" -sTCP:LISTEN &>/dev/null
+}
+
+port_is_listening() {
+    lsof -nP -iTCP:"$PORT" -sTCP:LISTEN &>/dev/null
+}
+
+is_packman_dev_server() {
+    local pid="$1"
+    local command_line
+    local process_cwd
+
+    command_line="$(ps -p "$pid" -o command= 2>/dev/null)" || return 1
+    if ! [[ "$command_line" =~ (^|[[:space:]])manage\.py[[:space:]]+runserver([[:space:]]|$) ]]; then
+        return 1
+    fi
+
+    process_cwd="$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p' | head -n 1)"
+    [ -n "$process_cwd" ] || return 1
+    process_cwd="$(cd "$process_cwd" 2>/dev/null && pwd -P)" || return 1
+    [ "$process_cwd" = "$PROJECT_ROOT" ]
+}
+
+stop_existing_server() {
+    local pids="$1"
+    local deadline
+
+    info "Stopping process(es) listening on port $PORT: $pids"
+    for pid in $pids; do
+        kill "$pid" || error "Unable to stop PID $pid"
+    done
+
+    deadline=$((SECONDS + 10))
+    for pid in $pids; do
+        while kill -0 "$pid" 2>/dev/null; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+                error "PID $pid did not stop within 10 seconds"
+            fi
+            sleep 0.2
+        done
+    done
+    if port_is_listening; then
+        error "Port $PORT is still accepting connections after stopping PID(s): $pids"
+    fi
+    success "Port $PORT is available"
+}
+
 header "Packman Local Development Server"
+
+# ── Port availability ─────────────────────────────────────────────────────────
+LISTENING_PIDS="$(listening_pids || true)"
+if [ -n "$LISTENING_PIDS" ]; then
+    ps -p "$(echo "$LISTENING_PIDS" | paste -sd, -)" -o pid=,command= 2>/dev/null || true
+    NON_PACKMAN_PIDS=""
+    for pid in $LISTENING_PIDS; do
+        if ! is_packman_dev_server "$pid"; then
+            NON_PACKMAN_PIDS="$NON_PACKMAN_PIDS $pid"
+        fi
+    done
+    if [ -n "$NON_PACKMAN_PIDS" ]; then
+        error "Port $PORT is used by a process that is not this checkout's Packman development server (PID(s):${NON_PACKMAN_PIDS}). Stop it separately or choose another port with --port PORT."
+    fi
+    if [ "$KILL_EXISTING" = true ]; then
+        stop_existing_server "$LISTENING_PIDS"
+    else
+        error "Packman development server is already using port $PORT. Re-run with --kill-existing or choose another port with --port PORT."
+    fi
+elif ! port_is_available; then
+    error "Port $PORT is already in use, but its process could not be identified. Choose another port with --port PORT."
+fi
 
 # ── Base workspace reuse ──────────────────────────────────────────────────────
 # When running from a git worktree (e.g. a Copilot session checkout) and no
@@ -160,7 +251,33 @@ fi
 
 # ── Start server ──────────────────────────────────────────────────────────────
 header "Starting server on http://localhost:$PORT"
-info "Press Ctrl+C to stop"
 echo
 
-$PYTHON manage.py runserver "0.0.0.0:$PORT"
+if [ "$DETACH" = true ]; then
+    LOG_FILE="${PACKMAN_DEV_LOG:-${TMPDIR:-/tmp}/packman-dev-$PORT.log}"
+    PID_FILE="${PACKMAN_DEV_PID:-${TMPDIR:-/tmp}/packman-dev-$PORT.pid}"
+
+    nohup $PYTHON manage.py runserver "0.0.0.0:$PORT" --noreload >"$LOG_FILE" 2>&1 < /dev/null &
+    SERVER_PID=$!
+    echo "$SERVER_PID" >"$PID_FILE"
+
+    for _ in $(seq 1 50); do
+        if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+            tail -n 20 "$LOG_FILE" >&2 || true
+            error "Development server exited before it was ready"
+        fi
+        if port_is_listening; then
+            success "Development server started in the background (PID $SERVER_PID)"
+            info "Log: $LOG_FILE"
+            info "PID file: $PID_FILE"
+            exit 0
+        fi
+        sleep 0.2
+    done
+
+    kill "$SERVER_PID" 2>/dev/null || true
+    error "Development server did not begin listening within 10 seconds; see $LOG_FILE"
+else
+    info "Press Ctrl+C to stop"
+    $PYTHON manage.py runserver "0.0.0.0:$PORT"
+fi
