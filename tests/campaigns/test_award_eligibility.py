@@ -1,6 +1,8 @@
 import decimal
 
 from django.contrib import admin
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.template.loader import render_to_string
 from django.test import TestCase
 from django.urls import reverse
@@ -27,6 +29,12 @@ class AwardEligibilityTestCase(TestCase):
             delivery_available=(now + timezone.timedelta(days=15)).date(),
             prize_window_opens=(now - timezone.timedelta(days=1)).date(),
             prize_window_closes=(now + timezone.timedelta(days=30)).date(),
+        )
+        self.adult.user_permissions.add(
+            Permission.objects.get(
+                codename="generate_order_report",
+                content_type=ContentType.objects.get_for_model(Campaign),
+            )
         )
         membership = self.scout.den_memberships.get(year_assigned=self.pack_year)
         self.den = membership.den
@@ -129,9 +137,9 @@ class AwardEligibilityTestCase(TestCase):
 
         response = self.client.get(reverse("campaigns:order_report"))
 
-        self.assertEqual(response.context["report"]["count"], 2)
-        self.assertEqual(response.context["report"]["total"], decimal.Decimal("1100.00"))
-        day = list(response.context["report"]["days"])[0]
+        self.assertEqual(response.context["sales"]["count"], 2)
+        self.assertEqual(response.context["sales"]["total"], decimal.Decimal("1100.00"))
+        day = next(day for day in response.context["sales"]["days"] if day["count"])
         self.assertEqual(day["count"], 2)
         self.assertEqual(day["order_total"], decimal.Decimal("1100.00"))
 

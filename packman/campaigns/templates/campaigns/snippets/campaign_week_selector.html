@@ -1,0 +1,23 @@
+{% load i18n %}
+
+<form method="get" class="d-flex align-items-center gap-2">
+  <input type="hidden" name="tab" value="{{ selected_tab }}">
+  <label for="{{ control_id }}" class="visually-hidden">{% translate 'Campaign period' %}</label>
+  <select id="{{ control_id }}"
+          name="week"
+          class="form-select w-auto"
+          onchange="this.form.submit()">
+    <option value="" {% if not selected_week %}selected{% endif %}>
+      {% translate "Full Campaign" %}
+    </option>
+    {% for week in weeks %}
+      <option value="{{ week.number }}"
+              {% if selected_week.number == week.number %}selected{% endif %}>
+        {% blocktranslate with number=week.number start=week.start_at|date:"M j" end=week.end_at|date:"M j" %}Week {{ number }} ({{ start }}–{{ end }}){% endblocktranslate %}
+      </option>
+    {% endfor %}
+  </select>
+  <noscript>
+    <button type="submit" class="btn btn-primary">{% translate 'Apply' %}</button>
+  </noscript>
+</form>

@@ -10,8 +10,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Prefetch, Q, Sum
 from django.db.models.functions import Coalesce, TruncDate
-from django.http import Http404, JsonResponse
-from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -30,7 +29,7 @@ from packman.dens.models import Den, Membership
 from packman.membership.models import Scout
 
 from .forms import CustomerForm, OrderForm, OrderItemFormSet, PrizeSelectionForm
-from .mixins import UserIsSellerFamilyTest
+from .mixins import CampaignOrderPeriodMixin, UserIsSellerFamilyTest
 from .models import Campaign, Order, OrderItem, Prize, PrizePoint, PrizeSelection, Product, Quota
 from .utils import email_receipt
 
@@ -128,54 +127,119 @@ class OrderListView(LoginRequiredMixin, ListView):
         return context
 
 
-class OrderReportView(LoginRequiredMixin, TemplateView):
+class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, TemplateView):
     permission_required = "campaigns.generate_order_report"
     template_name = "campaigns/order_report.html"
+    allowed_tabs = {"sales", "products", "details", "prize-selections", "packing-night"}
+    default_tab = "sales"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["campaigns"] = {
-            "available": Campaign.objects.all(),
-            "current": Campaign.objects.current(),
-            "viewing": (
-                Campaign.objects.get(year=PackYear.get_pack_year(int(self.kwargs["campaign"]))["end_date"].year)
-                if "campaign" in self.kwargs
-                else Campaign.objects.latest()
-            ),
-        }
-        orders = Order.objects.calculate_total().filter(campaign=context["campaigns"]["viewing"])
-        context["report"] = {
-            "count": orders.count(),
-            "total": orders.totaled()["totaled"],
-            "days": orders.annotate(date=TruncDate("date_added"))
-            .order_by("date")
-            .values("date")
-            .annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00)))
-            .values("date", "count", "order_total"),
-        }
+        selected_tab = self.get_selected_tab()
+        context["campaigns"] = self.get_campaign_context()
+        context["selected_tab"] = selected_tab
+
+        if selected_tab == "sales":
+            context.update(self.get_sales_context())
+        elif selected_tab == "products":
+            context.update(self.get_products_context())
+        elif selected_tab == "prize-selections":
+            context.update(self.get_prize_selection_context())
+
         return context
 
+    def get_order_period(self):
+        week_context = self.get_week_context(self.viewing_campaign.get_ordering_week_windows())
+        orders = Order.objects.filter(campaign=self.viewing_campaign)
+        orders = self.filter_orders_by_week(orders, week_context["selected_week"])
+        return week_context, orders
 
-class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
+    def get_sales_context(self):
+        week_context, orders = self.get_order_period()
+        week_context["sales"] = self.get_sales_report(orders, week_context["selected_week"])
+        return week_context
+
+    def get_products_context(self):
+        week_context, orders = self.get_order_period()
+        week_context["products"] = self.viewing_campaign.products.quantity(orders)
+        return week_context
+
+    def get_prize_selection_context(self):
+        memberships = Membership.objects.filter(year_assigned=self.viewing_campaign.year).select_related("den")
+        prize_selections = (
+            PrizeSelection.objects.filter(campaign=self.viewing_campaign)
+            .select_related("cub")
+            .prefetch_related(
+                Prefetch(
+                    "cub__den_memberships",
+                    queryset=memberships,
+                    to_attr="report_memberships",
+                )
+            )
+            .order_by("cub")
+        )
+        return {
+            "prize_selections": prize_selections,
+            "prizes": Prize.objects.filter(campaign=self.viewing_campaign).calculate_quantity(),
+        }
+
+    def get_sales_report(self, orders, selected_week):
+        orders = orders.calculate_total()
+
+        daily_totals = {
+            day["date"]: day
+            for day in (
+                orders.annotate(date=TruncDate("date_added"))
+                .order_by("date")
+                .values("date")
+                .annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00)))
+                .values("date", "count", "order_total")
+            )
+        }
+        period_start_at = (
+            selected_week["start_at"] if selected_week else timezone.localtime(self.viewing_campaign.ordering_opens)
+        )
+        period_end_at = (
+            selected_week["end_at"] if selected_week else timezone.localtime(self.viewing_campaign.ordering_closes)
+        )
+        period_start = period_start_at.date()
+        period_end = (period_end_at - timezone.timedelta(microseconds=1)).date()
+        report_days = []
+        report_date = period_start
+        while report_date <= period_end:
+            report_days.append(
+                daily_totals.get(
+                    report_date,
+                    {
+                        "date": report_date,
+                        "count": 0,
+                        "order_total": decimal.Decimal(0.00),
+                    },
+                )
+            )
+            report_date += timezone.timedelta(days=1)
+
+        return {
+            "count": orders.count(),
+            "total": orders.totaled()["totaled"],
+            "days": report_days,
+        }
+
+
+class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, TemplateView):
     template_name = "campaigns/order_leaderboard.html"
-    leaderboard_tabs = {"top-sales", "top-orders", "dens", "all-sellers"}
+    allowed_tabs = {"top-sales", "top-orders", "dens", "all-sellers"}
+    default_tab = "top-sales"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        latest_campaign = Campaign.objects.latest()
-        viewing_campaign = (
-            get_object_or_404(Campaign, year_id=self.kwargs["campaign"])
-            if "campaign" in self.kwargs
-            else latest_campaign
-        )
+        viewing_campaign = self.viewing_campaign
 
         # 1. Campaign navigation is always available, including while leaderboard results are hidden.
-        context["campaigns"] = {
-            "available": Campaign.objects.select_related("year").all(),
-            "viewing": viewing_campaign,
-        }
-        # Den ranks are not stored historically, so current badges would be inaccurate for past campaigns.
-        context["show_den_rank_badges"] = viewing_campaign == latest_campaign
+        context["campaigns"] = self.get_campaign_context()
+        # Den ranks are not stored historically; they follow current-year membership, which can roll over before the
+        # next campaign is created.
+        context["show_den_rank_badges"] = viewing_campaign.year_id == PackYear.objects.current().pk
 
         now = timezone.now()
         campaign_start_at = timezone.localtime(viewing_campaign.ordering_opens)
@@ -214,24 +278,11 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
             )
         else:
             campaign_weeks = viewing_campaign.get_ordering_week_windows()
-        context["leaderboard_weeks"] = campaign_weeks
 
         # 7.1. Validate a selected week; no selection leaves the campaign totals unfiltered.
-        selected_week_number = self.request.GET.get("week")
-        if selected_week_number:
-            try:
-                selected_week_number = int(selected_week_number)
-            except ValueError as error:
-                raise Http404("Unknown leaderboard week") from error
-            if not 1 <= selected_week_number <= len(campaign_weeks):
-                raise Http404("Unknown leaderboard week")
-            selected_week = campaign_weeks[selected_week_number - 1]
-        else:
-            selected_week = None
-
-        context["selected_leaderboard_week"] = selected_week
-        selected_tab = self.request.GET.get("tab", "top-sales")
-        context["selected_leaderboard_tab"] = selected_tab if selected_tab in self.leaderboard_tabs else "top-sales"
+        context.update(self.get_week_context(campaign_weeks))
+        selected_week = context["selected_week"]
+        context["selected_tab"] = self.get_selected_tab()
 
         # 7.2. A selected active week shows countdowns until midnight after its window ends.
         if selected_week and viewing_active_campaign:
@@ -251,8 +302,7 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
         # 7.3. Use all campaign orders unless a visible weekly window was selected.
         # Leaderboard rankings exclude explicitly ineligible orders, unlike operational reports.
         orders = Order.objects.award_eligible().calculate_total().filter(campaign=viewing_campaign)
-        if selected_week:
-            orders = orders.filter(date_added__gte=selected_week["start_at"], date_added__lt=selected_week["end_at"])
+        orders = self.filter_orders_by_week(orders, selected_week)
 
         cubs = Membership.objects.select_related("scout", "den", "den__rank").filter(
             year_assigned=viewing_campaign.year
@@ -566,18 +616,6 @@ class PullSheetTemplateView(PermissionRequiredMixin, TemplateView):
             .filter(scouts__year_assigned=PackYear.objects.current())
             .distinct()
         )
-        return context
-
-
-class PrizeSelectionReportView(PermissionRequiredMixin, TemplateView):
-    permission_required = "campaigns.generate_order_report"
-    template_name = "campaigns/reports/prize_selections.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        current_campaign = Campaign.objects.current()
-        context["prize_selections"] = PrizeSelection.objects.filter(campaign=current_campaign).order_by("cub")
-        context["prizes"] = Prize.objects.filter(campaign=current_campaign).calculate_quantity()
         return context
 
 
