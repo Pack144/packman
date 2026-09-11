@@ -7,152 +7,279 @@
 {% endblock %}
 
 {% block content %}
-
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">{% translate 'NCC Leaderboards' %}</h1>
+    <div class="d-flex align-items-center gap-2">
+      {% if not hide_leaderboard %}
+        <form method="get" class="d-flex align-items-center gap-2">
+          <input type="hidden" name="tab" value="{{ selected_leaderboard_tab }}">
+          <label for="leaderboard-week" class="visually-hidden">{% translate 'Leaderboard period' %}</label>
+          <select id="leaderboard-week"
+                  name="week"
+                  class="form-select w-auto"
+                  onchange="this.form.submit()">
+            <option value="" {% if not selected_leaderboard_week %}selected{% endif %}>
+              {% translate "Full Campaign" %}
+            </option>
+            {% for week in leaderboard_weeks %}
+              <option value="{{ week.number }}"
+                      {% if selected_leaderboard_week.number == week.number %}selected{% endif %}>
+                {% blocktranslate with number=week.number start=week.start|date:"M j" end=week.end|date:"M j" %}Week {{ number }} ({{ start }}–{{ end }}){% endblocktranslate %}
+              </option>
+            {% endfor %}
+          </select>
+          <noscript>
+            <button type="submit" class="btn btn-primary">{% translate 'Apply' %}</button>
+          </noscript>
+        </form>
+      {% endif %}
+      <div>
+        <label for="leaderboard-campaign" class="visually-hidden">{% translate 'Campaign' %}</label>
+        <select id="leaderboard-campaign"
+                class="form-select w-auto"
+                data-leaderboard-navigation>
+          {% for campaign in campaigns.available %}
+            <option value="{% if campaign == campaigns.latest %}{% url 'campaigns:order_leaderboard' %}{% else %}{% url 'campaigns:order_leaderboard_by_campaign' campaign=campaign.year.year %}{% endif %}"
+                    {% if campaign == campaigns.viewing %}selected{% endif %}>{{ campaign }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
   {% if hide_leaderboard %}
-  <div class="row">
-    <div class="card mb-5">
-      <div class="card-body" style="text-align: center; padding-top: 20px;">
-        <h2 class="card-header">{% translate 'Golden Peanut Leaderboard' %}</h2>
-        <h3>Only {{ days_left }} days to go!</h3>
-        <h3>Who will win the coveted Golden Peanut award?</h3>
-        <img src="{% static 'img/golden_peanut.jpeg' %}"
-                 alt="{% translate 'Golden Peanut' %}">
-      </div>
-    </div>
-  </div>
-  {% else %}
-  <div class="row">
+    <div class="row">
       <div class="card mb-5">
-        <div class="card-body">
+        <div class="card-body" style="text-align: center; padding-top: 20px;">
           <h2 class="card-header">{% translate 'Golden Peanut Leaderboard' %}</h2>
-          <table class="table table-hover sortable" id="sales_ordered_table">
-            <caption>{% translate 'Top Sellers by $' %}</caption>
-            <thead class="table-dark">
-              <tr>
-                <th scope="col">{% translate 'Cub' %}</th>
-                <th scope="col">{% translate 'Den' %}</th>
-                <th scope="col"
-                    data-sort-header="orders"
-                    aria-sort="none"
-                    onclick="sortRows('#sales_ordered_table tbody tr', '#sales_ordered_table thead th[data-sort-header]', 'orders')">{% translate 'Total Orders' %}<span aria-hidden="true"></span></th>
-                <th scope="col"
-                    data-sort-header="total"
-                    aria-sort="descending"
-                    onclick="sortRows('#sales_ordered_table tbody tr', '#sales_ordered_table thead th[data-sort-header]', 'total')">{% translate 'Total Sales' %}<span aria-hidden="true"></span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for cub in top_sellers %}
-                <tr>
-                  <th scope="row">{{ cub.name }}</th>
-                  <th scope="row">{{ cub.den }}</th>
-                  <td data-sort-key="orders" data-sort-value="{{ cub.orders }}">{{ cub.orders }}</td>
-                  <td data-sort-key="total" data-sort-value="{{ cub.total }}">${{ cub.total }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          <h2 class="card-header">{% translate 'Top Seller Leaderboard' %}</h2>
-          <table class="table table-hover sortable" id="orders_ordered_table">
-            <caption>{% translate 'Top Sellers by Orders' %}</caption>
-            <thead class="table-dark">
-              <tr>
-                <th scope="col">{% translate 'Cub' %}</th>
-                <th scope="col">{% translate 'Den' %}</th>
-                <th scope="col"
-                    data-sort-header="orders"
-                    aria-sort="descending"
-                    onclick="sortRows('#orders_ordered_table tbody tr', '#orders_ordered_table thead th[data-sort-header]', 'orders')">{% translate 'Total Orders' %}<span aria-hidden="true"></span></th>
-                <th scope="col"
-                    data-sort-header="total"
-                    aria-sort="none"
-                    onclick="sortRows('#orders_ordered_table tbody tr', '#orders_ordered_table thead th[data-sort-header]', 'total')">{% translate 'Total Sales' %}<span aria-hidden="true"></span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for cub in top_orders %}
-                <tr>
-                  <th scope="row">{{ cub.name }}</th>
-                  <th scope="row">{{ cub.den }}</th>
-                  <td data-sort-key="orders" data-sort-value="{{ cub.orders }}">{{ cub.orders }}</td>
-                  <td data-sort-key="total" data-sort-value="{{ cub.total }}">${{ cub.total }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card mb-5">
-        <div class="card-body">
-          <h2 class="card-header">{% translate 'Den Leaderboard' %}</h2>
-          <table class="table table-hover sortable" id="den_ordered_table">
-            <caption>{% translate 'Den Leaderboard' %}</caption>
-            <thead class="table-dark">
-              <tr>
-                <th scope="col">{% translate 'Den' %}</th>
-                <th scope="col">{% translate 'Top Seller ($)' %}</th>
-                <th scope="col"
-                    data-sort-header="orders"
-                    aria-sort="none"
-                    onclick="sortRows('#den_ordered_table tbody tr', '#den_ordered_table thead th[data-sort-header]', 'orders')">{% translate 'Total Orders' %}<span aria-hidden="true"></span></th>
-                <th scope="col"
-                    data-sort-header="total"
-                    aria-sort="descending"
-                    onclick="sortRows('#den_ordered_table tbody tr', '#den_ordered_table thead th[data-sort-header]', 'total')">{% translate 'Total Sales' %}<span aria-hidden="true"></span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for den in dens %}
-                <tr>
-                  <th scope="row">{{ den.name }}</th>
-                  <th scope="row">{{ den.top_seller }}</th>
-                  <td data-sort-key="orders" data-sort-value="{{ den.orders }}">{{ den.orders }}</td>
-                  <td data-sort-key="total" data-sort-value="{{ den.total }}">${{ den.total }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card mb-5">
-        <div class="card-body">
-          <h2 class="card-header">{% translate 'All Sellers' %}</h2>
-          <table class="table table-hover sortable" id="all_sellers_table">
-            <caption>{% translate 'All Sellers' %}</caption>
-            <thead class="table-dark">
-              <tr>
-                <th scope="col">{% translate 'Cub' %}</th>
-                <th scope="col">{% translate 'Den' %}</th>
-                <th scope="col"
-                    data-sort-header="orders"
-                    aria-sort="none"
-                    onclick="sortRows('#all_sellers_table tbody tr', '#all_sellers_table thead th[data-sort-header]', 'orders')">{% translate 'Total Orders' %}<span aria-hidden="true"></span></th>
-                <th scope="col"
-                    data-sort-header="total"
-                    aria-sort="descending"
-                    onclick="sortRows('#all_sellers_table tbody tr', '#all_sellers_table thead th[data-sort-header]', 'total')">{% translate 'Total Sales' %}<span aria-hidden="true"></span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for cub in all_sellers %}
-                <tr>
-                  <th scope="row">{{ cub.name }}</th>
-                  <th scope="row">{{ cub.den }}</th>
-                  <td data-sort-key="orders" data-sort-value="{{ cub.orders }}">{{ cub.orders }}</td>
-                  <td data-sort-key="total" data-sort-value="{{ cub.total }}">${{ cub.total }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+          <h3>Only {{ days_left }} days to go!</h3>
+          <h3>Who will win the coveted Golden Peanut award?</h3>
+          <img src="{% static 'img/golden_peanut.jpeg' %}"
+               alt="{% translate 'Golden Peanut' %}">
         </div>
       </div>
     </div>
-  </div>
+  {% else %}
+    <div class="card mb-5">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {% if selected_leaderboard_tab == 'top-sales' %}active{% endif %}"
+                    id="top-sales-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#top-sales-pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="top-sales-pane"
+                    aria-selected="{% if selected_leaderboard_tab == 'top-sales' %}true{% else %}false{% endif %}">
+              {% if selected_leaderboard_week %}
+                {% translate 'Top Sellers' %}
+              {% else %}
+                {% translate 'Golden Peanut' %}
+              {% endif %}
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {% if selected_leaderboard_tab == 'top-orders' %}active{% endif %}"
+                    id="top-orders-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#top-orders-pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="top-orders-pane"
+                    aria-selected="{% if selected_leaderboard_tab == 'top-orders' %}true{% else %}false{% endif %}">
+              {% translate 'Top Orders' %}
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {% if selected_leaderboard_tab == 'dens' %}active{% endif %}"
+                    id="dens-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#dens-pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="dens-pane"
+                    aria-selected="{% if selected_leaderboard_tab == 'dens' %}true{% else %}false{% endif %}">
+              {% translate 'Dens' %}
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {% if selected_leaderboard_tab == 'all-sellers' %}active{% endif %}"
+                    id="all-sellers-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#all-sellers-pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="all-sellers-pane"
+                    aria-selected="{% if selected_leaderboard_tab == 'all-sellers' %}true{% else %}false{% endif %}">
+              {% translate 'All Sellers' %}
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div class="card-body">
+        <div class="tab-content">
+          <div class="tab-pane fade {% if selected_leaderboard_tab == 'top-sales' %}show active{% endif %}"
+               id="top-sales-pane"
+               role="tabpanel"
+               aria-labelledby="top-sales-tab">
+            <table class="table table-hover align-middle"
+                   id="sales_ordered_table"
+                   aria-labelledby="top-sales-tab">
+              <thead class="table-dark">
+                <tr>
+                  <th scope="col">{% translate 'Cub' %}</th>
+                  <th scope="col">{% translate 'Den' %}</th>
+                  <th scope="col">{% translate 'Total Orders' %}</th>
+                  <th scope="col">{% translate 'Total Sales' %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cub in top_sellers %}
+                  <tr>
+                    <th scope="row">
+                      <div class="leaderboard-row-label d-flex align-items-center gap-3">
+                        {% include "membership/snippets/headshot_thumbnail.html" with member=cub.scout %}
+                        <span>{{ cub.name }}</span>
+                      </div>
+                    </th>
+                    <th scope="row">{{ cub.den }}</th>
+                    <td data-sort-key="orders" data-sort-value="{{ cub.orders }}">{{ cub.orders }}</td>
+                    <td data-sort-key="total" data-sort-value="{{ cub.total }}">${{ cub.total }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="tab-pane fade {% if selected_leaderboard_tab == 'top-orders' %}show active{% endif %}"
+               id="top-orders-pane"
+               role="tabpanel"
+               aria-labelledby="top-orders-tab">
+            <table class="table table-hover align-middle"
+                   id="orders_ordered_table"
+                   aria-labelledby="top-orders-tab">
+              <thead class="table-dark">
+                <tr>
+                  <th scope="col">{% translate 'Cub' %}</th>
+                  <th scope="col">{% translate 'Den' %}</th>
+                  <th scope="col">{% translate 'Total Orders' %}</th>
+                  <th scope="col">{% translate 'Total Sales' %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cub in top_orders %}
+                  <tr>
+                    <th scope="row">
+                      <div class="leaderboard-row-label d-flex align-items-center gap-3">
+                        {% include "membership/snippets/headshot_thumbnail.html" with member=cub.scout %}
+                        <span>{{ cub.name }}</span>
+                      </div>
+                    </th>
+                    <th scope="row">{{ cub.den }}</th>
+                    <td data-sort-key="orders" data-sort-value="{{ cub.orders }}">{{ cub.orders }}</td>
+                    <td data-sort-key="total" data-sort-value="{{ cub.total }}">${{ cub.total }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="tab-pane fade {% if selected_leaderboard_tab == 'dens' %}show active{% endif %}"
+               id="dens-pane"
+               role="tabpanel"
+               aria-labelledby="dens-tab">
+            <table class="table table-hover align-middle sortable"
+                   id="den_ordered_table"
+                   aria-labelledby="dens-tab">
+              <thead class="table-dark">
+                <tr>
+                  <th scope="col">{% translate 'Den' %}</th>
+                  <th scope="col">{% translate 'Top Seller ($)' %}</th>
+                  <th scope="col"
+                      data-sort-header="orders"
+                      aria-sort="none"
+                      onclick="sortRows('#den_ordered_table tbody tr', '#den_ordered_table thead th[data-sort-header]', 'orders')">
+                    {% translate 'Total Orders' %}<span aria-hidden="true"></span>
+                  </th>
+                  <th scope="col"
+                      data-sort-header="total"
+                      aria-sort="descending"
+                      onclick="sortRows('#den_ordered_table tbody tr', '#den_ordered_table thead th[data-sort-header]', 'total')">
+                    {% translate 'Total Sales' %}<span aria-hidden="true"></span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for den in dens %}
+                  <tr>
+                    <th scope="row">
+                      <div class="leaderboard-row-label d-flex align-items-center gap-3">
+                        {% if show_den_rank_badges and den.rank.patch %}
+                          <img src="{{ den.rank.patch }}"
+                               class="img-fluid rounded"
+                               height="80"
+                               width="80"
+                               alt="{% blocktranslate with rank=den.rank %}{{ rank }} rank patch{% endblocktranslate %}">
+                        {% endif %}
+                        <span>{{ den.name }}</span>
+                      </div>
+                    </th>
+                    <th scope="row">{{ den.top_seller }}</th>
+                    <td data-sort-key="orders" data-sort-value="{{ den.orders }}">{{ den.orders }}</td>
+                    <td data-sort-key="total" data-sort-value="{{ den.total }}">${{ den.total }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="tab-pane fade {% if selected_leaderboard_tab == 'all-sellers' %}show active{% endif %}"
+               id="all-sellers-pane"
+               role="tabpanel"
+               aria-labelledby="all-sellers-tab">
+            <table class="table table-hover align-middle sortable"
+                   id="all_sellers_table"
+                   aria-labelledby="all-sellers-tab">
+              <thead class="table-dark">
+                <tr>
+                  <th scope="col">{% translate 'Cub' %}</th>
+                  <th scope="col">{% translate 'Den' %}</th>
+                  <th scope="col"
+                      data-sort-header="orders"
+                      aria-sort="none"
+                      onclick="sortRows('#all_sellers_table tbody tr', '#all_sellers_table thead th[data-sort-header]', 'orders')">
+                    {% translate 'Total Orders' %}<span aria-hidden="true"></span>
+                  </th>
+                  <th scope="col"
+                      data-sort-header="total"
+                      aria-sort="descending"
+                      onclick="sortRows('#all_sellers_table tbody tr', '#all_sellers_table thead th[data-sort-header]', 'total')">
+                    {% translate 'Total Sales' %}<span aria-hidden="true"></span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cub in all_sellers %}
+                  <tr>
+                    <th scope="row">
+                      <div class="leaderboard-row-label d-flex align-items-center gap-3">
+                        {% include "membership/snippets/headshot_thumbnail.html" with member=cub.scout %}
+                        <span>{{ cub.name }}</span>
+                      </div>
+                    </th>
+                    <th scope="row">{{ cub.den }}</th>
+                    <td data-sort-key="orders" data-sort-value="{{ cub.orders }}">{{ cub.orders }}</td>
+                    <td data-sort-key="total" data-sort-value="{{ cub.total }}">${{ cub.total }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   {% endif %}
-
 {% endblock content %}
 
 {% block js %}
   {{ block.super }}
   <script src="{% static 'js/sortable_rows.js' %}"></script>
+  <script src="{% static 'js/leaderboard_tabs.js' %}"></script>
 {% endblock js %}

@@ -1,0 +1,17 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block form_top %}
+  <ul class="messagelist">
+    <li class="warning">
+      <strong>{% translate "Note:" %}</strong>
+      {% blocktranslate trimmed %}
+        Campaigns should ideally last exactly seven weeks, opening and closing at 5:00 PM on Wednesdays shortly before
+        pack meetings.
+      {% endblocktranslate %}
+      {% blocktranslate trimmed %}
+        The opening time anchors the weekly leaderboard windows, so do not change it after the campaign starts.
+      {% endblocktranslate %}
+    </li>
+  </ul>
+{% endblock form_top %}

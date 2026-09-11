@@ -130,6 +130,16 @@ footer {
     height: 80px;
 }
 
+.leaderboard-row-label {
+    height: 80px;
+}
+
+.leaderboard-row-label img {
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: contain;
+}
+
 /* stylelint-disable-next-line selector-id-pattern */
 #contact-form #div_id_url {
     display: none;

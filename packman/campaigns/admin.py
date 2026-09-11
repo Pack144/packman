@@ -135,6 +135,8 @@ class QuotaInline(admin.TabularInline):
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
     actions = ["duplicate_campaign"]
+    change_form_template = "admin/campaigns/campaign/change_form.html"
+    change_list_template = "admin/campaigns/campaign/change_list.html"
     inlines = [QuotaInline]
     list_display = [
         "year",
@@ -148,7 +150,7 @@ class CampaignAdmin(admin.ModelAdmin):
         "can_select_prizes",
     ]
 
-    @admin.display(description=_("Duplicate campaign, quotas, and product(s)"))
+    @admin.action(description=_("Duplicate campaign, quotas, and products"))
     def duplicate_campaign(self, request, queryset):
         year = PackYear.objects.current()
         if queryset.count() == 1:

@@ -46,7 +46,11 @@ class Campaign(TimeStampedModel):
     )
 
     ordering_opens = models.DateTimeField(
-        _("sales open"), help_text=_("The date and time when members can start taking orders.")
+        _("sales open"),
+        help_text=_(
+            "The date and time when members can start taking orders. This date anchors the seven weekly "
+            "leaderboard windows and should not be changed after the campaign starts."
+        ),
     )
     ordering_closes = models.DateTimeField(
         _("sales close"), help_text=_("The final date and time when all orders must be submitted.")

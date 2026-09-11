@@ -1,5 +1,6 @@
 import decimal
 import json
+from datetime import datetime, time
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -9,10 +10,20 @@ from django.core.exceptions import ValidationError
 from django.db.models import Count, Prefetch, Q, Sum
 from django.db.models.functions import Coalesce, TruncDate
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    FormView,
+    ListView,
+    RedirectView,
+    TemplateView,
+    UpdateView,
+)
 
 from packman.calendars.models import PackYear
 from packman.dens.models import Den, Membership
@@ -145,27 +156,76 @@ class OrderReportView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class OrderLeaderboardRedirectView(LoginRequiredMixin, RedirectView):
+    permanent = False
+    pattern_name = "campaigns:order_leaderboard"
+    query_string = True
+
+
 class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
     template_name = "campaigns/order_leaderboard.html"
+    leaderboard_tabs = {"top-sales", "top-orders", "dens", "all-sellers"}
+
+    def _get_week_options(self, campaign):
+        campaign_start = timezone.localtime(campaign.ordering_opens).date()
+        campaign_end = timezone.localtime(campaign.ordering_closes).date()
+        today = timezone.localtime(timezone.now()).date()
+        current_date = min(max(today, campaign_start), campaign_end)
+        current_week = ((current_date - campaign_start).days // 7) + 1
+
+        options = []
+        for number in range(1, current_week + 1):
+            start_date = campaign_start + timezone.timedelta(weeks=number - 1)
+            end_date = start_date + timezone.timedelta(days=6)
+            options.append(
+                {
+                    "number": number,
+                    "start": start_date,
+                    "end": end_date,
+                    "start_at": timezone.make_aware(datetime.combine(start_date, time.min)),
+                    "end_at": timezone.make_aware(
+                        datetime.combine(start_date + timezone.timedelta(weeks=1), time.min)
+                    ),
+                }
+            )
+        return options
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        latest_campaign = Campaign.objects.latest()
+        viewing_campaign = (
+            get_object_or_404(Campaign, year_id=self.kwargs["campaign"])
+            if "campaign" in self.kwargs
+            else latest_campaign
+        )
+        current_campaign = Campaign.objects.current()
         context["campaigns"] = {
-            "available": Campaign.objects.all(),
-            "current": Campaign.objects.current(),
-            "viewing": (
-                Campaign.objects.get(year=PackYear.get_pack_year(int(self.kwargs["campaign"]))["end_date"].year)
-                if "campaign" in self.kwargs
-                else Campaign.objects.latest()
-            ),
+            "available": Campaign.objects.select_related("year").all(),
+            "current": current_campaign,
+            "latest": latest_campaign,
+            "viewing": viewing_campaign,
         }
+        context["show_den_rank_badges"] = viewing_campaign == latest_campaign
 
         # Leaderboard rankings exclude explicitly ineligible orders, unlike operational reports.
-        orders = Order.objects.award_eligible().calculate_total().filter(campaign=context["campaigns"]["viewing"])
-        cubs = Membership.objects.prefetch_related("scout", "den").filter(
-            year_assigned=PackYear.objects.current(), scout__status=Membership.scout.field.related_model.ACTIVE
+        orders = Order.objects.award_eligible().calculate_total().filter(campaign=viewing_campaign)
+        context["leaderboard_weeks"] = self._get_week_options(viewing_campaign)
+        selected_week = next(
+            (week for week in context["leaderboard_weeks"] if str(week["number"]) == self.request.GET.get("week")),
+            None,
         )
-        dens = Den.objects.filter(scouts__year_assigned=PackYear.objects.current()).distinct()
+        context["selected_leaderboard_week"] = selected_week
+        selected_tab = self.request.GET.get("tab", "top-sales")
+        context["selected_leaderboard_tab"] = selected_tab if selected_tab in self.leaderboard_tabs else "top-sales"
+        if selected_week:
+            orders = orders.filter(date_added__gte=selected_week["start_at"], date_added__lt=selected_week["end_at"])
+
+        cubs = Membership.objects.select_related("scout", "den", "den__rank").filter(
+            year_assigned=viewing_campaign.year
+        )
+        if viewing_campaign == current_campaign:
+            cubs = cubs.filter(scout__status=Membership.scout.field.related_model.ACTIVE)
+        dens = Den.objects.select_related("rank").filter(scouts__in=cubs).distinct()
 
         # get all order totals for each cub
         all_cubs = []
@@ -173,6 +233,7 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
             total = orders.filter(seller=cub.scout).totaled()["totaled"]
             all_cubs.append(
                 {
+                    "scout": cub.scout,
                     "name": cub.scout.get_full_name(),
                     "den": cub.den.number,
                     "orders": orders.filter(seller=cub.scout).count(),
@@ -194,16 +255,16 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
         # add all cubs with > 0 orders and not in Den 6m and sort in descending order of total
         all_cubs.sort(key=lambda x: x["total"], reverse=True)
 
-        current_campaign = Campaign.objects.current()
+        viewing_current_campaign = current_campaign and viewing_campaign == current_campaign
 
-        # in final week, show all sellers, else obfuscate $0 sellers
-        if (current_campaign.ordering_closes - timezone.now()).days < 7:
+        # In the current campaign's final week, show all sellers; otherwise omit $0 sellers.
+        if viewing_current_campaign and (current_campaign.ordering_closes - timezone.now()).days < 7:
             context["all_sellers"] = all_cubs
         else:
             context["all_sellers"] = [cub for cub in all_cubs if cub["orders"] > 0]
 
-        # hide leaderboard in final days, to keep the surprise of the winner
-        if (current_campaign.ordering_closes - timezone.now()).days < 5:
+        # Hide the current leaderboard in its final days, while keeping historical campaigns available.
+        if viewing_current_campaign and (current_campaign.ordering_closes - timezone.now()).days < 5:
             context["hide_leaderboard"] = True
             context["days_left"] = (current_campaign.ordering_closes - timezone.now()).days
 
@@ -222,6 +283,7 @@ class OrderLeaderboardView(LoginRequiredMixin, TemplateView):
             all_dens.append(
                 {
                     "name": den.number,
+                    "rank": den.rank,
                     "orders": sum([cub["orders"] for cub in all_cubs if cub["den"] == den.number]),
                     "total": total,
                     "top_seller": top_seller["name"],

@@ -95,7 +95,7 @@ class AwardEligibilityTestCase(TestCase):
         self.create_order("600.00")
         self.create_order("1000.00", award_ineligible=True)
 
-        response = self.client.get(reverse("campaigns:order_leaderboard"))
+        response = self.client.get(reverse("campaigns:order_leaderboard_by_campaign", args=[self.pack_year.year]))
 
         cub = response.context["top_sellers"][0]
         self.assertEqual(cub["orders"], 1)

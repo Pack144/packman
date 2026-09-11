@@ -1,8 +1,9 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
 
-{% block content %}
-  <p class="help">
+{% block object-tools %}
+  {{ block.super }}
+  <p class="help" style="clear: both;">
     {% blocktranslate %}
       Prize Points define the sales tiers used to calculate how many points
       a Scout earns. Each entry pairs a sales total ("earned at") with the
@@ -59,5 +60,4 @@
       5 points and $850.00 earns 6 points, and so on.
     {% endblocktranslate %}
   </p>
-  {{ block.super }}
-{% endblock %}
+{% endblock object-tools %}
