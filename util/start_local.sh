@@ -54,6 +54,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+PID_FILE="${PACKMAN_DEV_PID:-${TMPDIR:-/tmp}/packman-dev-$PORT.pid}"
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 info()    { echo "  $*"; }
 success() { echo "✅ $*"; }
@@ -95,9 +97,37 @@ is_packman_dev_server() {
     [ "$process_cwd" = "$PROJECT_ROOT" ]
 }
 
+is_descendant_of() {
+    local pid="$1"
+    local ancestor="$2"
+
+    while [ "$pid" -gt 1 ] 2>/dev/null; do
+        [ "$pid" = "$ancestor" ] && return 0
+        pid="$(ps -p "$pid" -o ppid= 2>/dev/null | tr -d ' ')" || return 1
+        [ -n "$pid" ] || return 1
+    done
+    return 1
+}
+
 stop_existing_server() {
     local pids="$1"
+    local listening_pid
+    local tracked_pid=""
     local deadline
+
+    if [ -f "$PID_FILE" ]; then
+        tracked_pid="$(cat "$PID_FILE")"
+        if ! [[ "$tracked_pid" =~ ^[0-9]+$ ]] || ! is_packman_dev_server "$tracked_pid"; then
+            tracked_pid=""
+        else
+            for listening_pid in $pids; do
+                if is_descendant_of "$listening_pid" "$tracked_pid"; then
+                    pids="$tracked_pid"
+                    break
+                fi
+            done
+        fi
+    fi
 
     info "Stopping process(es) listening on port $PORT: $pids"
     for pid in $pids; do
@@ -255,9 +285,8 @@ echo
 
 if [ "$DETACH" = true ]; then
     LOG_FILE="${PACKMAN_DEV_LOG:-${TMPDIR:-/tmp}/packman-dev-$PORT.log}"
-    PID_FILE="${PACKMAN_DEV_PID:-${TMPDIR:-/tmp}/packman-dev-$PORT.pid}"
 
-    nohup $PYTHON manage.py runserver "0.0.0.0:$PORT" --noreload >"$LOG_FILE" 2>&1 < /dev/null &
+    nohup $PYTHON manage.py runserver "0.0.0.0:$PORT" >"$LOG_FILE" 2>&1 < /dev/null &
     SERVER_PID=$!
     echo "$SERVER_PID" >"$PID_FILE"
 
