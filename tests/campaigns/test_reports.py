@@ -214,6 +214,7 @@ class OrderReportViewTestCase(TestCase):
         response = self.client.get(reverse("campaigns:order_report"))
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "NCC Dashboard")
         self.assertEqual(response.context["selected_tab"], "sales")
         self.assertContains(response, "data-campaign-tab=", count=5)
         self.assertContains(response, 'aria-current="page"', count=1)

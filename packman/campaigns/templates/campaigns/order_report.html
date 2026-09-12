@@ -3,12 +3,12 @@
 {% load humanize i18n static %}
 
 {% block title %}
-  {% translate 'Orders Report' %} | {{ block.super }}
+  {% translate 'NCC Dashboard' %} | {{ block.super }}
 {% endblock %}
 
 {% block content %}
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="mb-0">{% translate 'Order Report' %}</h1>
+    <h1 class="mb-0">{% translate 'NCC Dashboard' %}</h1>
     <div class="d-flex flex-wrap align-items-center gap-2">
       {% if selected_tab == 'sales' or selected_tab == 'products' or selected_tab == 'cubs' %}
         {% include "campaigns/snippets/campaign_week_selector.html" with control_id="report-week" %}
