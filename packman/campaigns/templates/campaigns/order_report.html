@@ -3,14 +3,14 @@
 {% load humanize i18n static %}
 
 {% block title %}
-  {% translate 'Orders Report' %} | {{ block.super }}
+  {% translate 'NCC Dashboard' %} | {{ block.super }}
 {% endblock %}
 
 {% block content %}
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="mb-0">{% translate 'Order Report' %}</h1>
+    <h1 class="mb-0">{% translate 'NCC Dashboard' %}</h1>
     <div class="d-flex flex-wrap align-items-center gap-2">
-      {% if selected_tab == 'sales' or selected_tab == 'products' %}
+      {% if selected_tab == 'sales' or selected_tab == 'products' or selected_tab == 'cubs' %}
         {% include "campaigns/snippets/campaign_week_selector.html" with control_id="report-week" %}
       {% endif %}
       {% include "campaigns/snippets/campaign_selector.html" with control_id="report-campaign" root_url_name="campaigns:order_report" campaign_url_name="campaigns:order_report_by_campaign" %}
@@ -24,11 +24,11 @@
         {% include "campaigns/snippets/tab_nav_link.html" with slug="sales" label=sales_tab_label selected_tab=selected_tab only %}
         {% translate "Products" as products_tab_label %}
         {% include "campaigns/snippets/tab_nav_link.html" with slug="products" label=products_tab_label selected_tab=selected_tab only %}
-        {% translate "Details" as details_tab_label %}
-        {% include "campaigns/snippets/tab_nav_link.html" with slug="details" label=details_tab_label selected_tab=selected_tab only %}
+        {% translate "Cubs" as cubs_tab_label %}
+        {% include "campaigns/snippets/tab_nav_link.html" with slug="cubs" label=cubs_tab_label selected_tab=selected_tab only %}
         {% translate "Prize Selections" as prize_selections_tab_label %}
         {% include "campaigns/snippets/tab_nav_link.html" with slug="prize-selections" label=prize_selections_tab_label selected_tab=selected_tab only %}
-        {% translate "Packing Night" as packing_night_tab_label %}
+        {% translate "Pack Night" as packing_night_tab_label %}
         {% include "campaigns/snippets/tab_nav_link.html" with slug="packing-night" label=packing_night_tab_label selected_tab=selected_tab only %}
       </ul>
     </div>
@@ -66,91 +66,67 @@
         </div>
       {% elif selected_tab == 'products' %}
         <div>
-          <table class="table table-hover" id="products_ordered_table">
-            <thead class="table-dark">
-              <tr>
-                <th scope="col">{% translate 'Product' %}</th>
-                <th scope="col">{% translate 'Quantity Ordered' %}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for product in products %}
-                <tr>
-                  <th scope="row">{{ product.name }}</th>
-                  <td>{{ product.quantity_ordered|default:0 }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% elif selected_tab == 'details' %}
-        <div>
-          <div class="list-group">
-            <a href="{% url 'campaigns:weekly_report' %}" class="list-group-item list-group-item-action">
-              {% translate 'Weekly Report' %} <i class="fas fa-file-csv" aria-hidden="true"></i>
-            </a>
-            <a href="{% url 'campaigns:turn_in_night' %}" class="list-group-item list-group-item-action">
-              {% translate 'Turn-in Night' %} <i class="fas fa-file-csv" aria-hidden="true"></i>
-            </a>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="mb-0">{% translate "Products Ordered" %}</h2>
+            <button type="button"
+                    class="btn btn-primary"
+                    data-csv-download
+                    data-csv-table-id="products_ordered_table"
+                    data-csv-filename="{{ campaigns.viewing.year.year }}-products-{% if selected_week %}week-{{ selected_week.number }}{% else %}full-campaign{% endif %}.csv">
+              <i class="fas fa-file-csv" aria-hidden="true"></i> {% translate "Download CSV" %}
+            </button>
           </div>
+          {% translate "Products Ordered" as products_caption %}
+          {% include "campaigns/snippets/tabular_report.html" with report=product_report caption=products_caption table_id="products_ordered_table" sortable=True only %}
+        </div>
+      {% elif selected_tab == 'cubs' %}
+        <div>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="mb-0">
+              {% if selected_week %}
+                {% blocktranslate with number=selected_week.number %}Cubs — Week {{ number }}{% endblocktranslate %}
+              {% else %}
+                {% translate "Cubs — Full Campaign" %}
+              {% endif %}
+            </h2>
+            <button type="button"
+                    class="btn btn-primary"
+                    data-csv-download
+                    data-csv-table-id="cubs_report_table"
+                    data-csv-filename="{{ campaigns.viewing.year.year }}-cubs-{% if selected_week %}week-{{ selected_week.number }}{% else %}full-campaign{% endif %}.csv">
+              <i class="fas fa-file-csv" aria-hidden="true"></i> {% translate "Download CSV" %}
+            </button>
+          </div>
+          {% translate "Sales by Cub" as cubs_caption %}
+          {% include "campaigns/snippets/tabular_report.html" with report=cub_report caption=cubs_caption table_id="cubs_report_table" sortable=True only %}
         </div>
       {% elif selected_tab == 'prize-selections' %}
         <div>
-          <h2>{% translate 'All Prizes Selected' %}</h2>
-          <table class="table table-hover" data-sortable-report-table>
-            <caption>{% translate 'All Prizes Selected' %}</caption>
-            <thead class="table-dark">
-              <tr>
-                <th scope="col">{% translate 'Prize' %}</th>
-                <th scope="col">{% translate 'Quantity' %}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for prize in prizes %}
-                {% if prize.quantity %}
-                  <tr>
-                    <td>
-                      {% if prize.url %}
-                        <a href="{{ prize.url }}" target="_blank" rel="noopener">{{ prize }}</a>
-                      {% else %}
-                        {{ prize }}
-                      {% endif %}
-                    </td>
-                    <td>{{ prize.quantity }}</td>
-                  </tr>
-                {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="mb-0">{% translate "All Prizes Selected" %}</h2>
+            <button type="button"
+                    class="btn btn-primary"
+                    data-csv-download
+                    data-csv-table-id="prize_totals_table"
+                    data-csv-filename="{{ campaigns.viewing.year.year }}-prize-totals.csv">
+              <i class="fas fa-file-csv" aria-hidden="true"></i> {% translate "Download CSV" %}
+            </button>
+          </div>
+          {% translate "All Prizes Selected" as prize_totals_caption %}
+          {% include "campaigns/snippets/tabular_report.html" with report=prize_totals_report caption=prize_totals_caption table_id="prize_totals_table" sortable=True only %}
 
-          <h2>{% translate 'Prize Selections by Cub' %}</h2>
-          <table class="table table-hover" data-sortable-report-table>
-            <caption>{% translate 'Prize Selections by Cub' %}</caption>
-            <colgroup>
-              <col span="2" class="table-active">
-              <col span="2">
-            </colgroup>
-            <thead class="table-dark">
-              <tr>
-                <th scope="col">{% translate 'Den' %}</th>
-                <th scope="col">{% translate 'Cub' %}</th>
-                <th scope="col">{% translate 'Prize' %}</th>
-                <th scope="col">{% translate 'Quantity' %}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for prize_selection in prize_selections %}
-                <tr>
-                  <th scope="row">
-                    {% with membership=prize_selection.cub.report_memberships.0 %}{{ membership.den.number|default:"" }}{% endwith %}
-                  </th>
-                  <th scope="row">{{ prize_selection.cub }}</th>
-                  <td>{{ prize_selection.prize }}</td>
-                  <td>{{ prize_selection.quantity }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 mb-3">
+            <h2 class="mb-0">{% translate "Prize Selections by Cub" %}</h2>
+            <button type="button"
+                    class="btn btn-primary"
+                    data-csv-download
+                    data-csv-table-id="prize_selections_table"
+                    data-csv-filename="{{ campaigns.viewing.year.year }}-prize-selections-by-cub.csv">
+              <i class="fas fa-file-csv" aria-hidden="true"></i> {% translate "Download CSV" %}
+            </button>
+          </div>
+          {% translate "Prize Selections by Cub" as prize_selections_caption %}
+          {% include "campaigns/snippets/tabular_report.html" with report=prize_selections_report caption=prize_selections_caption table_id="prize_selections_table" sortable=True only %}
         </div>
       {% elif selected_tab == 'packing-night' %}
         <div>
@@ -241,7 +217,9 @@
         }
       );
     </script>
-  {% elif selected_tab == 'prize-selections' %}
+  {% endif %}
+  {% if selected_tab == 'products' or selected_tab == 'cubs' or selected_tab == 'prize-selections' %}
+    <script src="{% static 'js/sortable_rows.js' %}"></script>
     <script src="{% static 'js/report_tables.js' %}"></script>
   {% endif %}
   <script src="{% static 'js/campaign_tabs.js' %}"></script>

@@ -1,11 +1,11 @@
-import csv
 import decimal
-import io
 from http import HTTPStatus
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.test import RequestFactory, TestCase
+from django.db import connection
+from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
@@ -22,14 +22,13 @@ from packman.campaigns.models import (
     Product,
     Quota,
 )
-from packman.campaigns.reports import generate_weekly_report, report_rows, turn_in_night_report
+from packman.campaigns.report_data import build_cub_report
 from packman.dens.factories import DenFactory, MembershipFactory
 from packman.membership.factories import AdultFactory, CompleteFamilyFactory, ScoutFactory
 
 
 class CampaignReportTestCase(TestCase):
     def setUp(self):
-        self.factory = RequestFactory()
         self.current_year = PackYearFactory(year=2026)
         self.previous_year = PackYearFactory(year=2025)
         # Anchor the campaign windows to "today" (well outside Campaign.objects.current()'s
@@ -38,11 +37,6 @@ class CampaignReportTestCase(TestCase):
         today = timezone.now()
         self.previous_campaign = self.create_campaign(self.previous_year, today - timezone.timedelta(days=400))
         self.current_campaign = self.create_campaign(self.current_year, today - timezone.timedelta(days=200))
-
-        content_type = ContentType.objects.get_for_model(Campaign)
-        self.permission = Permission.objects.get(codename="generate_order_report", content_type=content_type)
-        self.authorized_user = AdultFactory()
-        self.authorized_user.user_permissions.add(self.permission)
 
     def create_campaign(self, year, ordering_opens):
         return Campaign.objects.create(
@@ -54,12 +48,7 @@ class CampaignReportTestCase(TestCase):
             prize_window_closes=ordering_opens + timezone.timedelta(days=60),
         )
 
-    def _authorized_request(self, path):
-        request = self.factory.get(path)
-        request.user = self.authorized_user
-        return request
-
-    def test_weekly_report_only_includes_latest_campaign_orders_and_members(self):
+    def test_cub_report_only_includes_selected_campaign_orders_and_members(self):
         current_member = MembershipFactory(year_assigned=self.current_year)
         previous_member = MembershipFactory(year_assigned=self.previous_year)
         Order.objects.create(
@@ -69,16 +58,23 @@ class CampaignReportTestCase(TestCase):
             campaign=self.previous_campaign, seller=previous_member.scout, donation=decimal.Decimal("50.00")
         )
 
-        response = generate_weekly_report(self._authorized_request("/reports/weekly/"))
-        rows = list(csv.reader(io.StringIO(response.content.decode())))
+        report = build_cub_report(
+            self.current_campaign,
+            Order.objects.filter(campaign=self.current_campaign),
+            include_campaign_fields=False,
+        )
+        row = report.rows[0]
 
-        self.assertEqual(rows[0], ["Cub", "Den", "Order Count", "Total Sales", "Eligible Total"])
-        self.assertEqual(len(rows), 2)
-        self.assertEqual(rows[1][0], str(current_member.scout))
-        self.assertEqual(rows[1][1], str(current_member.den))
-        self.assertEqual(rows[1][2:], ["1", "25", "25"])
+        self.assertEqual(
+            [str(column.label) for column in report.columns],
+            ["Cub", "Den", "Order Count", "Total Sales", "Eligible Total"],
+        )
+        self.assertEqual(len(report.rows), 1)
+        self.assertEqual(row[0].value, current_member.scout)
+        self.assertEqual(row[1].value, current_member.den)
+        self.assertEqual([cell.value for cell in row[2:]], [1, decimal.Decimal("25"), decimal.Decimal("25")])
 
-    def test_weekly_report_uses_the_den_assigned_for_the_campaign_year(self):
+    def test_cub_report_uses_the_den_assigned_for_the_campaign_year(self):
         # A scout who moved dens between pack years must be reported under the
         # den they belonged to during the campaign's year, not their den from
         # any other year (and not necessarily their "current" den).
@@ -89,12 +85,15 @@ class CampaignReportTestCase(TestCase):
         MembershipFactory(scout=scout, den=new_den, year_assigned=self.current_year)
         Order.objects.create(campaign=self.current_campaign, seller=scout, donation=decimal.Decimal("10.00"))
 
-        response = generate_weekly_report(self._authorized_request("/reports/weekly/"))
-        rows = list(csv.reader(io.StringIO(response.content.decode())))
+        report = build_cub_report(
+            self.current_campaign,
+            Order.objects.filter(campaign=self.current_campaign),
+            include_campaign_fields=False,
+        )
 
-        self.assertEqual(len(rows), 2)
-        self.assertEqual(rows[1][0], str(scout))
-        self.assertEqual(rows[1][1], str(new_den))
+        self.assertEqual(len(report.rows), 1)
+        self.assertEqual(report.rows[0][0].value, scout)
+        self.assertEqual(report.rows[0][1].value, new_den)
 
     def test_campaign_report_uses_campaign_quota_and_tiered_prize_points(self):
         member = MembershipFactory(year_assigned=self.current_year)
@@ -104,10 +103,15 @@ class CampaignReportTestCase(TestCase):
         PrizePoint.objects.create(earned_at=decimal.Decimal("2000.00"), value=25)
         Order.objects.create(campaign=self.current_campaign, seller=member.scout, donation=decimal.Decimal("4000.00"))
 
-        row = list(report_rows(self.current_campaign))[1]
+        report = build_cub_report(
+            self.current_campaign,
+            Order.objects.filter(campaign=self.current_campaign),
+            include_campaign_fields=True,
+        )
+        row = report.rows[0]
 
-        self.assertEqual(row[5], decimal.Decimal("100.00"))
-        self.assertEqual(row[8], 55)
+        self.assertEqual(row[5].value, decimal.Decimal("100.00"))
+        self.assertEqual(row[8].value, 55)
 
     def test_campaign_report_splits_operational_and_award_totals(self):
         member = MembershipFactory(year_assigned=self.current_year)
@@ -122,18 +126,24 @@ class CampaignReportTestCase(TestCase):
             award_ineligible=True,
         )
 
-        rows = list(report_rows(self.current_campaign))
-        row = rows[1]
+        report = build_cub_report(
+            self.current_campaign,
+            Order.objects.filter(campaign=self.current_campaign),
+            include_campaign_fields=True,
+        )
+        row = report.rows[0]
 
-        self.assertEqual(rows[0][3:6], ["Total", "Eligible Total", "Quota"])
-        self.assertEqual(row[2], 2)
-        self.assertEqual(row[3], decimal.Decimal("1100.00"))
-        self.assertEqual(row[4], decimal.Decimal("100.00"))
-        self.assertFalse(row[6])
-        self.assertEqual(row[7], decimal.Decimal("1100.00"))
-        self.assertEqual(row[8], 0)
+        self.assertEqual(
+            [str(column.label) for column in report.columns[3:6]], ["Total Sales", "Eligible Total", "Quota"]
+        )
+        self.assertEqual(row[2].value, 2)
+        self.assertEqual(row[3].value, decimal.Decimal("1100.00"))
+        self.assertEqual(row[4].value, decimal.Decimal("100.00"))
+        self.assertFalse(row[6].value)
+        self.assertEqual(row[7].value, decimal.Decimal("1100.00"))
+        self.assertEqual(row[8].value, 0)
 
-    def test_weekly_report_includes_award_ineligible_orders(self):
+    def test_cub_report_includes_ineligible_orders_in_operational_totals(self):
         member = MembershipFactory(year_assigned=self.current_year)
         Order.objects.create(
             campaign=self.current_campaign,
@@ -142,22 +152,13 @@ class CampaignReportTestCase(TestCase):
             award_ineligible=True,
         )
 
-        response = generate_weekly_report(self._authorized_request("/reports/weekly/"))
-        rows = list(csv.reader(io.StringIO(response.content.decode())))
+        report = build_cub_report(
+            self.current_campaign,
+            Order.objects.filter(campaign=self.current_campaign),
+            include_campaign_fields=False,
+        )
 
-        self.assertEqual(rows[1][2:], ["1", "25", "0"])
-
-    def test_turn_in_night_report_falls_back_to_latest_campaign_when_none_is_current(self):
-        # No campaign's ordering window covers "now", so Campaign.objects.current()
-        # returns None; the report must still succeed by using the latest campaign.
-        self.assertIsNone(Campaign.objects.current())
-
-        response = turn_in_night_report(self._authorized_request("/reports/turn_in_night/"))
-        content = b"".join(response.streaming_content)
-        rows = list(csv.reader(io.StringIO(content.decode())))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(rows[0][0], "Cub")
+        self.assertEqual([cell.value for cell in report.rows[0][2:]], [1, decimal.Decimal("25"), decimal.Decimal("0")])
 
 
 class OrderReportViewTestCase(TestCase):
@@ -209,36 +210,43 @@ class OrderReportViewTestCase(TestCase):
         OrderItem.objects.create(order=order, product=self.product, quantity=quantity)
         return order
 
-    def test_report_renders_five_tabs_and_groups_existing_links(self):
+    def test_report_renders_five_tabs_and_cubs_table(self):
         response = self.client.get(reverse("campaigns:order_report"))
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "NCC Dashboard")
         self.assertEqual(response.context["selected_tab"], "sales")
         self.assertContains(response, "data-campaign-tab=", count=5)
         self.assertContains(response, 'aria-current="page"', count=1)
         self.assertNotContains(response, 'data-bs-toggle="tab"')
         self.assertContains(response, "Sales")
         self.assertContains(response, "Products")
-        self.assertContains(response, "Details")
+        self.assertContains(response, "Cubs")
         self.assertContains(response, "Prize Selections")
-        self.assertContains(response, "Packing Night")
+        self.assertContains(response, "Pack Night")
+        self.assertNotContains(response, "data-sortable-report-table")
+        self.assertNotContains(response, "js/report_tables.js")
         self.assertIn("sales", response.context)
-        self.assertNotIn("products", response.context)
-        self.assertNotIn("prizes", response.context)
+        self.assertNotIn("product_report", response.context)
+        self.assertNotIn("cub_report", response.context)
 
-        details_response = self.client.get(reverse("campaigns:order_report"), {"tab": "details"})
-        for url_name in ("weekly_report", "turn_in_night"):
-            self.assertContains(details_response, reverse(f"campaigns:{url_name}"))
-        self.assertNotIn("sales", details_response.context)
-        self.assertNotIn("products", details_response.context)
-        self.assertNotIn("prizes", details_response.context)
+        cubs_response = self.client.get(reverse("campaigns:order_report"), {"tab": "cubs"})
+        self.assertEqual(cubs_response.context["selected_tab"], "cubs")
+        self.assertContains(cubs_response, 'id="cubs_report_table"')
+        self.assertContains(cubs_response, 'data-csv-table-id="cubs_report_table"')
+        self.assertContains(cubs_response, f'data-csv-filename="{self.current_year.year}-cubs-full-campaign.csv"')
+        self.assertContains(cubs_response, "Download CSV", count=1)
+        self.assertContains(cubs_response, "data-sortable-report-table", count=1)
+        self.assertContains(cubs_response, 'aria-sort="descending"', count=1)
+        self.assertNotIn("sales", cubs_response.context)
+        self.assertNotIn("product_report", cubs_response.context)
 
         packing_response = self.client.get(reverse("campaigns:order_report"), {"tab": "packing-night"})
         for url_name in ("place_markers", "pull_sheets", "order_slips"):
             self.assertContains(packing_response, reverse(f"campaigns:{url_name}"))
         self.assertNotIn("sales", packing_response.context)
-        self.assertNotIn("products", packing_response.context)
-        self.assertNotIn("prizes", packing_response.context)
+        self.assertNotIn("product_report", packing_response.context)
+        self.assertNotIn("cub_report", packing_response.context)
 
     def test_all_campaign_weeks_are_available_without_visibility_rules(self):
         response = self.client.get(reverse("campaigns:order_report"), {"week": 3})
@@ -266,10 +274,81 @@ class OrderReportViewTestCase(TestCase):
         self.assertEqual(first_week.context["sales"]["total"], decimal.Decimal("20.00"))
         self.assertEqual(second_week.context["sales"]["count"], 1)
         self.assertEqual(second_week.context["sales"]["total"], decimal.Decimal("50.00"))
-        self.assertEqual(first_week_products.context["products"][0].quantity_ordered, 2)
-        self.assertEqual(second_week_products.context["products"][0].quantity_ordered, 5)
+        self.assertEqual(first_week_products.context["product_report"].rows[0][1].value, 2)
+        self.assertEqual(second_week_products.context["product_report"].rows[0][1].value, 5)
         self.assertNotIn("sales", first_week_products.context)
         self.assertNotIn("sales", second_week_products.context)
+
+    def test_cubs_report_uses_weekly_core_columns_and_campaign_final_columns(self):
+        self.create_order(day=6, quantity=2)
+        self.create_order(day=7, quantity=5)
+
+        weekly_response = self.client.get(
+            reverse("campaigns:order_report"),
+            {"tab": "cubs", "week": 1},
+        )
+        campaign_response = self.client.get(reverse("campaigns:order_report"), {"tab": "cubs"})
+
+        weekly_report = weekly_response.context["cub_report"]
+        campaign_report = campaign_response.context["cub_report"]
+        self.assertEqual(
+            [str(column.label) for column in weekly_report.columns],
+            ["Cub", "Den", "Order Count", "Total Sales", "Eligible Total"],
+        )
+        self.assertEqual(weekly_report.rows[0][2].value, 1)
+        self.assertEqual(weekly_report.rows[0][3].value, decimal.Decimal("20.00"))
+        self.assertEqual(weekly_report.rows[0][1].effective_sort_value, self.member.den.number)
+        self.assertEqual(weekly_report.default_sort_index, 4)
+        self.assertEqual(weekly_report.default_sort_direction, "descending")
+        self.assertEqual(len(campaign_report.columns), 11)
+        self.assertEqual(campaign_report.default_sort_index, 4)
+        self.assertEqual(campaign_report.default_sort_direction, "descending")
+        self.assertEqual(campaign_report.rows[0][2].value, 2)
+        self.assertEqual(campaign_report.rows[0][3].value, decimal.Decimal("70.00"))
+        self.assertContains(weekly_response, "Cubs — Week 1")
+        self.assertContains(campaign_response, "Cubs — Full Campaign")
+
+    def test_cubs_report_uses_compact_currency_formatting(self):
+        Quota.objects.create(
+            campaign=self.current_campaign,
+            den=self.member.den,
+            target=decimal.Decimal("100.00"),
+        )
+        Order.objects.create(
+            campaign=self.current_campaign,
+            seller=self.member.scout,
+            donation=decimal.Decimal("25.50"),
+        )
+
+        response = self.client.get(reverse("campaigns:order_report"), {"tab": "cubs"})
+
+        self.assertContains(response, "$25.50", count=2)
+        self.assertContains(response, "$100", count=1)
+        self.assertNotContains(response, "$100.00")
+
+    def test_cubs_and_products_download_buttons_target_visible_tables(self):
+        self.create_order(day=6, quantity=2)
+
+        for tab, table_id in (
+            ("cubs", "cubs_report_table"),
+            ("products", "products_ordered_table"),
+        ):
+            with self.subTest(tab=tab):
+                page_response = self.client.get(
+                    reverse("campaigns:order_report"),
+                    {"tab": tab, "week": 1},
+                )
+
+                self.assertContains(page_response, f'id="{table_id}"')
+                self.assertContains(page_response, f'data-csv-table-id="{table_id}"')
+                self.assertContains(
+                    page_response,
+                    f'data-csv-filename="{self.current_year.year}-{tab}-week-1.csv"',
+                )
+                if tab == "products":
+                    report = page_response.context["product_report"]
+                    self.assertEqual(report.default_sort_index, 1)
+                    self.assertEqual(report.default_sort_direction, "descending")
 
     def test_sales_report_includes_dates_without_orders(self):
         self.create_order(day=2, quantity=3)
@@ -277,8 +356,11 @@ class OrderReportViewTestCase(TestCase):
         response = self.client.get(reverse("campaigns:order_report"), {"week": 1})
 
         days = response.context["sales"]["days"]
-        self.assertEqual(days[0]["date"], self.campaign_start.date())
-        self.assertEqual(days[-1]["date"], (self.campaign_start + timezone.timedelta(days=7)).date())
+        self.assertEqual(days[0]["date"], timezone.localtime(self.campaign_start).date())
+        self.assertEqual(
+            days[-1]["date"],
+            timezone.localtime(self.campaign_start + timezone.timedelta(days=7)).date(),
+        )
         self.assertEqual(len(days), 8)
         self.assertEqual(days[0]["count"], 0)
         self.assertEqual(days[0]["order_total"], decimal.Decimal("0.00"))
@@ -308,13 +390,43 @@ class OrderReportViewTestCase(TestCase):
             {"tab": "prize-selections"},
         )
 
-        selection = response.context["prize_selections"][0]
         self.assertEqual(response.context["campaigns"]["viewing"], self.previous_campaign)
         self.assertEqual(response.context["selected_tab"], "prize-selections")
-        self.assertEqual(selection.cub.report_memberships[0], historical_member)
-        self.assertEqual(response.context["prizes"][0].quantity, 2)
+        self.assertEqual(response.context["prize_totals_report"].rows[0][1].value, 2)
+        self.assertEqual(response.context["prize_selections_report"].rows[0][0].value, historical_member.den.number)
+        self.assertEqual(response.context["prize_totals_report"].default_sort_index, 1)
+        self.assertEqual(response.context["prize_totals_report"].default_sort_direction, "descending")
+        self.assertEqual(response.context["prize_selections_report"].default_sort_index, 1)
+        self.assertEqual(response.context["prize_selections_report"].default_sort_direction, "ascending")
         self.assertContains(response, "Past Campaign Compass")
         self.assertContains(response, str(historical_member.den.number))
+        self.assertContains(response, "Download CSV", count=2)
+        self.assertContains(response, "data-sortable-report-table", count=2)
+        self.assertContains(response, 'aria-sort="descending"', count=1)
+        self.assertContains(response, 'aria-sort="ascending"', count=1)
+        self.assertContains(response, 'data-csv-table-id="prize_totals_table"')
+        self.assertContains(response, 'data-csv-table-id="prize_selections_table"')
+        self.assertContains(
+            response,
+            f'data-csv-filename="{self.previous_year.year}-prize-totals.csv"',
+        )
+        self.assertContains(
+            response,
+            f'data-csv-filename="{self.previous_year.year}-prize-selections-by-cub.csv"',
+        )
+
+    def test_cub_report_uses_a_bounded_number_of_queries(self):
+        PrizePoint.objects.create(earned_at=decimal.Decimal("10.00"), value=1)
+        PrizePoint.objects.create(earned_at=decimal.Decimal("20.00"), value=2)
+        for _ in range(3):
+            MembershipFactory(year_assigned=self.current_year)
+
+        orders = Order.objects.filter(campaign=self.current_campaign)
+        with CaptureQueriesContext(connection) as queries:
+            report = build_cub_report(self.current_campaign, orders, include_campaign_fields=True)
+
+        self.assertEqual(len(report.rows), 4)
+        self.assertLessEqual(len(queries), 5)
 
     def test_invalid_state_is_handled_consistently(self):
         response = self.client.get(reverse("campaigns:order_report"), {"tab": "unknown"})
@@ -337,9 +449,6 @@ class OrderReportViewTestCase(TestCase):
 
 
 class CampaignReportAccessControlTestCase(TestCase):
-    """Ensure the weekly and turn-in-night reports require the same
-    ``campaigns.generate_order_report`` permission as the other reports
-    views (e.g. ``OrderReportView``)."""
 
     def setUp(self):
         current_year = PackYearFactory(year=2026)
@@ -354,28 +463,6 @@ class CampaignReportAccessControlTestCase(TestCase):
 
         content_type = ContentType.objects.get_for_model(Campaign)
         self.permission = Permission.objects.get(codename="generate_order_report", content_type=content_type)
-
-    def test_weekly_report_redirects_anonymous_user_to_login(self):
-        url = reverse("campaigns:weekly_report")
-        login_url = f"{reverse('login')}?next={url}"
-        response = self.client.get(url)
-
-        self.assertRedirects(response, login_url)
-
-    def test_weekly_report_denies_member_without_permission(self):
-        member = CompleteFamilyFactory(active_children=1).adults.first()
-        self.client.force_login(member)
-        response = self.client.get(reverse("campaigns:weekly_report"))
-
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
-
-    def test_weekly_report_allows_member_with_permission(self):
-        member = AdultFactory()
-        member.user_permissions.add(self.permission)
-        self.client.force_login(member)
-        response = self.client.get(reverse("campaigns:weekly_report"))
-
-        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_order_report_redirects_anonymous_user_to_login(self):
         url = reverse("campaigns:order_report")
@@ -396,27 +483,5 @@ class CampaignReportAccessControlTestCase(TestCase):
         member.user_permissions.add(self.permission)
         self.client.force_login(member)
         response = self.client.get(reverse("campaigns:order_report"))
-
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_turn_in_night_report_redirects_anonymous_user_to_login(self):
-        url = reverse("campaigns:turn_in_night")
-        login_url = f"{reverse('login')}?next={url}"
-        response = self.client.get(url)
-
-        self.assertRedirects(response, login_url)
-
-    def test_turn_in_night_report_denies_member_without_permission(self):
-        member = CompleteFamilyFactory(active_children=1).adults.first()
-        self.client.force_login(member)
-        response = self.client.get(reverse("campaigns:turn_in_night"))
-
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
-
-    def test_turn_in_night_report_allows_member_with_permission(self):
-        member = AdultFactory()
-        member.user_permissions.add(self.permission)
-        self.client.force_login(member)
-        response = self.client.get(reverse("campaigns:turn_in_night"))
 
         self.assertEqual(response.status_code, HTTPStatus.OK)

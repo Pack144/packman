@@ -1,6 +1,5 @@
 from django.urls import path, re_path
 
-from .reports import generate_weekly_report, turn_in_night_report
 from .views import (
     OrderCreateView,
     OrderDeleteView,
@@ -40,7 +39,5 @@ urlpatterns = [
     path("reports/order_slips/", OrderSlipView.as_view(), name="order_slips"),
     path("reports/place_markers/", PlaceMarkerTemplateView.as_view(), name="place_markers"),
     path("reports/pull_sheets/", PullSheetTemplateView.as_view(), name="pull_sheets"),
-    path("reports/turn_in_night/", turn_in_night_report, name="turn_in_night"),
-    path("reports/weekly/", generate_weekly_report, name="weekly_report"),
     re_path(r"^reports/(?P<campaign>[0-9]{4})/", OrderReportView.as_view(), name="order_report_by_campaign"),
 ]

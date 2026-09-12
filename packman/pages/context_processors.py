@@ -85,14 +85,6 @@ def _build_ncc_items(request, fundraiser):
         if page.content_blocks.count()
     ]
     items.extend(_page_link(page, request) for page in ncc_pages)
-    if request.user.has_perm("campaigns.generate_order_report"):
-        items.append(
-            _link(
-                _("Order Report"),
-                reverse("campaigns:order_report"),
-                _is_active(request, url_names=["order_report", "order_report_by_campaign"]),
-            )
-        )
     return items
 
 
@@ -106,6 +98,14 @@ def _build_dashboards_items(request):
     items = []
     if request.user.is_staff:
         items.append(_link(_("Site Admin"), reverse("admin:index"), False))
+    if request.user.has_perm("campaigns.generate_order_report"):
+        items.append(
+            _link(
+                _("NCC Dashboard"),
+                reverse("campaigns:order_report"),
+                _is_active(request, url_names=["order_report", "order_report_by_campaign"]),
+            )
+        )
     if request.user.has_perm("compliance.view_all_records"):
         items.append(
             _link(

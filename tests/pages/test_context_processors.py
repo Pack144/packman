@@ -1,4 +1,5 @@
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
@@ -115,3 +116,30 @@ class PopulateNavbarTests(TestCase):
 
         self.assertIn(first_ncc_page.title, ncc_labels)
         self.assertIn(second_ncc_page.title, ncc_labels)
+
+    def test_ncc_dashboard_appears_in_admin_only_with_report_permission(self):
+        permitted_user = AdultFactory()
+        permission = Permission.objects.get(
+            codename="generate_order_report",
+            content_type=ContentType.objects.get_for_model(Campaign),
+        )
+        permitted_user.user_permissions.add(permission)
+
+        permitted_navbar = self._navbar(permitted_user)
+        admin = permitted_navbar["navbar_admin_dropdown"]
+        ncc_labels = [
+            item["label"]
+            for item in permitted_navbar["navbar_items"]
+            if item["kind"] == "dropdown" and item["id"] == "navbarNccDropdown"
+            for item in item["items"]
+        ]
+
+        self.assertIsNotNone(admin)
+        self.assertIn("NCC Dashboard", [item["label"] for item in admin["items"]])
+        self.assertNotIn("NCC Dashboard", ncc_labels)
+
+        unpermitted_navbar = self._navbar(AdultFactory())
+        self.assertNotIn(
+            "NCC Dashboard",
+            [item["label"] for item in unpermitted_navbar["navbar_admin_dropdown"]["items"]],
+        )
