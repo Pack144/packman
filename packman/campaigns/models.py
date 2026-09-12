@@ -279,7 +279,7 @@ class PrizePoint(models.Model):
         return str(self.value)
 
     @classmethod
-    def calculate_earned_points(cls, total, quota):
+    def calculate_earned_points(cls, total, quota, prize_points=None):
         """
         Calculate points from an award-eligible sales total.
 
@@ -287,19 +287,32 @@ class PrizePoint(models.Model):
         the thresholds through the highest tier; totals above that tier extrapolate
         from the sales interval and point increase between the top two rows.
         """
+        # Callers rendering multiple cubs can provide the tiers once to avoid
+        # repeating the same database query for every calculation.
+        prize_points = sorted(
+            prize_points if prize_points is not None else cls.objects.all(),
+            key=lambda prize_point: prize_point.earned_at,
+        )
+
         # Sales below the cub's den quota earn no points, even if they cross a configured threshold.
-        if total < quota:
+        if total < quota or not prize_points:
             return 0
 
-        top_prize_points = list(cls.objects.order_by("-earned_at")[:2])
-        highest_tier = top_prize_points[0]
+        highest_tier = prize_points[-1]
         # Within the configured range, award the highest threshold at or below the sales total.
         if total <= highest_tier.earned_at:
-            return cls.objects.filter(earned_at__lte=total).order_by("-earned_at").first().value
+            earned_tier = next(
+                (prize_point for prize_point in reversed(prize_points) if prize_point.earned_at <= total),
+                None,
+            )
+            return earned_tier.value if earned_tier else 0
+
+        if len(prize_points) == 1:
+            return highest_tier.value
 
         # Beyond the configured range, extrapolate a repeating tier size and point increase from the top two rows.
-        earned_at_step = highest_tier.earned_at - top_prize_points[1].earned_at
-        point_step = highest_tier.value - top_prize_points[1].value
+        earned_at_step = highest_tier.earned_at - prize_points[-2].earned_at
+        point_step = highest_tier.value - prize_points[-2].value
         tiers_above_highest = int((total - highest_tier.earned_at) / earned_at_step)
         return highest_tier.value + tiers_above_highest * point_step
 

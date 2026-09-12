@@ -31,6 +31,12 @@ from packman.membership.models import Scout
 from .forms import CustomerForm, OrderForm, OrderItemFormSet, PrizeSelectionForm
 from .mixins import CampaignOrderPeriodMixin, UserIsSellerFamilyTest
 from .models import Campaign, Order, OrderItem, Prize, PrizePoint, PrizeSelection, Product, Quota
+from .report_data import (
+    build_cub_report,
+    get_prize_selections_report,
+    get_prize_totals_report,
+    get_product_report,
+)
 from .utils import email_receipt
 
 
@@ -130,7 +136,7 @@ class OrderListView(LoginRequiredMixin, ListView):
 class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, TemplateView):
     permission_required = "campaigns.generate_order_report"
     template_name = "campaigns/order_report.html"
-    allowed_tabs = {"sales", "products", "details", "prize-selections", "packing-night"}
+    allowed_tabs = {"sales", "products", "cubs", "prize-selections", "packing-night"}
     default_tab = "sales"
 
     def get_context_data(self, **kwargs):
@@ -143,6 +149,8 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
             context.update(self.get_sales_context())
         elif selected_tab == "products":
             context.update(self.get_products_context())
+        elif selected_tab == "cubs":
+            context.update(self.get_cub_context())
         elif selected_tab == "prize-selections":
             context.update(self.get_prize_selection_context())
 
@@ -161,26 +169,22 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
 
     def get_products_context(self):
         week_context, orders = self.get_order_period()
-        week_context["products"] = self.viewing_campaign.products.quantity(orders)
+        week_context["product_report"] = get_product_report(self.viewing_campaign, orders)
+        return week_context
+
+    def get_cub_context(self):
+        week_context, orders = self.get_order_period()
+        week_context["cub_report"] = build_cub_report(
+            self.viewing_campaign,
+            orders,
+            include_campaign_fields=week_context["selected_week"] is None,
+        )
         return week_context
 
     def get_prize_selection_context(self):
-        memberships = Membership.objects.filter(year_assigned=self.viewing_campaign.year).select_related("den")
-        prize_selections = (
-            PrizeSelection.objects.filter(campaign=self.viewing_campaign)
-            .select_related("cub")
-            .prefetch_related(
-                Prefetch(
-                    "cub__den_memberships",
-                    queryset=memberships,
-                    to_attr="report_memberships",
-                )
-            )
-            .order_by("cub")
-        )
         return {
-            "prize_selections": prize_selections,
-            "prizes": Prize.objects.filter(campaign=self.viewing_campaign).calculate_quantity(),
+            "prize_totals_report": get_prize_totals_report(self.viewing_campaign),
+            "prize_selections_report": get_prize_selections_report(self.viewing_campaign),
         }
 
     def get_sales_report(self, orders, selected_week):

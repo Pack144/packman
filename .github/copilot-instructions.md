@@ -48,6 +48,12 @@
 - Follow existing Django patterns before adding abstractions. Put reusable data
   selection and aggregation in custom QuerySets/managers rather than duplicating
   ORM expressions across views, reports, admin, and templates.
+- Before implementing UI behavior such as sorting, filtering, downloads,
+  navigation, or interactive controls, make a quick, targeted search of likely
+  templates, JavaScript, and CSS for relevant patterns and data attributes.
+  Reuse an established approach when it fits the new behavior cleanly, but do
+  not spend significant time searching or force reuse when a different
+  implementation would be clearer or better suited to the task.
 - Preserve authorization and family/member scoping when changing querysets or
   endpoints. Packman contains private youth and family data: do not expose it
   through broader queries, API serializers, logs, fixtures, or error output.

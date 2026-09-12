@@ -1,0 +1,57 @@
+{% load humanize i18n %}
+
+<div class="table-responsive">
+  <table class="table table-hover"
+         {% if table_id %}id="{{ table_id }}"{% endif %}
+         {% if sortable %}data-sortable-report-table{% endif %}>
+    {% if caption %}<caption>{{ caption }}</caption>{% endif %}
+    <thead class="table-dark">
+      <tr>
+        {% for column in report.columns %}
+          <th scope="col"
+              data-sort-header="{{ forloop.counter0 }}"
+              aria-sort="{% if forloop.counter0 == report.default_sort_index %}{{ report.default_sort_direction }}{% else %}none{% endif %}"
+              onclick="sortRows('#{{ table_id }} tbody tr', '#{{ table_id }} thead [data-sort-header]', '{{ forloop.counter0 }}')">
+            {{ column.label }}<span aria-hidden="true"></span>
+          </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in report.rows %}
+        <tr>
+          {% for cell in row %}
+            {% if forloop.first %}
+              <th scope="row"
+                  data-sort-key="{{ forloop.counter0 }}"
+                  data-sort-value="{{ cell.effective_sort_value }}">
+            {% else %}
+              <td data-sort-key="{{ forloop.counter0 }}"
+                  data-sort-value="{{ cell.effective_sort_value }}">
+            {% endif %}
+            {% if cell.url %}
+              <a href="{{ cell.url }}" target="_blank" rel="noopener">{{ cell.value }}</a>
+            {% elif cell.kind == "whole_currency" %}
+              ${{ cell.value|floatformat:"0"|intcomma }}
+            {% elif cell.kind == "currency" %}
+              ${{ cell.value|floatformat:"-2"|intcomma }}
+            {% elif cell.kind == "boolean" %}
+              {% if cell.value %}
+                {% translate "Yes" %}
+              {% else %}
+                {% translate "No" %}
+              {% endif %}
+            {% else %}
+              {{ cell.value }}
+            {% endif %}
+            {% if forloop.first %}
+              </th>
+            {% else %}
+              </td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
