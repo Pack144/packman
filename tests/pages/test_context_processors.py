@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AnonymousUser, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 
 from packman.calendars.factories import PackYearFactory
@@ -116,6 +116,23 @@ class PopulateNavbarTests(TestCase):
 
         self.assertIn(first_ncc_page.title, ncc_labels)
         self.assertIn(second_ncc_page.title, ncc_labels)
+
+    @override_settings(PACK_NCC_LEADERBOARD_ENABLED=False)
+    def test_ncc_dropdown_omits_leaderboard_when_disabled(self):
+        today = timezone.now()
+        Campaign.objects.create(
+            year=PackYearFactory(),
+            ordering_opens=today - timezone.timedelta(days=1),
+            ordering_closes=today + timezone.timedelta(days=29),
+            delivery_available=today + timezone.timedelta(days=45),
+            prize_window_opens=today + timezone.timedelta(days=45),
+            prize_window_closes=today + timezone.timedelta(days=60),
+        )
+
+        navbar = self._navbar(AdultFactory())
+        ncc = self._dropdown(navbar["navbar_items"], "navbarNccDropdown")
+
+        self.assertNotIn("Leaderboard", [item["label"] for item in ncc["items"]])
 
     def test_ncc_dashboard_appears_in_admin_only_with_report_permission(self):
         permitted_user = AdultFactory()

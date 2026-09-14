@@ -343,6 +343,9 @@ PACK_NAME = env("PACK_NAME", default="One Awesome Cub Scouts Pack")
 PACK_SHORTNAME = env("PACK_SHORTNAME", default="Cub Pack")
 PACK_TAGLINE = env("PACK_TAGLINE", default="We're Awesome")
 PACK_LOCATION = env("PACK_LOCATION", default="United States of America")
+# Disable the leaderboard while we review whether, how, and when it should be displayed. There are concerns that it
+# could create unhealthy competition among both parents and scouts.
+PACK_NCC_LEADERBOARD_ENABLED = False
 
 
 # EMAIL
