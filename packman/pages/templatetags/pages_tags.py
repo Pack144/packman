@@ -1,4 +1,7 @@
 from django import template
+from django.urls import reverse
+
+from packman.pages.models import Page
 
 register = template.Library()
 
@@ -40,3 +43,35 @@ def query_transform(context, **kwargs):
         if v:
             query[k] = v
     return query.urlencode()
+
+
+@register.inclusion_tag("pages/snippets/inline_cms.html", takes_context=True)
+def inline_cms(context, slug, cards=True):
+    """
+    Render a visibility-filtered Inline CMS entry in another template.
+
+    Load ``pages_tags`` and pass the full CMS slug:
+
+        {% inline_cms "cms-home" %}
+
+    By default, content blocks use the standard card presentation. Pass
+    ``cards=False`` to render their headings and bodies without card chrome,
+    which is useful inside containers such as modals:
+
+        {% inline_cms "cms-join-us" cards=False %}
+    """
+    request = context["request"]
+    page = (
+        Page.objects.get_visible_content(user=request.user)
+        .filter(nav_placement=Page.NavPlacement.INLINE_CMS, slug=slug)
+        .first()
+    )
+    has_content = bool(page and page.content_blocks.all())
+    return {
+        "add_url": f"{reverse('admin:pages_page_add')}?slug={slug}&nav_placement={Page.NavPlacement.INLINE_CMS}",
+        "cards": cards,
+        "change_url": reverse("admin:pages_page_change", args=(page.pk,)) if page else None,
+        "has_content": has_content,
+        "page": page,
+        "perms": context["perms"],
+    }

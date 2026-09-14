@@ -1,6 +1,5 @@
 import logging
 
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -37,11 +36,8 @@ class Page(TimeStampedUUIDModel):
         blank=True,
         null=True,
         help_text=_(
-            "A slug is the part of a URL which identifies a particular page "
-            "on a website in an easy to read form. In other words, it’s the "
-            "part of the URL that explains the page’s content. For this "
-            "article, for example, the URL is https://example.com/slug, and "
-            "the slug simply is ‘slug’."
+            "Identifies this page in URLs and templates. Inline CMS entries must start with 'cms-'. "
+            "If omitted, the prefix will be added when the page is saved."
         ),
     )
 
@@ -49,15 +45,11 @@ class Page(TimeStampedUUIDModel):
         PACK_INFO = 1, _("Pack Info dropdown")
         PINNED = 2, _("Pinned top-level link")
         ABOUT = 3, _("About dropdown")
-        HOME = 4, _("The home page")
-        SIGNUP = 5, _("The join us / sign-up page")
         NCC = 6, _("NCC dropdown")
+        INLINE_CMS = 7, _("Inline (CMS)")
 
-    # Placements a page picks to appear somewhere in the nav dropdowns/links.
-    # HOME, SIGNUP, and NCC are not part of this: HOME/SIGNUP each mark a
-    # single fixed page (the home page, the sign-up page); NCC marks any
-    # number of pages to show inside the NCC dropdown. All three are looked
-    # up individually rather than shown as regular nav links.
+    # Placements that produce ordinary navigation links. NCC is populated
+    # separately, while inline CMS entries are embedded in other templates.
     NAV_GROUP_PLACEMENTS = (NavPlacement.PACK_INFO, NavPlacement.PINNED, NavPlacement.ABOUT)
 
     nav_placement = models.PositiveSmallIntegerField(
@@ -67,11 +59,9 @@ class Page(TimeStampedUUIDModel):
         null=True,
         default=None,
         help_text=_(
-            "Where this page should appear in the site's navigation bar, if "
-            "at all. Leave blank to keep this page out of the navigation bar "
-            "entirely. 'The home page' and 'The join us / sign-up page' are "
-            "special: only one page may hold each, and it will be used in "
-            "place of the site's default one."
+            "Where this page should be used. Leave blank to keep it out of "
+            "the navigation bar. Inline (CMS) entries are inserted into other "
+            "pages by slug and cannot be opened as standalone pages."
         ),
     )
     order = models.PositiveIntegerField(
@@ -88,17 +78,13 @@ class Page(TimeStampedUUIDModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["nav_placement"],
-                # NavPlacement.HOME: nested classes can't see Page's namespace here.
-                condition=models.Q(nav_placement=4),
-                name="unique_home_page",
-            ),
-            models.UniqueConstraint(
-                fields=["nav_placement"],
-                # NavPlacement.SIGNUP: nested classes can't see Page's namespace here.
-                condition=models.Q(nav_placement=5),
-                name="unique_signup_page",
+            models.CheckConstraint(
+                condition=(
+                    # NavPlacement.INLINE_CMS: nested classes cannot see Page's namespace here.
+                    ~models.Q(nav_placement=7)
+                    | (models.Q(slug__isnull=False) & models.Q(slug__startswith="cms-"))
+                ),
+                name="inline_cms_slug_prefix",
             ),
         ]
         indexes = [models.Index(fields=["title"])]
@@ -109,33 +95,20 @@ class Page(TimeStampedUUIDModel):
     def __str__(self):
         return self.title
 
-    @property
-    def is_standard(self):
-        """Whether this page fills one of the site's fixed roles (home / sign-up)."""
-        return self.nav_placement in (self.NavPlacement.HOME, self.NavPlacement.SIGNUP)
-
     def get_absolute_url(self):
-        if self.nav_placement == self.NavPlacement.HOME:
-            return reverse("pages:home")
-        elif self.nav_placement == self.NavPlacement.SIGNUP:
-            return reverse("pages:signup")
-        else:
-            return reverse("pages:detail", kwargs={"slug": self.slug})
+        if self.nav_placement == self.NavPlacement.INLINE_CMS:
+            return reverse("admin:pages_page_change", args=(self.pk,))
+        return reverse("pages:detail", kwargs={"slug": self.slug})
 
     def clean(self):
         super().clean()
-        if self.is_standard:
-            already_taken = Page.objects.exclude(pk=self.pk).filter(nav_placement=self.nav_placement).exists()
-            if already_taken:
-                raise ValidationError(
-                    _("Another page is already set as %(placement)s. Change that page first.")
-                    % {"placement": self.get_nav_placement_display()}
-                )
         if not self.slug:
             self.slug = slugify(self.title)
             logger.warning(
                 _("%(page)s does not include a slug. Setting slug to %(slug)s") % {"page": self, "slug": self.slug}
             )
+        if self.nav_placement == self.NavPlacement.INLINE_CMS and not self.slug.startswith("cms-"):
+            self.slug = f"cms-{self.slug}"
 
 
 class ContentBlock(TimeStampedUUIDModel):
