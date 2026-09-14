@@ -343,6 +343,7 @@ PACK_NAME = env("PACK_NAME", default="One Awesome Cub Scouts Pack")
 PACK_SHORTNAME = env("PACK_SHORTNAME", default="Cub Pack")
 PACK_TAGLINE = env("PACK_TAGLINE", default="We're Awesome")
 PACK_LOCATION = env("PACK_LOCATION", default="United States of America")
+NCC_LEADERBOARD_ENABLED = False
 
 
 # EMAIL

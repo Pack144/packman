@@ -8,6 +8,7 @@ SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DJANGO_DEBUG", default=False)
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
+NCC_LEADERBOARD_ENABLED = True
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#password-hashers
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]

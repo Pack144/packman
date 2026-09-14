@@ -1,7 +1,7 @@
 import decimal
 from unittest import mock
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -335,3 +335,9 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(response.context["campaigns"]["viewing"], self.campaign)
         self.assertEqual(response.context["selected_tab"], "dens")
         self.assertEqual(response.context["selected_week"]["number"], 2)
+
+    @override_settings(NCC_LEADERBOARD_ENABLED=False)
+    def test_leaderboard_returns_not_found_when_disabled(self):
+        response = self.client.get(reverse("campaigns:order_leaderboard"))
+
+        self.assertEqual(response.status_code, 404)

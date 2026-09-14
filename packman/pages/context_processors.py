@@ -69,13 +69,14 @@ def _build_ncc_items(request, fundraiser):
                 _is_active(request, url_names=["prize_selection"]),
             )
         )
-    items.append(
-        _link(
-            _("Leaderboard"),
-            reverse("campaigns:order_leaderboard"),
-            _is_active(request, url_names=["order_leaderboard", "order_leaderboard_by_campaign"]),
+    if settings.NCC_LEADERBOARD_ENABLED:
+        items.append(
+            _link(
+                _("Leaderboard"),
+                reverse("campaigns:order_leaderboard"),
+                _is_active(request, url_names=["order_leaderboard", "order_leaderboard_by_campaign"]),
+            )
         )
-    )
     items.append(
         _link(_("Products"), reverse("campaigns:product_list"), _is_active(request, url_names=["product_list"]))
     )
