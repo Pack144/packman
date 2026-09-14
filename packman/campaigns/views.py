@@ -232,7 +232,7 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
 
 class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, TemplateView):
     template_name = "campaigns/order_leaderboard.html"
-    allowed_tabs = {"top-sales", "top-orders", "dens", "all-sellers"}
+    allowed_tabs = {"top-sales", "top-orders", "dens"}
     default_tab = "top-sales"
 
     def get_context_data(self, **kwargs):
@@ -339,15 +339,6 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
         # sort cubs in descending order of total and output the top 10
         all_cubs.sort(key=lambda x: x["total"], reverse=True)
         context["top_sellers"] = all_cubs[:10]
-
-        # add all cubs with > 0 orders and not in Den 6m and sort in descending order of total
-        all_cubs.sort(key=lambda x: x["total"], reverse=True)
-
-        # In the current campaign's final week, show all sellers; otherwise omit $0 sellers.
-        if viewing_active_campaign and (campaign_end_at - now).days < 7:
-            context["all_sellers"] = all_cubs
-        else:
-            context["all_sellers"] = [cub for cub in all_cubs if cub["orders"] > 0]
 
         # total up orders for each den from all_cubs and sort from most to least
         all_dens = []

@@ -94,15 +94,15 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertContains(response, "<h1", count=1)
         self.assertContains(response, "NCC Leaderboards")
         self.assertContains(response, '<option value="" selected>Full Campaign</option>', html=True)
-        self.assertContains(response, 'data-bs-toggle="tab"', count=4)
+        self.assertContains(response, 'data-bs-toggle="tab"', count=3)
         self.assertContains(response, 'class="tab-pane fade show active"', count=1)
-        self.assertContains(response, 'class="tab-pane fade', count=4)
-        self.assertContains(response, "table table-hover align-middle sortable", count=2)
+        self.assertContains(response, 'class="tab-pane fade', count=3)
+        self.assertContains(response, "table table-hover align-middle sortable", count=1)
         self.assertContains(response, 'class="table table-hover align-middle"', count=2)
-        self.assertContains(response, "leaderboard-row-label", count=4)
+        self.assertContains(response, "leaderboard-row-label", count=3)
         self.assertNotContains(response, "<caption")
         self.assertEqual(response.context["top_sellers"][0]["scout"], self.scout)
-        self.assertContains(response, f'id="{self.scout.slug}_thumbnail"', count=3)
+        self.assertContains(response, f'id="{self.scout.slug}_thumbnail"', count=2)
         self.assertContains(response, 'src="/static/img/lion.png"', count=1)
         self.assertContains(response, "Golden Peanut")
         self.assertContains(response, 'name="tab" value="top-sales"', count=1)
@@ -193,9 +193,27 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(response.context["top_sellers"][0]["orders"], 1)
         self.assertEqual(response.context["top_sellers"][0]["total"], decimal.Decimal("250.00"))
         self.assertEqual(response.context["top_orders"][0]["orders"], 1)
-        self.assertEqual(response.context["all_sellers"][0]["total"], decimal.Decimal("250.00"))
         self.assertEqual(response.context["dens"][0]["orders"], 1)
         self.assertEqual(response.context["dens"][0]["total"], decimal.Decimal("250.00"))
+
+    def test_individual_leaderboards_show_only_their_metric_and_format_sales(self):
+        self.create_order("1234.56", self.campaign_day(2))
+
+        response = self.get_leaderboard()
+        content = response.content.decode()
+        top_sales = content[content.index('id="top-sales-pane"') : content.index('id="top-orders-pane"')]
+        top_orders = content[content.index('id="top-orders-pane"') : content.index('id="dens-pane"')]
+
+        self.assertIn('<th scope="col">Sales</th>', top_sales)
+        self.assertNotIn('<th scope="col">Orders</th>', top_sales)
+        self.assertIn("$1,235", top_sales)
+        self.assertNotIn("1234.56</td>", top_sales)
+
+        self.assertIn('<th scope="col">Orders</th>', top_orders)
+        self.assertNotIn('<th scope="col">Sales</th>', top_orders)
+        self.assertNotIn("$1,235", top_orders)
+
+        self.assertContains(response, "$1,235", count=2)
 
     def test_week_boundaries_use_campaign_opening_time_and_exclusive_end(self):
         self.create_order("100.00", self.campaign_day(7, 9))
