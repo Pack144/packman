@@ -1,55 +1,20 @@
 {% extends "base.html" %}
 
-{% load i18n static %}
+{% load i18n pages_tags static %}
 
 {% block title %}
-  {% if page %}
-    {{ page.title }}
-  {% else %}
-    {% translate 'Home' %}
-  {% endif %}
-  | {{ block.super }}
+  {% translate 'Home' %} | {{ block.super }}
 {% endblock title %}
 
 {% block content %}
-  <div class="d-flex justify-content-between align-items-center">
-    <h1>
-      {% if page %}
-        {{ page.title }}
-      {% else %}
-        {% translate 'Home' %}
-      {% endif %}
-    </h1>
-    {% if perms.pages %}
-      <div class="btn-group btn-group-sm">
-        {% if perms.pages.add_page %}
-          <a href="{% url 'pages:create' %}"
-             class="btn btn-outline-secondary"
-             data-bs-toggle="tooltip"
-             title="{% translate 'Add a new webpage' %}"><i class="fa-regular fa-plus-square"></i></a>
-        {% endif %}
-        {% if perms.pages.change_page %}
-          <a href="{% url 'pages:update' page.pk %}"
-             class="btn btn-outline-secondary"
-             data-bs-toggle="tooltip"
-             title="{% translate 'Edit this page' %}"><i class="fa-regular fa-pen-to-square"></i></a>
-        {% endif %}
-        {% if perms.pages.delete_page and not page.is_standard %}
-          <a href="{% url 'pages:delete' page.pk %}"
-             class="btn btn-outline-danger"
-             data-bs-toggle="tooltip"
-             title="{% translate 'Delete this webpage' %}"><i class="fa-regular fa-minus-square"></i></a>
-        {% endif %}
-      </div>
-    {% endif %}
-  </div>
+  <h1>{% translate "Welcome to Pack 144" %}</h1>
   {% if events %}
     <div class="mb-5">
       <h2>{% translate 'Coming Up' %}</h2>
       {% include 'calendars/snippets/events_list_entry.html' %}
     </div>
   {% endif %}
-  {% include 'pages/snippets/content_blocks.html' %}
+  {% inline_cms "cms-home" %}
 {% endblock content %}
 
 {% block js %}

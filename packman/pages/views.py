@@ -9,7 +9,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.generic import CreateView, DeleteView, DetailView, FormView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, FormView, TemplateView, UpdateView
 
 from packman.calendars.models import Event, PackYear
 from packman.compliance.summaries import count_needs_attention
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def get_link_list(request):
     """Retrieves a list of pages available for the current user to link to."""
-    pages = Page.objects.get_visible_content(user=request.user)
+    pages = Page.objects.get_visible_content(user=request.user).exclude(nav_placement=Page.NavPlacement.INLINE_CMS)
     link_list = [{"title": page.title, "value": page.get_absolute_url()} for page in pages]
     return JsonResponse(link_list, safe=False)
 
@@ -41,7 +41,12 @@ class PageDetailView(DetailView):
             raise PermissionDenied
 
     def get_queryset(self):
-        return super().get_queryset().get_visible_content(self.request.user)
+        return (
+            super()
+            .get_queryset()
+            .exclude(nav_placement=Page.NavPlacement.INLINE_CMS)
+            .get_visible_content(self.request.user)
+        )
 
 
 class PageCreateView(PermissionRequiredMixin, SuccessMessageMixin, CreateView):
@@ -106,14 +111,10 @@ class PageUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().form_valid(form)
 
 
-class HomePageView(PageDetailView):
+class HomePageView(TemplateView):
     template_name = "pages/home_page.html"
 
-    def get_object(self):
-        obj, created = self.get_queryset().get_or_create(nav_placement=Page.NavPlacement.HOME)
-        if created:
-            logger.info = _("Home page was requested but none was found in the database.")
-
+    def get(self, request, *args, **kwargs):
         if self.request.user.is_authenticated and (
             not self.request.user.family or not self.request.user.family.children.exists()
         ):
@@ -134,7 +135,7 @@ class HomePageView(PageDetailView):
 
         self.notify_outstanding_requirements()
 
-        return obj
+        return super().get(request, *args, **kwargs)
 
     def notify_outstanding_requirements(self):
         """
@@ -218,12 +219,6 @@ class SignUpPageView(CreateView):
         else:
             context["address_formset"] = AddressFormSet()
             context["phonenumber_formset"] = PhoneNumberFormSet()
-        try:
-            context["page"] = Page.objects.get_visible_content(user=self.request.user).get(
-                nav_placement=Page.NavPlacement.SIGNUP
-            )
-        except Page.DoesNotExist:
-            context["page"] = None
         return context
 
     def form_valid(self, form):
