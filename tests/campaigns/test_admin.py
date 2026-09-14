@@ -139,3 +139,100 @@ class CampaignFilterTestCase(TestCase):
             prize_point_response.content.index(b'class="object-tools"'),
             prize_point_response.content.index(b"Prize Points define"),
         )
+
+
+class CopyToLatestCampaignAdminActionTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        now = timezone.now()
+        cls.source_campaign = cls.create_campaign(
+            PackYearFactory(year=2025),
+            now - timezone.timedelta(days=365),
+        )
+        cls.latest_campaign = cls.create_campaign(
+            PackYearFactory(year=2026),
+            now + timezone.timedelta(days=30),
+        )
+        cls.category = Category.objects.create(name="Snacks")
+        cls.superuser = User.objects.create_superuser(
+            email="copy-admin@example.com", password="password"  # nosec B106
+        )
+
+    @staticmethod
+    def create_campaign(year, ordering_opens):
+        return Campaign.objects.create(
+            year=year,
+            ordering_opens=ordering_opens,
+            ordering_closes=ordering_opens + timezone.timedelta(days=30),
+            delivery_available=ordering_opens + timezone.timedelta(days=45),
+            prize_window_opens=ordering_opens + timezone.timedelta(days=45),
+            prize_window_closes=ordering_opens + timezone.timedelta(days=60),
+        )
+
+    def setUp(self):
+        self.client.force_login(self.superuser)
+
+    def run_action(self, model_name, action, object_pk):
+        url = reverse(f"admin:campaigns_{model_name}_changelist")
+        return self.client.post(
+            f"{url}?campaign__id__exact=all",
+            {"action": action, "_selected_action": [object_pk]},
+        )
+
+    def test_duplicate_prizes_copies_to_future_latest_campaign_without_mutating_source(self):
+        source = Prize.objects.create(
+            name="Camping chair",
+            points=12,
+            value="24.99",
+            url="https://example.com/chair",
+            campaign=self.source_campaign,
+        )
+        source_pk = source.pk
+
+        self.assertIsNone(Campaign.objects.current())
+        response = self.run_action("prize", "duplicate_prizes", source_pk)
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        source.refresh_from_db()
+        self.assertEqual(source.pk, source_pk)
+        self.assertEqual(source.campaign, self.source_campaign)
+        copied = Prize.objects.exclude(pk=source_pk).get()
+        self.assertEqual(copied.campaign, self.latest_campaign)
+        self.assertEqual(copied.name, source.name)
+        self.assertEqual(copied.points, source.points)
+        self.assertEqual(copied.value, source.value)
+        self.assertEqual(copied.url, source.url)
+
+    def test_duplicate_products_copies_to_future_latest_campaign_without_mutating_source(self):
+        source = Product.objects.create(
+            name="Caramel corn",
+            description="A classic",
+            category=self.category,
+            msrp="20.00",
+            price="15.00",
+            cost="8.00",
+            weight="12.0",
+            unit=Product.WeightUnit.OUNCE,
+            sort_order=1,
+            campaign=self.source_campaign,
+        )
+        source_pk = source.pk
+
+        self.assertIsNone(Campaign.objects.current())
+        response = self.run_action("product", "duplicate_products", source_pk)
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        source.refresh_from_db()
+        self.assertEqual(source.pk, source_pk)
+        self.assertEqual(source.campaign, self.source_campaign)
+        copied = Product.objects.exclude(pk=source_pk).get()
+        self.assertEqual(copied.campaign, self.latest_campaign)
+        self.assertEqual(copied.name, source.name)
+        self.assertEqual(copied.description, source.description)
+        self.assertEqual(copied.category, source.category)
+        self.assertEqual(copied.msrp, source.msrp)
+        self.assertEqual(copied.price, source.price)
+        self.assertEqual(copied.cost, source.cost)
+        self.assertEqual(copied.weight, source.weight)
+        self.assertEqual(copied.unit, source.unit)
+        self.assertEqual(copied.sort_order, source.sort_order)
