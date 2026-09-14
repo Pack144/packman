@@ -16,7 +16,7 @@ SECRET_KEY = env(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DJANGO_DEBUG", default=True)
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
-NCC_LEADERBOARD_ENABLED = True
+PACK_NCC_LEADERBOARD_ENABLED = True
 
 
 # Logging

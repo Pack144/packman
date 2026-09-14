@@ -336,7 +336,7 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(response.context["selected_tab"], "dens")
         self.assertEqual(response.context["selected_week"]["number"], 2)
 
-    @override_settings(NCC_LEADERBOARD_ENABLED=False)
+    @override_settings(PACK_NCC_LEADERBOARD_ENABLED=False)
     def test_leaderboard_returns_not_found_when_disabled(self):
         response = self.client.get(reverse("campaigns:order_leaderboard"))
 

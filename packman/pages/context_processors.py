@@ -69,7 +69,7 @@ def _build_ncc_items(request, fundraiser):
                 _is_active(request, url_names=["prize_selection"]),
             )
         )
-    if settings.NCC_LEADERBOARD_ENABLED:
+    if settings.PACK_NCC_LEADERBOARD_ENABLED:
         items.append(
             _link(
                 _("Leaderboard"),

@@ -117,7 +117,7 @@ class PopulateNavbarTests(TestCase):
         self.assertIn(first_ncc_page.title, ncc_labels)
         self.assertIn(second_ncc_page.title, ncc_labels)
 
-    @override_settings(NCC_LEADERBOARD_ENABLED=False)
+    @override_settings(PACK_NCC_LEADERBOARD_ENABLED=False)
     def test_ncc_dropdown_omits_leaderboard_when_disabled(self):
         today = timezone.now()
         Campaign.objects.create(

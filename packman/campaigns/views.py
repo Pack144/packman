@@ -237,7 +237,7 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
     default_tab = "top-sales"
 
     def dispatch(self, request, *args, **kwargs):
-        if not settings.NCC_LEADERBOARD_ENABLED:
+        if not settings.PACK_NCC_LEADERBOARD_ENABLED:
             raise Http404
         return super().dispatch(request, *args, **kwargs)
 
