@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load i18n pages_tags %}
 
 {% block title %}
   {% translate 'Our Requirements' %} | {{ block.super }}
@@ -86,10 +86,6 @@
       {% endfor %}
     </div>
 
-    <p class="text-body-secondary mt-4">
-      <small>
-        {% translate 'Pack leadership keeps these records. If something looks wrong, please get in touch.' %}
-      </small>
-    </p>
+    <div class="mt-4">{% inline_cms "cms-compliance-help" %}</div>
   {% endif %}
 {% endblock %}

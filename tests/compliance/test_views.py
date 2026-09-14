@@ -344,6 +344,7 @@ class FamilyNeedsAttentionTestCase(ComplianceViewTestCase):
         self.assertEqual(response.context["registrations_due"], [self.cub])
         self.assertEqual(response.context["needs_attention"], 1)
         self.assertContains(response, "still needs attention")
+        self.assertContains(response, "verification is done manually by the membership and treasurer")
         self.assertNotContains(response, "Everything is up to date")
 
     def test_a_registered_cub_leaves_the_family_up_to_date(self):
@@ -632,6 +633,18 @@ class FamilyContentTestCase(ComplianceViewTestCase):
         response = self.client.get(reverse("compliance:family_detail", kwargs={"pk": self.family.pk}))
 
         self.assertEqual(response.context["outstanding"], [])
+
+    def test_renders_compliance_help_below_requirements(self):
+        response = self.client.get(reverse("compliance:my_family"))
+        content = response.content.decode()
+
+        self.assertContains(response, 'href="/committees/membership/"', html=False)
+        self.assertContains(response, "Please note that verification is done manually")
+        self.assertContains(response, "https://my.scouting.org/VES/OnlineReg/1.0.0/?tu=UF-MB-609paa0144")
+        self.assertContains(response, "https://forms.gle/3Ngk74CcQNh7xof7A")
+        self.assertContains(response, "QuickBooks request")
+        self.assertContains(response, 'href="mailto:membership@pack144.org"', html=False)
+        self.assertGreater(content.index("Pack leadership keeps these records"), content.index("row-cols-md-2"))
 
 
 class YearSwitcherTestCase(ComplianceViewTestCase):

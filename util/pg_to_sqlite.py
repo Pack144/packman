@@ -319,6 +319,11 @@ def transform_create_table(sql: str, pk_col: str = None) -> str:
     # Remove PostgreSQL casts in DEFAULT values e.g. DEFAULT ''::text → DEFAULT ''
     sql = re.sub(r"::\s*[\w\s]+(\[\])?", "", sql)
 
+    # PostgreSQL writes LIKE operators in pg_dump constraints using their
+    # internal names. SQLite supports the equivalent SQL keywords.
+    sql = re.sub(r"!~~\*?", " NOT LIKE ", sql)
+    sql = re.sub(r"~~\*?", " LIKE ", sql)
+
     # Convert column types: match "col_name TYPE" patterns inside the column list
     def replace_col_type(m):
         prefix = m.group(1)  # column name + whitespace

@@ -6,23 +6,23 @@ from packman.pages.models import Page
 
 class PageTests(TestCase):
     def test_inline_cms_slug_gets_required_prefix(self):
-        page = Page(title="Home content", slug="home", nav_placement=Page.NavPlacement.INLINE_CMS)
+        page = Page(title="News content", slug="news", nav_placement=Page.NavPlacement.INLINE_CMS)
 
         page.full_clean()
 
-        self.assertEqual(page.slug, "cms-home")
+        self.assertEqual(page.slug, "cms-news")
 
     def test_generated_inline_cms_slug_gets_required_prefix(self):
-        page = Page(title="Join Us", nav_placement=Page.NavPlacement.INLINE_CMS)
+        page = Page(title="Special Content", nav_placement=Page.NavPlacement.INLINE_CMS)
 
         page.full_clean()
 
-        self.assertEqual(page.slug, "cms-join-us")
+        self.assertEqual(page.slug, "cms-special-content")
 
     def test_inline_cms_absolute_url_opens_admin_editor(self):
         page = Page.objects.create(
             title="Home content",
-            slug="cms-home",
+            slug="cms-test-home",
             nav_placement=Page.NavPlacement.INLINE_CMS,
         )
 

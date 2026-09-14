@@ -36,6 +36,7 @@ class AboutPageTests(TestCase):
 
 class HomePageTests(TestCase):
     def setUp(self):
+        Page.objects.filter(slug="cms-home").delete()
         self.page = Page.objects.create(
             title="Home content",
             slug="cms-home",
@@ -87,6 +88,7 @@ class HistoryPageTests(TestCase):
 
 class SignUpPageTests(TestCase):
     def setUp(self):
+        Page.objects.filter(slug="cms-join-us").delete()
         self.page = Page.objects.create(
             title="Join Us content",
             slug="cms-join-us",

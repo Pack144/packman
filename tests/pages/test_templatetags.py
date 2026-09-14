@@ -12,6 +12,7 @@ class InlineCmsTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.template = Template('{% load pages_tags %}{% inline_cms "cms-home" %}')
+        Page.objects.filter(slug="cms-home").delete()
 
     def render(self, user=None):
         request = self.factory.get("/")
