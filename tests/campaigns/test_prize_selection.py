@@ -60,12 +60,12 @@ class PrizeSelectionWindowTests(TestCase):
             PrizeSelection.objects.filter(campaign=self.campaign, prize=self.prize, cub=self.scout).exists()
         )
 
-    def test_prize_selection_is_hidden_and_rejected_before_window(self):
+    def test_prize_selection_is_visible_but_rejected_before_window(self):
         self.campaign.prize_window_opens = timezone.localdate() + timezone.timedelta(days=1)
         self.campaign.prize_window_closes = timezone.localdate() + timezone.timedelta(days=2)
         self.campaign.save()
 
-        self.assertFalse(self._prize_nav_is_visible())
+        self.assertTrue(self._prize_nav_is_visible())
         page_response = self.client.get(reverse("campaigns:prize_selection"))
 
         response = self._update_selection()
@@ -75,12 +75,12 @@ class PrizeSelectionWindowTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertFalse(PrizeSelection.objects.exists())
 
-    def test_prize_selection_is_hidden_and_rejected_after_window(self):
+    def test_prize_selection_is_visible_but_rejected_after_window(self):
         self.campaign.prize_window_opens = timezone.localdate() - timezone.timedelta(days=2)
         self.campaign.prize_window_closes = timezone.localdate() - timezone.timedelta(days=1)
         self.campaign.save()
 
-        self.assertFalse(self._prize_nav_is_visible())
+        self.assertTrue(self._prize_nav_is_visible())
 
         response = self._update_selection()
 
