@@ -8,9 +8,14 @@
 
 {% block content %}
   <h1>{% translate 'Wonderful Prizes' %}</h1>
-  <div class="card">
+  <div class="card bg-body text-body">
     <div class="card-body">
       <div class="card-text">
+        {% if not selection_available %}
+          <div class="alert alert-info" role="status">
+            {% translate "Prize selection is not currently available. You can review existing selections, but they cannot be changed." %}
+          </div>
+        {% endif %}
         <p>
           Congratulations
           {% for cub in cub_list %}
@@ -35,7 +40,7 @@
         </p>
         <ul class="list-group list-group-horizontal m-5">
           {% for cub in cub_list %}
-            <li class="list-group-item">
+            <li class="list-group-item bg-body text-body">
               <strong>{{ cub.name }}</strong>
               <br>
               Earned
@@ -51,19 +56,19 @@
           <div class="col-8">
             <ul class="list-group list-group-flush">
               {% for prize in prize_list %}
-                <li class="list-group-item">
-                  <div class="row bg-body">
+                <li class="list-group-item bg-body text-body">
+                  <div class="row">
                     <div class="col-4 text-center">
                       {% if prize.image %}
                         <img src="{{ prize.image.url }}"
-                             class="rounded"
-                             alt="{{ prize.name }}"
-                             style="max-height: 180px;
-                                    width: auto">
-                      {% else %}
-                        <img src="https://via.placeholder.com/180/515354/E9E9E4/?text={{ prize.name|urlencode }}"
-                             class="rounded"
+                             class="rounded prize-image"
                              alt="{{ prize.name }}">
+                      {% else %}
+                        <div class="rounded prize-image bg-body-secondary text-body-secondary d-inline-flex align-items-center justify-content-center p-3"
+                             role="img"
+                             aria-label="{% blocktranslate with prize_name=prize.name %}No image available for {{ prize_name }}{% endblocktranslate %}">
+                          <span>{{ prize.name }}</span>
+                        </div>
                       {% endif %}
                     </div>
                     <div class="col prize-details">
@@ -81,7 +86,7 @@
                       <hr>
                       <div class="btn-group btn-group-sm">
                         {% for cub in cub_list %}
-                          <a class="btn btn-success {% if prize.points > cub.points.remaining %}disabled{% endif %} prize-update-btn"
+                          <a class="btn btn-success {% if not selection_available or prize.points > cub.points.remaining %}disabled{% endif %} prize-update-btn"
                              data-action="add"
                              data-prize="{{ prize.pk }}"
                              data-cub="{{ cub.pk }}">
@@ -102,9 +107,9 @@
               {% if request.user.family.children.active.count > 1 %}<h4>{{ cub.short_name }}</h4>{% endif %}
               <ul class="list-group list-group-flush">
                 {% for selection in cub.prize_selections.current %}
-                  <li class="list-group-item d-flex align-items-center justify-content-between">
+                  <li class="list-group-item bg-body text-body d-flex align-items-center justify-content-between">
                     <span>{{ selection.prize.name }} ({{ selection.quantity }})</span>
-                    <a class="btn btn-link text-danger prize-update-btn"
+                    <a class="btn btn-link text-danger {% if not selection_available %}disabled{% endif %} prize-update-btn"
                        role="button"
                        data-action="remove"
                        data-prize="{{ selection.prize.pk }}"
@@ -118,7 +123,7 @@
           </div>
         </div>
       </div>
-      <div class="card-footer">
+      <div class="card-footer bg-body-tertiary text-body">
         <p class="card-text">You have earned {{ prize_points }} prize point{{ prize_points|pluralize }}.</p>
       </div>
     </div>

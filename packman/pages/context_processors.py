@@ -61,7 +61,7 @@ def _build_ncc_items(request, fundraiser):
             _is_active(request, url_names=["order_list", "order_list_by_campaign"]),
         )
     ]
-    if fundraiser.can_select_prizes:
+    if fundraiser.can_select_prizes():
         items.append(
             _link(
                 _("Prize Selection"),
