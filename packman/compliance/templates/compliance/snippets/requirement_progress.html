@@ -2,9 +2,17 @@
 {% comment %}
   A stacked bar for one annotated requirement. Segment widths come straight
   from the annotation, so there is no arithmetic in the template.
+
+  Pass `unlinked` where the reader cannot open the pack-wide roster behind the
+  name -- the den dashboard, which den leaders reach without
+  compliance.view_all_records. Absent, the name links as it always has.
 {% endcomment %}
 <div class="d-flex justify-content-between align-items-baseline">
-  <a href="{% url 'compliance:roster_by_year' slug=requirement.slug year=year.year %}">{{ requirement.name }}</a>
+  {% if unlinked %}
+    <span>{{ requirement.name }}</span>
+  {% else %}
+    <a href="{% url 'compliance:roster_by_year' slug=requirement.slug year=year.year %}">{{ requirement.name }}</a>
+  {% endif %}
   <small class="text-body-secondary">
     {% blocktranslate with done=requirement.complete total=requirement.total %}{{ done }} of {{ total }}{% endblocktranslate %}
   </small>

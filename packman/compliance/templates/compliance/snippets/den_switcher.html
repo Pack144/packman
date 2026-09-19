@@ -1,0 +1,30 @@
+{% load i18n %}
+{% comment %}
+  Den switcher. Pass `available_dens` and the selected `den`.
+
+  Mirrors year_switcher.html, but the selection rides on a query parameter
+  rather than the path so that the year switcher beside it keeps working from
+  whichever den is showing. Rendered by the caller only when there is a choice
+  to make -- a leader with one den has nothing to switch between.
+{% endcomment %}
+<div class="btn-group">
+  <button type="button" class="btn btn-outline-secondary">
+    {% blocktranslate with number=den.number %}Den {{ number }}{% endblocktranslate %}
+  </button>
+  <button type="button"
+          class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+          data-bs-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false">
+    <span class="visually-hidden">{% translate 'Toggle Dropdown' %}</span>
+  </button>
+  <div class="dropdown-menu dropdown-menu-end">
+    {% for entry in available_dens %}
+      {% if entry == den %}
+        <div class="dropdown-item active">{% blocktranslate with number=entry.number %}Den {{ number }}{% endblocktranslate %}</div>
+      {% else %}
+        <a class="dropdown-item" href="?den={{ entry.number }}">{% blocktranslate with number=entry.number %}Den {{ number }}{% endblocktranslate %}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>

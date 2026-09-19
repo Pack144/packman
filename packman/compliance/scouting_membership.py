@@ -67,20 +67,28 @@ def standing_for(cub, as_of=None, warn_within=None):
     return Standing.CURRENT
 
 
-def summarize_active_cubs(year=None, as_of=None):
+def summarize_active_cubs(year=None, as_of=None, cubs=None):
     """
     Every active Cub's registration standing for a pack year, plus the counts.
 
     One query. ``as_of`` is the day the expiration dates are judged against and
     defaults to today, so switching the dashboard to an earlier pack year asks
     "are the Cubs who were active then registered now", not "were they then".
+
+    ``cubs`` narrows the population to a Cub queryset the caller has already
+    settled on -- a den, say. The standings and counts are worked out the same
+    way either side of that, so the den dashboard and the pack dashboard can
+    never tell a leader different things about the same Cub.
     """
     year = year or PackYear.objects.current()
     as_of = as_of or timezone.localdate()
 
+    if cubs is None:
+        cubs = Scout.objects.active_in(year)
+
     rows = []
     counts = dict.fromkeys(Standing.values, 0)
-    for cub in Scout.objects.active_in(year).select_related("family").order_by("last_name", "first_name"):
+    for cub in cubs.select_related("family").order_by("last_name", "first_name"):
         standing = standing_for(cub, as_of)
         counts[standing] += 1
         rows.append({"cub": cub, "standing": standing})

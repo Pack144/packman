@@ -1,14 +1,18 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Count, Prefetch, Q
+from django.http import Http404
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, TemplateView
 
+from packman.committees.leadership import led_dens
+from packman.dens.models import Den
 from packman.membership.mixins import ActiveMemberOrContributorTest
 from packman.membership.models import Family
 
-from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest
+from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest, UserLeadsADenTest
 from .models import Requirement, RequirementRecord
 from .scouting_membership import summarize_active_cubs
-from .summaries import summarize_family
+from .summaries import summarize_den, summarize_family
 
 
 class RequirementRollupMixin:
@@ -129,6 +133,72 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         # A partly done family still has outstanding items, so it keeps
         # matching the outstanding filter.
         return any(cell and cell[wanted] for cell in cells)
+
+
+class DenComplianceDashboardView(UserLeadsADenTest, PackYearContextMixin, TemplateView):
+    """
+    Where a den leader sees who in their den still owes what.
+
+    The pack dashboard's counterpart, narrowed to one den and read only. It
+    reads the same records through the same summaries the family page uses, so
+    a leader and a parent are never shown a different answer.
+    """
+
+    template_name = "compliance/den_dashboard.html"
+    year_url_name = "compliance:den_dashboard_by_year"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = context["years"]["viewing"]
+
+        available = list(self.get_available_dens(year))
+        context["available_dens"] = available
+        den = self.get_den(available)
+        context["den"] = den
+
+        if den is None:
+            # A leader who held no den in the year they switched to. Not a
+            # permission problem -- they may still switch back.
+            return context
+
+        summary = summarize_den(den, year)
+        context["summary"] = summary
+        context["rows"] = summary["rows"]
+        context["requirements"] = summary["requirements"]
+        context["outstanding"] = summary["outstanding"]
+        # Registrations are not tracked as a Requirement; they are read off the
+        # Cubs themselves. See compliance.scouting_membership for why.
+        context["scouting_membership"] = summarize_active_cubs(year, cubs=summary["cubs"])
+        return context
+
+    def get_available_dens(self, year):
+        """
+        The dens this viewer may choose between for the year being viewed.
+
+        Pack leadership already sees every family on the pack dashboard, so
+        letting them pick any den here reveals nothing new and saves them
+        needing a den assignment to use the page at all.
+        """
+        if self.request.user.has_perm("compliance.view_all_records"):
+            return Den.objects.active_in(year).order_by("number")
+        return led_dens(self.request.user, year)
+
+    def get_den(self, available):
+        """
+        The selected den, or None when the viewer led none this year.
+
+        A ``den`` that is not on the viewer's own list is a 404 rather than a
+        quiet fall back to their first den: this query parameter is the whole
+        authorization boundary, and a silent redirect would make an attempt to
+        cross it look like it had worked.
+        """
+        wanted = self.request.GET.get("den")
+        if not wanted:
+            return available[0] if available else None
+        try:
+            return next(den for den in available if str(den.number) == wanted)
+        except StopIteration:
+            raise Http404(_("You do not lead that den."))
 
 
 class RequirementRosterView(PermissionRequiredMixin, PackYearContextMixin, RequirementRollupMixin, DetailView):

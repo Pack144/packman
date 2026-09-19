@@ -8,6 +8,7 @@ CommitteeMember rows.
 
 from packman.calendars.models import PackYear
 from packman.committees.models import CommitteeMember
+from packman.dens.models import Den
 
 # The three Pack leadership titles, most senior first — dict order is the
 # precedence used when someone holds more than one (an Akela who also leads a
@@ -80,5 +81,37 @@ def leads_or_serves_on(user, committees=()):
             or assignment.committee.name.strip().casefold() in wanted
             for assignment in assignments
         )
-    except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
+    except (PackYear.DoesNotExist, PackYear.MultipleObjectsReturned):
         return False
+
+
+def led_dens(user, year):
+    """
+    The Dens an Adult leads in a given Pack Year, ordered by number.
+
+    Keyed on the den assignment rather than on Position.DEN_LEADER: as
+    assignment_title() explains, a pack may record the title through the
+    committee's name and leave everyone at the default 'Member' position, and
+    those rows still carry the den. An Akela who also carries a den is
+    supporting that den, so they belong here too.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return Den.objects.none()
+    return Den.objects.filter(leadership__member=user, leadership__year=year).distinct().order_by("number")
+
+
+def leads_any_den(user):
+    """
+    True when the Adult leads a den in any Pack Year.
+
+    Year-agnostic on purpose: this answers "may they open the den dashboard at
+    all", and a leader looking back at the den they ran two years ago is asking
+    a reasonable question. Which den's data they actually see is settled
+    per-year by led_dens().
+
+    Asked on every page render to build the navbar, so it stays a single
+    exists() and never widens to a join on Den.
+    """
+    if not getattr(user, "is_authenticated", False) or not hasattr(user, "committee_memberships"):
+        return False
+    return user.committee_memberships.filter(den__isnull=False).exists()
