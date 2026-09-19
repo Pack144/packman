@@ -67,7 +67,7 @@ def standing_for(cub, as_of=None, warn_within=None):
     return Standing.CURRENT
 
 
-def summarize_active_cubs(year=None, as_of=None, cubs=None):
+def summarize_active_cubs(year=None, as_of=None, cubs=None, warn_within=None):
     """
     Every active Cub's registration standing for a pack year, plus the counts.
 
@@ -79,6 +79,9 @@ def summarize_active_cubs(year=None, as_of=None, cubs=None):
     settled on -- a den, say. The standings and counts are worked out the same
     way either side of that, so the den dashboard and the pack dashboard can
     never tell a leader different things about the same Cub.
+
+    Pass ``warn_within`` to have registrations lapsing soon come back as
+    ``EXPIRING_SOON`` rather than ``CURRENT``, same as ``standing_for``.
     """
     year = year or PackYear.objects.current()
     as_of = as_of or timezone.localdate()
@@ -89,7 +92,7 @@ def summarize_active_cubs(year=None, as_of=None, cubs=None):
     rows = []
     counts = dict.fromkeys(Standing.values, 0)
     for cub in cubs.select_related("family").order_by("last_name", "first_name"):
-        standing = standing_for(cub, as_of)
+        standing = standing_for(cub, as_of, warn_within)
         counts[standing] += 1
         rows.append({"cub": cub, "standing": standing})
 
@@ -97,8 +100,10 @@ def summarize_active_cubs(year=None, as_of=None, cubs=None):
         "rows": rows,
         "total": len(rows),
         "current": counts[Standing.CURRENT],
+        "expiring_soon": counts[Standing.EXPIRING_SOON],
         "expired": counts[Standing.EXPIRED],
         "missing": counts[Standing.MISSING],
         # What leadership has to chase: on file and lapsed, or never recorded.
+        # A registration still good but lapsing soon is not yet one of those.
         "outstanding": counts[Standing.EXPIRED] + counts[Standing.MISSING],
     }

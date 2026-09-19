@@ -11,7 +11,7 @@ from packman.membership.models import Family
 
 from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest, UserLeadsADenTest
 from .models import Requirement, RequirementRecord
-from .scouting_membership import summarize_active_cubs
+from .scouting_membership import RENEWAL_WINDOW, summarize_active_cubs
 from .summaries import summarize_den, summarize_family
 
 
@@ -62,7 +62,7 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         context["den"] = self.request.GET.get("den", "")
         # Registrations are not tracked as a Requirement; they are read off the
         # Cubs themselves. See compliance.scouting_membership for why.
-        context["scouting_membership"] = summarize_active_cubs(year)
+        context["scouting_membership"] = summarize_active_cubs(year, warn_within=RENEWAL_WINDOW)
         return context
 
     def get_matrix(self, year, requirements):
@@ -168,7 +168,7 @@ class DenComplianceDashboardView(UserLeadsADenTest, PackYearContextMixin, Templa
         context["outstanding"] = summary["outstanding"]
         # Registrations are not tracked as a Requirement; they are read off the
         # Cubs themselves. See compliance.scouting_membership for why.
-        context["scouting_membership"] = summarize_active_cubs(year, cubs=summary["cubs"])
+        context["scouting_membership"] = summarize_active_cubs(year, cubs=summary["cubs"], warn_within=RENEWAL_WINDOW)
         return context
 
     def get_available_dens(self, year):
