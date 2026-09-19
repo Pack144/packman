@@ -1,0 +1,29 @@
+{% load i18n %}
+
+{% if has_content %}
+  {% if perms.pages.change_page %}
+    <div class="text-end mb-2">
+      <a class="btn btn-sm btn-outline-secondary" href="{{ change_url }}">
+        <i class="fa-regular fa-pen-to-square"></i>
+        {% translate "Edit this content" %}
+      </a>
+    </div>
+  {% endif %}
+  {% if cards %}
+    {% include "pages/snippets/content_blocks.html" %}
+  {% else %}
+    {% for content in page.content_blocks.all %}
+      {% if content.heading %}<h3>{{ content.heading }}</h3>{% endif %}
+      {{ content.body|safe }}
+    {% endfor %}
+  {% endif %}
+{% else %}
+  <div class="alert alert-warning" role="alert">
+    {% translate "This content is currently unavailable. Please let the IT committee know." %}
+    {% if page and perms.pages.change_page %}
+      <a class="alert-link" href="{{ change_url }}">{% translate "Edit this content." %}</a>
+    {% elif not page and perms.pages.add_page %}
+      <a class="alert-link" href="{{ add_url }}">{% translate "Create this content." %}</a>
+    {% endif %}
+  </div>
+{% endif %}

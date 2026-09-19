@@ -262,7 +262,7 @@ class PrizeAdmin(admin.ModelAdmin):
 
     @admin.display(description=_("Copy selected prizes to the latest campaign"))
     def duplicate_prizes(self, request, queryset):
-        campaign = Campaign.objects.current()
+        campaign = Campaign.objects.latest()
         count = 0
 
         for prize in queryset.all():
@@ -309,7 +309,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     @admin.display(description=_("Copy selected products to the latest campaign"))
     def duplicate_products(self, request, queryset):
-        campaign = Campaign.objects.current()
+        campaign = Campaign.objects.latest()
         count = 0
 
         for product in queryset.all():

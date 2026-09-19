@@ -115,7 +115,7 @@ class Campaign(TimeStampedModel):
 
     @admin.display(boolean=True, description=_("prizes open"))
     def can_select_prizes(self):
-        return self.prize_window_opens <= timezone.now().date() <= self.prize_window_closes
+        return self.prize_window_opens <= timezone.localdate() <= self.prize_window_closes
 
     @admin.display(boolean=True, description=_("delivery available"))
     def can_deliver_orders(self):

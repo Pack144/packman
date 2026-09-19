@@ -1,3 +1,4 @@
+from django.db.models import Min
 from django.views.generic import DetailView, ListView
 
 from packman.calendars.models import PackYear
@@ -33,11 +34,27 @@ class DenDetailView(ActiveMemberOrContributorTest, DetailView):
     @staticmethod
     def get_cubs(den):
         """Every active Cub in this den, each paired with their own parents."""
+        current_year = PackYear.objects.current()
+        memberships = (
+            den.active_cubs()
+            .select_related("scout__family")
+            .annotate(first_year_assigned=Min("scout__den_memberships__year_assigned"))
+        )
         rows = []
-        for membership in den.active_cubs().select_related("scout__family"):
+        for membership in memberships:
             scout = membership.scout
             parents = list(scout.family.adults.all()) if scout.family_id else []
-            rows.append({"scout": scout, "parents": parents})
+            rows.append(
+                {
+                    "scout": scout,
+                    "parents": parents,
+                    # A Cub whose earliest den assignment is this year has not
+                    # been with the pack before. A Cub returning for another
+                    # year keeps their older assignment, so this reads False for
+                    # them and clears itself when the pack year rolls over.
+                    "is_new": membership.first_year_assigned == current_year.pk,
+                }
+            )
         return rows
 
     @staticmethod

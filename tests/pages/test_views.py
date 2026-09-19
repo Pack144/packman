@@ -36,6 +36,17 @@ class AboutPageTests(TestCase):
 
 class HomePageTests(TestCase):
     def setUp(self):
+        Page.objects.filter(slug="cms-home").delete()
+        self.page = Page.objects.create(
+            title="Home content",
+            slug="cms-home",
+            nav_placement=Page.NavPlacement.INLINE_CMS,
+        )
+        ContentBlock.objects.create(
+            page=self.page,
+            body="<p>Welcome home.</p>",
+            visibility=ContentBlock.Visibility.PUBLIC,
+        )
         url = reverse("pages:home")
         self.response = self.client.get(url)
 
@@ -48,6 +59,12 @@ class HomePageTests(TestCase):
     def test_homepage_url_resolves_homepageview(self):  # new
         view = resolve("/")
         self.assertEqual(view.func.__name__, HomePageView.as_view().__name__)
+
+    def test_homepage_renders_inline_cms_content(self):
+        self.assertContains(self.response, "Welcome home.")
+
+    def test_homepage_renders_welcome_heading(self):
+        self.assertContains(self.response, "<h1>Welcome to Pack 144</h1>", html=True)
 
 
 class HistoryPageTests(TestCase):
@@ -71,6 +88,17 @@ class HistoryPageTests(TestCase):
 
 class SignUpPageTests(TestCase):
     def setUp(self):
+        Page.objects.filter(slug="cms-join-us").delete()
+        self.page = Page.objects.create(
+            title="Join Us content",
+            slug="cms-join-us",
+            nav_placement=Page.NavPlacement.INLINE_CMS,
+        )
+        ContentBlock.objects.create(
+            page=self.page,
+            body="<p>Application instructions.</p>",
+            visibility=ContentBlock.Visibility.PUBLIC,
+        )
         url = reverse("pages:signup")
         self.response = self.client.get(url)
 
@@ -83,6 +111,47 @@ class SignUpPageTests(TestCase):
     def test_signuppage_url_resolves_signuppageview(self):
         view = resolve("/signup/")
         self.assertEqual(view.func.__name__, SignUpPageView.as_view().__name__)
+
+    def test_signuppage_renders_inline_cms_content_in_modal(self):
+        self.assertContains(self.response, '<div class="modal-body">', html=False)
+        self.assertContains(self.response, "<h2>Join Cub Scouts Pack 144</h2>", html=True)
+        self.assertContains(self.response, "Application instructions.")
+
+
+class InlineCmsAccessTests(TestCase):
+    def setUp(self):
+        self.inline_page = Page.objects.create(
+            title="Inline content",
+            slug="cms-inline-content",
+            nav_placement=Page.NavPlacement.INLINE_CMS,
+        )
+        ContentBlock.objects.create(
+            page=self.inline_page,
+            body="<p>Embedded only.</p>",
+            visibility=ContentBlock.Visibility.PUBLIC,
+        )
+        self.linked_page = Page.objects.create(
+            title="Linked content",
+            slug="linked-content",
+            nav_placement=Page.NavPlacement.ABOUT,
+        )
+        ContentBlock.objects.create(
+            page=self.linked_page,
+            body="<p>Standalone.</p>",
+            visibility=ContentBlock.Visibility.PUBLIC,
+        )
+
+    def test_inline_cms_page_is_not_directly_accessible(self):
+        response = self.client.get(reverse("pages:detail", kwargs={"slug": self.inline_page.slug}))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_inline_cms_page_is_excluded_from_editor_link_list(self):
+        response = self.client.get(reverse("pages:link_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(self.inline_page.title, [page["title"] for page in response.json()])
+        self.assertIn(self.linked_page.title, [page["title"] for page in response.json()])
 
 
 class HomePageRequirementsNoticeTests(TestCase):

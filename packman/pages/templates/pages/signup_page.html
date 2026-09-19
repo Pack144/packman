@@ -1,47 +1,14 @@
 {% extends "base.html" %}
 
-{% load crispy_forms_filters crispy_forms_tags i18n static %}
+{% load crispy_forms_filters crispy_forms_tags i18n pages_tags static %}
 
 {% block title %}
-  {% if page %}
-    {{ page.title }}
-  {% else %}
-    Sign Up
-  {% endif %}
-  | {{ block.super }}
+  {% translate 'Sign Up' %} | {{ block.super }}
 {% endblock title %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center">
-    <h1>
-      {% if page %}
-        {{ page.title }}
-      {% else %}
-        {% translate 'Sign Up' %}
-      {% endif %}
-    </h1>
-    {% if perms.pages %}
-      <div class="btn-group btn-group-sm">
-        {% if perms.pages.add_page %}
-          <a href="{% url 'pages:create' %}"
-             class="btn btn-outline-secondary"
-             data-bs-toggle="tooltip"
-             title="{% translate 'Add a new webpage' %}"><i class="fa-regular fa-plus-square"></i></a>
-        {% endif %}
-        {% if perms.pages.change_page %}
-          <a href="{% url 'pages:update' page.pk %}"
-             class="btn btn-outline-secondary"
-             data-bs-toggle="tooltip"
-             title="{% translate 'Edit this page' %}"><i class="fa-regular fa-pen-to-square"></i></a>
-        {% endif %}
-        {% if perms.pages.delete_page and not page.is_standard %}
-          <a href="{% url 'pages:delete' page.pk %}"
-             class="btn btn-outline-danger"
-             data-bs-toggle="tooltip"
-             title="{% translate 'Delete this webpage' %}"><i class="fa-regular fa-minus-square"></i></a>
-        {% endif %}
-      </div>
-    {% endif %}
+    <h1>{% translate 'Sign Up' %}</h1>
     <button type="button"
             class="btn btn-sm btn-outline-primary"
             data-bs-toggle="modal"
@@ -94,21 +61,19 @@
     <div class="modal" id="instructionsModal" tabindex="-1">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
-          {% for content in page.content_blocks.all %}
-            <div class="modal-header">
-              <h2>{{ content.heading }}</h2>
-              <button type="button"
-                      class="btn-close"
-                      data-bs-dismiss="modal"
-                      aria-label="{% translate 'Close' %}"></button>
-            </div>
-            <div class="modal-body">{{ content.body|safe }}</div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
-                {% translate 'Take me to the application' %}
-              </button>
-            </div>
-          {% endfor %}
+          <div class="modal-header">
+            <h2>{% translate "Join Cub Scouts Pack 144" %}</h2>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="{% translate 'Close' %}"></button>
+          </div>
+          <div class="modal-body">{% inline_cms "cms-join-us" cards=False %}</div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+              {% translate 'Take me to the application' %}
+            </button>
+          </div>
         </div>
       </div>
     </div>
