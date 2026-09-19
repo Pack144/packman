@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load static thumbnail %}
+{% load i18n static thumbnail %}
 
 {% block title %}{{ den }} | {{ block.super }}{% endblock %}
 
@@ -68,7 +68,15 @@
                       {% include "membership/snippets/headshot_thumbnail.html" with member=row.scout %}
                     </div>
                     <div class="col">
-                      <h4 class="card-title">{{ row.scout }}</h4>
+                      <h4 class="card-title">
+                        {{ row.scout }}
+                        {% if row.is_new %}
+                          <span class="badge text-bg-info align-middle"
+                                title="{% translate 'First year with the pack' %}">
+                            <i class="fa-solid fa-star fa-fw"></i> {% translate 'New' %}
+                          </span>
+                        {% endif %}
+                      </h4>
                       {% if row.parents %}
                         <p>
                           <small>
