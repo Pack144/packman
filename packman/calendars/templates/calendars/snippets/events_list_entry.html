@@ -11,7 +11,7 @@
                  class="btn btn-secondary btn-sm"
                  data-bs-toggle="tooltip"
                  title="{% translate 'Make changes to this event' %}">
-                <i class="fa-solid fa-calendar-check"></i>
+                <i class="fa-regular fa-pen-to-square"></i><span class="visually-hidden">{% translate 'Edit' %}</span>
               </a>
             {% endif %}
             {% if perms.calendars.delete_event %}
@@ -19,7 +19,7 @@
                  class="btn btn-secondary btn-sm"
                  data-bs-toggle="tooltip"
                  title="{% translate 'Delete this event' %}">
-                <i class="fa-solid fa-calendar-minus"></i>
+                <i class="fa-solid fa-trash-alt"></i><span class="visually-hidden">{% translate 'Delete' %}</span>
               </a>
             {% endif %}
           </div>
