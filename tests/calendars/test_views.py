@@ -34,6 +34,22 @@ class EventListViewTestCase(TestCase):
         self.assertTemplateUsed(response, "calendars/event_list.html")
         self.assertEqual(len(response.context["events"]), 5)
 
+    def test_action_icons_for_member_with_permissions(self):
+        member = AdultFactory(role=Adult.CONTRIBUTOR)
+        permissions = Permission.objects.filter(
+            codename__in=("change_event", "delete_event"),
+            content_type=ContentType.objects.get_for_model(Event),
+        )
+        member.user_permissions.add(*permissions)
+        self.client.force_login(member)
+
+        response = self.client.get(self.url)
+
+        self.assertContains(response, '<i class="fa-regular fa-pen-to-square"></i>', count=5, html=True)
+        self.assertContains(response, '<i class="fa-solid fa-trash-alt"></i>', count=5, html=True)
+        self.assertContains(response, '<span class="visually-hidden">Edit</span>', count=5, html=True)
+        self.assertContains(response, '<span class="visually-hidden">Delete</span>', count=5, html=True)
+
 
 class EventDetailViewTestCase(TestCase):
     def setUp(self) -> None:
@@ -57,6 +73,22 @@ class EventDetailViewTestCase(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertTemplateUsed(response, "calendars/event_detail.html")
         self.assertContains(response, self.event.name)
+
+    def test_action_icons_for_member_with_permissions(self):
+        member = AdultFactory(role=Adult.CONTRIBUTOR)
+        permissions = Permission.objects.filter(
+            codename__in=("change_event", "delete_event"),
+            content_type=ContentType.objects.get_for_model(Event),
+        )
+        member.user_permissions.add(*permissions)
+        self.client.force_login(member)
+
+        response = self.client.get(self.url)
+
+        self.assertContains(response, '<i class="fa-regular fa-pen-to-square"></i>', html=True)
+        self.assertContains(response, '<i class="fa-solid fa-trash-alt"></i>', html=True)
+        self.assertContains(response, '<span class="visually-hidden">Edit</span>', html=True)
+        self.assertContains(response, '<span class="visually-hidden">Delete</span>', html=True)
 
 
 class EventUpdateViewTestCase(TestCase):
