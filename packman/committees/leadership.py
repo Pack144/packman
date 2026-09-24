@@ -81,7 +81,7 @@ def leads_or_serves_on(user, committees=()):
             or assignment.committee.name.strip().casefold() in wanted
             for assignment in assignments
         )
-    except (PackYear.DoesNotExist, PackYear.MultipleObjectsReturned):
+    except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
         return False
 
 
@@ -117,5 +117,5 @@ def leads_a_den(user):
         return False
     try:
         return user.committee_memberships.filter(den__isnull=False, year=PackYear.objects.current()).exists()
-    except (PackYear.DoesNotExist, PackYear.MultipleObjectsReturned):
+    except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
         return False
