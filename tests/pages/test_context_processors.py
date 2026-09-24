@@ -135,6 +135,15 @@ class PopulateNavbarTests(TestCase):
         self.assertIn("Den Leader Dashboard", leader_labels)
         self.assertNotIn("Den Leader Dashboard", parent_labels)
 
+    def test_den_leader_dashboard_is_not_offered_on_view_all_records_alone(self):
+        leadership = AdultFactory()
+        leadership.user_permissions.add(Permission.objects.get(codename="view_all_records"))
+
+        labels = [item["label"] for item in self._navbar(leadership)["navbar_admin_dropdown"]["items"]]
+
+        self.assertIn("Requirements Dashboard", labels)
+        self.assertNotIn("Den Leader Dashboard", labels)
+
     @override_settings(PACK_NCC_LEADERBOARD_ENABLED=False)
     def test_ncc_dropdown_omits_leaderboard_when_disabled(self):
         today = timezone.now()

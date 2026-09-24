@@ -81,7 +81,7 @@ def leads_or_serves_on(user, committees=()):
             or assignment.committee.name.strip().casefold() in wanted
             for assignment in assignments
         )
-    except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
+    except (PackYear.DoesNotExist, PackYear.MultipleObjectsReturned):
         return False
 
 
@@ -100,18 +100,22 @@ def led_dens(user, year):
     return Den.objects.filter(leadership__member=user, leadership__year=year).distinct().order_by("number")
 
 
-def leads_any_den(user):
+def leads_a_den(user):
     """
-    True when the Adult leads a den in any Pack Year.
+    True when the Adult leads a den this Pack Year.
 
-    Year-agnostic on purpose: this answers "may they open the den dashboard at
-    all", and a leader looking back at the den they ran two years ago is asking
-    a reasonable question. Which den's data they actually see is settled
-    per-year by led_dens().
+    Only this year: the den dashboard shows the den a leader is running now,
+    not the ones they ran before, and a leader from a past year has no
+    business with this year's families.
 
-    Asked on every page render to build the navbar, so it stays a single
-    exists() and never widens to a join on Den.
+    Asked on every page render to build the navbar, so it fails closed and
+    never raises, for the reason leads_or_serves_on() gives:
+    PackYear.objects.current() blows up when no year covers today or two
+    overlap.
     """
     if not getattr(user, "is_authenticated", False) or not hasattr(user, "committee_memberships"):
         return False
-    return user.committee_memberships.filter(den__isnull=False).exists()
+    try:
+        return user.committee_memberships.filter(den__isnull=False, year=PackYear.objects.current()).exists()
+    except (PackYear.DoesNotExist, PackYear.MultipleObjectsReturned):
+        return False

@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
-from packman.committees.leadership import leads_any_den
+from packman.committees.leadership import leads_a_den
 
 
 class UserIsOwnFamilyOrLeadershipTest(UserPassesTestMixin):
@@ -28,21 +28,18 @@ class UserIsOwnFamilyOrLeadershipTest(UserPassesTestMixin):
 
 class UserLeadsADenTest(UserPassesTestMixin):
     """
-    Den leaders may open the den dashboard; leadership may open it for any den.
+    Only Adults leading a den this Pack Year may open the den dashboard.
 
-    Deliberately year-agnostic, unlike the den the page actually shows. Someone
-    who led a den two years ago is asking a fair question of that year, and the
-    year switcher is how they get there; which den's families they may look at
-    in a given year is settled by led_dens(), not here.
+    compliance.view_all_records is deliberately not a way in. Packs commonly
+    attach it to the committee den leaders sit on, and honouring it here would
+    hand every den leader every den; pack leadership who hold it already have
+    the pack-wide dashboard.
     """
 
     permission_denied_message = _("You may only view the requirements of a den you lead.")
 
     def test_func(self):
-        user = self.request.user
-        if not user.is_authenticated:
-            return False
-        return user.has_perm("compliance.view_all_records") or leads_any_den(user)
+        return leads_a_den(self.request.user)
 
 
 class PackYearContextMixin:

@@ -1,10 +1,11 @@
 from http import HTTPStatus
 
+from django.contrib.auth.models import Permission
 from django.core.cache import cache
 from django.db import connection
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
 from packman.committees.models import Committee, CommitteeMember
@@ -100,15 +101,33 @@ class DenDashboardAccessTestCase(DenDashboardTestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertEqual(response.context["den"], self.den)
 
-    def test_pack_leadership_may_view_without_a_den_assignment(self):
+    def test_pack_leadership_without_a_den_assignment_is_forbidden(self):
+        """They have the pack-wide dashboard; this page is for den leaders."""
         leadership = AdultFactory()
         grant_leadership(leadership, self.year, "view_all_records")
         self.login(leadership)
 
         response = self.get()
 
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(response.context["available_dens"], [self.den, self.other_den])
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_view_all_records_does_not_widen_a_den_leader_to_other_dens(self):
+        """
+        The reviewer's case: a pack that attaches compliance.view_all_records
+        to the committee den leaders sit on. The den dashboard must still show
+        a leader only their own den.
+        """
+        den_leaders = Committee.objects.get(slug="den-leaders")
+        den_leaders.permissions.set(Permission.objects.filter(codename="view_all_records"))
+        self.assertTrue(self.leader.has_perm("compliance.view_all_records"))
+        self.login(self.leader)
+
+        response = self.get()
+        other = self.get(den=self.other_den.number)
+
+        self.assertEqual(response.context["available_dens"], [self.den])
+        self.assertNotIn(self.other_family, [row["family"] for row in response.context["rows"]])
+        self.assertEqual(other.status_code, HTTPStatus.NOT_FOUND)
 
     def test_a_den_the_viewer_does_not_lead_is_not_found(self):
         """The query parameter is the authorization boundary, so it 404s
@@ -204,7 +223,7 @@ class DenDashboardScopeTestCase(DenDashboardTestCase):
         self.assertNotContains(response, reverse("compliance:roster", kwargs={"slug": "linkless-den"}))
 
 
-class DenDashboardYearTestCase(DenDashboardTestCase):
+class DenDashboardCurrentYearOnlyTestCase(DenDashboardTestCase):
     def setUp(self):
         super().setUp()
         # Dates left unset so PackYear.save() derives a window that does not
@@ -212,25 +231,29 @@ class DenDashboardYearTestCase(DenDashboardTestCase):
         # PackYear.objects.current() raise MultipleObjectsReturned. See
         # CurrentPackYearFactory's docstring.
         self.past = PackYearFactory(year=self.year.year - 1, start_date=None, end_date=None)
+
+    def test_a_leader_from_a_past_year_only_is_forbidden(self):
+        former = AdultFactory()
+        make_den_leader(former, self.past, self.den)
+        self.login(former)
+
+        response = self.get()
+
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_a_den_led_last_year_is_not_offered_this_year(self):
+        make_den_leader(self.leader, self.past, self.other_den)
         self.login(self.leader)
 
-    def url_for(self, year):
-        return reverse("compliance:den_dashboard_by_year", kwargs={"year": year.year})
+        response = self.get()
+        last_years_den = self.get(den=self.other_den.number)
 
-    def test_shows_the_den_led_in_the_year_being_viewed(self):
-        make_den_leader(self.leader, self.past, self.other_den)
-        family_in_den(self.other_den, self.past)
+        self.assertEqual(response.context["available_dens"], [self.den])
+        self.assertEqual(last_years_den.status_code, HTTPStatus.NOT_FOUND)
 
-        response = self.client.get(self.url_for(self.past))
-
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(response.context["den"], self.other_den)
-
-    def test_a_year_the_viewer_led_no_den_is_empty_rather_than_forbidden(self):
-        response = self.client.get(self.url_for(self.past))
-
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertIsNone(response.context["den"])
+    def test_there_is_no_route_to_another_year(self):
+        with self.assertRaises(NoReverseMatch):
+            reverse("compliance:den_dashboard_by_year", kwargs={"year": self.past.year})
 
 
 class DenDashboardQueryTestCase(DenDashboardTestCase):

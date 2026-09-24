@@ -4,8 +4,8 @@ from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, TemplateView
 
+from packman.calendars.models import PackYear
 from packman.committees.leadership import led_dens
-from packman.dens.models import Den
 from packman.membership.mixins import ActiveMemberOrContributorTest
 from packman.membership.models import Family
 
@@ -135,57 +135,50 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         return any(cell and cell[wanted] for cell in cells)
 
 
-class DenComplianceDashboardView(UserLeadsADenTest, PackYearContextMixin, TemplateView):
+class DenComplianceDashboardView(UserLeadsADenTest, TemplateView):
     """
     Where a den leader sees who in their den still owes what.
 
-    The pack dashboard's counterpart, narrowed to one den and read only. It
-    reads the same records through the same summaries the family page uses, so
-    a leader and a parent are never shown a different answer.
+    The pack dashboard's counterpart, narrowed to the den(s) the viewer leads
+    this Pack Year and read only. There is no year switcher: a den leader is
+    looking after the Cubs in front of them, and last year's roster belongs to
+    whoever led it. It reads the same records through the same summaries the
+    family page uses, so a leader and a parent are never shown a different
+    answer.
     """
 
     template_name = "compliance/den_dashboard.html"
-    year_url_name = "compliance:den_dashboard_by_year"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        year = context["years"]["viewing"]
+        year = PackYear.objects.current()
 
-        available = list(self.get_available_dens(year))
-        context["available_dens"] = available
+        # Never widened by compliance.view_all_records -- see UserLeadsADenTest.
+        available = list(led_dens(self.request.user, year))
         den = self.get_den(available)
-        context["den"] = den
-
-        if den is None:
-            # A leader who held no den in the year they switched to. Not a
-            # permission problem -- they may still switch back.
-            return context
 
         summary = summarize_den(den, year)
-        context["summary"] = summary
-        context["rows"] = summary["rows"]
-        context["requirements"] = summary["requirements"]
-        context["outstanding"] = summary["outstanding"]
-        # Registrations are not tracked as a Requirement; they are read off the
-        # Cubs themselves. See compliance.scouting_membership for why.
-        context["scouting_membership"] = summarize_active_cubs(year, cubs=summary["cubs"], warn_within=RENEWAL_WINDOW)
+        context.update(
+            {
+                "year": year,
+                "available_dens": available,
+                "den": den,
+                "summary": summary,
+                "rows": summary["rows"],
+                "requirements": summary["requirements"],
+                "outstanding": summary["outstanding"],
+                # Registrations are not tracked as a Requirement; they are read
+                # off the Cubs themselves. See compliance.scouting_membership.
+                "scouting_membership": summarize_active_cubs(
+                    year, cubs=summary["cubs"], warn_within=RENEWAL_WINDOW
+                ),
+            }
+        )
         return context
-
-    def get_available_dens(self, year):
-        """
-        The dens this viewer may choose between for the year being viewed.
-
-        Pack leadership already sees every family on the pack dashboard, so
-        letting them pick any den here reveals nothing new and saves them
-        needing a den assignment to use the page at all.
-        """
-        if self.request.user.has_perm("compliance.view_all_records"):
-            return Den.objects.active_in(year).order_by("number")
-        return led_dens(self.request.user, year)
 
     def get_den(self, available):
         """
-        The selected den, or None when the viewer led none this year.
+        The selected den: the first the viewer leads, or the one ``?den=`` names.
 
         A ``den`` that is not on the viewer's own list is a 404 rather than a
         quiet fall back to their first den: this query parameter is the whole
@@ -194,7 +187,7 @@ class DenComplianceDashboardView(UserLeadsADenTest, PackYearContextMixin, Templa
         """
         wanted = self.request.GET.get("den")
         if not wanted:
-            return available[0] if available else None
+            return available[0]
         try:
             return next(den for den in available if str(den.number) == wanted)
         except StopIteration:

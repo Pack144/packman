@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from packman.campaigns.models import Campaign
-from packman.committees.leadership import leads_any_den
+from packman.committees.leadership import leads_a_den
 from packman.pages.models import Page
 
 
@@ -127,12 +127,12 @@ def _build_dashboards_items(request):
                 ),
             )
         )
-    if request.user.has_perm("compliance.view_all_records") or leads_any_den(request.user):
+    if leads_a_den(request.user):
         items.append(
             _link(
                 _("Den Leader Dashboard"),
                 reverse("compliance:den_dashboard"),
-                _is_active(request, url_names=["den_dashboard", "den_dashboard_by_year"]),
+                _is_active(request, url_names=["den_dashboard"]),
             )
         )
     return items
