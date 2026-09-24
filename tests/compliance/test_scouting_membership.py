@@ -119,6 +119,25 @@ class SummarizeActiveCubsTestCase(TestCase):
         self.assertEqual(summary["outstanding"], 2)
         self.assertEqual(summary["current"] + summary["outstanding"], summary["total"])
 
+    def test_without_warn_within_a_soon_to_lapse_registration_counts_as_current(self):
+        self.cub("12345678", TOMORROW)
+
+        summary = summarize_active_cubs(self.year)
+
+        self.assertEqual(summary["current"], 1)
+        self.assertEqual(summary["expiring_soon"], 0)
+
+    def test_warn_within_splits_out_registrations_lapsing_inside_the_window(self):
+        self.cub("12345678", TOMORROW)
+        self.cub("87654321", TODAY + datetime.timedelta(days=200))
+
+        summary = summarize_active_cubs(self.year, warn_within=RENEWAL_WINDOW)
+
+        self.assertEqual(summary["expiring_soon"], 1)
+        self.assertEqual(summary["current"], 1)
+        # Still good today, so not yet something leadership has to chase.
+        self.assertEqual(summary["outstanding"], 0)
+
     def test_rows_carry_the_cub_and_its_standing(self):
         cub = self.cub("12345678", YESTERDAY)
 

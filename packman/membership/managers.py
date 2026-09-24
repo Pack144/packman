@@ -145,6 +145,22 @@ class ScoutQuerySet(models.QuerySet):
     def active(self):
         return self.active_in(PackYear.objects.current())
 
+    def in_den(self, den, year):
+        """
+        Cubs active in one den in one pack year.
+
+        All three conditions belong in a single filter() for the same reason
+        active_in() gives: chaining would open a second join on
+        den_memberships, letting one row supply the den and another year's row
+        supply the year. The unique_membership_year constraint makes that
+        harmless today, but the query should not depend on it.
+        """
+        return self.filter(
+            den_memberships__den=den,
+            den_memberships__year_assigned=year,
+            status=self.model.ACTIVE,
+        ).distinct()
+
     def lions(self):
         return self.active().filter(den_memberships__den__rank__rank=Rank.RankChoices.LION)
 
@@ -182,6 +198,9 @@ class ScoutManager(models.Manager):
 
     def active_in(self, year):
         return self.get_queryset().active_in(year)
+
+    def in_den(self, den, year):
+        return self.get_queryset().in_den(den, year)
 
     def lions(self):
         return self.get_queryset().lions()

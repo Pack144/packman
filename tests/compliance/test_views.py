@@ -896,7 +896,7 @@ class ScoutingMembershipDashboardTestCase(ComplianceViewTestCase):
         return response
 
     def test_a_current_registration_reads_as_registered(self):
-        self.register("12345678", timezone.localdate() + datetime.timedelta(days=30))
+        self.register("12345678", timezone.localdate() + datetime.timedelta(days=200))
 
         summary = self.get_dashboard().context["scouting_membership"]
 
@@ -904,6 +904,17 @@ class ScoutingMembershipDashboardTestCase(ComplianceViewTestCase):
         self.assertEqual(summary["current"], 1)
         # The other family's Cub has nothing on file.
         self.assertEqual(summary["outstanding"], 1)
+
+    def test_a_registration_lapsing_within_sixty_days_reads_as_expiring_soon(self):
+        self.register("12345678", timezone.localdate() + datetime.timedelta(days=30))
+
+        response = self.get_dashboard()
+
+        summary = response.context["scouting_membership"]
+        self.assertEqual(summary["expiring_soon"], 1)
+        # Still on file and not yet lapsed, so not something to chase yet.
+        self.assertEqual(summary["outstanding"], 1)
+        self.assertEqual(self.badge_class_for(response, "Expiring Soon"), "text-bg-warning")
 
     def test_a_lapsed_registration_reads_as_expired(self):
         self.register("12345678", timezone.localdate() - datetime.timedelta(days=1))
@@ -953,6 +964,13 @@ class ScoutingMembershipDashboardTestCase(ComplianceViewTestCase):
         self.assertContains(response, "progress-bar bg-success")
         self.assertContains(response, "progress-bar bg-secondary")
         self.assertNotContains(response, "progress-bar bg-warning")
+
+    def test_the_progress_bar_shows_amber_for_a_registration_lapsing_soon(self):
+        self.register("12345678", timezone.localdate() + datetime.timedelta(days=30))
+
+        response = self.get_dashboard()
+
+        self.assertContains(response, "progress-bar bg-warning")
 
     def test_it_does_not_depend_on_any_requirement_record(self):
         """The whole point: no Requirement is seeded or recorded against."""

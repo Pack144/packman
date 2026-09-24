@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from packman.campaigns.models import Campaign
+from packman.committees.leadership import leads_a_den
 from packman.pages.models import Page
 
 
@@ -106,10 +107,32 @@ def _build_dashboards_items(request):
                 _is_active(request, url_names=["order_report", "order_report_by_campaign"]),
             )
         )
+    # Named routes rather than the whole compliance app: the two dashboards
+    # below live in it, and matching on the app would light up both at once.
     if request.user.has_perm("compliance.view_all_records"):
         items.append(
             _link(
-                _("Requirements Dashboard"), reverse("compliance:dashboard"), _is_active(request, apps=["compliance"])
+                _("Requirements Dashboard"),
+                reverse("compliance:dashboard"),
+                _is_active(
+                    request,
+                    url_names=[
+                        "dashboard",
+                        "dashboard_by_year",
+                        "roster",
+                        "roster_by_year",
+                        "family_detail",
+                        "family_detail_by_year",
+                    ],
+                ),
+            )
+        )
+    if leads_a_den(request.user):
+        items.append(
+            _link(
+                _("Den Leader Dashboard"),
+                reverse("compliance:den_dashboard"),
+                _is_active(request, url_names=["den_dashboard"]),
             )
         )
     return items

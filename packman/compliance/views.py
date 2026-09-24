@@ -1,14 +1,17 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Count, Prefetch, Q
+from django.http import Http404
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, TemplateView
 
+from packman.calendars.models import PackYear
 from packman.membership.mixins import ActiveMemberOrContributorTest
 from packman.membership.models import Family
 
-from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest
+from .mixins import PackYearContextMixin, UserIsOwnFamilyOrLeadershipTest, UserLeadsADenTest
 from .models import Requirement, RequirementRecord
-from .scouting_membership import summarize_active_cubs
-from .summaries import summarize_family
+from .scouting_membership import RENEWAL_WINDOW, summarize_active_cubs
+from .summaries import summarize_den, summarize_family
 
 
 class RequirementRollupMixin:
@@ -58,7 +61,7 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         context["den"] = self.request.GET.get("den", "")
         # Registrations are not tracked as a Requirement; they are read off the
         # Cubs themselves. See compliance.scouting_membership for why.
-        context["scouting_membership"] = summarize_active_cubs(year)
+        context["scouting_membership"] = summarize_active_cubs(year, warn_within=RENEWAL_WINDOW)
         return context
 
     def get_matrix(self, year, requirements):
@@ -129,6 +132,64 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         # A partly done family still has outstanding items, so it keeps
         # matching the outstanding filter.
         return any(cell and cell[wanted] for cell in cells)
+
+
+class DenComplianceDashboardView(UserLeadsADenTest, TemplateView):
+    """
+    Where a den leader sees who in their den still owes what.
+
+    The pack dashboard's counterpart, narrowed to the den(s) the viewer leads
+    this Pack Year and read only. There is no year switcher: a den leader is
+    looking after the Cubs in front of them, and last year's roster belongs to
+    whoever led it. It reads the same records through the same summaries the
+    family page uses, so a leader and a parent are never shown a different
+    answer.
+    """
+
+    template_name = "compliance/den_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = PackYear.objects.current()
+
+        # Set by UserLeadsADenTest, which guarantees at least one. Never
+        # widened by compliance.view_all_records -- see its docstring.
+        available = self.led_dens
+        den = self.get_den(available)
+
+        summary = summarize_den(den, year)
+        context.update(
+            {
+                "year": year,
+                "available_dens": available,
+                "den": den,
+                "summary": summary,
+                "rows": summary["rows"],
+                "requirements": summary["requirements"],
+                "outstanding": summary["outstanding"],
+                # Registrations are not tracked as a Requirement; they are read
+                # off the Cubs themselves. See compliance.scouting_membership.
+                "scouting_membership": summarize_active_cubs(year, cubs=summary["cubs"], warn_within=RENEWAL_WINDOW),
+            }
+        )
+        return context
+
+    def get_den(self, available):
+        """
+        The selected den: the first the viewer leads, or the one ``?den=`` names.
+
+        A ``den`` that is not on the viewer's own list is a 404 rather than a
+        quiet fall back to their first den: this query parameter is the whole
+        authorization boundary, and a silent redirect would make an attempt to
+        cross it look like it had worked.
+        """
+        wanted = self.request.GET.get("den")
+        if not wanted:
+            return available[0]
+        try:
+            return next(den for den in available if str(den.number) == wanted)
+        except StopIteration:
+            raise Http404(_("You do not lead that den."))
 
 
 class RequirementRosterView(PermissionRequiredMixin, PackYearContextMixin, RequirementRollupMixin, DetailView):

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% blocktranslate with number=den.number %}Den {{ number }} Requirements{% endblocktranslate %} | {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <h1 class="mb-0">
+        {% blocktranslate with number=den.number %}Den {{ number }} Requirements{% endblocktranslate %}
+      </h1>
+      <div class="text-body-secondary">{{ year }}</div>
+    </div>
+    {% if available_dens|length > 1 %}
+      {% include 'compliance/snippets/den_switcher.html' %}
+    {% endif %}
+  </div>
+
+  {% if outstanding %}
+    <div class="alert alert-warning">
+      {% blocktranslate count n=outstanding %}
+        {{ n }} item across the den still needs attention.
+      {% plural %}
+        {{ n }} items across the den still need attention.
+      {% endblocktranslate %}
+    </div>
+  {% else %}
+    <div class="alert alert-success">{% translate 'Everyone in the den is up to date.' %}</div>
+  {% endif %}
+
+  {% include 'compliance/snippets/scouting_membership_card.html' %}
+
+  <div class="card shadow-sm">
+    {% blocktranslate asvar den_summary with done=summary.settled total=summary.total %}{{ done }} of {{ total }} families square{% endblocktranslate %}
+    {% translate 'By family' as den_label %}
+    {% include 'compliance/snippets/collapsible_header.html' with target='by-family' label=den_label summary=den_summary expanded=True %}
+    <div class="card-body pb-0">
+      {% for requirement in requirements %}
+        {% comment %}
+          Unlinked: the roster behind the name is pack-wide and needs
+          compliance.view_all_records, which a den leader does not carry.
+        {% endcomment %}
+        {% include 'compliance/snippets/requirement_progress.html' with unlinked=True %}
+      {% empty %}
+        <p class="mb-3 text-body-secondary">
+          {% translate 'Nothing is being tracked for this den yet.' %}
+        </p>
+      {% endfor %}
+    </div>
+    <div id="by-family" class="collapse show">
+      <div class="card-body pt-0">
+        <div class="row row-cols-1 row-cols-lg-2 g-4">
+          {% for row in rows %}
+            <div class="col">
+              <div class="card h-100 {% if row.needs_attention %}border-warning{% endif %}">
+                <div class="card-header d-flex justify-content-between align-items-center gap-2">
+                  <span>{{ row.label }}</span>
+                  {% if row.needs_attention %}
+                    <span class="badge text-bg-warning">
+                      {% blocktranslate count n=row.needs_attention %}{{ n }} open{% plural %}{{ n }} open{% endblocktranslate %}
+                    </span>
+                  {% else %}
+                    <i class="fa-solid fa-circle-check text-success" title="{% translate 'Up to date' %}"></i>
+                  {% endif %}
+                </div>
+                <ul class="list-group list-group-flush">
+                  {% for group in row.groups %}
+                    <li class="list-group-item bg-body-tertiary fw-semibold">{{ group.subject }}</li>
+                    {% if group.membership %}
+                      <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                        <div>{% translate 'Scouting America Registration' %}</div>
+                        {% include 'compliance/snippets/membership_standing_badge.html' with standing=group.membership.standing required=group.expected %}
+                      </li>
+                    {% endif %}
+                    {% for record in group.records %}
+                      <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                        <div>{{ record.requirement.name }}</div>
+                        {% comment %}
+                          No `owed` here. This is a leader's worklist, where
+                          nothing recorded is the ordinary starting state and
+                          reads grey; the family's own page colours it amber
+                          because there it is their to-do.
+                        {% endcomment %}
+                        {% include 'compliance/snippets/status_badge.html' %}
+                      </li>
+                    {% empty %}
+                      {% if not group.membership %}
+                        <li class="list-group-item text-body-secondary">
+                          {% translate 'Nothing is being tracked this year.' %}
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col">
+              <p class="text-body-secondary">{% translate 'No Cubs were assigned to this den for this year.' %}</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-body-secondary mt-4">
+    <small>
+      {% translate 'Pack leadership keeps these records. If something looks wrong, please get in touch.' %}
+    </small>
+  </p>
+{% endblock %}

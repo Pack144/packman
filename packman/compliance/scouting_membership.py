@@ -67,21 +67,32 @@ def standing_for(cub, as_of=None, warn_within=None):
     return Standing.CURRENT
 
 
-def summarize_active_cubs(year=None, as_of=None):
+def summarize_active_cubs(year=None, as_of=None, cubs=None, warn_within=None):
     """
     Every active Cub's registration standing for a pack year, plus the counts.
 
     One query. ``as_of`` is the day the expiration dates are judged against and
     defaults to today, so switching the dashboard to an earlier pack year asks
     "are the Cubs who were active then registered now", not "were they then".
+
+    ``cubs`` narrows the population to a Cub queryset the caller has already
+    settled on -- a den, say. The standings and counts are worked out the same
+    way either side of that, so the den dashboard and the pack dashboard can
+    never tell a leader different things about the same Cub.
+
+    Pass ``warn_within`` to have registrations lapsing soon come back as
+    ``EXPIRING_SOON`` rather than ``CURRENT``, same as ``standing_for``.
     """
     year = year or PackYear.objects.current()
     as_of = as_of or timezone.localdate()
 
+    if cubs is None:
+        cubs = Scout.objects.active_in(year)
+
     rows = []
     counts = dict.fromkeys(Standing.values, 0)
-    for cub in Scout.objects.active_in(year).select_related("family").order_by("last_name", "first_name"):
-        standing = standing_for(cub, as_of)
+    for cub in cubs.select_related("family").order_by("last_name", "first_name"):
+        standing = standing_for(cub, as_of, warn_within)
         counts[standing] += 1
         rows.append({"cub": cub, "standing": standing})
 
@@ -89,8 +100,10 @@ def summarize_active_cubs(year=None, as_of=None):
         "rows": rows,
         "total": len(rows),
         "current": counts[Standing.CURRENT],
+        "expiring_soon": counts[Standing.EXPIRING_SOON],
         "expired": counts[Standing.EXPIRED],
         "missing": counts[Standing.MISSING],
         # What leadership has to chase: on file and lapsed, or never recorded.
+        # A registration still good but lapsing soon is not yet one of those.
         "outstanding": counts[Standing.EXPIRED] + counts[Standing.MISSING],
     }

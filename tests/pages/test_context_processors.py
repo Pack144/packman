@@ -3,8 +3,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 
-from packman.calendars.factories import PackYearFactory
+from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
 from packman.campaigns.models import Campaign
+from packman.committees.models import Committee, CommitteeMember
+from packman.dens.factories import DenFactory
 from packman.membership.factories import AdultFactory
 from packman.pages.context_processors import populate_navbar
 from packman.pages.models import ContentBlock, Page
@@ -116,6 +118,31 @@ class PopulateNavbarTests(TestCase):
 
         self.assertIn(first_ncc_page.title, ncc_labels)
         self.assertIn(second_ncc_page.title, ncc_labels)
+
+    def test_den_leader_dashboard_appears_only_for_a_den_leader(self):
+        leader = AdultFactory()
+        CommitteeMember.objects.create(
+            committee=Committee.objects.create(name="Den Leaders", slug="den-leaders", leadership=True),
+            member=leader,
+            year=CurrentPackYearFactory(),
+            den=DenFactory(number=3),
+            position=CommitteeMember.Position.DEN_LEADER,
+        )
+
+        leader_labels = [item["label"] for item in self._navbar(leader)["navbar_admin_dropdown"]["items"]]
+        parent_labels = [item["label"] for item in self._navbar(AdultFactory())["navbar_admin_dropdown"]["items"]]
+
+        self.assertIn("Den Leader Dashboard", leader_labels)
+        self.assertNotIn("Den Leader Dashboard", parent_labels)
+
+    def test_den_leader_dashboard_is_not_offered_on_view_all_records_alone(self):
+        leadership = AdultFactory()
+        leadership.user_permissions.add(Permission.objects.get(codename="view_all_records"))
+
+        labels = [item["label"] for item in self._navbar(leadership)["navbar_admin_dropdown"]["items"]]
+
+        self.assertIn("Requirements Dashboard", labels)
+        self.assertNotIn("Den Leader Dashboard", labels)
 
     @override_settings(PACK_NCC_LEADERBOARD_ENABLED=False)
     def test_ncc_dropdown_omits_leaderboard_when_disabled(self):

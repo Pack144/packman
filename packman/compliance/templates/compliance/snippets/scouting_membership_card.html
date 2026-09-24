@@ -22,6 +22,7 @@
            aria-valuemin="0"
            aria-valuemax="{{ scouting_membership.total }}">
         {% widthratio scouting_membership.current scouting_membership.total 100 as current_pct %}
+        {% widthratio scouting_membership.expiring_soon scouting_membership.total 100 as expiring_soon_pct %}
         {% widthratio scouting_membership.expired scouting_membership.total 100 as expired_pct %}
         {% widthratio scouting_membership.missing scouting_membership.total 100 as missing_pct %}
         {% if scouting_membership.current %}
@@ -29,6 +30,13 @@
                style="width: {{ current_pct }}%"
                title="{% blocktranslate count n=scouting_membership.current %}{{ n }} registered{% plural %}{{ n }} registered{% endblocktranslate %}">
             {{ scouting_membership.current }}
+          </div>
+        {% endif %}
+        {% if scouting_membership.expiring_soon %}
+          <div class="progress-bar bg-warning"
+               style="width: {{ expiring_soon_pct }}%"
+               title="{% blocktranslate count n=scouting_membership.expiring_soon %}{{ n }} expiring soon{% plural %}{{ n }} expiring soon{% endblocktranslate %}">
+            {{ scouting_membership.expiring_soon }}
           </div>
         {% endif %}
         {% if scouting_membership.expired %}
@@ -74,27 +82,13 @@
                 <a href="{% url 'membership:scout_detail' slug=row.cub.slug %}">{{ row.cub }}</a>
               </th>
               <td>
-                {% if row.standing == 'CURRENT' %}
-                  <span class="badge text-bg-success"
-                        title="{% translate 'Registered through the expiration date shown' %}">
-                    <i class="fa-solid fa-circle-check fa-fw"></i> {% translate 'Registered' %}
-                  </span>
-                {% elif row.standing == 'EXPIRED' %}
-                  <span class="badge text-bg-danger"
-                        title="{% translate 'On file, but the expiration date has passed' %}">
-                    <i class="fa-solid fa-circle-exclamation fa-fw"></i> {% translate 'Expired' %}
-                  </span>
-                {% else %}
-                  {% comment %}
-                    Grey here, amber on the family page. This is leadership's
-                    worklist, scanned as a whole, where nothing on file is the
-                    ordinary starting state; there it is one family's to-do.
-                  {% endcomment %}
-                  <span class="badge text-bg-secondary"
-                        title="{% translate 'No membership ID and expiration date recorded' %}">
-                    <i class="fa-regular fa-circle fa-fw"></i> {% translate 'Not on file' %}
-                  </span>
-                {% endif %}
+                {% comment %}
+                  required=False here (unlike the family page's badge): this is
+                  leadership's own worklist, scanned as a whole, where nothing
+                  on file is the ordinary starting state rather than one
+                  family's to-do, so it stays grey instead of amber.
+                {% endcomment %}
+                {% include 'compliance/snippets/membership_standing_badge.html' with standing=row.standing required=False %}
               </td>
               <td>{{ row.cub.scouting_membership_id|default:"" }}</td>
               <td class="text-body-secondary">{{ row.cub.scouting_membership_expires_on|default:"" }}</td>

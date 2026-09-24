@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
+from packman.committees.leadership import led_dens
 
 
 class UserIsOwnFamilyOrLeadershipTest(UserPassesTestMixin):
@@ -23,6 +24,25 @@ class UserIsOwnFamilyOrLeadershipTest(UserPassesTestMixin):
 
         self.object = self.get_object()
         return bool(user.family_id) and user.family_id == self.object.pk
+
+
+class UserLeadsADenTest(UserPassesTestMixin):
+    """
+    Only Adults leading a den this Pack Year may open the den dashboard.
+
+    compliance.view_all_records is deliberately not a way in. Packs commonly
+    attach it to the committee den leaders sit on, and honouring it here would
+    hand every den leader every den; pack leadership who hold it already have
+    the pack-wide dashboard.
+    """
+
+    permission_denied_message = _("You may only view the requirements of a den you lead.")
+
+    def test_func(self):
+        # Kept for the view, so the dens it offers are exactly the ones that
+        # let the viewer in, and the list is only fetched once.
+        self.led_dens = list(led_dens(self.request.user))
+        return bool(self.led_dens)
 
 
 class PackYearContextMixin:
