@@ -170,7 +170,6 @@ class RequirementStanding:
     """
 
     name: str
-    slug: str
     total: int
     complete: int
     waived: int
@@ -202,7 +201,6 @@ def _tally(groups):
     standings = [
         RequirementStanding(
             name=counts[pk]["requirement"].name,
-            slug=counts[pk]["requirement"].slug,
             total=counts[pk]["total"],
             complete=counts[pk]["complete"],
             waived=counts[pk]["waived"],
@@ -264,14 +262,12 @@ def summarize_den(den, year):
 
     requirements, outstanding = _tally(group for row in rows for group in row["groups"])
     return {
-        "den": den,
         "cubs": cubs,
         "rows": rows,
         "requirements": requirements,
         "outstanding": outstanding,
         "total": len(rows),
         "settled": sum(1 for row in rows if not row["needs_attention"]),
-        "year": year,
     }
 
 
