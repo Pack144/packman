@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from packman.calendars.models import PackYear
-from packman.committees.leadership import leads_a_den
+from packman.committees.leadership import led_dens
 
 
 class UserIsOwnFamilyOrLeadershipTest(UserPassesTestMixin):
@@ -39,7 +39,10 @@ class UserLeadsADenTest(UserPassesTestMixin):
     permission_denied_message = _("You may only view the requirements of a den you lead.")
 
     def test_func(self):
-        return leads_a_den(self.request.user)
+        # Kept for the view, so the dens it offers are exactly the ones that
+        # let the viewer in, and the list is only fetched once.
+        self.led_dens = list(led_dens(self.request.user))
+        return bool(self.led_dens)
 
 
 class PackYearContextMixin:

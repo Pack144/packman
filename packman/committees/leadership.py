@@ -81,41 +81,36 @@ def leads_or_serves_on(user, committees=()):
             or assignment.committee.name.strip().casefold() in wanted
             for assignment in assignments
         )
-    except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
+    except (PackYear.DoesNotExist, PackYear.MultipleObjectsReturned):
         return False
 
 
-def led_dens(user, year):
+def led_dens(user):
     """
-    The Dens an Adult leads in a given Pack Year, ordered by number.
+    The Dens an Adult leads this Pack Year, ordered by number.
 
     Keyed on the den assignment rather than on Position.DEN_LEADER: as
     assignment_title() explains, a pack may record the title through the
     committee's name and leave everyone at the default 'Member' position, and
     those rows still carry the den. An Akela who also carries a den is
     supporting that den, so they belong here too.
+
+    Only this year: the den dashboard shows the den a leader is running now,
+    and a leader from a past year has no business with this year's families.
+
+    Empty rather than raising, for the reason leads_or_serves_on() gives:
+    PackYear.objects.current() blows up when no year covers today or two
+    overlap, and this backs a check made on every page render.
     """
-    if not getattr(user, "is_authenticated", False):
+    if not getattr(user, "is_authenticated", False) or not hasattr(user, "committee_memberships"):
+        return Den.objects.none()
+    try:
+        year = PackYear.objects.current()
+    except (PackYear.DoesNotExist, PackYear.MultipleObjectsReturned):
         return Den.objects.none()
     return Den.objects.filter(leadership__member=user, leadership__year=year).distinct().order_by("number")
 
 
 def leads_a_den(user):
-    """
-    True when the Adult leads a den this Pack Year.
-
-    Only this year: the den dashboard shows the den a leader is running now,
-    not the ones they ran before, and a leader from a past year has no
-    business with this year's families.
-
-    Asked on every page render to build the navbar, so it fails closed and
-    never raises, for the reason leads_or_serves_on() gives:
-    PackYear.objects.current() blows up when no year covers today or two
-    overlap.
-    """
-    if not getattr(user, "is_authenticated", False) or not hasattr(user, "committee_memberships"):
-        return False
-    try:
-        return user.committee_memberships.filter(den__isnull=False, year=PackYear.objects.current()).exists()
-    except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
-        return False
+    """True when the Adult leads a den this Pack Year. Cheap enough for the navbar."""
+    return led_dens(user).exists()

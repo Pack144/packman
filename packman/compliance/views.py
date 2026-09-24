@@ -5,7 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, TemplateView
 
 from packman.calendars.models import PackYear
-from packman.committees.leadership import led_dens
 from packman.membership.mixins import ActiveMemberOrContributorTest
 from packman.membership.models import Family
 
@@ -153,8 +152,9 @@ class DenComplianceDashboardView(UserLeadsADenTest, TemplateView):
         context = super().get_context_data(**kwargs)
         year = PackYear.objects.current()
 
-        # Never widened by compliance.view_all_records -- see UserLeadsADenTest.
-        available = list(led_dens(self.request.user, year))
+        # Set by UserLeadsADenTest, which guarantees at least one. Never
+        # widened by compliance.view_all_records -- see its docstring.
+        available = self.led_dens
         den = self.get_den(available)
 
         summary = summarize_den(den, year)
