@@ -169,9 +169,7 @@ class DenComplianceDashboardView(UserLeadsADenTest, TemplateView):
                 "outstanding": summary["outstanding"],
                 # Registrations are not tracked as a Requirement; they are read
                 # off the Cubs themselves. See compliance.scouting_membership.
-                "scouting_membership": summarize_active_cubs(
-                    year, cubs=summary["cubs"], warn_within=RENEWAL_WINDOW
-                ),
+                "scouting_membership": summarize_active_cubs(year, cubs=summary["cubs"], warn_within=RENEWAL_WINDOW),
             }
         )
         return context
