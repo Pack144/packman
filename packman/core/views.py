@@ -13,7 +13,7 @@ def system_info(request):
     try:
         os_release = platform.freedesktop_os_release()
         os_name = os_release.get("PRETTY_NAME", platform.platform())
-    except AttributeError, OSError:
+    except (AttributeError, OSError):
         os_name = platform.platform()
 
     # Database

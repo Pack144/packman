@@ -128,7 +128,7 @@ class PackYear(models.Model):
         """
         try:
             return PackYear.objects.current()
-        except PackYear.DoesNotExist, PackYear.MultipleObjectsReturned:
+        except (PackYear.DoesNotExist, PackYear.MultipleObjectsReturned):
             return None
 
     @classmethod
