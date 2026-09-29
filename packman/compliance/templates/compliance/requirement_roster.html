@@ -45,7 +45,21 @@
         <tbody>
           {% for row in rows %}
             <tr>
-              <th scope="row" class="fw-normal">{{ row.subject }}</th>
+              <th scope="row" class="fw-normal">
+                {% comment %}
+                  Reversed from the requirement's audience rather than through
+                  Member.get_absolute_url, which asks hasattr(self, "adult") to
+                  work out which page a member belongs on -- a query per row.
+                  Every subject on one roster is the same kind.
+                {% endcomment %}
+                {% if requirement.applies_to == 'CUB' %}
+                  <a href="{% url 'membership:scout_detail' slug=row.subject.slug %}">{{ row.subject }}</a>
+                {% elif requirement.applies_to == 'ADULT' %}
+                  <a href="{% url 'membership:parent_detail' slug=row.subject.slug %}">{{ row.subject }}</a>
+                {% else %}
+                  <a href="{% url 'compliance:family_detail_by_year' pk=row.subject.pk year=years.viewing.year %}">{{ row.subject }}</a>
+                {% endif %}
+              </th>
               <td>{% include 'compliance/snippets/status_badge.html' with record=row.record %}</td>
               <td>{{ row.record.completed_on|default:"" }}</td>
               <td class="text-body-secondary">{{ row.record.recorded_by|default:"" }}</td>

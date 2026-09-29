@@ -648,6 +648,29 @@ class RosterContentTestCase(ComplianceViewTestCase):
 
         self.assertIn(self.parent.pk, [row["subject"].pk for row in response.context["rows"]])
 
+    def roster(self, requirement):
+        return self.client.get(reverse("compliance:roster", kwargs={"slug": requirement.slug}))
+
+    def test_a_cub_links_to_their_profile(self):
+        cub = self.family.children.first()
+
+        response = self.roster(CubRequirementFactory(slug="roster-link-cub"))
+
+        self.assertContains(response, reverse("membership:scout_detail", kwargs={"slug": cub.slug}))
+
+    def test_an_adult_links_to_their_profile(self):
+        response = self.roster(AdultRequirementFactory(slug="roster-link-adult"))
+
+        self.assertContains(response, reverse("membership:parent_detail", kwargs={"slug": self.parent.slug}))
+
+    def test_a_family_links_to_its_requirements_page(self):
+        response = self.roster(FamilyRequirementFactory(slug="roster-link-family"))
+
+        self.assertContains(
+            response,
+            reverse("compliance:family_detail_by_year", kwargs={"pk": self.family.pk, "year": self.year.year}),
+        )
+
     def test_not_started_stays_grey_here(self):
         """
         Amber is for the family page, where it means "you owe this". This is
