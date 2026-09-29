@@ -20,10 +20,13 @@ class RequirementRollupMixin:
 
     Follows the DenQuerySet.counting_members() idiom -- one annotate with
     filtered Counts -- rather than looping and querying per requirement.
+
+    Only records for people active in a den that year are counted; see
+    RequirementRecordQuerySet.in_dens().
     """
 
     def get_requirement_rollup(self, year):
-        in_year = Q(record__year=year)
+        in_year = Q(record__in=RequirementRecord.objects.in_dens(year).values("pk"))
 
         return (
             Requirement.objects.active()
@@ -78,7 +81,7 @@ class ComplianceDashboardView(PermissionRequiredMixin, PackYearContextMixin, Req
         """
         cells = {
             (row["family_id"], row["requirement_id"]): row
-            for row in RequirementRecord.objects.filter(year=year, family__isnull=False)
+            for row in RequirementRecord.objects.in_dens(year)
             .values("family_id", "requirement_id")
             .annotate(
                 total=Count("pk"),
