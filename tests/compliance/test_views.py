@@ -538,6 +538,76 @@ class DashboardContentTestCase(ComplianceViewTestCase):
         return len(captured.captured_queries)
 
 
+class DashboardActiveDenMembersTestCase(ComplianceViewTestCase):
+    """The dashboard counts only records for people active in a den this year."""
+
+    def setUp(self):
+        super().setUp()
+        self.login(self.leader)
+        self.cub_requirement = CubRequirementFactory(slug="den-members-cub")
+        self.adult_requirement = AdultRequirementFactory(slug="den-members-adult")
+        self.dues = FamilyRequirementFactory(slug="den-members-dues")
+        self.cub = self.family.children.first()
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.year, member=self.cub)
+
+    def rollup(self, requirement):
+        response = self.client.get(reverse("compliance:dashboard"))
+        return {r.slug: r for r in response.context["requirements"]}[requirement.slug], response
+
+    def cell(self, response, family, requirement):
+        requirements = [r.slug for r in response.context["requirements"]]
+        row = next(row for row in response.context["families"]["rows"] if row["family"] == family)
+        return row["cells"][requirements.index(requirement.slug)]
+
+    def test_a_withdrawn_cub_is_left_out(self):
+        sibling = ScoutFactory(family=self.family, status=ActiveScout.WITHDRAWN)
+        MembershipFactory(scout=sibling, den=self.cub.current_den, year_assigned=self.year)
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.year, member=sibling)
+
+        rollup, response = self.rollup(self.cub_requirement)
+
+        self.assertEqual(rollup.total, 1)
+        self.assertEqual(self.cell(response, self.family, self.cub_requirement)["total"], 1)
+
+    def test_a_household_with_no_active_cub_left_is_left_out(self):
+        gone = CompleteFamilyFactory(adults=1, inactive_children=1)
+        RequirementRecordFactory(requirement=self.dues, year=self.year, member=None, family=gone)
+        RequirementRecordFactory(requirement=self.adult_requirement, year=self.year, member=gone.adults.first())
+
+        dues, _ = self.rollup(self.dues)
+        adults, _ = self.rollup(self.adult_requirement)
+
+        self.assertEqual(dues.total, 0)
+        self.assertEqual(adults.total, 0)
+
+    def test_a_friend_of_the_pack_is_left_out(self):
+        friend = AdultFactory(role=Adult.CONTRIBUTOR, family=None)
+        RequirementRecordFactory(requirement=self.adult_requirement, year=self.year, member=friend)
+
+        rollup, _ = self.rollup(self.adult_requirement)
+
+        self.assertEqual(rollup.total, 0)
+
+    def test_an_active_cub_with_no_den_this_year_is_left_out(self):
+        undenned = ScoutFactory()
+        RequirementRecordFactory(requirement=self.cub_requirement, year=self.year, member=undenned)
+
+        rollup, _ = self.rollup(self.cub_requirement)
+
+        self.assertEqual(rollup.total, 1)
+
+    def test_parents_and_household_of_an_active_cub_are_counted(self):
+        RequirementRecordFactory(requirement=self.adult_requirement, year=self.year, member=self.parent)
+        RequirementRecordFactory(requirement=self.dues, year=self.year, member=None, family=self.family)
+
+        adults, response = self.rollup(self.adult_requirement)
+        dues, _ = self.rollup(self.dues)
+
+        self.assertEqual(adults.total, 1)
+        self.assertEqual(dues.total, 1)
+        self.assertEqual(self.cell(response, self.family, self.dues)["total"], 1)
+
+
 class RosterContentTestCase(ComplianceViewTestCase):
     def setUp(self):
         super().setUp()
