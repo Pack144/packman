@@ -52,6 +52,19 @@ class OrderListSmokeTest(TestCase):
         self.assertIn("Cubs", content)
         self.assertEqual(len(re.findall(r"<h1>\s*Orders\s*</h1>", content)), 1)
 
+    def test_order_rows_keep_detail_links_and_notes_tooltips(self):
+        order = Order.objects.get(seller=self.scout1)
+        order.notes = "Call before delivery"
+        order.save()
+        self.client.force_login(self.adult)
+
+        response = self.client.get("/ncc/")
+
+        self.assertContains(response, '<tr class="order-row">', count=2)
+        self.assertContains(response, f'href="{order.get_absolute_url()}"')
+        self.assertContains(response, 'title="Call before delivery"')
+        self.assertContains(response, 'data-bs-toggle="tooltip"')
+
     def test_order_list_filtered_by_seller(self):
         self.client.force_login(self.adult)
         resp = self.client.get(f"/ncc/?seller={self.scout1.pk}")
