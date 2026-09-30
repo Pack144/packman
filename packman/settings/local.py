@@ -15,7 +15,10 @@ SECRET_KEY = env(
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DJANGO_DEBUG", default=True)
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
+ALLOWED_HOSTS = env.list(
+    "DJANGO_ALLOWED_HOSTS",
+    default=["localhost", "127.0.0.1", "[::1]", "packman.localhost"],
+)
 PACK_NCC_LEADERBOARD_ENABLED = True
 
 

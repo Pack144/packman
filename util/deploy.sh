@@ -2,6 +2,7 @@
 
 # Exit immediately if a command exits with a non-zero status
 set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/lib/logging.sh"
 
 if [[ $# -ge 1 ]]; then
     APP_DIR="$1"
@@ -17,7 +18,7 @@ else
         CONFIRM="${CONFIRM,,}"  # Convert to lowercase
 
         if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
-            echo "Operation cancelled by user."
+            info "Operation cancelled by user."
             exit 3
         fi
     else
@@ -34,18 +35,18 @@ fi
 # Resolve to an absolute path
 APP_DIR="$(cd "$APP_DIR" && pwd -P)"
 
-echo "Deploying ($APP_DIR)"
+info "Deploying ($APP_DIR)"
 
 cd "$APP_DIR/packman"
 
-echo "Updating dependencies"
+info "Updating dependencies"
 UV_PROJECT_ENVIRONMENT="$APP_DIR/env" uv sync --group production
 
-echo "Running database migrations"
+info "Running database migrations"
 "$APP_DIR/env/bin/python" manage.py migrate
 
-echo "Collecting any new static files"
+info "Collecting any new static files"
 DJANGO_SETTINGS_MODULE=packman.settings.production "$APP_DIR/env/bin/python" manage.py collectstatic --no-input
 
-echo "Initiating server restart"
+info "Initiating server restart"
 touch "$APP_DIR/packman/packman/wsgi.py"

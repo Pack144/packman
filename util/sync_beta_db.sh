@@ -10,18 +10,12 @@
 # come from the invoking user's ~/.pgpass file (see `man pgpass`).
 
 set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/lib/logging.sh"
 
 SRC_USER="django"
 SRC_DB="django"
 TGT_USER="django-beta"
 TGT_DB="django-beta"
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-info()    { echo "  $*"; }
-success() { echo "✅ $*"; }
-warn()    { echo "⚠️  $*"; }
-error()   { echo "❌ $*" >&2; exit 1; }
-header()  { echo; echo "══════════════════════════════════════"; echo "  $*"; echo "══════════════════════════════════════"; }
 
 require_cmd() {
     command -v "$1" &>/dev/null || error "Required command '$1' not found on PATH"
