@@ -148,6 +148,24 @@ class Quota(models.Model):
         return str(self.den)
 
 
+class CampaignScout(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name="scouts")
+    scout = models.ForeignKey(Scout, on_delete=models.CASCADE, related_name="campaigns")
+    exempt = models.BooleanField(
+        _("exempt"),
+        default=False,
+        help_text=_("This Cub is not required to meet the campaign quota."),
+    )
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=("campaign", "scout"), name="unique_campaign_scout_settings")]
+        verbose_name = _("Campaign Scout Setting")
+        verbose_name_plural = _("Campaign Scout Settings")
+
+    def __str__(self):
+        return str(self.scout)
+
+
 class Category(models.Model):
     name = models.CharField(_("name"), max_length=100)
     description = models.TextField(_("description"), blank=True)

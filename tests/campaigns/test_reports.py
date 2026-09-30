@@ -12,6 +12,7 @@ from django.utils import timezone
 from packman.calendars.factories import PackYearFactory
 from packman.campaigns.models import (
     Campaign,
+    CampaignScout,
     Category,
     Customer,
     Order,
@@ -142,6 +143,31 @@ class CampaignReportTestCase(TestCase):
         self.assertFalse(row[6].value)
         self.assertEqual(row[7].value, decimal.Decimal("1100.00"))
         self.assertEqual(row[8].value, 0)
+
+    def test_exempt_scout_owes_sales_only_and_exemption_is_campaign_scoped(self):
+        member = MembershipFactory(year_assigned=self.current_year)
+        Quota.objects.create(campaign=self.current_campaign, den=member.den, target=decimal.Decimal("500.00"))
+        other_campaign = self.create_campaign(self.current_year, timezone.now() - timezone.timedelta(days=100))
+        Quota.objects.create(campaign=other_campaign, den=member.den, target=decimal.Decimal("500.00"))
+        CampaignScout.objects.create(campaign=self.current_campaign, scout=member.scout, exempt=True)
+        Order.objects.create(campaign=self.current_campaign, seller=member.scout, donation=decimal.Decimal("100.00"))
+        Order.objects.create(campaign=other_campaign, seller=member.scout, donation=decimal.Decimal("100.00"))
+
+        exempt_report = build_cub_report(
+            self.current_campaign,
+            Order.objects.filter(campaign=self.current_campaign),
+            include_campaign_fields=True,
+        )
+        regular_report = build_cub_report(
+            other_campaign,
+            Order.objects.filter(campaign=other_campaign),
+            include_campaign_fields=True,
+        )
+
+        self.assertEqual(exempt_report.rows[0][3].value, decimal.Decimal("100.00"))
+        self.assertEqual(exempt_report.rows[0][7].value, decimal.Decimal("100.00"))
+        self.assertEqual(regular_report.rows[0][3].value, decimal.Decimal("100.00"))
+        self.assertEqual(regular_report.rows[0][7].value, decimal.Decimal("360.00"))
 
     def test_cub_report_includes_ineligible_orders_in_operational_totals(self):
         member = MembershipFactory(year_assigned=self.current_year)

@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory
-from packman.campaigns.models import Campaign, Customer, Order, Quota
+from packman.campaigns.models import Campaign, CampaignScout, Customer, Order, Quota
 from packman.campaigns.templatetags.campaign_extras import quota_progress
 from packman.membership.factories import ActiveScoutFactory, AdultFactory, FamilyFactory
 
@@ -40,9 +40,9 @@ class QuotaProgressTagTest(TestCase):
             donation=donation,
         )
 
-    def _set_quota(self, target):
+    def _set_quota(self, target, campaign=None):
         membership = self.scout.den_memberships.get(year_assigned=self.pack_year)
-        Quota.objects.create(campaign=self.campaign, den=membership.den, target=target)
+        Quota.objects.create(campaign=campaign or self.campaign, den=membership.den, target=target)
 
     def _current_total(self):
         products_total = self.scout.orders.current_campaign().products_total()["total"]
@@ -69,6 +69,31 @@ class QuotaProgressTagTest(TestCase):
         # The whole bar should still be colored (the quota tier's color, at
         # reduced opacity) rather than left blank.
         self.assertAlmostEqual(self._total_pct(progress), 100, places=1)
+
+    def test_exempt_scout_starts_at_bronze_without_quota_and_exemption_is_campaign_scoped(self):
+        CampaignScout.objects.create(campaign=self.campaign, scout=self.scout, exempt=True)
+
+        exempt_progress = quota_progress(self.scout, self.campaign)
+
+        self.assertEqual(exempt_progress["next_tier_label"], "Bronze Medal: $1,000")
+        self.assertEqual(exempt_progress["progress_text"], "Working on Bronze!")
+        self.assertEqual(exempt_progress["total"], Decimal("0.00"))
+        self.assertEqual([segment["color"] for segment in exempt_progress["segments"]], ["#977547"])
+
+        other_campaign = Campaign.objects.create(
+            year=self.pack_year,
+            ordering_opens=self.campaign.ordering_opens + timezone.timedelta(days=1),
+            ordering_closes=self.campaign.ordering_closes + timezone.timedelta(days=1),
+            delivery_available=self.campaign.delivery_available + timezone.timedelta(days=1),
+            prize_window_opens=self.campaign.prize_window_opens + timezone.timedelta(days=1),
+            prize_window_closes=self.campaign.prize_window_closes + timezone.timedelta(days=1),
+        )
+        self._set_quota(Decimal("550"), campaign=other_campaign)
+
+        other_progress = quota_progress(self.scout, other_campaign)
+
+        self.assertEqual(other_progress["next_tier_label"], "Quota: $550.00")
+        self.assertEqual(other_progress["progress_text"], "Working on making Quota!")
 
     def test_award_ineligible_orders_do_not_advance_progress(self):
         self._set_quota(Decimal("550"))

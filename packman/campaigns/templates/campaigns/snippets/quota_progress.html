@@ -1,7 +1,7 @@
 {% load campaign_extras humanize i18n %}
 
-<h2>{{ scout.short_name }}</h2>
 {% quota_progress scout campaigns.viewing as progress %}
+<h2>{{ scout.short_name }}{% if progress.exempt %} <small class="text-body-secondary">({% translate 'Quota Exempt' %})</small>{% endif %}</h2>
 <div class="d-flex justify-content-between">
   <strong>{{ progress.progress_text }}</strong>
   <strong>{{ progress.next_tier_label }}</strong>

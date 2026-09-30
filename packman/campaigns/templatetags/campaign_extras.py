@@ -18,17 +18,19 @@ def quota_progress(scout, campaign):
     segment and the remainder of the current tier rendered in that tier's
     color at reduced opacity, so the bar is always entirely filled.
 
-    Requires the scout to have had a den membership, with a quota
-    configured for that den, during the campaign's pack year; raises
-    `Membership.DoesNotExist` or `Quota.DoesNotExist` otherwise.
+    Non-exempt scouts must have had a den membership, with a quota configured
+    for that den, during the campaign's pack year. Exempt scouts start at the
+    Bronze milestone and do not need a quota.
 
     Returns a dict with the `next_tier_label` text for the tier heading, a
     `progress_text` string describing the milestone just reached, and a
     `segments` list (each a `{"pct", "color"}` dict, optionally with
     `"opacity"`) ready to be looped over to render the stacked bar.
     """
-    den = scout.den_memberships.get(year_assigned=campaign.year).den
-    quota = den.quotas.get(campaign=campaign).target
+    exempt = campaign.scouts.filter(scout=scout, exempt=True).exists()
+    if not exempt:
+        den = scout.den_memberships.get(year_assigned=campaign.year).den
+        quota = den.quotas.get(campaign=campaign).target
 
     # Award progress excludes explicitly ineligible orders, which still count in operational reports.
     eligible_orders = scout.orders.filter(campaign=campaign).award_eligible()
@@ -39,39 +41,45 @@ def quota_progress(scout, campaign):
     # Each tier's incentive milestone (in dollars), the color used to
     # represent it in the bar, the label for the tier heading, and the
     # celebratory text shown (left-justified, opposite the label) once the
-    # *previous* tier has just been passed to reach this one. The scout's
-    # den quota is itself the first tier.
+    # *previous* tier has just been passed to reach this one. A non-exempt
+    # scout's den quota is itself the first tier.
     # TODO: don't hard code these incentive milestones.
-    tiers = [
-        {
-            "name": "quota",
-            "milestone": quota,
-            "color": "var(--bs-primary)",
-            "label": _("Quota: $%(quota)s") % {"quota": quota},
-            "progress_text": _("Working on making Quota!"),
-        },
-        {
-            "name": "bronze",
-            "milestone": Decimal("1000"),
-            "color": "#977547",
-            "label": _("Bronze Medal: $1,000"),
-            "progress_text": _("Quota Met!"),
-        },
-        {
-            "name": "silver",
-            "milestone": Decimal("1500"),
-            "color": "#D6D6D6",
-            "label": _("Silver Medal: $1,500"),
-            "progress_text": _("Bronze Medal Earned!"),
-        },
-        {
-            "name": "gold",
-            "milestone": Decimal("2000"),
-            "color": "#e9af4e",
-            "label": _("Gold Medal: $2,000"),
-            "progress_text": _("Silver Medal Earned!"),
-        },
-    ]
+    tiers = []
+    if not exempt:
+        tiers.append(
+            {
+                "name": "quota",
+                "milestone": quota,
+                "color": "var(--bs-primary)",
+                "label": _("Quota: $%(quota)s") % {"quota": quota},
+                "progress_text": _("Working on making Quota!"),
+            }
+        )
+    tiers.extend(
+        [
+            {
+                "name": "bronze",
+                "milestone": Decimal("1000"),
+                "color": "#977547",
+                "label": _("Bronze Medal: $1,000"),
+                "progress_text": _("Working on Bronze!") if exempt else _("Quota Met!"),
+            },
+            {
+                "name": "silver",
+                "milestone": Decimal("1500"),
+                "color": "#D6D6D6",
+                "label": _("Silver Medal: $1,500"),
+                "progress_text": _("Bronze Medal Earned!"),
+            },
+            {
+                "name": "gold",
+                "milestone": Decimal("2000"),
+                "color": "#e9af4e",
+                "label": _("Gold Medal: $2,000"),
+                "progress_text": _("Silver Medal Earned!"),
+            },
+        ]
+    )
 
     # Walk the tiers in order, tracking each one's dollar range (floor to
     # ceiling), building up `segments` as we go. Milestones are assumed to
@@ -129,6 +137,7 @@ def quota_progress(scout, campaign):
     ]
 
     return {
+        "exempt": exempt,
         "next_tier_label": next_tier_label,
         "progress_text": progress_text,
         "segments": segments,

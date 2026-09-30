@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from packman.calendars.factories import PackYearFactory
-from packman.campaigns.models import Campaign, Category, Order, Prize, Product
+from packman.campaigns.models import Campaign, CampaignScout, Category, Order, Prize, Product
 from packman.membership.factories import ScoutFactory
 
 User = get_user_model()
@@ -139,6 +139,14 @@ class CampaignFilterTestCase(TestCase):
             prize_point_response.content.index(b'class="object-tools"'),
             prize_point_response.content.index(b"Prize Points define"),
         )
+
+    def test_campaign_admin_shows_scout_settings(self):
+        CampaignScout.objects.create(campaign=self.current_campaign, scout=self.current_order.seller, exempt=True)
+
+        response = self.client.get(reverse("admin:campaigns_campaign_change", args=[self.current_campaign.pk]))
+
+        self.assertContains(response, "This Cub is not required to meet the campaign quota.")
+        self.assertContains(response, "exempt")
 
 
 class CopyToLatestCampaignAdminActionTestCase(TestCase):
