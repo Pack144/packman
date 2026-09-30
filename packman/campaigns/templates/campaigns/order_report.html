@@ -10,7 +10,7 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="mb-0">{% translate 'NCC Dashboard' %}</h1>
     <div class="d-flex flex-wrap align-items-center gap-2">
-      {% if selected_tab == 'sales' or selected_tab == 'products' or selected_tab == 'cubs' %}
+      {% if selected_tab == 'sales' or selected_tab == 'products' or selected_tab == 'cubs' or selected_tab == 'dens' %}
         {% include "campaigns/snippets/campaign_week_selector.html" with control_id="report-week" %}
       {% endif %}
       {% include "campaigns/snippets/campaign_selector.html" with control_id="report-campaign" root_url_name="campaigns:order_report" campaign_url_name="campaigns:order_report_by_campaign" %}
@@ -26,6 +26,8 @@
         {% include "campaigns/snippets/tab_nav_link.html" with slug="products" label=products_tab_label selected_tab=selected_tab only %}
         {% translate "Cubs" as cubs_tab_label %}
         {% include "campaigns/snippets/tab_nav_link.html" with slug="cubs" label=cubs_tab_label selected_tab=selected_tab only %}
+        {% translate "Dens" as dens_tab_label %}
+        {% include "campaigns/snippets/tab_nav_link.html" with slug="dens" label=dens_tab_label selected_tab=selected_tab only %}
         {% translate "Prize Selections" as prize_selections_tab_label %}
         {% include "campaigns/snippets/tab_nav_link.html" with slug="prize-selections" label=prize_selections_tab_label selected_tab=selected_tab only %}
         {% translate "Pack Night" as packing_night_tab_label %}
@@ -99,6 +101,27 @@
           </div>
           {% translate "Sales by Cub" as cubs_caption %}
           {% include "campaigns/snippets/tabular_report.html" with report=cub_report caption=cubs_caption table_id="cubs_report_table" sortable=True only %}
+        </div>
+      {% elif selected_tab == 'dens' %}
+        <div>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="mb-0">
+              {% if selected_week %}
+                {% blocktranslate with number=selected_week.number %}Dens — Week {{ number }}{% endblocktranslate %}
+              {% else %}
+                {% translate "Dens — Full Campaign" %}
+              {% endif %}
+            </h2>
+            <button type="button"
+                    class="btn btn-primary"
+                    data-csv-download
+                    data-csv-table-id="dens_report_table"
+                    data-csv-filename="{{ campaigns.viewing.year.year }}-dens-{% if selected_week %}week-{{ selected_week.number }}{% else %}full-campaign{% endif %}.csv">
+              <i class="fas fa-file-csv" aria-hidden="true"></i> {% translate "Download CSV" %}
+            </button>
+          </div>
+          {% translate "Sales by Den" as dens_caption %}
+          {% include "campaigns/snippets/tabular_report.html" with report=den_report caption=dens_caption table_id="dens_report_table" sortable=True only %}
         </div>
       {% elif selected_tab == 'prize-selections' %}
         <div>
@@ -218,7 +241,7 @@
       );
     </script>
   {% endif %}
-  {% if selected_tab == 'products' or selected_tab == 'cubs' or selected_tab == 'prize-selections' %}
+  {% if selected_tab == 'products' or selected_tab == 'cubs' or selected_tab == 'dens' or selected_tab == 'prize-selections' %}
     <script src="{% static 'js/sortable_rows.js' %}"></script>
     <script src="{% static 'js/report_tables.js' %}"></script>
   {% endif %}
