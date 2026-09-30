@@ -292,6 +292,10 @@ table.sortable th[aria-sort="ascending"] span::after,
 
 /* Orders table: hide the header row on narrow screens where each order's
    customer/date/total already collapse into a single stacked cell. */
+.order-table .order-row {
+    cursor: pointer;
+}
+
 .order-table thead {
     display: none;
 }

@@ -131,7 +131,7 @@
       </thead>
       <tbody id="order_rows">
         {% for order in order_list %}
-          <tr>
+          <tr class="order-row">
             <td data-sort-key="customer" data-sort-value="{{ order.customer.name }}">
               <h5 class="mb-0">
                 <a href="{{ order.get_absolute_url }}" class="link-body-emphasis text-decoration-none">
@@ -197,4 +197,14 @@
   {{ block.super }}
   <script src="{% static 'js/sortable_rows.js' %}"></script>
   <script src="{% static 'js/show_tooltips.js' %}"></script>
+  <script>
+    document.querySelector('#order_rows').addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey ||
+          event.shiftKey || event.altKey || event.target.closest('a, button, [data-bs-toggle="tooltip"]') ||
+          window.getSelection().toString()) return
+
+      const row = event.target.closest('.order-row')
+      if (row) window.location.assign(row.querySelector('a[href]').href)
+    })
+  </script>
 {% endblock js %}

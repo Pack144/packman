@@ -18,30 +18,29 @@
 
 ## Local development
 
-- Use `./util/start_local.sh` as the canonical way to start the development
-  server. It prepares `.env`, reuses dependencies from the main checkout when
-  running in a worktree, syncs Python and npm dependencies, applies pending
-  migrations, and starts Django on port 8000.
+- Use `./util/packman.sh dev start` as the canonical way to start the
+  development server. It checks and installs Python and npm dependencies as
+  needed, applies pending migrations, and starts Django on port 8000 by default.
+  Use `./util/packman.sh dev stop` to stop this checkout's server.
 - For browser or end-to-end testing, find the local test account email and
-  password in `.env` under `SYNC_RESET_PW_EMAIL` and `SYNC_RESET_PW`. In a
-  fresh worktree, `.env` might not exist yet; look for it in the main/base
-  workspace instead. `./util/start_local.sh` copies that file into the
-  worktree on its first run but does not resync it afterward. Treat these
-  values as credentials: use them for local login only, and never copy them
-  into tracked files, logs, or responses.
+  password in `.env` under `SYNC_RESET_PW_EMAIL` and `SYNC_RESET_PW`.
 - When a task needs the running site or visual verification, start
-  `./util/start_local.sh --detach` directly rather than asking the user to run
-  it. Confirm the site is reachable before relying on it.
-- If another Packman server from this checkout occupies port 8000, ask whether
-  to rerun with `--kill-existing` or use `--port <port>`. If an unrelated
-  process owns the port, ask whether to terminate the exact PID outside the
-  script or use another port. Never terminate a process or use
-  `--kill-existing` without approval. Use `--no-install` or `--no-migrate` only
-  when intentionally skipping those setup steps.
+  `./util/packman.sh dev start --detach` directly rather than asking the user
+  to run it. Confirm the site is reachable before relying on it. Caddy is
+  optional; without it, use the direct `http://localhost:8000` URL.
 - Do not duplicate the script's environment, dependency, or migration setup
   with a sequence of ad hoc commands unless the script fails and the failure is
   being diagnosed.
 - The Django admin is mounted at `/administration/`, not `/admin/`.
+
+## Beta deployment
+
+- `gh` is installed and authenticated. Deploy the pushed branch with
+  `gh workflow run deploy.yml --ref <branch> -f target=beta -f reset_db=false`.
+- Do not reset beta's database unless explicitly requested. Do not spend time
+  checking for competing beta deployments by default.
+- Use the run URL returned by `gh`, then verify completion with
+  `gh run watch <run-id> --exit-status`. Report the run URL and result.
 
 ## Implementation conventions
 
