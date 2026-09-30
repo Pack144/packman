@@ -2,20 +2,20 @@
 """
 reset_local_password.py — Reset a local user's password.
 
-Called by util/sync_local_data.sh after syncing a beta/production database
+Called by util/lib/sync_local_data.sh after syncing a beta/production database
 backup, so there's a known login for local development — e.g. for Copilot
 to use. Reads SYNC_RESET_PW_EMAIL/SYNC_RESET_PW/DATABASE_URL
 from .env; does nothing if the email/password aren't set.
 
 Usage:
-    uv run python util/reset_local_password.py [-h]
+    uv run python util/lib/reset_local_password.py [-h]
 """
 
 import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent
 
 
 def error(msg):

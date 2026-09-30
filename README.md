@@ -70,34 +70,65 @@ Configure your database, secret key, email, etc. in `.env`.
 Either start with a blank database:
 
 ```bash
+mkdir -p .local
 uv run python manage.py migrate
 ```
 
-Or pull a fresh copy of the beta/production database and media files instead:
+Or pull a fresh copy of the beta database and configured media files instead:
 
 ```bash
-./util/sync_local_data.sh
+./util/packman.sh dev sync
 ```
 
-### Create a superuser
+Use `./util/packman.sh dev sync --sync-env prod` to sync from production.
 
-```bash
-uv run python manage.py createsuperuser
+### Optional Caddy setup
+
+Install and start Caddy on macOS when you want to use the `packman.localhost` route:
+
+```sh
+brew install caddy
+```
+
+Create the Homebrew Caddy configuration directory and seed the basic config.
+
+```sh
+mkdir -p "$(brew --prefix)/etc"
+cat >"$(brew --prefix)/etc/Caddyfile" <<'EOF'
+{
+	admin 127.0.0.1:2019
+	auto_https off
+}
+
+http://localhost {
+	respond "Caddy is running" 200
+}
+EOF
+```
+
+Start Caddy as a Homebrew service so `launchd` restarts it after login or reboot:
+
+```sh
+brew services start caddy
 ```
 
 ### Run the development server
 
-```bash
-uv run python manage.py runserver
-```
-
-Or use the provided helper script which handles migrations and static assets automatically:
 
 ```bash
-./util/start_local.sh
+./util/packman.sh dev start
 ```
 
-You should now be able to access the development server at http://localhost:8000.
+
+Stop the server with:
+
+```bash
+./util/packman.sh dev stop
+```
+
+If Caddy is installed and its background service is running, open
+`http://packman.localhost`. Without Caddy, the launcher prints the direct
+`http://localhost:PORT` URL.
 
 
 ## Requirements
@@ -105,8 +136,6 @@ You should now be able to access the development server at http://localhost:8000
 * [Python 3.14](https://python.org)
 * [Django 5.2](https://djangoproject.com)
 * [npm](https://www.npmjs.com/)
-
-
 
 
 ## Running tests

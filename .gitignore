@@ -14,8 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -55,6 +53,8 @@ coverage.xml
 *.log
 local_settings.py
 db.sqlite3
+/.run/
+/.local/
 media/
 
 # Flask stuff:
