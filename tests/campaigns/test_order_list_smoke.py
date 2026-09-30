@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
-from packman.campaigns.models import Campaign, Customer, Order, Quota
+from packman.campaigns.models import Campaign, CampaignScout, Customer, Order, Quota
 from packman.dens.models import Membership
 from packman.membership.factories import ActiveScoutFactory, AdultFactory, FamilyFactory
 
@@ -51,6 +51,19 @@ class OrderListSmokeTest(TestCase):
         content = resp.content.decode()
         self.assertIn("Cubs", content)
         self.assertEqual(len(re.findall(r"<h1>\s*Orders\s*</h1>", content)), 1)
+
+    def test_order_list_marks_exempt_scout_after_name(self):
+        CampaignScout.objects.create(campaign=self.campaign, scout=self.scout1, exempt=True)
+        self.client.force_login(self.adult)
+
+        response = self.client.get("/ncc/")
+
+        self.assertContains(
+            response,
+            f'<h2>{self.scout1.short_name} <small class="text-body-secondary">(Quota Exempt)</small></h2>',
+            html=True,
+        )
+        self.assertContains(response, f"<h2>{self.scout2.short_name}</h2>", html=True)
 
     def test_order_rows_keep_detail_links_and_notes_tooltips(self):
         order = Order.objects.get(seller=self.scout1)

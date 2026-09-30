@@ -1,11 +1,11 @@
 import decimal
 from dataclasses import dataclass
 
-from django.db.models import Count, DecimalField, F, Prefetch, Q, Sum, Value
+from django.db.models import Count, DecimalField, Exists, F, OuterRef, Prefetch, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils.translation import gettext as _
 
-from packman.campaigns.models import PrizePoint, PrizeSelection
+from packman.campaigns.models import CampaignScout, PrizePoint, PrizeSelection
 from packman.dens.models import Membership
 
 
@@ -86,6 +86,12 @@ def _order_metrics_by_seller(orders):
 
 def build_cub_report(campaign, orders, include_campaign_fields):
     memberships = Membership.objects.filter(year_assigned=campaign.year).select_related("scout", "den")
+    if include_campaign_fields:
+        memberships = memberships.annotate(
+            campaign_exempt=Exists(
+                CampaignScout.objects.filter(campaign=campaign, scout_id=OuterRef("scout_id"), exempt=True)
+            )
+        )
     order_metrics = _order_metrics_by_seller(orders)
     quotas = dict(campaign.quota_set.values_list("den_id", "target")) if include_campaign_fields else {}
     points_spent = (
@@ -132,7 +138,9 @@ def build_cub_report(campaign, orders, include_campaign_fields):
             spent = points_spent.get(membership.scout_id, 0)
             achieved = eligible_total >= quota
 
-            if total < quota:
+            if membership.campaign_exempt:
+                amount_owed = total
+            elif total < quota:
                 amount_owed = total + (quota - total) * decimal.Decimal("0.65")
             else:
                 amount_owed = total

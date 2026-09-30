@@ -7,6 +7,7 @@ from packman.calendars.models import PackYear
 
 from .models import (
     Campaign,
+    CampaignScout,
     Category,
     Customer,
     Order,
@@ -132,12 +133,18 @@ class QuotaInline(admin.TabularInline):
     extra = 0
 
 
+class CampaignScoutInline(admin.TabularInline):
+    model = CampaignScout
+    autocomplete_fields = ("scout",)
+    extra = 0
+
+
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
     actions = ["duplicate_campaign"]
     change_form_template = "admin/campaigns/campaign/change_form.html"
     change_list_template = "admin/campaigns/campaign/change_list.html"
-    inlines = [QuotaInline]
+    inlines = [QuotaInline, CampaignScoutInline]
     list_display = [
         "year",
         "ordering_opens",

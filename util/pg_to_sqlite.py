@@ -430,6 +430,31 @@ def pg_value_to_sqlite(value: str) -> str:
     return value
 
 
+def parse_key_constraint(statement: str):
+    """Return a primary-key or unique constraint from a pg_dump ALTER TABLE."""
+    match = re.search(
+        r'ALTER TABLE\s+(?:ONLY\s+)?(?:(?:"[^"]+"|[\w$]+)\.)?'
+        r'(?P<table>"[^"]+"|[\w$]+)\s+ADD CONSTRAINT\s+'
+        r'(?P<name>"[^"]+"|[\w$]+)\s+(?P<kind>PRIMARY\s+KEY|UNIQUE)\s*'
+        r"\((?P<columns>[^)]+)\)",
+        statement,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return None
+
+    def unquote(identifier):
+        identifier = identifier.strip()
+        return identifier[1:-1].replace('""', '"') if identifier.startswith('"') else identifier
+
+    return {
+        "table": unquote(match.group("table")),
+        "name": unquote(match.group("name")),
+        "kind": re.sub(r"\s+", " ", match.group("kind")).upper(),
+        "columns": tuple(unquote(column.split()[0]) for column in match.group("columns").split(",")),
+    }
+
+
 # ── SQL dump parser / converter ───────────────────────────────────────────────
 
 
@@ -485,9 +510,20 @@ class PgDumpConverter:
             return line
         return next(self.lines, None)
 
+    @staticmethod
+    def _parse_alter_table_statement(statement):
+        key_constraint = parse_key_constraint(statement)
+        if key_constraint:
+            return "unique_constraint", key_constraint
+        if re.search(r"\bADD\s+CONSTRAINT\b", statement, flags=re.IGNORECASE):
+            return "constraint", statement
+        return None
+
     def parse(self):
         buffer = []
         in_statement = False
+        alter_buffer = []
+        in_alter_statement = False
         copy_table = None
         copy_cols = []
         copy_rows = []
@@ -541,6 +577,18 @@ class PgDumpConverter:
                     in_statement = False
                 continue
 
+            # ── Collect ALTER TABLE statements, including split constraints ──
+            if in_alter_statement:
+                alter_buffer.append(line)
+                if stripped.endswith(";"):
+                    statement = " ".join(part.strip() for part in alter_buffer)
+                    event = self._parse_alter_table_statement(statement)
+                    if event:
+                        yield event
+                    alter_buffer = []
+                    in_alter_statement = False
+                continue
+
             # ── CREATE INDEX ───────────────────────────────────────────────
             if re.match(r"CREATE\s+(UNIQUE\s+)?INDEX\b", stripped, re.IGNORECASE):
                 idx = re.sub(r"\bpublic\.(\w+)", r"\1", stripped)
@@ -573,9 +621,15 @@ class PgDumpConverter:
                 yield ("index", idx)
                 continue
 
-            # ── ADD CONSTRAINT (FK / UNIQUE / PK from ALTER TABLE) ─────────
-            if re.match(r"ALTER TABLE\b.*ADD CONSTRAINT\b", stripped, re.IGNORECASE):
-                yield ("constraint", stripped)  # logged but not applied
+            # ── ALTER TABLE constraints ────────────────────────────────────
+            if re.match(r"ALTER TABLE\b", stripped, re.IGNORECASE):
+                alter_buffer = [line]
+                if stripped.endswith(";"):
+                    event = self._parse_alter_table_statement(stripped)
+                    if event:
+                        yield event
+                else:
+                    in_alter_statement = True
                 continue
 
             # ── Everything else: skip ──────────────────────────────────────
@@ -630,6 +684,31 @@ class SQLiteWriter:
         except sqlite3.OperationalError as e:
             # Table might not exist (view, temp table, etc.) — skip gracefully
             warn(f"Insert into '{table}' failed: {e} — skipping {len(rows)} rows")
+
+    def add_unique_constraint(self, constraint: dict):
+        table = constraint["table"]
+        columns = constraint["columns"]
+
+        def quote(identifier):
+            return '"' + identifier.replace('"', '""') + '"'
+
+        table_info = self.conn.execute(f"PRAGMA table_info({quote(table)})").fetchall()
+        primary_key_columns = tuple(row[1] for row in sorted(table_info, key=lambda row: row[5]) if row[5])
+        if primary_key_columns == columns:
+            return
+
+        for index in self.conn.execute(f"PRAGMA index_list({quote(table)})").fetchall():
+            if not index[2]:
+                continue
+            indexed_columns = tuple(
+                row[2] for row in self.conn.execute(f"PRAGMA index_info({quote(index[1])})").fetchall()
+            )
+            if indexed_columns == columns:
+                return
+
+        index_name = f"{table}_{constraint['name']}_unique"
+        column_sql = ", ".join(quote(column) for column in columns)
+        self.execute(f"CREATE UNIQUE INDEX IF NOT EXISTS {quote(index_name)} " f"ON {quote(table)} ({column_sql})")
 
     def commit(self):
         self.conn.execute("PRAGMA foreign_keys=ON")
@@ -745,7 +824,7 @@ def main():
     info(f"Found {len(pks)} single-column primary key(s)")
 
     step("Parsing and converting dump…")
-    counts = {"create_table": 0, "insert": 0, "index": 0, "constraint": 0}
+    counts = {"create_table": 0, "insert": 0, "index": 0, "unique_constraint": 0, "constraint": 0}
 
     with open_dump(dump_path) as fh:
         converter = PgDumpConverter(fh, verbose=args.verbose, pks=pks)
@@ -758,8 +837,10 @@ def main():
                 writer.insert_rows(table, cols, rows)
             elif kind == "index":
                 writer.execute(payload)
-            # 'constraint' (FK / UNIQUE from ALTER TABLE) — logged, not applied
-            # SQLite enforces them via CREATE TABLE definitions instead
+            elif kind == "unique_constraint":
+                writer.add_unique_constraint(payload)
+            # Foreign-key constraints from ALTER TABLE cannot be added to an
+            # existing SQLite table; primary-key and unique constraints are indexes.
 
     writer.commit()
 
@@ -768,6 +849,7 @@ def main():
     info(f"  CREATE TABLE : {counts.get('create_table', 0)}")
     info(f"  COPY→INSERT  : {counts.get('insert', 0)}")
     info(f"  CREATE INDEX : {counts.get('index', 0)}")
+    info(f"  PK/UNIQUE    : {counts.get('unique_constraint', 0)}")
     writer.report()
 
     # ── Optional: run Django migrations ───────────────────────────────────

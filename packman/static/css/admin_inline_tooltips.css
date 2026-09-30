@@ -1,0 +1,23 @@
+.admin-inline-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: min(26rem, calc(100vw - 1rem));
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--hairline-color);
+  border-radius: 4px;
+  background: var(--body-bg);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
+  color: var(--body-fg);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.help-tooltip[tabindex="0"] {
+  cursor: help;
+}
+
+.help-tooltip[tabindex="0"]:focus-visible {
+  outline: 2px solid var(--link-fg);
+  outline-offset: 2px;
+}
