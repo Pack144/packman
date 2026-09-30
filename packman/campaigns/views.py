@@ -265,7 +265,6 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
 
         now = timezone.now()
         campaign_start_at = timezone.localtime(viewing_campaign.ordering_opens)
-        campaign_end_at = timezone.localtime(viewing_campaign.ordering_closes)
 
         # 2. Round up so a campaign ending partway through a week still gets a complete final window.
         campaign_week_count = viewing_campaign.get_ordering_week_count()
@@ -280,19 +279,6 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
         # 3. A campaign remains active through midnight after its final weekly window ends.
         viewing_active_campaign = campaign_start_at <= now < leaderboard_reveal_at
 
-        # 4. During the final stretch, hide results to avoid spoiling the winner announcement surprise.
-        if viewing_active_campaign and now >= campaign_end_at - timezone.timedelta(days=5):
-            context.update(
-                {
-                    "hide_leaderboard": True,
-                    "hide_week_selector": True,
-                    "now": now,
-                    "campaign_end_at": campaign_end_at,
-                    "leaderboard_reveal_at": leaderboard_reveal_at,
-                }
-            )
-            return context
-
         # 5-6. Build every historical week, or only the active campaign weeks reached so far.
         if viewing_active_campaign:
             campaign_weeks = viewing_campaign.get_ordering_week_windows(
@@ -305,21 +291,6 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
         context.update(self.get_week_context(campaign_weeks))
         selected_week = context["selected_week"]
         context["selected_tab"] = self.get_selected_tab()
-
-        # 7.2. A selected active week shows countdowns until midnight after its window ends.
-        if selected_week and viewing_active_campaign:
-            week_reveal_at = timezone.make_aware(
-                datetime.combine(selected_week["end_at"].date() + timezone.timedelta(days=1), time.min)
-            )
-            if now < week_reveal_at:
-                context.update(
-                    {
-                        "hide_leaderboard": True,
-                        "now": now,
-                        "week_reveal_at": week_reveal_at,
-                    }
-                )
-                return context
 
         # 7.3. Use all campaign orders unless a visible weekly window was selected.
         # Leaderboard rankings exclude explicitly ineligible orders, unlike operational reports.
