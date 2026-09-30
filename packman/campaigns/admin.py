@@ -138,12 +138,6 @@ class CampaignScoutInline(admin.TabularInline):
     autocomplete_fields = ("scout",)
     extra = 0
 
-    def formfield_for_dbfield(self, db_field, request, **kwargs):
-        formfield = super().formfield_for_dbfield(db_field, request, **kwargs)
-        if db_field.name == "exempt" and formfield:
-            formfield.widget.attrs["title"] = db_field.help_text
-        return formfield
-
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):

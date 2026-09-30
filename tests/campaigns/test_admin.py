@@ -147,11 +147,10 @@ class CampaignFilterTestCase(TestCase):
 
         self.assertContains(response, "This Cub is not required to meet the campaign quota.")
         self.assertContains(response, "exempt")
-        self.assertRegex(
-            response.content.decode(),
-            r'<input(?=[^>]*type="checkbox")'
-            r'(?=[^>]*title="This Cub is not required to meet the campaign quota\.")[^>]*>',
-        )
+        self.assertContains(response, 'class="help help-tooltip"')
+        self.assertContains(response, 'title="This Cub is not required to meet the campaign quota."')
+        self.assertContains(response, "admin_inline_tooltips.js")
+        self.assertContains(response, "admin_inline_tooltips.css")
 
 
 class CopyToLatestCampaignAdminActionTestCase(TestCase):
