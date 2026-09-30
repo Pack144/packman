@@ -23,7 +23,7 @@ from packman.campaigns.models import (
     Product,
     Quota,
 )
-from packman.campaigns.report_data import build_cub_report
+from packman.campaigns.report_data import build_cub_report, build_den_report, format_weight
 from packman.dens.factories import DenFactory, MembershipFactory
 from packman.membership.factories import AdultFactory, CompleteFamilyFactory, ScoutFactory
 
@@ -186,6 +186,96 @@ class CampaignReportTestCase(TestCase):
 
         self.assertEqual([cell.value for cell in report.rows[0][2:]], [1, decimal.Decimal("25"), decimal.Decimal("0")])
 
+    def test_den_report_totals_include_exempt_members_but_averages_do_not(self):
+        den = DenFactory()
+        exempt_member = MembershipFactory(den=den, year_assigned=self.current_year)
+        member = MembershipFactory(den=den, year_assigned=self.current_year)
+        empty_den = DenFactory(number=999)
+        MembershipFactory(den=empty_den, year_assigned=self.current_year)
+        category = Category.objects.create(name="Popcorn")
+        pound_product = Product.objects.create(
+            name="Pound Product",
+            category=category,
+            campaign=self.current_campaign,
+            price=decimal.Decimal("5.00"),
+            weight=decimal.Decimal("2.0"),
+            unit=Product.WeightUnit.POUND,
+        )
+        ounce_product = Product.objects.create(
+            name="Ounce Product",
+            category=category,
+            campaign=self.current_campaign,
+            price=decimal.Decimal("10.00"),
+            weight=decimal.Decimal("8.0"),
+            unit=Product.WeightUnit.OUNCE,
+        )
+        CampaignScout.objects.create(campaign=self.current_campaign, scout=exempt_member.scout, exempt=True)
+
+        exempt_order = Order.objects.create(
+            campaign=self.current_campaign,
+            seller=exempt_member.scout,
+            donation=decimal.Decimal("10.00"),
+        )
+        OrderItem.objects.create(order=exempt_order, product=pound_product, quantity=1)
+        member_order = Order.objects.create(campaign=self.current_campaign, seller=member.scout)
+        OrderItem.objects.create(order=member_order, product=ounce_product, quantity=2)
+        Order.objects.create(campaign=self.current_campaign, seller=member.scout, donation=decimal.Decimal("30.00"))
+
+        report = build_den_report(self.current_campaign, Order.objects.filter(campaign=self.current_campaign))
+        row = report.rows[0]
+
+        self.assertEqual(
+            [str(column.label) for column in report.columns],
+            [
+                "Den #",
+                "Total Sales",
+                "Total Orders",
+                "Total Weight",
+                "Member Count",
+                "Adjusted Member Count",
+                "Average Sales",
+                "Average Orders",
+                "Average Weight",
+            ],
+        )
+        self.assertEqual(
+            [cell.value for cell in row],
+            [
+                den.number,
+                decimal.Decimal("65.00"),
+                3,
+                "3.0lb",
+                2,
+                1,
+                decimal.Decimal("50.00"),
+                decimal.Decimal("2.00"),
+                "1.0lb",
+            ],
+        )
+        self.assertEqual(report.default_sort_index, 0)
+        self.assertEqual(report.default_sort_direction, "ascending")
+        self.assertEqual(report.rows[1][0].value, empty_den.number)
+        self.assertEqual(row[3].sort_value, decimal.Decimal("3.0000"))
+        self.assertEqual(row[8].sort_value, decimal.Decimal("1.0000"))
+
+    def test_weight_format_rounds_to_one_decimal_pound(self):
+        self.assertEqual(format_weight(decimal.Decimal("1.5678")), "1.6lb")
+        self.assertEqual(format_weight(decimal.Decimal("0.00625")), "0.0lb")
+        self.assertEqual(format_weight(decimal.Decimal("1234.0000")), "1,234.0lb")
+
+    def test_den_report_returns_zero_averages_when_all_members_are_exempt(self):
+        member = MembershipFactory(year_assigned=self.current_year)
+        CampaignScout.objects.create(campaign=self.current_campaign, scout=member.scout, exempt=True)
+        Order.objects.create(campaign=self.current_campaign, seller=member.scout, donation=decimal.Decimal("80.00"))
+
+        report = build_den_report(self.current_campaign, Order.objects.filter(campaign=self.current_campaign))
+
+        self.assertEqual(report.rows[0][1].value, decimal.Decimal("80.00"))
+        self.assertEqual(report.rows[0][5].value, 0)
+        self.assertEqual(report.rows[0][6].value, decimal.Decimal("0.00"))
+        self.assertEqual(report.rows[0][7].value, decimal.Decimal("0.00"))
+        self.assertEqual(report.rows[0][8].value, "0.0lb")
+
 
 class OrderReportViewTestCase(TestCase):
     def setUp(self):
@@ -236,23 +326,25 @@ class OrderReportViewTestCase(TestCase):
         OrderItem.objects.create(order=order, product=self.product, quantity=quantity)
         return order
 
-    def test_report_renders_five_tabs_and_cubs_table(self):
+    def test_report_renders_six_tabs_and_cubs_table(self):
         response = self.client.get(reverse("campaigns:order_report"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "NCC Dashboard")
         self.assertEqual(response.context["selected_tab"], "sales")
-        self.assertContains(response, "data-campaign-tab=", count=5)
+        self.assertContains(response, "data-campaign-tab=", count=6)
         self.assertContains(response, 'aria-current="page"', count=1)
         self.assertNotContains(response, 'data-bs-toggle="tab"')
         self.assertContains(response, "Sales")
         self.assertContains(response, "Products")
         self.assertContains(response, "Cubs")
+        self.assertContains(response, "Dens")
         self.assertContains(response, "Prize Selections")
         self.assertContains(response, "Pack Night")
         self.assertNotContains(response, "data-sortable-report-table")
         self.assertNotContains(response, "js/report_tables.js")
         self.assertIn("sales", response.context)
+        self.assertNotIn("den_report", response.context)
         self.assertNotIn("product_report", response.context)
         self.assertNotIn("cub_report", response.context)
 
@@ -274,6 +366,22 @@ class OrderReportViewTestCase(TestCase):
         self.assertNotIn("product_report", packing_response.context)
         self.assertNotIn("cub_report", packing_response.context)
 
+    def test_dens_report_uses_week_filter_and_has_csv_download(self):
+        self.create_order(day=6, quantity=2)
+        self.create_order(day=7, quantity=5)
+
+        response = self.client.get(reverse("campaigns:order_report"), {"tab": "dens", "week": 1})
+
+        self.assertEqual(response.context["selected_tab"], "dens")
+        self.assertEqual(response.context["selected_week"]["number"], 1)
+        self.assertEqual(response.context["den_report"].rows[0][1].value, decimal.Decimal("20.00"))
+        self.assertEqual(response.context["den_report"].rows[0][2].value, 1)
+        self.assertContains(response, "Dens — Week 1")
+        self.assertContains(response, 'id="dens_report_table"')
+        self.assertContains(response, 'data-csv-table-id="dens_report_table"')
+        self.assertContains(response, f'data-csv-filename="{self.current_year.year}-dens-week-1.csv"')
+        self.assertContains(response, "Average Weight")
+
     def test_all_campaign_weeks_are_available_without_visibility_rules(self):
         response = self.client.get(reverse("campaigns:order_report"), {"week": 3})
 
@@ -285,8 +393,8 @@ class OrderReportViewTestCase(TestCase):
         self.create_order(day=6, quantity=2)
         self.create_order(day=7, quantity=5)
 
-        first_week = self.client.get(reverse("campaigns:order_report"), {"week": 1})
-        second_week = self.client.get(reverse("campaigns:order_report"), {"week": 2})
+        first_week = self.client.get(reverse("campaigns:order_report"), {"tab": "sales", "week": 1})
+        second_week = self.client.get(reverse("campaigns:order_report"), {"tab": "sales", "week": 2})
         first_week_products = self.client.get(
             reverse("campaigns:order_report"),
             {"tab": "products", "week": 1},
@@ -379,7 +487,7 @@ class OrderReportViewTestCase(TestCase):
     def test_sales_report_includes_dates_without_orders(self):
         self.create_order(day=2, quantity=3)
 
-        response = self.client.get(reverse("campaigns:order_report"), {"week": 1})
+        response = self.client.get(reverse("campaigns:order_report"), {"tab": "sales", "week": 1})
 
         days = response.context["sales"]["days"]
         self.assertEqual(days[0]["date"], timezone.localtime(self.campaign_start).date())

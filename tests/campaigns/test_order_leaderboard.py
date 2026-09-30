@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
 from packman.calendars.models import PackYear
-from packman.campaigns.models import Campaign, Customer, Order
+from packman.campaigns.models import Campaign, CampaignScout, Category, Customer, Order, OrderItem, Product
 from packman.dens.factories import DenFactory
 from packman.dens.models import Membership, Rank
 from packman.membership.factories import AdultFactory, FamilyFactory, ScoutFactory
@@ -105,7 +105,8 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertContains(response, f'id="{self.scout.slug}_thumbnail"', count=2)
         self.assertContains(response, 'src="/static/img/lion.png"', count=1)
         self.assertContains(response, "Golden Peanut")
-        self.assertContains(response, 'name="tab" value="top-sales"', count=1)
+        self.assertEqual(response.context["selected_tab"], "dens")
+        self.assertContains(response, 'name="tab" value="dens"', count=1)
         self.assertContains(
             response,
             reverse("campaigns:order_leaderboard"),
@@ -116,7 +117,19 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertLess(content.index("Week 1"), content.index("Week 2"))
         self.assertLess(content.index("Week 2"), content.index("Week 3"))
 
-    def test_hidden_week_shows_countdown_until_midnight_after_it_ends(self):
+    def test_future_campaign_does_not_offer_unreached_weeks(self):
+        self.campaign.ordering_opens = self.now + timezone.timedelta(days=10)
+        self.campaign.ordering_closes = self.campaign.ordering_opens + timezone.timedelta(days=21)
+        self.campaign.save(update_fields=["ordering_opens", "ordering_closes"])
+
+        response = self.get_leaderboard()
+
+        self.assertEqual(response.context["weeks"], [])
+        self.assertIsNone(response.context["selected_week"])
+        self.assertContains(response, '<option value="" selected>Full Campaign</option>', html=True)
+        self.assertNotContains(response, "Week 1")
+
+    def test_selected_week_results_are_visible_without_reveal_delay(self):
         self.create_order("100.00", self.campaign_day(2))
         self.create_order("200.00", self.campaign_day(9))
         reveal_midnight = self.campaign_day(15, hour=0)
@@ -128,10 +141,10 @@ class OrderLeaderboardWeekFilterTest(TestCase):
 
         self.assertEqual([week["number"] for week in before_reveal.context["weeks"]], [1, 2, 3])
         self.assertEqual(before_reveal.context["selected_week"]["number"], 2)
-        self.assertEqual(before_reveal.context["week_reveal_at"], reveal_midnight)
-        self.assertTrue(before_reveal.context["hide_leaderboard"])
-        self.assertContains(before_reveal, "This week's orders closed")
-        self.assertContains(before_reveal, "This week's leaderboard will be available in")
+        self.assertNotIn("hide_leaderboard", before_reveal.context)
+        self.assertNotIn("week_reveal_at", before_reveal.context)
+        self.assertEqual(before_reveal.context["top_sellers"][0]["total"], decimal.Decimal("200.00"))
+        self.assertNotContains(before_reveal, "This week's leaderboard will be available in")
         self.assertNotContains(before_reveal, 'src="/static/img/golden_peanut.jpeg"')
 
         current_week = self.get_leaderboard(
@@ -140,10 +153,9 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         )
 
         self.assertEqual(current_week.context["selected_week"]["number"], 3)
-        self.assertEqual(current_week.context["week_reveal_at"], self.campaign_day(22, hour=0))
-        self.assertTrue(current_week.context["hide_leaderboard"])
-        self.assertContains(current_week, "This week's orders close in")
-        self.assertContains(current_week, "This week's leaderboard will be available in")
+        self.assertNotIn("hide_leaderboard", current_week.context)
+        self.assertNotIn("week_reveal_at", current_week.context)
+        self.assertNotContains(current_week, "This week's leaderboard will be available in")
 
         at_reveal = self.get_leaderboard(2, current_time=reveal_midnight)
 
@@ -152,33 +164,18 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(set(at_reveal.context["selected_week"]), {"number", "start_at", "end_at"})
         self.assertEqual(at_reveal.context["top_sellers"][0]["total"], decimal.Decimal("200.00"))
 
-    def test_final_week_extends_past_campaign_close_before_becoming_available(self):
+    def test_leaderboard_remains_visible_during_final_five_days(self):
         self.campaign.ordering_closes = self.campaign_day(16)
         self.campaign.save(update_fields=["ordering_closes"])
         self.create_order("700.00", self.campaign_day(15))
-        final_week_reveal = self.campaign_day(22, hour=0)
+        response = self.get_leaderboard(current_time=self.campaign_day(12))
 
-        before_reveal = self.get_leaderboard(
-            3,
-            current_time=final_week_reveal - timezone.timedelta(microseconds=1),
-        )
-
-        self.assertEqual(before_reveal.status_code, 200)
-        self.assertTrue(before_reveal.context["hide_leaderboard"])
-        self.assertTrue(before_reveal.context["hide_week_selector"])
-        self.assertEqual(before_reveal.context["campaign_end_at"], self.campaign_day(16))
-        self.assertEqual(before_reveal.context["leaderboard_reveal_at"], final_week_reveal)
-        self.assertContains(before_reveal, "Campaign orders closed")
-        self.assertContains(before_reveal, "The leaderboard will be available again in")
-        self.assertContains(before_reveal, 'src="/static/img/golden_peanut.jpeg"')
-
-        at_reveal = self.get_leaderboard(3, current_time=final_week_reveal)
-
-        self.assertEqual([week["number"] for week in at_reveal.context["weeks"]], [1, 2, 3])
-        self.assertEqual(at_reveal.context["selected_week"]["end_at"], self.campaign_day(21, hour=10))
-        self.assertEqual(at_reveal.context["top_sellers"][0]["total"], decimal.Decimal("700.00"))
-        self.assertNotIn("hide_leaderboard", at_reveal.context)
-        self.assertNotContains(at_reveal, 'src="/static/img/golden_peanut.jpeg"')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["top_sellers"][0]["total"], decimal.Decimal("700.00"))
+        self.assertNotIn("hide_leaderboard", response.context)
+        self.assertNotIn("hide_week_selector", response.context)
+        self.assertNotContains(response, "The leaderboard will be available again in")
+        self.assertContains(response, "Average Weight")
 
     def test_selected_week_filters_every_leaderboard_total(self):
         self.create_order("100.00", self.campaign_day(2))
@@ -193,8 +190,8 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(response.context["top_sellers"][0]["orders"], 1)
         self.assertEqual(response.context["top_sellers"][0]["total"], decimal.Decimal("250.00"))
         self.assertEqual(response.context["top_orders"][0]["orders"], 1)
-        self.assertEqual(response.context["dens"][0]["orders"], 1)
-        self.assertEqual(response.context["dens"][0]["total"], decimal.Decimal("250.00"))
+        self.assertEqual(response.context["dens"][0]["average_orders"], decimal.Decimal("1.00"))
+        self.assertEqual(response.context["dens"][0]["average_sales"], decimal.Decimal("250.00"))
 
     def test_individual_leaderboards_show_only_their_metric_and_format_sales(self):
         self.create_order("1234.56", self.campaign_day(2))
@@ -214,6 +211,82 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertNotIn("$1,235", top_orders)
 
         self.assertContains(response, "$1,235", count=2)
+
+    def test_den_leaderboard_shows_non_exempt_average_weight_instead_of_top_seller(self):
+        den = self.scout.den_memberships.get(year_assigned=self.pack_year).den
+        regular_member = ScoutFactory(family=FamilyFactory())
+        exempt_member = ScoutFactory(family=FamilyFactory())
+        Membership.objects.create(scout=regular_member, den=den, year_assigned=self.pack_year)
+        Membership.objects.create(scout=exempt_member, den=den, year_assigned=self.pack_year)
+        CampaignScout.objects.create(campaign=self.campaign, scout=exempt_member, exempt=True)
+        category = Category.objects.create(name="Popcorn")
+        product = Product.objects.create(
+            name="Eight Ounce Product",
+            category=category,
+            campaign=self.campaign,
+            price=decimal.Decimal("25.00"),
+            weight=decimal.Decimal("8.0"),
+            unit=Product.WeightUnit.OUNCE,
+        )
+        self.create_order("100.00", self.campaign_day(2))
+        regular_order = Order.objects.create(campaign=self.campaign, seller=regular_member, donation=None)
+        Order.objects.filter(pk=regular_order.pk).update(date_added=self.campaign_day(2))
+        OrderItem.objects.create(order=regular_order, product=product, quantity=2)
+        exempt_order = Order.objects.create(
+            campaign=self.campaign,
+            seller=exempt_member,
+            donation=decimal.Decimal("900.00"),
+        )
+        Order.objects.filter(pk=exempt_order.pk).update(date_added=self.campaign_day(2))
+
+        response = self.get_leaderboard()
+        den_metrics = response.context["dens"][0]
+
+        self.assertEqual(response.context["selected_tab"], "dens")
+        self.assertEqual(den_metrics["average_sales"], decimal.Decimal("75.00"))
+        self.assertEqual(den_metrics["average_orders"], decimal.Decimal("1.00"))
+        self.assertEqual(den_metrics["average_weight"], decimal.Decimal("0.5000"))
+        den_table = response.content.decode().split('id="dens-pane"', 1)[1]
+        self.assertIn("Average Weight", den_table)
+        self.assertIn("Average Orders", den_table)
+        self.assertIn("Average Sales", den_table)
+        self.assertIn("0.5lb", den_table)
+        self.assertNotIn("Top Seller", den_table)
+        self.assertNotIn("$1,000", den_table)
+
+    def test_cub_leaderboards_are_limited_to_five_without_limiting_dens(self):
+        den = self.scout.den_memberships.get(year_assigned=self.pack_year).den
+        den_numbers = {den.number}
+        for index, den_number in enumerate((2, 3, 4, 5, 7), start=1):
+            new_den = DenFactory(number=den_number)
+            new_scout = ScoutFactory(family=FamilyFactory())
+            Membership.objects.create(scout=new_scout, den=new_den, year_assigned=self.pack_year)
+            den_numbers.add(den_number)
+            order = Order.objects.create(
+                campaign=self.campaign,
+                seller=new_scout,
+                customer=self.customer,
+                recorded_by=self.adult,
+                donation=decimal.Decimal("100.00"),
+            )
+            Order.objects.filter(pk=order.pk).update(date_added=self.campaign_day(2))
+        for index in range(5):
+            new_scout = ScoutFactory(family=FamilyFactory())
+            Membership.objects.create(scout=new_scout, den=den, year_assigned=self.pack_year)
+            order = Order.objects.create(
+                campaign=self.campaign,
+                seller=new_scout,
+                customer=self.customer,
+                recorded_by=self.adult,
+                donation=decimal.Decimal(str((index + 1) * 100)),
+            )
+            Order.objects.filter(pk=order.pk).update(date_added=self.campaign_day(2))
+
+        response = self.get_leaderboard()
+
+        self.assertEqual(len(response.context["top_sellers"]), 5)
+        self.assertEqual(len(response.context["top_orders"]), 5)
+        self.assertEqual({den["name"] for den in response.context["dens"]}, den_numbers)
 
     def test_week_boundaries_use_campaign_opening_time_and_exclusive_end(self):
         self.create_order("100.00", self.campaign_day(7, 9))
@@ -307,11 +380,11 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertContains(response, 'class="tab-pane fade show active"')
         self.assertContains(response, 'name="tab" value="dens"', count=1)
 
-    def test_invalid_tab_falls_back_to_top_sales(self):
+    def test_invalid_tab_falls_back_to_dens(self):
         response = self.get_leaderboard(tab="unknown")
 
-        self.assertEqual(response.context["selected_tab"], "top-sales")
-        self.assertContains(response, 'name="tab" value="top-sales"', count=1)
+        self.assertEqual(response.context["selected_tab"], "dens")
+        self.assertContains(response, 'name="tab" value="dens"', count=1)
 
     def test_unknown_campaign_returns_not_found(self):
         response = self.client.get(

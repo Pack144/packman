@@ -108,8 +108,8 @@ class AwardEligibilityTestCase(TestCase):
         cub = response.context["top_sellers"][0]
         self.assertEqual(cub["orders"], 1)
         self.assertEqual(cub["total"], decimal.Decimal("600.00"))
-        self.assertEqual(response.context["dens"][0]["orders"], 1)
-        self.assertEqual(response.context["dens"][0]["total"], decimal.Decimal("600.00"))
+        self.assertEqual(response.context["dens"][0]["average_orders"], decimal.Decimal("1.00"))
+        self.assertEqual(response.context["dens"][0]["average_sales"], decimal.Decimal("600.00"))
 
     def test_prize_selection_excludes_ineligible_orders(self):
         PrizePoint.objects.create(earned_at=decimal.Decimal("550.00"), value=5)
@@ -135,7 +135,7 @@ class AwardEligibilityTestCase(TestCase):
         self.create_order("100.00")
         self.create_order("1000.00", award_ineligible=True)
 
-        response = self.client.get(reverse("campaigns:order_report"))
+        response = self.client.get(reverse("campaigns:order_report"), {"tab": "sales"})
 
         self.assertEqual(response.context["sales"]["count"], 2)
         self.assertEqual(response.context["sales"]["total"], decimal.Decimal("1100.00"))

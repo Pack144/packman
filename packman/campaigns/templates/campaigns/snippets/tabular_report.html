@@ -35,6 +35,8 @@
               ${{ cell.value|floatformat:"0"|intcomma }}
             {% elif cell.kind == "currency" %}
               ${{ cell.value|floatformat:"-2"|intcomma }}
+            {% elif cell.kind == "weight" %}
+              {{ cell.value }}
             {% elif cell.kind == "boolean" %}
               {% if cell.value %}
                 {% translate "Yes" %}

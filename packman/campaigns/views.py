@@ -36,6 +36,9 @@ from .mixins import CampaignOrderPeriodMixin, UserIsSellerFamilyTest
 from .models import Campaign, Order, OrderItem, Prize, PrizePoint, PrizeSelection, Product, Quota
 from .report_data import (
     build_cub_report,
+    build_den_report,
+    format_weight,
+    get_den_metrics,
     get_prize_selections_report,
     get_prize_totals_report,
     get_product_report,
@@ -139,7 +142,7 @@ class OrderListView(LoginRequiredMixin, ListView):
 class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, TemplateView):
     permission_required = "campaigns.generate_order_report"
     template_name = "campaigns/order_report.html"
-    allowed_tabs = {"sales", "products", "cubs", "prize-selections", "packing-night"}
+    allowed_tabs = {"sales", "products", "cubs", "dens", "prize-selections", "packing-night"}
     default_tab = "sales"
 
     def get_context_data(self, **kwargs):
@@ -154,6 +157,8 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
             context.update(self.get_products_context())
         elif selected_tab == "cubs":
             context.update(self.get_cub_context())
+        elif selected_tab == "dens":
+            context.update(self.get_den_context())
         elif selected_tab == "prize-selections":
             context.update(self.get_prize_selection_context())
 
@@ -182,6 +187,11 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
             orders,
             include_campaign_fields=week_context["selected_week"] is None,
         )
+        return week_context
+
+    def get_den_context(self):
+        week_context, orders = self.get_order_period()
+        week_context["den_report"] = build_den_report(self.viewing_campaign, orders)
         return week_context
 
     def get_prize_selection_context(self):
@@ -236,7 +246,7 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
 class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, TemplateView):
     template_name = "campaigns/order_leaderboard.html"
     allowed_tabs = {"top-sales", "top-orders", "dens"}
-    default_tab = "top-sales"
+    default_tab = "dens"
 
     def dispatch(self, request, *args, **kwargs):
         if not settings.PACK_NCC_LEADERBOARD_ENABLED:
@@ -255,36 +265,20 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
 
         now = timezone.now()
         campaign_start_at = timezone.localtime(viewing_campaign.ordering_opens)
-        campaign_end_at = timezone.localtime(viewing_campaign.ordering_closes)
 
         # 2. Round up so a campaign ending partway through a week still gets a complete final window.
         campaign_week_count = viewing_campaign.get_ordering_week_count()
         final_week_end_at = campaign_start_at + timezone.timedelta(weeks=campaign_week_count)
-        # Results become visible at midnight after the final weekly window ends:
-        # Wednesday 5:00 PM -> Wednesday date -> add one day -> Thursday date
-        # -> combine with 00:00 -> Thursday 12:00 AM.
-        leaderboard_reveal_at = timezone.make_aware(
+        # Active campaign membership runs through midnight after the final weekly window ends.
+        active_campaign_until = timezone.make_aware(
             datetime.combine(final_week_end_at.date() + timezone.timedelta(days=1), time.min)
         )
 
-        # 3. A campaign remains active through midnight after its final weekly window ends.
-        viewing_active_campaign = campaign_start_at <= now < leaderboard_reveal_at
+        viewing_active_campaign = campaign_start_at <= now < active_campaign_until
 
-        # 4. During the final stretch, hide results to avoid spoiling the winner announcement surprise.
-        if viewing_active_campaign and now >= campaign_end_at - timezone.timedelta(days=5):
-            context.update(
-                {
-                    "hide_leaderboard": True,
-                    "hide_week_selector": True,
-                    "now": now,
-                    "campaign_end_at": campaign_end_at,
-                    "leaderboard_reveal_at": leaderboard_reveal_at,
-                }
-            )
-            return context
-
-        # 5-6. Build every historical week, or only the active campaign weeks reached so far.
-        if viewing_active_campaign:
+        if now < campaign_start_at:
+            campaign_weeks = []
+        elif viewing_active_campaign:
             campaign_weeks = viewing_campaign.get_ordering_week_windows(
                 ceil((now - campaign_start_at) / timezone.timedelta(weeks=1))
             )
@@ -295,21 +289,6 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
         context.update(self.get_week_context(campaign_weeks))
         selected_week = context["selected_week"]
         context["selected_tab"] = self.get_selected_tab()
-
-        # 7.2. A selected active week shows countdowns until midnight after its window ends.
-        if selected_week and viewing_active_campaign:
-            week_reveal_at = timezone.make_aware(
-                datetime.combine(selected_week["end_at"].date() + timezone.timedelta(days=1), time.min)
-            )
-            if now < week_reveal_at:
-                context.update(
-                    {
-                        "hide_leaderboard": True,
-                        "now": now,
-                        "week_reveal_at": week_reveal_at,
-                    }
-                )
-                return context
 
         # 7.3. Use all campaign orders unless a visible weekly window was selected.
         # Leaderboard rankings exclude explicitly ineligible orders, unlike operational reports.
@@ -322,6 +301,9 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
         if viewing_active_campaign:
             cubs = cubs.filter(scout__status=Membership.scout.field.related_model.ACTIVE)
         dens = Den.objects.select_related("rank").filter(scouts__in=cubs).distinct()
+        den_metrics = {
+            metrics["den"].number: metrics for metrics in get_den_metrics(viewing_campaign, orders, memberships=cubs)
+        }
 
         # get all order totals for each cub
         all_cubs = []
@@ -340,36 +322,33 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
         # remove hidden sellers from Den 6
         all_cubs = [cub for cub in all_cubs if cub["den"] != 6]
 
-        # sort cubs in descending order of orders and output the top 10
+        # sort cubs in descending order of orders and output the top 5
         all_cubs.sort(key=lambda x: x["orders"], reverse=True)
-        context["top_orders"] = all_cubs[:10]
+        context["top_orders"] = all_cubs[:5]
 
-        # sort cubs in descending order of total and output the top 10
+        # sort cubs in descending order of total and output the top 5
         all_cubs.sort(key=lambda x: x["total"], reverse=True)
-        context["top_sellers"] = all_cubs[:10]
+        context["top_sellers"] = all_cubs[:5]
 
-        # total up orders for each den from all_cubs and sort from most to least
+        # Build every visible den, independent of the number of Cub leaderboard rows.
         all_dens = []
         for den in dens:
             # skip Den 6 for hidden orders and special pack sponsors
             if den.number == 6:
                 continue
 
-            # find the top seller for this den
-            top_seller = max([cub for cub in all_cubs if cub["den"] == den.number], key=lambda x: x["total"])
-
-            # get all den totals
-            total = sum([cub["total"] for cub in all_cubs if cub["den"] == den.number])
+            metrics = den_metrics[den.number]
             all_dens.append(
                 {
                     "name": den.number,
                     "rank": den.rank,
-                    "orders": sum([cub["orders"] for cub in all_cubs if cub["den"] == den.number]),
-                    "total": total,
-                    "top_seller": top_seller["name"],
+                    "average_orders": metrics["average_orders"],
+                    "average_sales": metrics["average_sales"],
+                    "average_weight": metrics["average_weight"],
+                    "average_weight_display": format_weight(metrics["average_weight"]),
                 }
             )
-        all_dens.sort(key=lambda x: x["total"], reverse=True)
+        all_dens.sort(key=lambda x: x["average_weight"], reverse=True)
 
         context["dens"] = all_dens
 
