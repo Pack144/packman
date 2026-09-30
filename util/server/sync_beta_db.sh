@@ -8,9 +8,11 @@
 # is explicitly dropped, so the database itself never needs to be
 # dropped/recreated. Passwords are not handled here — they're expected to
 # come from the invoking user's ~/.pgpass file (see `man pgpass`).
+#
+# Runs on the server via deploy.yml; run manually only if GitHub Actions is unavailable.
 
 set -euo pipefail
-source "$(dirname "${BASH_SOURCE[0]}")/lib/logging.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/logging.sh"
 
 SRC_USER="django"
 SRC_DB="django"
@@ -73,4 +75,4 @@ pg_restore \
     "$DUMP_FILE"
 success "Beta database now matches production"
 
-warn "Remember: beta will run its own migrations on next deploy (see util/deploy.sh)."
+warn "Remember: beta will run its own migrations on next deploy (see util/server/deploy.sh)."

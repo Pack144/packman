@@ -11,21 +11,28 @@ usage() {
 Usage: ./util/packman.sh <env> <command> [options]
 
 Environments:
-  dev     Local development environment.
-  beta    Not implemented.
-  prod    Not implemented.
+  dev     Local development environment (start, stop, sync).
+  beta    Beta server (deploy).
+  prod    Production server (deploy).
 
 Commands:
   start   Install backend dependencies, migrate, and start Django.
   stop    Stop the Packman server for this checkout.
-    sync    Sync local data from the selected environment.
+  sync    Sync local data from the selected environment.
+  deploy  Run safety checks, trigger the GitHub Deploy workflow, and wait.
 
 Options:
-  --port PORT   Django port for start (default: 8000).
-  --detach      Run Django in the background (start).
-  --yes         Replace an existing Packman server without prompting (start).
-    --sync-env ENV  Source environment for sync: beta or prod (default: beta).
-  --help, -h    Show this help message.
+  --port PORT     Django port for start (default: 8000).
+  --detach        Run Django in the background (start).
+  --yes           start: replace an existing server without prompting.
+                  deploy: skip the prod confirmation prompt.
+  --sync-env ENV  Source environment for sync: beta or prod (default: beta).
+  --branch NAME   Branch to deploy (default: main; prod only allows main).
+  --reset-db      Replace beta's database with a copy of prod first (beta deploy).
+  --force         Deploy despite workspace/beta-validation warnings (deploy).
+  --dry-run       Run deploy checks and print the gh command without deploying.
+  --compact       Show only relevant/failed steps while watching the deploy.
+  --help, -h      Show this help message.
 EOF
 }
 
@@ -47,22 +54,48 @@ case "$env_name" in
     *) usage >&2; error "Unknown environment '$env_name'. Expected 'dev', 'beta', or 'prod'." ;;
 esac
 
-case "$command_name" in
-    start|stop|sync) ;;
-    *) usage >&2; error "Unknown command '$command_name'. Expected 'start', 'stop', or 'sync'." ;;
+case "$env_name:$command_name" in
+    dev:start|dev:stop|dev:sync|beta:deploy|prod:deploy) ;;
+    dev:*) usage >&2; error "Unknown dev command '$command_name'. Expected 'start', 'stop', or 'sync'." ;;
+    *) usage >&2; error "Unknown $env_name command '$command_name'. Expected 'deploy'." ;;
 esac
-
-if [[ "$env_name" != "dev" ]]; then
-    error "The '$env_name' environment is not implemented yet."
-fi
 
 port=8000
 port_set=false
 detach=false
 assume_yes=false
 sync_env=beta
+branch=main
+reset_db=false
+force=false
+dry_run=false
+compact=false
 
-if [[ "$command_name" == "sync" ]]; then
+if [[ "$command_name" == "deploy" ]]; then
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --branch)
+                [[ $# -ge 2 && -n "$2" ]] || error "--branch requires a value."
+                branch="$2"
+                shift 2
+                ;;
+            --reset-db)
+                [[ "$env_name" == "beta" ]] || error "--reset-db is only valid for beta."
+                reset_db=true
+                shift
+                ;;
+            --yes) assume_yes=true; shift ;;
+            --force) force=true; shift ;;
+            --dry-run) dry_run=true; shift ;;
+            --compact) compact=true; shift ;;
+            --help|-h)
+                usage
+                exit 0
+                ;;
+            *) error "Unknown deploy option '$1'." ;;
+        esac
+    done
+elif [[ "$command_name" == "sync" ]]; then
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --sync-env)
@@ -137,8 +170,13 @@ cmd_sync() {
     "$script_dir/lib/sync_local_data.sh" "$sync_env"
 }
 
+cmd_deploy() {
+    "$script_dir/lib/gh-deploy-action.sh" "$env_name" "$branch" "$reset_db" "$assume_yes" "$force" "$dry_run" "$compact"
+}
+
 case "$command_name" in
     start) cmd_start ;;
     stop) cmd_stop ;;
     sync) cmd_sync ;;
+    deploy) cmd_deploy ;;
 esac

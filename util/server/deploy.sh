@@ -1,8 +1,10 @@
 #!/bin/bash
 
+# Runs on the server via deploy.yml; run manually only if GitHub Actions is unavailable.
+
 # Exit immediately if a command exits with a non-zero status
 set -euo pipefail
-source "$(dirname "${BASH_SOURCE[0]}")/lib/logging.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/logging.sh"
 
 if [[ $# -ge 1 ]]; then
     APP_DIR="$1"
@@ -22,7 +24,7 @@ else
             exit 3
         fi
     else
-        echo "Usage: util/deploy.sh APP_DIR" >&2
+        echo "Usage: util/server/deploy.sh APP_DIR" >&2
         exit 1
     fi
 fi

@@ -169,30 +169,53 @@ uv venv ~/apps/django-beta/env --python 3.14
 ### Deploying
 
 Deployment should first be validated in beta prior to deploying in prod.
+Deploys normally run through the [Deploy](.github/workflows/deploy.yml)
+GitHub Actions workflow, which SSHes into the target server, checks out the
+selected branch, and runs [util/server/deploy.sh](util/server/deploy.sh).
+
+#### Deploying from the command line
+
+```bash
+./util/packman.sh beta deploy --branch my-branch   # default branch: main
+./util/packman.sh beta deploy --reset-db           # refresh beta's DB from prod first
+./util/packman.sh prod deploy                      # main only
+```
+
+The command triggers the workflow with `gh`, prints the run URL, and waits for
+the run to finish (add `--compact` for shorter output). Before deploying it
+checks that:
+
+* `gh` is installed and authenticated, and the branch exists on origin.
+* This workspace has no uncommitted or untracked changes, no unpushed commits,
+  and no commits missing from the branch being deployed.
+* For prod: the branch is `main`, Django CI passed on its latest commit, that
+  commit was already deployed to beta, and you confirm the deploy (`--yes`
+  skips the prompt).
+
+Workspace and beta-validation warnings block the deploy unless `--force` is
+given. Use `--dry-run` to run the checks without deploying.
+
+#### Deploying via the GitHub Actions UI
+
+Go to the *Actions* tab, select the Deploy workflow, click *Run workflow*,
+pick the branch to deploy, and choose the `target` environment (`beta` or
+`prod`). This is the only way to deploy a branch other than `main` to prod.
+
+When deploying to `beta`, you can also check the `reset_db` option to first
+wipe beta's database and replace it with a fresh copy of production (via
+[sync_beta_db.sh](util/server/sync_beta_db.sh)) before deploying — handy for
+refreshing beta with production data and the latest `main` in one run.
+
+#### Deploying manually
+
+If GitHub Actions is unavailable, SSH into the server and run the deploy
+script directly (repeat in the prod directory after validating beta):
 
 ```bash
 cd ~/apps/django-beta/packman
 git pull
-util/deploy.sh
+util/server/deploy.sh ~/apps/django-beta
 ```
-
-After validation switch to the prod directory and repeat.
-
-See the [deploy.sh](util/deploy.sh) for more details on how the deployment works.
-
-#### Deploying via GitHub Actions
-
-Instead of SSHing in manually, you can deploy any branch to beta or prod
-from the [Deploy](.github/workflows/deploy.yml) workflow: go to the
-*Actions* tab, select it, click *Run workflow*, pick the branch to deploy,
-and choose the `target` environment (`beta` or `prod`). It SSHes into the
-corresponding server, checks out the selected branch, and runs
-[deploy.sh](util/deploy.sh).
-
-When deploying to `beta`, you can also check the `reset_db` option to first
-wipe beta's database and replace it with a fresh copy of production (via
-[sync_beta_db.sh](util/sync_beta_db.sh)) before deploying — handy for
-refreshing beta with production data and the latest `main` in one run.
 
 This requires the following secrets to be configured.
 * `SERVICE_HOST` — SSH host for the target server

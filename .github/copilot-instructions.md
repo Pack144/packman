@@ -35,12 +35,20 @@
 
 ## Beta deployment
 
-- `gh` is installed and authenticated. Deploy the pushed branch with
-  `gh workflow run deploy.yml --ref <branch> -f target=beta -f reset_db=false`.
-- Do not reset beta's database unless explicitly requested. Do not spend time
-  checking for competing beta deployments by default.
-- Use the run URL returned by `gh`, then verify completion with
-  `gh run watch <run-id> --exit-status`. Report the run URL and result.
+- Only deploy to beta when the user explicitly asks to deploy the current
+  change. A request to deploy one change is not permission to deploy later
+  changes.
+- Deploy the pushed branch with
+  `./util/packman.sh beta deploy --branch <branch> --compact`. It runs safety
+  checks, triggers the Deploy workflow, and waits for it to finish. Use
+  `--dry-run` to run only the checks.
+- Never deploy to prod.
+- Never pass `--force` or `--reset-db` unless the user explicitly requests it.
+  If a check blocks the deploy, report the warnings to the user instead of
+  bypassing them.
+- Do not spend time checking for competing deployments; the workflow queues
+  deploys to the same environment.
+- Report the `Run URL:` line and the result.
 
 ## Implementation conventions
 
