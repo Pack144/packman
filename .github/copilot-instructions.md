@@ -33,6 +33,15 @@
   being diagnosed.
 - The Django admin is mounted at `/administration/`, not `/admin/`.
 
+## Beta deployment
+
+- `gh` is installed and authenticated. Deploy the pushed branch with
+  `gh workflow run deploy.yml --ref <branch> -f target=beta -f reset_db=false`.
+- Do not reset beta's database unless explicitly requested. Do not spend time
+  checking for competing beta deployments by default.
+- Use the run URL returned by `gh`, then verify completion with
+  `gh run watch <run-id> --exit-status`. Report the run URL and result.
+
 ## Implementation conventions
 
 - Follow existing Django patterns before adding abstractions. Put reusable data
