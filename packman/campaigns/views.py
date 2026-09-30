@@ -269,18 +269,16 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
         # 2. Round up so a campaign ending partway through a week still gets a complete final window.
         campaign_week_count = viewing_campaign.get_ordering_week_count()
         final_week_end_at = campaign_start_at + timezone.timedelta(weeks=campaign_week_count)
-        # Results become visible at midnight after the final weekly window ends:
-        # Wednesday 5:00 PM -> Wednesday date -> add one day -> Thursday date
-        # -> combine with 00:00 -> Thursday 12:00 AM.
-        leaderboard_reveal_at = timezone.make_aware(
+        # Active campaign membership runs through midnight after the final weekly window ends.
+        active_campaign_until = timezone.make_aware(
             datetime.combine(final_week_end_at.date() + timezone.timedelta(days=1), time.min)
         )
 
-        # 3. A campaign remains active through midnight after its final weekly window ends.
-        viewing_active_campaign = campaign_start_at <= now < leaderboard_reveal_at
+        viewing_active_campaign = campaign_start_at <= now < active_campaign_until
 
-        # 5-6. Build every historical week, or only the active campaign weeks reached so far.
-        if viewing_active_campaign:
+        if now < campaign_start_at:
+            campaign_weeks = []
+        elif viewing_active_campaign:
             campaign_weeks = viewing_campaign.get_ordering_week_windows(
                 ceil((now - campaign_start_at) / timezone.timedelta(weeks=1))
             )

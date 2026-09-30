@@ -117,6 +117,18 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertLess(content.index("Week 1"), content.index("Week 2"))
         self.assertLess(content.index("Week 2"), content.index("Week 3"))
 
+    def test_future_campaign_does_not_offer_unreached_weeks(self):
+        self.campaign.ordering_opens = self.now + timezone.timedelta(days=10)
+        self.campaign.ordering_closes = self.campaign.ordering_opens + timezone.timedelta(days=21)
+        self.campaign.save(update_fields=["ordering_opens", "ordering_closes"])
+
+        response = self.get_leaderboard()
+
+        self.assertEqual(response.context["weeks"], [])
+        self.assertIsNone(response.context["selected_week"])
+        self.assertContains(response, '<option value="" selected>Full Campaign</option>', html=True)
+        self.assertNotContains(response, "Week 1")
+
     def test_selected_week_results_are_visible_without_reveal_delay(self):
         self.create_order("100.00", self.campaign_day(2))
         self.create_order("200.00", self.campaign_day(9))
