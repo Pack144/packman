@@ -93,6 +93,8 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertIsNone(response.context["selected_week"])
         self.assertContains(response, "<h1", count=1)
         self.assertContains(response, "NCC Leaderboards")
+        self.assertRegex(response.content.decode(), r"<title>\s*NCC Leaderboards\s*\|")
+        self.assertNotContains(response, "Orders Report")
         self.assertContains(response, '<option value="" selected>Full Campaign</option>', html=True)
         self.assertContains(response, 'data-bs-toggle="tab"', count=3)
         self.assertContains(response, 'class="tab-pane fade show active"', count=1)
@@ -175,7 +177,7 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertNotIn("hide_leaderboard", response.context)
         self.assertNotIn("hide_week_selector", response.context)
         self.assertNotContains(response, "The leaderboard will be available again in")
-        self.assertContains(response, "Average Weight")
+        self.assertContains(response, "Avg lbs Sold per Cub")
 
     def test_selected_week_filters_every_leaderboard_total(self):
         self.create_order("100.00", self.campaign_day(2))
@@ -210,7 +212,7 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertNotIn('<th scope="col">Sales</th>', top_orders)
         self.assertNotIn("$1,235", top_orders)
 
-        self.assertContains(response, "$1,235", count=2)
+        self.assertContains(response, "$1,235", count=1)
 
     def test_den_leaderboard_shows_non_exempt_average_weight_instead_of_top_seller(self):
         den = self.scout.den_memberships.get(year_assigned=self.pack_year).den
@@ -247,9 +249,9 @@ class OrderLeaderboardWeekFilterTest(TestCase):
         self.assertEqual(den_metrics["average_orders"], decimal.Decimal("1.00"))
         self.assertEqual(den_metrics["average_weight"], decimal.Decimal("0.5000"))
         den_table = response.content.decode().split('id="dens-pane"', 1)[1]
-        self.assertIn("Average Weight", den_table)
-        self.assertIn("Average Orders", den_table)
-        self.assertIn("Average Sales", den_table)
+        self.assertIn("Avg lbs Sold per Cub", den_table)
+        self.assertNotIn("Average Orders", den_table)
+        self.assertNotIn("Average Sales", den_table)
         self.assertIn("0.5lb", den_table)
         self.assertNotIn("Top Seller", den_table)
         self.assertNotIn("$1,000", den_table)
