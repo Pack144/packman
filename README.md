@@ -175,25 +175,48 @@ selected branch, and runs [util/server/deploy.sh](util/server/deploy.sh).
 
 #### Deploying from the command line
 
+The deploy command requires the GitHub CLI, installed and authenticated:
+
 ```bash
-./util/packman.sh beta deploy --branch my-branch   # default branch: main
-./util/packman.sh beta deploy --reset-db           # refresh beta's DB from prod first
-./util/packman.sh prod deploy                      # main only
+brew install gh
+gh auth login
 ```
 
-The command triggers the workflow with `gh`, prints the run URL, and waits for
-the run to finish (add `--compact` for shorter output). Before deploying it
-checks that:
+Deploy the current branch to beta. This fails if your workspace has
+uncommitted changes or is ahead of or behind the branch on origin:
 
-* `gh` is installed and authenticated, and the branch exists on origin.
-* This workspace has no uncommitted or untracked changes, no unpushed commits,
-  and no commits missing from the branch being deployed.
-* For prod: the branch is `main`, Django CI passed on its latest commit, that
-  commit was already deployed to beta, and you confirm the deploy (`--yes`
-  skips the prompt).
+```bash
+./util/packman.sh beta deploy
+```
 
-Workspace and beta-validation warnings block the deploy unless `--force` is
-given. Use `--dry-run` to run the checks without deploying.
+Deploy a different branch to beta. Whatever is on origin for that branch is
+deployed; your local copy of it is not checked:
+
+```bash
+./util/packman.sh beta deploy --branch my-branch
+```
+
+Deploy `main` to beta after replacing beta's database with a copy of prod:
+
+```bash
+./util/packman.sh beta deploy --branch main --reset-db
+```
+
+Deploy `main` to prod. The command refuses to deploy any other branch to prod
+(use the GitHub Actions UI for that). It also requires that CI passed on the
+latest `origin/main` commit and that the same commit was already deployed to
+beta, and asks you to confirm (`--yes` skips the prompt):
+
+```bash
+./util/packman.sh prod deploy --branch main
+```
+
+The command prints the workflow run URL and waits for the run to finish. Other
+useful options:
+
+* `--dry-run` — run the checks and print the `gh` command without deploying.
+* `--compact` — show only relevant or failed steps while waiting.
+* `--force` — deploy despite workspace or beta-validation warnings.
 
 #### Deploying via the GitHub Actions UI
 
@@ -206,6 +229,13 @@ wipe beta's database and replace it with a fresh copy of production (via
 [sync_beta_db.sh](util/server/sync_beta_db.sh)) before deploying — handy for
 refreshing beta with production data and the latest `main` in one run.
 
+The workflow requires the following secrets to be configured.
+* `SERVICE_HOST` — SSH host for the target server
+* `SERVICE_SSH_USERNAME` — SSH username
+* `SERVICE_AUTHORIZED_SSH_KEY` — private key with access to the target deployment
+* `SERVICE_SSH_PORT` — *(optional)* SSH port, defaults to `22`
+* `SERVICE_APP_DIR` — app directory on the server to deploy
+
 #### Deploying manually
 
 If GitHub Actions is unavailable, SSH into the server and run the deploy
@@ -216,10 +246,3 @@ cd ~/apps/django-beta/packman
 git pull
 util/server/deploy.sh ~/apps/django-beta
 ```
-
-This requires the following secrets to be configured.
-* `SERVICE_HOST` — SSH host for the target server
-* `SERVICE_SSH_USERNAME` — SSH username
-* `SERVICE_AUTHORIZED_SSH_KEY` — private key with access to the target deployment
-* `SERVICE_SSH_PORT` — *(optional)* SSH port, defaults to `22`
-* `SERVICE_APP_DIR` — app directory on the server to deploy
