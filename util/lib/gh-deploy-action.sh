@@ -4,7 +4,7 @@
 #
 # Internal helper for `packman.sh <beta|prod> deploy`. Arguments:
 #   TARGET BRANCH RESET_DB ASSUME_YES FORCE DRY_RUN COMPACT
-# (booleans are "true"/"false").
+# (booleans are "true"/"false"; an empty BRANCH means the current branch).
 
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/logging.sh"
@@ -22,6 +22,13 @@ require_cmd() {
     command -v "$1" &>/dev/null || error "Required command '$1' not found on PATH"
 }
 
+require_cmd git
+current_branch="$(git symbolic-ref --quiet --short HEAD || true)"
+if [[ -z "$branch" ]]; then
+    [[ -n "$current_branch" ]] || error "Not on a branch — pass --branch NAME."
+    branch="$current_branch"
+fi
+
 header "Deploy $branch to $target"
 
 # ── Hard checks (not overridable) ─────────────────────────────────────────────
@@ -37,7 +44,6 @@ if [[ "$target" == "prod" && "$reset_db" == "true" ]]; then
     error "--reset-db is only supported for beta"
 fi
 
-require_cmd git
 require_cmd gh
 gh auth status >/dev/null 2>&1 || error "gh is not authenticated — run 'gh auth login'"
 
@@ -64,19 +70,15 @@ fi
 # ── Workspace checks (overridable with --force) ───────────────────────────────
 problems=()
 
-if [[ -n "$(git status --porcelain)" ]]; then
-    problems+=("This workspace has uncommitted or untracked changes (see 'git status').")
-fi
-
-current_branch="$(git symbolic-ref --quiet --short HEAD || true)"
+# Local state is irrelevant when deploying a branch other than the one checked out.
 if [[ "$current_branch" == "$branch" ]]; then
+    if [[ -n "$(git status --porcelain)" ]]; then
+        problems+=("This workspace has uncommitted or untracked changes (see 'git status').")
+    fi
     ahead="$(git rev-list --count "origin/$branch..HEAD")"
     behind="$(git rev-list --count "HEAD..origin/$branch")"
     (( ahead == 0 )) || problems+=("Local '$branch' has $ahead commit(s) not pushed to origin/$branch.")
     (( behind == 0 )) || problems+=("Local '$branch' is $behind commit(s) behind origin/$branch — origin has code you haven't pulled.")
-else
-    unmerged="$(git rev-list --count "origin/$branch..HEAD")"
-    (( unmerged == 0 )) || problems+=("Current branch '${current_branch:-HEAD}' has $unmerged commit(s) not in origin/$branch (not merged and pushed).")
 fi
 
 if [[ "$target" == "prod" ]]; then

@@ -27,7 +27,7 @@ Options:
   --yes           start: replace an existing server without prompting.
                   deploy: skip the prod confirmation prompt.
   --sync-env ENV  Source environment for sync: beta or prod (default: beta).
-  --branch NAME   Branch to deploy (default: main; prod only allows main).
+  --branch NAME   Branch to deploy (default: current branch; prod only allows main).
   --reset-db      Replace beta's database with a copy of prod first (beta deploy).
   --force         Deploy despite workspace/beta-validation warnings (deploy).
   --dry-run       Run deploy checks and print the gh command without deploying.
@@ -65,7 +65,7 @@ port_set=false
 detach=false
 assume_yes=false
 sync_env=beta
-branch=main
+branch=
 reset_db=false
 force=false
 dry_run=false
