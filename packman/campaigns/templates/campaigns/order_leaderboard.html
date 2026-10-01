@@ -3,7 +3,7 @@
 {% load humanize i18n static %}
 
 {% block title %}
-  {% translate 'Orders Report' %} | {{ block.super }}
+  {% translate 'NCC Leaderboards' %} | {{ block.super }}
 {% endblock %}
 
 {% block content %}
@@ -103,22 +103,11 @@
                 <tr>
                   <th scope="col">{% translate 'Den' %}</th>
                   <th scope="col"
+                      class="text-end"
                       data-sort-header="weight"
                       aria-sort="descending"
                       onclick="sortRows('#den_ordered_table tbody tr', '#den_ordered_table thead th[data-sort-header]', 'weight')">
-                    {% translate 'Average Weight' %}<span aria-hidden="true"></span>
-                  </th>
-                  <th scope="col"
-                      data-sort-header="orders"
-                      aria-sort="none"
-                      onclick="sortRows('#den_ordered_table tbody tr', '#den_ordered_table thead th[data-sort-header]', 'orders')">
-                    {% translate 'Average Orders' %}<span aria-hidden="true"></span>
-                  </th>
-                  <th scope="col"
-                      data-sort-header="total"
-                      aria-sort="none"
-                      onclick="sortRows('#den_ordered_table tbody tr', '#den_ordered_table thead th[data-sort-header]', 'total')">
-                    {% translate 'Average Sales' %}<span aria-hidden="true"></span>
+                    {% translate 'Avg lbs Sold per Cub' %}<span aria-hidden="true"></span>
                   </th>
                 </tr>
               </thead>
@@ -137,10 +126,7 @@
                         <span>{{ den.name }}</span>
                       </div>
                     </th>
-                    <td data-sort-key="weight" data-sort-value="{{ den.average_weight }}">{{ den.average_weight_display }}</td>
-                    <td data-sort-key="orders" data-sort-value="{{ den.average_orders }}">{{ den.average_orders|floatformat:"-2"|intcomma }}</td>
-                    <td data-sort-key="total"
-                      data-sort-value="{{ den.average_sales }}">${{ den.average_sales|floatformat:"0"|intcomma }}</td>
+                    <td class="text-end" data-sort-key="weight" data-sort-value="{{ den.average_weight }}">{{ den.average_weight_display }}</td>
                   </tr>
                 {% endfor %}
               </tbody>
