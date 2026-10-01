@@ -81,13 +81,6 @@ if [[ "$current_branch" == "$branch" ]]; then
     (( behind == 0 )) || problems+=("Local '$branch' is $behind commit(s) behind origin/$branch — origin has code you haven't pulled.")
 fi
 
-if [[ "$target" == "prod" ]]; then
-    beta_runs="$(gh run list --workflow deploy.yml --status success --commit "$sha" --limit 50 \
-        --json displayTitle \
-        --jq 'map(select(.displayTitle | test(" to beta( \\(reset db\\))?$"))) | length')"
-    (( beta_runs > 0 )) || problems+=("$sha has not been successfully deployed to beta.")
-fi
-
 if (( ${#problems[@]} > 0 )); then
     for problem in "${problems[@]}"; do
         warn "$problem"

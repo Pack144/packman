@@ -29,7 +29,7 @@ Options:
   --sync-env ENV  Source environment for sync: beta or prod (default: beta).
   --branch NAME   Branch to deploy (default: current branch; prod only allows main).
   --reset-db      Replace beta's database with a copy of prod first (beta deploy).
-  --force         Deploy despite workspace/beta-validation warnings (deploy).
+  --force         Deploy despite workspace warnings (deploy).
   --dry-run       Run deploy checks and print the gh command without deploying.
   --compact       Show only relevant/failed steps while watching the deploy.
   --help, -h      Show this help message.
