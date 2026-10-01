@@ -204,8 +204,8 @@ Deploy `main` to beta after replacing beta's database with a copy of prod:
 
 Deploy `main` to prod. The command refuses to deploy any other branch to prod
 (use the GitHub Actions UI for that). It also requires that CI passed on the
-latest `origin/main` commit and that the same commit was already deployed to
-beta, and asks you to confirm (`--yes` skips the prompt):
+latest `origin/main` commit, and asks you to confirm (`--yes` skips the
+prompt). Validate the change on beta first:
 
 ```bash
 ./util/packman.sh prod deploy --branch main
@@ -216,7 +216,7 @@ useful options:
 
 * `--dry-run` — run the checks and print the `gh` command without deploying.
 * `--compact` — show only relevant or failed steps while waiting.
-* `--force` — deploy despite workspace or beta-validation warnings.
+* `--force` — deploy despite workspace warnings.
 
 #### Deploying via the GitHub Actions UI
 
