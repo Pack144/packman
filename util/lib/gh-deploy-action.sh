@@ -113,27 +113,44 @@ if [[ "$target" == "prod" && "$assume_yes" != "true" ]]; then
     [[ "$answer" == "prod" ]] || error "Prod deploy cancelled"
 fi
 
-dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-dispatch_output="$("${run_cmd[@]}" 2>&1)" || error "gh workflow run failed: $dispatch_output"
-run_url="$(grep -Eo 'https://[^ ]+/actions/runs/[0-9]+' <<<"$dispatch_output" | head -n1 || true)"
+for attempt in 1 2; do
+    info "Deployment attempt $attempt of 2"
+    dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    dispatch_output="$("${run_cmd[@]}" 2>&1)" || error "gh workflow run failed: $dispatch_output"
+    run_url="$(grep -Eo 'https://[^ ]+/actions/runs/[0-9]+' <<<"$dispatch_output" | head -n1 || true)"
 
-if [[ -z "$run_url" ]]; then
-    for _ in {1..10}; do
-        run_url="$(gh run list --workflow deploy.yml --event workflow_dispatch --branch "$branch" \
-            --created ">=$dispatched_at" --limit 1 --json url --jq '.[0].url // empty')"
-        [[ -n "$run_url" ]] && break
-        sleep 3
-    done
-fi
-[[ -n "$run_url" ]] || error "Dispatched the workflow but could not find its run — check the Actions tab"
+    if [[ -z "$run_url" ]]; then
+        for _ in {1..10}; do
+            run_url="$(gh run list --workflow deploy.yml --event workflow_dispatch --branch "$branch" \
+                --created ">=$dispatched_at" --limit 1 --json url --jq '.[0].url // empty')"
+            [[ -n "$run_url" ]] && break
+            sleep 3
+        done
+    fi
+    [[ -n "$run_url" ]] || error "Dispatched the workflow but could not find its run — check the Actions tab"
 
-run_id="${run_url##*/}"
-echo "Run URL: $run_url"
+    run_id="${run_url##*/}"
+    echo "Run URL: $run_url"
 
-watch_args=(gh run watch "$run_id" --exit-status)
-[[ "$compact" == "true" ]] && watch_args+=(--compact)
-if "${watch_args[@]}"; then
-    success "Deployed $branch ($sha) to $target — $run_url"
-else
-    error "Deploy of $branch to $target failed — $run_url"
-fi
+    watch_args=(gh run watch "$run_id" --exit-status)
+    [[ "$compact" == "true" ]] && watch_args+=(--compact)
+    if "${watch_args[@]}"; then
+        success "Deployed $branch ($sha) to $target — $run_url"
+        exit 0
+    fi
+
+    info "Failed workflow logs:"
+    if failed_logs="$(gh run view "$run_id" --log-failed 2>&1)"; then
+        printf '%s\n' "$failed_logs" >&2
+    else
+        printf '%s\n' "$failed_logs" >&2
+        warn "Could not retrieve failed workflow logs for $run_id."
+    fi
+
+    if (( attempt == 1 )) && grep -Eiq 'ssh: handshake failed:.*connection reset by peer' <<<"$failed_logs"; then
+        warn "SSH handshake was reset before remote commands started; retrying with a fresh workflow run."
+        continue
+    fi
+
+    error "Deploy of $branch ($sha) to $target failed — $run_url"
+done
