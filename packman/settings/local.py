@@ -19,9 +19,6 @@ ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS",
     default=["localhost", "127.0.0.1", "[::1]", "packman.localhost"],
 )
-PACK_NCC_LEADERBOARD_ENABLED = True
-
-
 # Logging
 # https://docs.djangoproject.com/en/3.2/topics/logging/
 # ------------------------------------------------------------------------------

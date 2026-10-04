@@ -3,7 +3,6 @@ import json
 from datetime import datetime, time
 from math import ceil
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -11,7 +10,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Prefetch, Q, Sum
 from django.db.models.functions import Coalesce, TruncDate
-from django.http import Http404, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -247,11 +246,6 @@ class OrderLeaderboardView(CampaignOrderPeriodMixin, LoginRequiredMixin, Templat
     template_name = "campaigns/order_leaderboard.html"
     allowed_tabs = {"top-sales", "top-orders", "dens"}
     default_tab = "dens"
-
-    def dispatch(self, request, *args, **kwargs):
-        if not settings.PACK_NCC_LEADERBOARD_ENABLED:
-            raise Http404
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
