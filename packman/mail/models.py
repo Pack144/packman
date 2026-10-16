@@ -2,16 +2,13 @@ import html
 import logging
 from pathlib import Path
 
-from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
 from django.core.validators import URLValidator
 from django.db import IntegrityError, models, transaction
 from django.db.models import Q
-from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import strip_tags
@@ -26,6 +23,7 @@ from packman.dens.models import Den
 from packman.membership.models import Family
 
 from .managers import MessageManager, MessageRecipientQuerySet
+from .rendering import render_message
 from .utils import ListEmailMessage
 
 logger = logging.getLogger(__name__)
@@ -224,8 +222,6 @@ class Message(TimeStampedUUIDModel):
     def _personalize_messages(self):
         messages = []
 
-        protocol = "https" if settings.CSRF_COOKIE_SECURE else "http"
-        site = Site.objects.get_current()
         author_name = self.author.__str__()
         author_email = self.author.email
         distros_string = ", ".join(self.distribution_lists.values_list("name", flat=True))
@@ -235,10 +231,7 @@ class Message(TimeStampedUUIDModel):
             logger.info(_("Generating an email copy for %s") % recipient)
 
             # Personalize the email for each recipient.
-            context = {"site": site, "message": self, "recipient": recipient, "protocol": protocol}
-
-            plaintext = render_to_string("mail/message_body.txt", context)
-            richtext = render_to_string("mail/message_body.html", context)
+            plaintext, richtext = render_message(self, recipient)
 
             # compose the email
             msg = ListEmailMessage(

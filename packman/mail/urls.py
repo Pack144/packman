@@ -7,6 +7,7 @@ from .views import (
     MessageDetailView,
     MessageDraftsView,
     MessageInboxView,
+    MessagePreviewView,
     MessageSendingView,
     MessageSentView,
     MessageTrashView,
@@ -17,6 +18,7 @@ app_name = "mail"
 urlpatterns = [
     path("", MessageInboxView.as_view(), name="inbox"),
     path("compose/", MessageCreateView.as_view(), name="create"),
+    path("preview/", MessagePreviewView.as_view(), name="preview"),
     path("sent/", MessageSentView.as_view(), name="sent"),
     path("archives/", MessageArchiveView.as_view(), name="archives"),
     path("trash/", MessageTrashView.as_view(), name="trash"),

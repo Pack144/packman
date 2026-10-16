@@ -46,10 +46,12 @@
     <br>
     We sent it to you because you have a Cub who is an active member in {{ site.name }}.
   </p>
-  <p>
-    You can view this message in a web browser by
-    <a href="{{ protocol }}://{{ site.domain }}{{ message.get_absolute_url }}">visiting our website</a>.
-    <br>
-    While you are there, you can update your email address or adjust your preferences.
-  </p>
+  {% if not preview %}
+    <p>
+      You can view this message in a web browser by
+      <a href="{{ protocol }}://{{ site.domain }}{{ message.get_absolute_url }}">visiting our website</a>.
+      <br>
+      While you are there, you can update your email address or adjust your preferences.
+    </p>
+  {% endif %}
 {% endblock footer %}
