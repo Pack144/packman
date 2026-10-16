@@ -1,6 +1,11 @@
 {% extends "mail/base.html" %}
 
-{% load crispy_forms_filters crispy_forms_tags i18n %}
+{% load crispy_forms_filters crispy_forms_tags i18n static %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'mail/css/preview.css' %}">
+{% endblock css %}
 
 {% block title %}
   {% if message.pk %}
@@ -31,6 +36,12 @@
         <div class="btn-group btn-group-lg"
              role="group"
              aria-label="{% translate 'Message actions' %}">
+          <button type="button"
+                  class="btn btn-link text-decoration-none"
+                  id="message-preview-button"
+                  data-preview-url="{% url 'mail:preview' %}">
+            <i class="fa-regular fa-eye" aria-hidden="true"></i> {% translate 'Preview' %}
+          </button>
           <button type="submit"
                   name="_save"
                   class="btn btn-link text-decoration-none"
@@ -76,6 +87,7 @@
       </fieldset>
       <fieldset id="message_subject_and_body">
         {% for field in form.visible_fields %}{{ field|as_crispy_field }}{% endfor %}
+        <p class="small text-body-secondary">{% translate 'Use Preview to check the email layout before sending.' %}</p>
       </fieldset>
       <fieldset id="message_attachments">
         <legend>{% translate 'Attachments' %}</legend>
@@ -116,11 +128,60 @@
       </div>
     </form>
   </div>
+  <div class="modal fade"
+       id="message-preview-modal"
+       tabindex="-1"
+       aria-labelledby="message-preview-title"
+       aria-hidden="true"
+       data-error-message="{% translate 'Unable to load the preview. Please try again.' %}"
+       data-loading-message="{% translate 'Loading preview...' %}">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="message-preview-title">{% translate 'Email preview' %}</h2>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="{% translate 'Close' %}"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-body-secondary">
+            {% translate 'This shows the HTML Packman sends, with you as the sample recipient. Email apps may display fonts, spacing, images, and colors differently. Attachments are not shown.' %}
+          </p>
+          <div class="btn-group mb-3"
+               role="group"
+               aria-label="{% translate 'Preview width' %}">
+            <button type="button"
+                    class="btn btn-outline-secondary active"
+                    data-preview-width="desktop"
+                    aria-pressed="true">{% translate 'Desktop' %}</button>
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    data-preview-width="mobile"
+                    aria-pressed="false">{% translate 'Mobile' %}</button>
+          </div>
+          <p id="message-preview-status" role="status" aria-live="polite"></p>
+          <div class="mail-preview-viewport">
+            <iframe id="message-preview-frame"
+                    class="mail-preview-frame"
+                    title="{% translate 'Rendered email preview' %}"
+                    sandbox=""
+                    referrerpolicy="no-referrer"
+                    hidden></iframe>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% translate 'Back to editing' %}</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock message_detail %}
 
 {% block js %}
   {{ block.super }}
   {{ form.media }}
+  <script src="{% static 'mail/js/preview.js' %}"></script>
   <script>
     const formPrefix = "to_field"
 

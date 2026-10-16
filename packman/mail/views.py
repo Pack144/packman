@@ -1,14 +1,29 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.decorators.cache import never_cache
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
 from .forms import AttachmentForm, MessageDistributionFormSet, MessageForm
 from .models import Attachment, Mailbox, Message
+from .rendering import render_message
+
+
+@method_decorator(never_cache, name="dispatch")
+class MessagePreviewView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = MessageForm(request.POST)
+        if not form.is_valid():
+            return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+        message = form.instance
+        message.author = request.user
+        _, richtext = render_message(message, request.user, preview=True)
+        return JsonResponse({"html": richtext})
 
 
 class MessageCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):

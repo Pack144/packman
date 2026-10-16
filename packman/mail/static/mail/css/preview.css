@@ -1,0 +1,20 @@
+.mail-preview-viewport {
+  overflow-x: auto;
+}
+
+.mail-preview-frame {
+  display: block;
+  width: 700px;
+  height: 65vh;
+  margin: 0 auto;
+  border: 1px solid var(--bs-border-color);
+  background: white;
+}
+
+.mail-preview-frame[hidden] {
+  display: none;
+}
+
+.mail-preview-frame.is-mobile {
+  width: 375px;
+}

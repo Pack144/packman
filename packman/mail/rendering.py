@@ -1,7 +1,10 @@
 from html import escape
 from html.parser import HTMLParser
 
+from django.conf import settings
+from django.contrib.sites.models import Site
 from django.template.defaultfilters import linebreaks
+from django.template.loader import render_to_string
 
 PARAGRAPH_STYLE = "margin: 0 0 8px; line-height: 1.4;"
 EDITOR_STYLE = f"body {{ font: 14px/1.4 sans-serif; }} p {{ {PARAGRAPH_STYLE} }}"
@@ -48,3 +51,17 @@ def render_body(body: str) -> str:
     for start, end, replacement in reversed(parser.paragraphs):
         body = body[:start] + replacement + body[end:]
     return body
+
+
+def render_message(message, recipient, *, preview: bool = False) -> tuple[str, str]:
+    context = {
+        "site": Site.objects.get_current(),
+        "message": message,
+        "recipient": recipient,
+        "protocol": "https" if settings.CSRF_COOKIE_SECURE else "http",
+        "preview": preview,
+    }
+    return (
+        render_to_string("mail/message_body.txt", context),
+        render_to_string("mail/message_body.html", context),
+    )
