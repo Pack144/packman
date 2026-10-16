@@ -1,7 +1,11 @@
 from django import forms
 from django.forms import inlineformset_factory
+from django.utils.translation import gettext_lazy as _
+
+from tinymce.widgets import TinyMCE
 
 from .models import Message, MessageDistribution, MessageRecipient
+from .rendering import EDITOR_STYLE
 
 
 class AttachmentForm(forms.Form):
@@ -12,6 +16,8 @@ class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
         fields = ("subject", "body")
+        widgets = {"body": TinyMCE(mce_attrs={"content_style": EDITOR_STYLE, "height": 320, "min_height": 320})}
+        help_texts = {"body": _("Enter starts a paragraph; Shift+Enter starts a single line.")}
 
 
 class MessageDistributionForm(forms.ModelForm):
