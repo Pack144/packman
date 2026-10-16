@@ -99,9 +99,17 @@ class MessagePreviewTests(TestCase):
         for url in (reverse("mail:create"), reverse("mail:update", kwargs={"pk": message.pk})):
             with self.subTest(url=url):
                 response = self.client.get(url)
-                self.assertContains(response, 'id="message-preview-button"')
+                self.assertContains(
+                    response,
+                    '<button type="button" class="btn btn-link text-decoration-none" '
+                    'id="message-preview-button" data-bs-toggle="tooltip" title="Preview" '
+                    f'data-preview-url="{self.url}">'
+                    '<i class="fa-regular fa-eye" aria-hidden="true"></i>'
+                    '<span class="visually-hidden">Preview</span></button>',
+                    html=True,
+                )
                 self.assertContains(response, 'sandbox=""')
-                self.assertContains(response, 'data-preview-width="mobile"')
+                self.assertNotContains(response, "data-preview-width")
 
     def composer_data(self):
         return {

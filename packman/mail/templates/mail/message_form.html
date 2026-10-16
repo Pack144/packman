@@ -39,8 +39,10 @@
           <button type="button"
                   class="btn btn-link text-decoration-none"
                   id="message-preview-button"
+                  data-bs-toggle="tooltip"
+                  title="{% translate 'Preview' %}"
                   data-preview-url="{% url 'mail:preview' %}">
-            <i class="fa-regular fa-eye" aria-hidden="true"></i> {% translate 'Preview' %}
+            <i class="fa-regular fa-eye" aria-hidden="true"></i><span class="visually-hidden">{% translate 'Preview' %}</span>
           </button>
           <button type="submit"
                   name="_save"
@@ -148,18 +150,6 @@
           <p class="text-body-secondary">
             {% translate 'This shows the HTML Packman sends, with you as the sample recipient. Email apps may display fonts, spacing, images, and colors differently. Attachments are not shown.' %}
           </p>
-          <div class="btn-group mb-3"
-               role="group"
-               aria-label="{% translate 'Preview width' %}">
-            <button type="button"
-                    class="btn btn-outline-secondary active"
-                    data-preview-width="desktop"
-                    aria-pressed="true">{% translate 'Desktop' %}</button>
-            <button type="button"
-                    class="btn btn-outline-secondary"
-                    data-preview-width="mobile"
-                    aria-pressed="false">{% translate 'Mobile' %}</button>
-          </div>
           <p id="message-preview-status" role="status" aria-live="polite"></p>
           <div class="mail-preview-viewport">
             <iframe id="message-preview-frame"
