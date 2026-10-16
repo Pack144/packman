@@ -23,7 +23,7 @@ from packman.dens.models import Den
 from packman.membership.models import Family
 
 from .managers import MessageManager, MessageRecipientQuerySet
-from .rendering import render_body, render_message
+from .rendering import render_message
 from .utils import ListEmailMessage
 
 logger = logging.getLogger(__name__)
@@ -256,9 +256,6 @@ class Message(TimeStampedUUIDModel):
 
     def get_plaintext_body(self):
         return html.unescape(strip_tags(self.body))
-
-    def get_html_body(self):
-        return render_body(self.body)
 
     def get_recipients(self):
         distros = (

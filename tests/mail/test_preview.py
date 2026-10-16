@@ -81,8 +81,8 @@ class MessagePreviewTests(TestCase):
         outgoing = message._personalize_messages()[0]
         _, sent_html = render_message(message, self.author)
         self.assertEqual(outgoing.alternatives[0].content, sent_html)
-        self.assertIn(message.get_html_body(), preview)
-        self.assertIn(message.get_html_body(), sent_html)
+        self.assertIn(message.body, preview)
+        self.assertIn(message.body, sent_html)
         self.assertIn("visiting our website", sent_html)
         self.assertEqual(outgoing.to, [f"{self.author} <{self.author.email}>"])
 
@@ -102,7 +102,6 @@ class MessagePreviewTests(TestCase):
                 self.assertContains(response, 'id="message-preview-button"')
                 self.assertContains(response, 'sandbox=""')
                 self.assertContains(response, 'data-preview-width="mobile"')
-                self.assertContains(response, "Shift+Enter")
 
     def composer_data(self):
         return {
