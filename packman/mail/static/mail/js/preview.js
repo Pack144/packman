@@ -8,11 +8,13 @@
   const frame = document.getElementById("message-preview-frame");
   const status = document.getElementById("message-preview-status");
   let controller;
+  let modalClosed = true;
 
   dialog.addEventListener("hidden.bs.modal", () => {
+    modalClosed = true;
     controller?.abort();
     frame.removeAttribute("srcdoc");
-    button.focus();
+    if (!button.disabled) button.focus();
   });
 
   button.addEventListener("click", async () => {
@@ -21,11 +23,18 @@
     data.set("subject", form.elements.subject.value);
     data.set("body", form.elements.body.value);
     controller = new AbortController();
+    const requestController = controller;
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      requestController.abort();
+    }, 15000);
     button.disabled = true;
     frame.hidden = true;
     frame.removeAttribute("srcdoc");
     status.classList.remove("text-danger");
     status.textContent = dialog.dataset.loadingMessage;
+    modalClosed = false;
     modal.show();
 
     try {
@@ -35,7 +44,7 @@
           "X-CSRFToken": form.elements.csrfmiddlewaretoken.value,
         },
         body: data,
-        signal: controller.signal,
+        signal: requestController.signal,
       });
       if (response.redirected || !response.headers.get("Content-Type")?.includes("application/json")) {
         throw new Error(dialog.dataset.errorMessage);
@@ -50,12 +59,14 @@
       frame.hidden = false;
       status.textContent = "";
     } catch (error) {
-      if (error.name !== "AbortError") {
+      if (timedOut || error.name !== "AbortError") {
         status.classList.add("text-danger");
-        status.textContent = error instanceof TypeError ? dialog.dataset.errorMessage : error.message;
+        status.textContent = timedOut || error instanceof TypeError ? dialog.dataset.errorMessage : error.message;
       }
     } finally {
+      clearTimeout(timeout);
       button.disabled = false;
+      if (modalClosed) button.focus();
     }
   });
 })();
