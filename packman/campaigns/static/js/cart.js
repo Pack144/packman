@@ -15,11 +15,9 @@ const formIdRegex = new RegExp(`(${formPrefix}-)(?:__prefix__|\\d+)(-)`, 'g')
 let orderTotal = Number(orderTotalField.textContent)
 
 const donationInputField = document.getElementById('id_donation')
-let donationAmount = Number(donationInputField.value)
+let donationAmount = Number(donationInputField.value) || 0
 donationInputField.oninput = function () {
-  const donationAmountDelta = Number(donationInputField.value) - donationAmount
-  orderTotalField.textContent = Number(orderTotalField.textContent) + donationAmountDelta
-  donationAmount = Number(donationInputField.value)
+  recalculateCart()
 }
 
 function nudgeDonation () {
@@ -58,6 +56,58 @@ function updateFormSet () {
   }
 }
 
+function recalculateCart () {
+  let itemCount = 0
+  let total = Number(donationInputField.value) || 0
+
+  for (const product of document.querySelectorAll('.product-quantity')) {
+    const productId = product.id.replace(/-quantity$/, '')
+    const quantity = Number(product.textContent) || 0
+    const subtotalField = document.getElementById(`${productId}-subtotal`)
+    const removeButton = document.querySelector(`.product-remove[data-product="${productId}"]`)
+    const price = Number(getProductPrice(productId)) || 0
+    const subtotal = price * quantity
+
+    subtotalField.value = quantity ? subtotal.toFixed(2) : ''
+    removeButton.disabled = quantity === 0
+    itemCount += quantity
+    total += subtotal
+  }
+
+  orderProductCountField.textContent = itemCount
+  orderTotalField.textContent = total.toFixed(2)
+  orderTotal = total
+  donationAmount = Number(donationInputField.value) || 0
+}
+
+// Update the visible cart elements from the submitted formset after a failed order
+// creation (for example, due to a validation error such as an invalid ZIP code).
+function initializeCart () {
+  const quantities = new Map()
+
+  for (const form of formRow) {
+    const productField = form.querySelector('select[id$=\'-product\']')
+    const quantityField = form.querySelector('input[id$=\'-quantity\']')
+    const deleteField = form.querySelector('input[id$=\'-DELETE\']')
+    const productId = productField.value
+    const quantity = Number(quantityField.value)
+
+    if (!productId || !Number.isFinite(quantity) || quantity <= 0 || deleteField.checked) {
+      continue
+    }
+
+    quantities.set(productId, (quantities.get(productId) || 0) + quantity)
+  }
+
+  for (const product of document.querySelectorAll('.product-quantity')) {
+    const productId = product.id.replace(/-quantity$/, '')
+    const quantity = quantities.get(productId) || 0
+
+    product.textContent = quantity
+  }
+  recalculateCart()
+}
+
 function searchSelectedProducts (productId) {
   console.log('searchSelectedProducts', productId)
   for (const form of formRow) {
@@ -70,45 +120,14 @@ function searchSelectedProducts (productId) {
   }
 }
 
-function updatePricing (productId, increment) {
-  console.log('order total', orderTotal)
-
-  const productSubTotalField = document.getElementById(`${productId}-subtotal`)
-  const productPrice = getProductPrice(productId)
-  const currentTotal = orderTotal
-  let productSubTotal = productSubTotalField.value
-
-  console.log('current total', currentTotal)
-
-  if (increment >= 1) {
-    orderTotal = currentTotal + Number(productPrice)
-    productSubTotal = Number(productSubTotal) + Number(productPrice)
-  } else if (increment < 0) {
-    orderTotal = currentTotal - Number(productPrice)
-    productSubTotal = Number(productSubTotal) - Number(productPrice)
-  }
-  console.log('New order total', orderTotal)
-  orderTotalField.innerText = orderTotal.toFixed(2)
-  if (productSubTotal <= 0) {
-    productSubTotalField.value = ''
-    productSubTotalField.removeAttribute('value')
-  } else {
-    productSubTotalField.value = productSubTotal.toFixed(2)
-  }
-
-  return { currentTotal, productSubTotal }
-}
-
 function updateQuantities (productId, increment) {
   console.log('updating quantities')
   const productQuantityField = document.getElementById(`${productId}-quantity`)
-  const orderProductCount = Number(orderProductCountField.innerText) + increment
   const productQuantity = Number(productQuantityField.innerText) + increment
 
-  orderProductCountField.innerText = orderProductCount
   productQuantityField.innerHTML = productQuantity
 
-  return { orderProductCount, productQuantity }
+  return productQuantity
 }
 
 function getProductPrice (productId) {
@@ -121,13 +140,12 @@ function addProduct (element) {
 
   console.log('addProduct', productId)
 
-  const pricing = updatePricing(productId, 1)
-  const quantities = updateQuantities(productId, 1)
+  const productQuantity = updateQuantities(productId, 1)
 
   const productRow = searchSelectedProducts(productId)
   if (productRow) {
     console.log('Found an existing row', productRow)
-    productRow.querySelector('input[id$=\'-quantity\']').value = quantities.productQuantity
+    productRow.querySelector('input[id$=\'-quantity\']').value = productQuantity
     productRow.querySelector('input[id$=\'-DELETE\']').checked = false
   } else {
     console.log('adding a new row')
@@ -140,16 +158,16 @@ function addProduct (element) {
     totalForms.setAttribute('value', formCount)
     element.parentElement.querySelector('.product-remove').disabled = false
   }
+  recalculateCart()
 }
 
 function removeProduct (element) {
   const productId = element.dataset.product
   console.log('removeProduct', productId)
-  const pricing = updatePricing(productId, -1)
-  const quantities = updateQuantities(productId, -1)
+  const productQuantity = updateQuantities(productId, -1)
   const productRow = searchSelectedProducts(productId)
 
-  if (quantities.productQuantity === 0) {
+  if (productQuantity === 0) {
     element.parentElement.querySelector('.product-remove').disabled = true
     console.log('Product Row', productRow)
     if (productRow.querySelector('input[id$=\'-id\']').value) {
@@ -165,9 +183,12 @@ function removeProduct (element) {
       totalForms.setAttribute('value', formCount)
     }
   } else {
-    productRow.querySelector('input[id$=\'-quantity\']').value = quantities.productQuantity
+    productRow.querySelector('input[id$=\'-quantity\']').value = productQuantity
   }
+  recalculateCart()
 }
+
+initializeCart()
 
 function updateOrder (target, orderId, field) {
   const status = target.checked
