@@ -108,6 +108,15 @@ function initializeCart () {
   recalculateCart()
 }
 
+function focusFirstInvalidField () {
+  const invalidFields = document.querySelectorAll('#order-form .is-invalid:not([type="hidden"]):not(:disabled)')
+  const firstVisibleInvalidField = Array.from(invalidFields).find((field) => field.getClientRects().length > 0)
+
+  if (firstVisibleInvalidField) {
+    firstVisibleInvalidField.focus()
+  }
+}
+
 function searchSelectedProducts (productId) {
   console.log('searchSelectedProducts', productId)
   for (const form of formRow) {
@@ -189,6 +198,7 @@ function removeProduct (element) {
 }
 
 initializeCart()
+focusFirstInvalidField()
 
 function updateOrder (target, orderId, field) {
   const status = target.checked

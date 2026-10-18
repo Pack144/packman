@@ -64,6 +64,7 @@ class OrderCreationTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("zipcode", response.context["customer_form"].errors)
+        self.assertContains(response, "is-invalid", html=False)
         item_form = response.context["items_formset"].forms[0]
         self.assertEqual(item_form["product"].value(), str(self.product.pk))
         self.assertEqual(item_form["quantity"].value(), "3")
