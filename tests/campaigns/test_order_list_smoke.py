@@ -2,6 +2,7 @@ import re
 from datetime import timedelta
 
 from django.test import TestCase
+from django.test.html import parse_html
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import parse_http_date
@@ -135,11 +136,19 @@ class OrderListSmokeTest(TestCase):
 
         self.assertContains(response, '<strong class="text-success">$1,234</strong>', html=True)
         self.assertContains(response, 'alt="Order Paid"', count=1)
-        total_cells = re.findall(r'<td\s+class="([^"]+)"\s+data-sort-key="total"', response.content.decode())
+        elements = [parse_html(response.content.decode())]
+        total_cells = []
+        while elements:
+            element = elements.pop()
+            attributes = dict(element.attributes)
+            if element.name == "td" and attributes.get("data-sort-key") == "total":
+                total_cells.append(attributes)
+            elements.extend(child for child in element.children if not isinstance(child, str))
         self.assertEqual(len(total_cells), 2)
-        for classes in total_cells:
-            self.assertNotIn("d-none", classes.split())
-            self.assertIn("text-nowrap", classes.split())
+        for attributes in total_cells:
+            classes = attributes.get("class", "").split()
+            self.assertNotIn("d-none", classes)
+            self.assertIn("text-nowrap", classes)
 
     def test_award_ineligible_label_only_appears_for_all_cubs(self):
         order = Order.objects.get(seller=self.scout1)

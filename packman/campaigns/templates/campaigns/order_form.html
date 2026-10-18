@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load crispy_forms_filters i18n static %}
+{% load crispy_forms_filters i18n l10n static %}
 
 {% block title %}
   {% if order.pk %}
@@ -85,7 +85,7 @@
                         <div class="flex-grow-1 ms-md-3">
                           <div class="d-flex justify-content-between">
                             <strong>{{ product.name }}</strong>
-                            <span class="text-body-secondary">$<span id="{{ product.pk }}-price">{{ product.price }}</span></span>
+                            <span class="text-body-secondary">$<span id="{{ product.pk }}-price" data-price="{{ product.price|unlocalize }}">{{ product.price }}</span></span>
                           </div>
                           <p class="fw-lighter d-none d-lg-block">{{ product.description }}</p>
                           {% with ordered=product.orders.first %}
