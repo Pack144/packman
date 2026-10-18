@@ -116,7 +116,7 @@
           <th scope="col"
               class="text-end"
               data-sort-header="date"
-              aria-sort="ascending"
+              aria-sort="descending"
               onclick="sortRows('#order_rows tr', '#order_list_header [data-sort-header]', 'date')">
             {% translate 'Date' %}<span aria-hidden="true"></span>
           </th>
@@ -153,7 +153,7 @@
                   {% endif %}
                   &middot;
                 {% endif %}
-                {{ order.date_added|naturalday }} &middot; ${{ order.total|intcomma }}
+                {{ order.date_added|naturalday }}
               </small>
             </td>
             {% if not selected_seller and family_scout_count > 1 %}
@@ -174,7 +174,7 @@
                 data-sort-value="{{ order.date_added|date:'U' }}">
               <small>{{ order.date_added|naturalday }}</small>
             </td>
-            <td class="d-none d-md-table-cell text-end position-relative"
+            <td class="text-end text-nowrap position-relative"
                 data-sort-key="total"
                 data-sort-value="{{ order.total }}">
               {% if order.is_paid %}

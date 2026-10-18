@@ -290,8 +290,8 @@ table.sortable th[aria-sort="ascending"] span::after,
     top: 0;
 }
 
-/* Orders table: hide the header row on narrow screens where each order's
-   customer/date/total already collapse into a single stacked cell. */
+/* Orders table: hide the header row on narrow screens where customer details
+   stack beside the total. */
 .order-table .order-row {
     cursor: pointer;
 }
