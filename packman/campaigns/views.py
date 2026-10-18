@@ -14,7 +14,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.views.generic import (
     CreateView,
@@ -45,6 +47,7 @@ from .report_data import (
 from .utils import email_receipt
 
 
+@method_decorator(never_cache, name="dispatch")
 class OrderListView(LoginRequiredMixin, ListView):
     model = Order
     template_name = "campaigns/order_list.html"
@@ -78,7 +81,7 @@ class OrderListView(LoginRequiredMixin, ListView):
             queryset.prefetch_related("seller", "customer", "recorded_by")
             .calculate_total()
             .filter(seller__family=self.request.user.family, campaign=campaign)
-            .order_by("date_added")
+            .order_by("-date_added")
         )
 
         seller = self.request.GET.get("seller")

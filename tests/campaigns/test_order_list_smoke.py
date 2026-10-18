@@ -1,7 +1,10 @@
 import re
+from datetime import timedelta
 
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import parse_http_date
 
 from packman.calendars.factories import CurrentPackYearFactory, PackYearFactory
 from packman.campaigns.models import Campaign, CampaignScout, Customer, Order, Quota
@@ -52,6 +55,23 @@ class OrderListSmokeTest(TestCase):
         self.assertIn("Cubs", content)
         self.assertEqual(len(re.findall(r"<h1>\s*Orders\s*</h1>", content)), 1)
 
+    def test_order_list_disables_caching(self):
+        self.client.force_login(self.adult)
+
+        for url in (
+            reverse("campaigns:order_list"),
+            reverse("campaigns:order_list_by_campaign", args=[self.pack_year.year]),
+        ):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(
+                    {directive.strip() for directive in response["Cache-Control"].split(",")},
+                    {"max-age=0", "no-cache", "no-store", "must-revalidate", "private"},
+                )
+                self.assertLessEqual(parse_http_date(response["Expires"]), timezone.now().timestamp())
+
     def test_order_list_marks_exempt_scout_after_name(self):
         CampaignScout.objects.create(campaign=self.campaign, scout=self.scout1, exempt=True)
         self.client.force_login(self.adult)
@@ -83,6 +103,43 @@ class OrderListSmokeTest(TestCase):
         resp = self.client.get(f"/ncc/?seller={self.scout1.pk}")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(list(resp.context["order_list"]), [Order.objects.get(seller=self.scout1)])
+
+    def test_order_list_shows_newest_orders_first(self):
+        older_order = Order.objects.get(seller=self.scout1)
+        newer_order = Order.objects.get(seller=self.scout2)
+        Order.objects.filter(pk=older_order.pk).update(date_added=timezone.now() - timedelta(days=1))
+        self.client.force_login(self.adult)
+
+        for url in (
+            reverse("campaigns:order_list"),
+            reverse("campaigns:order_list_by_campaign", args=[self.pack_year.year]),
+        ):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+
+                self.assertEqual(list(response.context["order_list"]), [newer_order, older_order])
+                self.assertContains(response, 'aria-sort="descending"')
+                content = response.content.decode()
+                self.assertLess(
+                    content.index(newer_order.get_absolute_url()), content.index(older_order.get_absolute_url())
+                )
+
+    def test_order_total_and_paid_stamp_are_not_hidden_on_mobile(self):
+        order = Order.objects.get(seller=self.scout1)
+        order.date_paid = timezone.now()
+        order.donation = 1234
+        order.save()
+        self.client.force_login(self.adult)
+
+        response = self.client.get(reverse("campaigns:order_list"))
+
+        self.assertContains(response, '<strong class="text-success">$1,234</strong>', html=True)
+        self.assertContains(response, 'alt="Order Paid"', count=1)
+        total_cells = re.findall(r'<td\s+class="([^"]+)"\s+data-sort-key="total"', response.content.decode())
+        self.assertEqual(len(total_cells), 2)
+        for classes in total_cells:
+            self.assertNotIn("d-none", classes.split())
+            self.assertIn("text-nowrap", classes.split())
 
     def test_award_ineligible_label_only_appears_for_all_cubs(self):
         order = Order.objects.get(seller=self.scout1)
