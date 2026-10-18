@@ -141,7 +141,7 @@ function updateQuantities (productId, increment) {
 
 function getProductPrice (productId) {
   console.log('looking up the price for ', productId)
-  return document.getElementById(`${productId}-price`).innerText
+  return document.getElementById(`${productId}-price`).dataset.price
 }
 
 function addProduct (element) {

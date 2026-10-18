@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone, translation
 
 from packman.calendars.factories import CurrentPackYearFactory
 from packman.campaigns.models import Campaign, Category, Product
@@ -68,3 +68,13 @@ class OrderCreationTest(TestCase):
         item_form = response.context["items_formset"].forms[0]
         self.assertEqual(item_form["product"].value(), str(self.product.pk))
         self.assertEqual(item_form["quantity"].value(), "3")
+
+    def test_product_price_data_attribute_is_not_localized(self):
+        self.product.price = "1234.56"
+        self.product.save(update_fields=("price",))
+
+        with translation.override("de"):
+            response = self.client.get(reverse("campaigns:order_create"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'id="{self.product.pk}-price" data-price="1234.56"')
