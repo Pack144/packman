@@ -21,9 +21,8 @@ from packman.address_book.models import Address, PhoneNumber
 from packman.calendars.models import PackYear
 from packman.committees.models import CommitteeMember
 from packman.compliance.admin import FamilyRequirementRecordInline, MemberRequirementRecordInline
-from packman.dens.models import Den
+from packman.dens.models import Den, Rank
 from packman.dens.models import Membership as DenMembership
-from packman.dens.models import Rank
 
 from . import forms, models
 
