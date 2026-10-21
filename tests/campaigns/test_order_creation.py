@@ -34,6 +34,12 @@ class OrderCreationTest(TestCase):
         )
         self.client.force_login(self.adult)
 
+    def test_new_order_defaults_customer_state_to_washington(self):
+        response = self.client.get(reverse("campaigns:order_create"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["customer_form"]["state"].value(), "WA")
+
     def test_validation_error_preserves_submitted_order_item_formset(self):
         response = self.client.post(
             reverse("campaigns:order_create"),

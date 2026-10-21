@@ -366,7 +366,7 @@ class OrderCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             context["customer_form"] = CustomerForm(self.request.POST)
             context["items_formset"] = OrderItemFormSet(self.request.POST)
         else:
-            context["customer_form"] = CustomerForm()
+            context["customer_form"] = CustomerForm(initial={"state": "WA"})
             context["items_formset"] = OrderItemFormSet()
         return context
 
