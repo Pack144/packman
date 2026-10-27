@@ -1,5 +1,7 @@
 import decimal
+from html.parser import HTMLParser
 from http import HTTPStatus
+from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -26,6 +28,29 @@ from packman.campaigns.models import (
 from packman.campaigns.report_data import build_cub_report, build_den_report, format_weight
 from packman.dens.factories import DenFactory, MembershipFactory
 from packman.membership.factories import AdultFactory, CompleteFamilyFactory, ScoutFactory
+
+
+class ReportTableParser(HTMLParser):
+    def __init__(self, content, table_id):
+        super().__init__()
+        self.table_id = table_id
+        self.in_table = False
+        self.rows = []
+        self.feed(content)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "table":
+            self.in_table = attrs.get("id") == self.table_id
+        if self.in_table:
+            if tag == "tr":
+                self.rows.append([])
+            elif tag in {"th", "td"}:
+                self.rows[-1].append(attrs)
+
+    def handle_endtag(self, tag):
+        if tag == "table":
+            self.in_table = False
 
 
 class CampaignReportTestCase(TestCase):
@@ -185,6 +210,59 @@ class CampaignReportTestCase(TestCase):
         )
 
         self.assertEqual([cell.value for cell in report.rows[0][2:]], [1, decimal.Decimal("25"), decimal.Decimal("0")])
+
+    @patch("packman.campaigns.report_data.timezone.localdate", return_value=timezone.datetime(2026, 10, 28).date())
+    def test_invoice_fields_exclude_only_exempt_cubs_owing_zero(self, localdate):
+        quota_member = MembershipFactory(year_assigned=self.current_year)
+        Quota.objects.create(campaign=self.current_campaign, den=quota_member.den, target=decimal.Decimal("100.01"))
+        exempt_member = MembershipFactory(year_assigned=self.current_year)
+        Quota.objects.create(campaign=self.current_campaign, den=exempt_member.den, target=decimal.Decimal("100.00"))
+        CampaignScout.objects.create(campaign=self.current_campaign, scout=exempt_member.scout, exempt=True)
+        zero_member = MembershipFactory(year_assigned=self.current_year)
+        exempt_zero_member = MembershipFactory(year_assigned=self.current_year)
+        CampaignScout.objects.create(campaign=self.current_campaign, scout=exempt_zero_member.scout, exempt=True)
+        previous_member = MembershipFactory(year_assigned=self.previous_year)
+        Order.objects.create(campaign=self.previous_campaign, seller=previous_member.scout, donation=500)
+        Order.objects.create(campaign=self.previous_campaign, seller=quota_member.scout, donation=500)
+        Order.objects.create(
+            campaign=self.current_campaign,
+            seller=exempt_member.scout,
+            donation=decimal.Decimal("1234.56"),
+            award_ineligible=True,
+            date_paid=timezone.now(),
+        )
+
+        report = build_cub_report(
+            self.current_campaign, Order.objects.filter(campaign=self.current_campaign), include_campaign_fields=True
+        )
+        rows = {row[0].value.pk: row for row in report.rows}
+        self.assertEqual(set(rows), {quota_member.scout_id, exempt_member.scout_id, zero_member.scout_id})
+        self.assertEqual({row[11].value for row in report.rows}, {"1", "2", "3"})
+        for scout_id, expected in (
+            (quota_member.scout_id, "65.01"),
+            (exempt_member.scout_id, "1234.56"),
+            (zero_member.scout_id, "0.00"),
+        ):
+            with self.subTest(scout_id=scout_id):
+                row = rows[scout_id]
+                self.assertEqual(row[7].value, decimal.Decimal(expected))
+                self.assertEqual(
+                    [cell.value for cell in row[12:]],
+                    [
+                        "2026-10-28",
+                        "2026-10-28",
+                        "Nuts, Coffee, & Chocolate",
+                        "Nuts, Coffee, & Chocolate - Sales",
+                        1,
+                        expected,
+                        expected,
+                    ],
+                )
+                self.assertTrue(all(cell.hidden for cell in row[11:]))
+        weekly_report = build_cub_report(
+            self.current_campaign, Order.objects.filter(campaign=self.current_campaign), include_campaign_fields=False
+        )
+        self.assertIn(exempt_zero_member.scout, [row[0].value for row in weekly_report.rows])
 
     def test_den_report_totals_include_exempt_members_but_averages_do_not(self):
         den = DenFactory()
@@ -434,7 +512,28 @@ class OrderReportViewTestCase(TestCase):
         self.assertEqual(weekly_report.rows[0][1].effective_sort_value, self.member.den.number)
         self.assertEqual(weekly_report.default_sort_index, 4)
         self.assertEqual(weekly_report.default_sort_direction, "descending")
-        self.assertEqual(len(campaign_report.columns), 11)
+        self.assertEqual(len(campaign_report.columns), 19)
+        self.assertEqual(len([column for column in campaign_report.columns if not column.hidden]), 11)
+        self.assertTrue(all(column.hidden for column in campaign_report.columns[11:]))
+        self.assertEqual(
+            [column.label for column in campaign_report.columns[11:]],
+            [
+                "InvoiceNo",
+                "InvoiceDate",
+                "DueDate",
+                "Item(Product/Service)",
+                "ItemDescription",
+                "ItemQuantity",
+                "ItemRate",
+                "ItemAmount",
+            ],
+        )
+        rendered_rows = ReportTableParser(campaign_response.content.decode(), "cubs_report_table").rows
+        self.assertEqual(len(rendered_rows), 2)
+        for rendered_row in rendered_rows:
+            self.assertEqual(len(rendered_row), 19)
+            self.assertTrue(all("hidden" not in attrs for attrs in rendered_row[:11]))
+            self.assertTrue(all("hidden" in attrs for attrs in rendered_row[11:]))
         self.assertEqual(campaign_report.default_sort_index, 4)
         self.assertEqual(campaign_report.default_sort_direction, "descending")
         self.assertEqual(campaign_report.rows[0][2].value, 2)
@@ -459,6 +558,34 @@ class OrderReportViewTestCase(TestCase):
         self.assertContains(response, "$25.50", count=2)
         self.assertContains(response, "$100", count=1)
         self.assertNotContains(response, "$100.00")
+        self.assertEqual(response.context["cub_report"].rows[0][-1].value, "73.92")
+
+    def test_exempt_zero_balance_is_omitted_from_full_campaign_table(self):
+        CampaignScout.objects.create(campaign=self.current_campaign, scout=self.member.scout, exempt=True)
+        response = self.client.get(reverse("campaigns:order_report"), {"tab": "cubs"})
+
+        self.assertEqual(response.context["cub_report"].rows, ())
+        self.assertNotContains(response, str(self.member.scout))
+
+    def test_historical_cubs_export_uses_selected_campaign_members_and_amounts(self):
+        previous_member = MembershipFactory(year_assigned=self.previous_year)
+        Order.objects.create(
+            campaign=self.previous_campaign, seller=previous_member.scout, donation=decimal.Decimal("42.00")
+        )
+        Order.objects.create(
+            campaign=self.current_campaign, seller=self.member.scout, donation=decimal.Decimal("99.00")
+        )
+
+        response = self.client.get(
+            reverse("campaigns:order_report_by_campaign", kwargs={"campaign": self.previous_year.year}),
+            {"tab": "cubs"},
+        )
+
+        self.assertEqual(len(response.context["cub_report"].rows), 1)
+        row = response.context["cub_report"].rows[0]
+        self.assertEqual(row[0].value, previous_member.scout)
+        self.assertEqual(row[7].value, decimal.Decimal("42.00"))
+        self.assertEqual(row[-1].value, "42.00")
 
     def test_cubs_and_products_download_buttons_target_visible_tables(self):
         self.create_order(day=6, quantity=2)
