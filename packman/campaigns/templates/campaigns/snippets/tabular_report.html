@@ -9,6 +9,7 @@
       <tr>
         {% for column in report.columns %}
           <th scope="col"
+              {% if column.hidden %}hidden{% endif %}
               data-sort-header="{{ forloop.counter0 }}"
               aria-sort="{% if forloop.counter0 == report.default_sort_index %}{{ report.default_sort_direction }}{% else %}none{% endif %}"
               onclick="sortRows('#{{ table_id }} tbody tr', '#{{ table_id }} thead [data-sort-header]', '{{ forloop.counter0 }}')">
@@ -27,6 +28,7 @@
                   data-sort-value="{{ cell.effective_sort_value }}">
             {% else %}
               <td data-sort-key="{{ forloop.counter0 }}"
+                  {% if cell.hidden %}hidden{% endif %}
                   data-sort-value="{{ cell.effective_sort_value }}">
             {% endif %}
             {% if cell.url %}

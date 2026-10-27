@@ -100,6 +100,11 @@
             </button>
           </div>
           {% translate "Sales by Cub" as cubs_caption %}
+          {% if not selected_week %}
+            <p class="text-body-secondary">
+              {% blocktranslate %}For QuickBooks, map Cub to Customer and use the hidden invoice columns, including ItemAmount; ignore unrelated columns. Exempt Cubs owing zero are omitted. Invoice dates and numbers are set when this page loads, with numbers starting at 1. Enable custom transaction numbers in QuickBooks to retain these numbers. Downloads do not track invoices already imported.{% endblocktranslate %}
+            </p>
+          {% endif %}
           {% include "campaigns/snippets/tabular_report.html" with report=cub_report caption=cubs_caption table_id="cubs_report_table" sortable=True only %}
         </div>
       {% elif selected_tab == 'dens' %}
