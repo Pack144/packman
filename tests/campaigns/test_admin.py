@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -6,7 +7,8 @@ from django.urls import reverse
 from django.utils import timezone
 
 from packman.calendars.factories import PackYearFactory
-from packman.campaigns.models import Campaign, CampaignScout, Category, Order, Prize, Product
+from packman.campaigns.admin import CampaignFilter, OrderAdmin, SellerFilter
+from packman.campaigns.models import Campaign, CampaignScout, Category, Customer, Order, Prize, Product
 from packman.membership.factories import ScoutFactory
 
 User = get_user_model()
@@ -151,6 +153,161 @@ class CampaignFilterTestCase(TestCase):
         self.assertContains(response, 'title="This Cub is not required to meet the campaign quota."')
         self.assertContains(response, "admin_inline_tooltips.js")
         self.assertContains(response, "admin_inline_tooltips.css")
+
+
+class OrderSellerFilterAndSearchTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.previous_campaign = CampaignFilterTestCase.create_campaign(
+            PackYearFactory(year=2025), timezone.make_aware(timezone.datetime(2025, 9, 1))
+        )
+        cls.current_campaign = CampaignFilterTestCase.create_campaign(
+            PackYearFactory(year=2026), timezone.make_aware(timezone.datetime(2026, 9, 1))
+        )
+        cls.current_seller = ScoutFactory(first_name="Alice", nickname="Allie", last_name="Current")
+        cls.previous_seller = ScoutFactory(first_name="Pat", last_name="Former")
+        cls.non_seller = ScoutFactory(first_name="Nobody", last_name="Sold")
+        cls.customer = Customer.objects.create(
+            name="Grandma Moses", email="grandma@example.com", phone_number="+12065550123", address="12 Elm St"
+        )
+        cls.current_order = Order.objects.create(
+            campaign=cls.current_campaign, seller=cls.current_seller, customer=cls.customer
+        )
+        cls.other_current_order = Order.objects.create(campaign=cls.current_campaign, seller=ScoutFactory())
+        cls.previous_order = Order.objects.create(campaign=cls.previous_campaign, seller=cls.previous_seller)
+        cls.superuser = User.objects.create_superuser(
+            email="seller-admin@example.com", password="seller-filter-test"  # nosec B106
+        )
+        cls.url = reverse("admin:campaigns_order_changelist")
+
+    def setUp(self):
+        self.client.force_login(self.superuser)
+
+    def seller_choices(self, response):
+        seller_filter = next(spec for spec in response.context["cl"].filter_specs if isinstance(spec, SellerFilter))
+        return {pk for pk, _ in seller_filter.lookup_choices}
+
+    def test_seller_choices_default_to_latest_campaign_sellers(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        choices = self.seller_choices(response)
+        self.assertIn(self.current_seller.pk, choices)
+        self.assertNotIn(self.previous_seller.pk, choices)
+        self.assertNotIn(self.non_seller.pk, choices)
+
+    def test_seller_choices_follow_selected_campaign(self):
+        specific = self.seller_choices(self.client.get(self.url, {"campaign__id__exact": self.previous_campaign.pk}))
+        every = self.seller_choices(self.client.get(self.url, {"campaign__id__exact": "all"}))
+
+        self.assertEqual(specific, {self.previous_seller.pk})
+        self.assertIn(self.current_seller.pk, every)
+        self.assertIn(self.previous_seller.pk, every)
+        self.assertNotIn(self.non_seller.pk, every)
+
+    def test_seller_filter_limits_orders_and_keeps_selected_seller_choice(self):
+        response = self.client.get(self.url, {"seller__id__exact": self.previous_seller.pk})
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(list(response.context["cl"].queryset), [])
+        self.assertIn(self.previous_seller.pk, self.seller_choices(response))
+
+        response = self.client.get(
+            self.url, {"campaign__id__exact": "all", "seller__id__exact": self.current_seller.pk}
+        )
+        self.assertEqual(list(response.context["cl"].queryset), [self.current_order])
+
+    def test_malformed_filter_values_redirect_instead_of_erroring(self):
+        for params in ({"seller__id__exact": "not-a-uuid"}, {"campaign__id__exact": "not-a-number"}):
+            with self.subTest(params=params):
+                response = self.client.get(self.url, params)
+                self.assertEqual(response.status_code, HTTPStatus.FOUND)
+                self.assertIn("e=1", response.url)
+
+    def test_unknown_seller_shows_no_orders(self):
+        response = self.client.get(self.url, {"seller__id__exact": "00000000-0000-0000-0000-000000000000"})
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(list(response.context["cl"].queryset), [])
+
+    def test_search_matches_seller_and_customer_fields(self):
+        for term in ("Alice", "Allie", "Current", "Grandma", "grandma@example.com", "2065550123", "Elm St"):
+            with self.subTest(term=term):
+                response = self.client.get(self.url, {"q": term})
+                self.assertEqual(list(response.context["cl"].queryset), [self.current_order])
+
+    def test_seller_choices_respect_admin_queryset_boundaries(self):
+        with patch.object(
+            OrderAdmin,
+            "get_queryset",
+            return_value=Order.objects.filter(pk=self.current_order.pk).calculate_total(),
+        ):
+            response = self.client.get(
+                self.url, {"campaign__id__exact": "all", "seller__id__exact": self.previous_seller.pk}
+            )
+
+        self.assertEqual(self.seller_choices(response), {self.current_seller.pk})
+        self.assertEqual(list(response.context["cl"].queryset), [])
+
+    def test_search_preserves_campaign_seller_and_paid_filters(self):
+        self.previous_order.customer = self.customer
+        self.previous_order.save()
+        response = self.client.get(self.url, {"q": "Grandma"})
+        self.assertEqual(list(response.context["cl"].queryset), [self.current_order])
+
+        response = self.client.get(
+            self.url,
+            {"q": "Grandma", "campaign__id__exact": "all", "seller__id__exact": self.previous_seller.pk},
+        )
+        self.assertEqual(list(response.context["cl"].queryset), [self.previous_order])
+
+        response = self.client.get(self.url, {"q": "Grandma", "paid": "true"})
+        self.assertEqual(list(response.context["cl"].queryset), [])
+
+    def test_filter_links_preserve_search_and_other_filters_and_reset_pagination(self):
+        response = self.client.get(self.url, {"q": "Grandma", "paid": "false", "p": "1"})
+        for spec in response.context["cl"].filter_specs:
+            if isinstance(spec, (CampaignFilter, SellerFilter)):
+                for choice in spec.choices(response.context["cl"]):
+                    with self.subTest(filter=spec.title, choice=choice["display"]):
+                        self.assertIn("q=Grandma", choice["query_string"])
+                        self.assertIn("paid=false", choice["query_string"])
+                        self.assertNotIn("p=", choice["query_string"])
+
+    def test_staff_without_order_permission_cannot_access_orders_or_seller_choices(self):
+        staff = User.objects.create_user(email="staff@example.com", _is_staff=True)
+        self.client.force_login(staff)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_campaign_dropdown_selects_latest_by_default(self):
+        response = self.client.get(self.url)
+        spec = next(spec for spec in response.context["cl"].filter_specs if isinstance(spec, CampaignFilter))
+        selected = [choice for choice in spec.choices(response.context["cl"]) if choice["selected"]]
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["display"], str(self.current_campaign))
+
+    def test_empty_campaign_has_no_seller_choices_and_still_filters_orders(self):
+        Order.objects.filter(campaign=self.current_campaign).delete()
+        response = self.client.get(self.url)
+        self.assertEqual(list(response.context["cl"].queryset), [])
+        self.assertFalse(any(isinstance(spec, SellerFilter) for spec in response.context["cl"].filter_specs))
+
+    def test_campaign_and_seller_filters_render_as_dropdowns(self):
+        response = self.client.get(self.url)
+
+        self.assertContains(response, "data-dropdown-filter", count=2)
+        self.assertContains(response, "data-searchable", count=1)
+        self.assertContains(response, 'aria-label="Filter by seller"')
+        self.assertContains(response, "admin_dropdown_filter.js")
+        self.assertContains(response, "select2.full")
+        self.assertContains(response, "Search by seller name or customer name")
+
+        for name in ("prize", "product"):
+            with self.subTest(name=name):
+                response = self.client.get(reverse(f"admin:campaigns_{name}_changelist"))
+                self.assertContains(response, "data-dropdown-filter", count=1)
+                self.assertContains(response, "admin_dropdown_filter.js")
 
 
 class CopyToLatestCampaignAdminActionTestCase(TestCase):
