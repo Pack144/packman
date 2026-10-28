@@ -48,7 +48,7 @@ Documentation = "https://github.com/Pack144/packman/docs/"
 [dependency-groups]
 dev = [
     "bandit[toml]>=1.8.6",
-    "black>=23.3.0",
+    "black>=26.10.1",
     "coverage>=7.2.7",
     "django-debug-toolbar>=4.1",
     "django-extensions>=3.2",
