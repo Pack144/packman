@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from django.db.models import Case, Count, DecimalField, Exists, F, OuterRef, Prefetch, Q, Sum, Value, When
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from packman.campaigns.models import CampaignScout, OrderItem, PrizePoint, PrizeSelection, Product
@@ -12,6 +13,7 @@ from packman.dens.models import Membership
 @dataclass(frozen=True)
 class ReportColumn:
     label: str
+    hidden: bool = False
 
 
 @dataclass(frozen=True)
@@ -20,6 +22,7 @@ class ReportCell:
     kind: str = "text"
     url: str | None = None
     sort_value: object | None = None
+    hidden: bool = False
 
     @property
     def effective_sort_value(self):
@@ -53,6 +56,19 @@ CUB_CAMPAIGN_COLUMNS = (
     ReportColumn(_("Prize Points Earned")),
     ReportColumn(_("Prize Points Spent")),
     ReportColumn(_("Points Remaining")),
+)
+CUB_INVOICE_COLUMNS = tuple(
+    ReportColumn(label, hidden=True)
+    for label in (
+        "InvoiceNo",
+        "InvoiceDate",
+        "DueDate",
+        "Item(Product/Service)",
+        "ItemDescription",
+        "ItemQuantity",
+        "ItemRate",
+        "ItemAmount",
+    )
 )
 PRODUCT_COLUMNS = (ReportColumn(_("Product")), ReportColumn(_("Quantity Ordered")))
 PRIZE_TOTAL_COLUMNS = (ReportColumn(_("Prize")), ReportColumn(_("Quantity")))
@@ -252,6 +268,7 @@ def build_cub_report(campaign, orders, include_campaign_fields):
         else {}
     )
     prize_point_tiers = tuple(PrizePoint.objects.order_by("earned_at")) if include_campaign_fields else ()
+    invoice_date = timezone.localdate().isoformat() if include_campaign_fields else None
 
     rows = []
     for membership in memberships:
@@ -290,20 +307,35 @@ def build_cub_report(campaign, orders, include_campaign_fields):
             else:
                 amount_owed = total
 
+            amount_owed = amount_owed.quantize(decimal.Decimal(".01"))
+            if membership.campaign_exempt and amount_owed == 0:
+                continue
             cells.extend(
                 (
                     _money_cell(quota, kind="whole_currency"),
                     ReportCell(achieved, kind="boolean"),
-                    _money_cell(amount_owed.quantize(decimal.Decimal(".01"))),
+                    _money_cell(amount_owed),
                     ReportCell(points_earned, kind="number"),
                     ReportCell(spent, kind="number"),
                     ReportCell(points_earned - spent, kind="number"),
                 )
             )
+            cells.extend(
+                (
+                    ReportCell(str(len(rows) + 1), hidden=True),
+                    ReportCell(invoice_date, hidden=True),
+                    ReportCell(invoice_date, hidden=True),
+                    ReportCell("Nuts, Coffee, & Chocolate", hidden=True),
+                    ReportCell("Nuts, Coffee, & Chocolate - Sales", hidden=True),
+                    ReportCell(1, hidden=True),
+                    ReportCell(f"{amount_owed:.2f}", hidden=True),
+                    ReportCell(f"{amount_owed:.2f}", hidden=True),
+                )
+            )
 
         rows.append(tuple(cells))
 
-    columns = CUB_COLUMNS + (CUB_CAMPAIGN_COLUMNS if include_campaign_fields else ())
+    columns = CUB_COLUMNS + (CUB_CAMPAIGN_COLUMNS + CUB_INVOICE_COLUMNS if include_campaign_fields else ())
     default_sort_index = 4
     rows.sort(key=lambda row: row[default_sort_index].value, reverse=True)
     return TabularReport(
