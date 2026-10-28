@@ -1,9 +1,14 @@
 from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.admin.options import IncorrectLookupParameters
+from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
 from packman.calendars.models import PackYear
+from packman.membership.models import Scout
 
 from .models import (
     Campaign,
@@ -21,6 +26,38 @@ from .models import (
     Tag,
 )
 
+DROPDOWN_FILTER_TEMPLATE = "admin/campaigns/dropdown_filter.html"
+
+
+def filter_by_campaign_selection(queryset, value):
+    if value == "all":
+        # Explicit "All" was chosen from the filter sidebar - show everything.
+        return queryset
+    if value in (None, ""):
+        # No filter param at all means this is the first, unfiltered load of
+        # the changelist, so default to only the latest campaign instead of
+        # showing every campaign's records.
+        latest = Campaign.get_latest()
+        return queryset.filter(campaign=latest) if latest else queryset
+    return queryset.filter(campaign__pk=value)
+
+
+class DropdownFilterMediaMixin:
+    """Load the assets used by dropdown list filters on the changelist."""
+
+    @property
+    def media(self):
+        extra = "" if settings.DEBUG else ".min"
+        return super().media + forms.Media(
+            js=[
+                f"admin/js/vendor/jquery/jquery{extra}.js",
+                f"admin/js/vendor/select2/select2.full{extra}.js",
+                "admin/js/jquery.init.js",
+                "js/admin_dropdown_filter.js",
+            ],
+            css={"screen": [f"admin/css/vendor/select2/select2{extra}.css", "admin/css/autocomplete.css"]},
+        )
+
 
 class CampaignFilter(admin.SimpleListFilter):
     """
@@ -30,22 +67,16 @@ class CampaignFilter(admin.SimpleListFilter):
 
     title = _("campaign")
     parameter_name = "campaign__id__exact"
+    template = DROPDOWN_FILTER_TEMPLATE
 
     def lookups(self, request, model_admin):
         return [(campaign.pk, str(campaign)) for campaign in Campaign.objects.all()]
 
     def queryset(self, request, queryset):
-        value = self.value()
-        if value == "all":
-            # Explicit "All" was chosen from the filter sidebar - show everything.
-            return queryset
-        if value in (None, ""):
-            # No filter param at all means this is the first, unfiltered load of
-            # the changelist, so default to only the latest campaign instead of
-            # showing every campaign's records.
-            latest = Campaign.get_latest()
-            return queryset.filter(campaign=latest) if latest else queryset
-        return queryset.filter(campaign__pk=value)
+        try:
+            return filter_by_campaign_selection(queryset, self.value())
+        except (ValueError, ValidationError) as e:
+            raise IncorrectLookupParameters(e) from e
 
     def choices(self, changelist):
         # Mirrors Django's default SimpleListFilter.choices(), but with two
@@ -63,11 +94,52 @@ class CampaignFilter(admin.SimpleListFilter):
         }
         for lookup, title in self.lookup_choices:
             yield {
-                "selected": (self.value() is None and latest is not None and str(lookup) == str(latest.pk))
+                "selected": (self.value() in (None, "") and latest is not None and str(lookup) == str(latest.pk))
                 or self.value() == str(lookup),
                 "query_string": changelist.get_query_string({self.parameter_name: lookup}),
                 "display": title,
             }
+
+
+class SellerFilter(admin.SimpleListFilter):
+    """
+    A searchable "seller" list filter offering only the Cubs with orders in
+    the campaign selected by CampaignFilter.
+    """
+
+    title = _("seller")
+    parameter_name = "seller__id__exact"
+    template = DROPDOWN_FILTER_TEMPLATE
+    searchable = True
+
+    def lookups(self, request, model_admin):
+        orders = model_admin.get_queryset(request)
+        try:
+            campaign_orders = filter_by_campaign_selection(orders, request.GET.get(CampaignFilter.parameter_name))
+            sellers = Q(pk__in=campaign_orders.values("seller"))
+            if self.value():
+                # Keep the active seller visible after switching campaigns.
+                sellers |= Q(pk=Scout._meta.pk.to_python(self.value()))
+        except (ValueError, ValidationError) as e:
+            raise IncorrectLookupParameters(e) from e
+        return [
+            (scout.pk, str(scout))
+            for scout in Scout.objects.filter(sellers, pk__in=orders.values("seller")).order_by(
+                "last_name", "nickname", "first_name"
+            )
+        ]
+
+    def has_output(self):
+        # Django skips filters without choices; keep an active seller value applied.
+        return bool(self.value()) or super().has_output()
+
+    def queryset(self, request, queryset):
+        if self.value():
+            try:
+                return queryset.filter(seller__pk=Scout._meta.pk.to_python(self.value()))
+            except ValidationError as e:
+                raise IncorrectLookupParameters(e) from e
+        return queryset
 
 
 class IsDeliveredFilter(admin.SimpleListFilter):
@@ -229,7 +301,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 
 @admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
     form = OrderAdminForm
     inlines = [OrderItemInline]
     list_display = [
@@ -243,7 +315,17 @@ class OrderAdmin(admin.ModelAdmin):
         "donation",
         "order_total",
     ]
-    list_filter = [IsPaidFilter, IsDeliveredFilter, "award_ineligible", CampaignFilter, "seller"]
+    list_filter = [IsPaidFilter, IsDeliveredFilter, "award_ineligible", CampaignFilter, SellerFilter]
+    search_fields = [
+        "seller__first_name",
+        "seller__nickname",
+        "seller__last_name",
+        "customer__name",
+        "customer__email",
+        "customer__phone_number",
+        "customer__address",
+    ]
+    search_help_text = _("Search by seller name or customer name, email, phone number, or address.")
 
     def get_queryset(self, request):
         return super().get_queryset(request).calculate_total()
@@ -262,7 +344,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 @admin.register(Prize)
-class PrizeAdmin(admin.ModelAdmin):
+class PrizeAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
     actions = ["duplicate_prizes"]
     list_display = ["name", "points", "value", "campaign"]
     list_filter = ["points", CampaignFilter]
@@ -296,7 +378,7 @@ class PrizePointAdmin(admin.ModelAdmin):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
     actions = ["duplicate_products"]
     filter_horizontal = ["tags"]
     list_display = ["name", "category", "price", "has_description", "has_image", "campaign"]
