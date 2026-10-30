@@ -2,10 +2,12 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext as _
 
+from unfold.admin import ModelAdmin, TabularInline
+
 from .models import Committee, CommitteeMember
 
 
-class CommitteeMemberAdmin(admin.TabularInline):
+class CommitteeMemberAdmin(TabularInline):
     autocomplete_fields = ["member"]
     model = CommitteeMember
     exclude = ["date_added"]
@@ -13,7 +15,7 @@ class CommitteeMemberAdmin(admin.TabularInline):
 
 
 @admin.register(Committee)
-class CommitteeAdmin(admin.ModelAdmin):
+class CommitteeAdmin(ModelAdmin):
     fieldsets = (
         (None, {"fields": (("name", "slug"), "description")}),
         (_("Permissions"), {"fields": (("are_staff", "are_superusers"), "permissions"), "classes": ("collapse",)}),

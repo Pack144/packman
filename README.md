@@ -136,7 +136,7 @@ If Caddy is installed and its background service is running, open
 
 ## Campaign order administration
 
-Open `/administration/campaigns/order/` with an account that has order permissions.
+Open `/admin/campaigns/order/` with an account that has order permissions.
 
 * Use the campaign dropdown to choose a campaign or **All**. The latest campaign
   is selected by default. Campaign dropdowns are also available on products and
@@ -148,6 +148,44 @@ Open `/administration/campaigns/order/` with an account that has order permissio
 * Use the search box for seller names or customer names, email addresses, phone
   numbers, and addresses. Search combines with the campaign, seller, paid,
   delivered, and award-ineligible filters.
+* Open **Filters**, choose a campaign or seller, and click **Apply filters**.
+  Seller choices refresh after applying a campaign selection. Applying filters
+  returns to the first results page.
+
+## Administration
+
+The admin uses [Django Unfold](https://unfoldadmin.com/) at `/admin/`, with light
+and dark themes. Existing `/administration/` bookmarks redirect to the
+corresponding new URL, preserving paths and query strings.
+
+The sidebar groups models under Membership, Compliance, Fundraising, Mail,
+Content, Calendar, and System. Links follow the account's existing admin
+permissions. Membership starts with Committees. Calendar lists Events, Event
+Categories, Address Book (Venues and Venue Categories), and Pack Years, in
+that order. Fundraising's Products subgroup contains Products, Product Lines,
+Categories, and Tags. Content's Documents subgroup contains Documents and
+Categories. Subgroups only show permitted links and expand for the selected
+page. Mail Settings is under Mail; System Information remains under System.
+The standard homepage and application selector also provide access to
+registered models.
+
+The signed-in adult's headshot appears in the admin sidebar; Unfold shows an
+initial when no usable photo is available.
+
+* **Page ordering:** drag saved pages into order, then click **Save**.
+  Reordering preserves the positions occupied by pages outside the current
+  filtered or paginated results. Dragging is limited to the current results
+  page.
+* **Content blocks:** save new blocks first, then drag to reorder and save the
+  parent page. Public page/navigation ordering continues to use the existing
+  ordering fields.
+* **Mail:** **Save** keeps a draft. **Save and send** saves the message,
+  recipients, distribution lists, and attachments before sending. Existing
+  author and sent-message editing restrictions still apply.
+
+Unfold is configured in `packman/settings/base.py`; permission-aware sidebar
+grouping lives in `packman/core/navigation.py`. It uses the packaged styles and
+scripts, so no additional Tailwind build is required.
 
 
 ## Requirements

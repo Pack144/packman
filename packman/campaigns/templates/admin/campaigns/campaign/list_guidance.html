@@ -1,0 +1,13 @@
+{% load i18n unfold %}
+
+{% component "unfold/components/card.html" with class="mb-4" %}
+<ul class="messagelist">
+  <li class="info">
+    <strong style="display: block;">{% translate "Starting a new campaign?" %}</strong>
+    {% blocktranslate trimmed %}
+      Select one prior campaign and use the "Duplicate campaign, quotas, and products" action to create a campaign for
+      the current pack year and copy its quotas and products. Orders are not copied.
+    {% endblocktranslate %}
+  </li>
+</ul>
+{% endcomponent %}

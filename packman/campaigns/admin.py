@@ -1,11 +1,14 @@
 from django import forms
-from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
+
+from unfold.admin import ModelAdmin, StackedInline, TabularInline
+from unfold.contrib.filters.admin import DropdownFilter
+from unfold.widgets import UnfoldBooleanWidget
 
 from packman.calendars.models import PackYear
 from packman.membership.models import Scout
@@ -26,8 +29,6 @@ from .models import (
     Tag,
 )
 
-DROPDOWN_FILTER_TEMPLATE = "admin/campaigns/dropdown_filter.html"
-
 
 def filter_by_campaign_selection(queryset, value):
     if value == "all":
@@ -42,24 +43,7 @@ def filter_by_campaign_selection(queryset, value):
     return queryset.filter(campaign__pk=value)
 
 
-class DropdownFilterMediaMixin:
-    """Load the assets used by dropdown list filters on the changelist."""
-
-    @property
-    def media(self):
-        extra = "" if settings.DEBUG else ".min"
-        return super().media + forms.Media(
-            js=[
-                f"admin/js/vendor/jquery/jquery{extra}.js",
-                f"admin/js/vendor/select2/select2.full{extra}.js",
-                "admin/js/jquery.init.js",
-                "js/admin_dropdown_filter.js",
-            ],
-            css={"screen": [f"admin/css/vendor/select2/select2{extra}.css", "admin/css/autocomplete.css"]},
-        )
-
-
-class CampaignFilter(admin.SimpleListFilter):
+class CampaignFilter(DropdownFilter):
     """
     A custom "campaign" list filter that defaults to the latest campaign
     when the changelist is first opened, instead of showing every campaign.
@@ -67,7 +51,7 @@ class CampaignFilter(admin.SimpleListFilter):
 
     title = _("campaign")
     parameter_name = "campaign__id__exact"
-    template = DROPDOWN_FILTER_TEMPLATE
+    all_option = ("all", _("All"))
 
     def lookups(self, request, model_admin):
         return [(campaign.pk, str(campaign)) for campaign in Campaign.objects.all()]
@@ -79,29 +63,14 @@ class CampaignFilter(admin.SimpleListFilter):
             raise IncorrectLookupParameters(e) from e
 
     def choices(self, changelist):
-        # Mirrors Django's default SimpleListFilter.choices(), but with two
-        # deliberate differences from the stock FK filter:
-        #   1. "All" links to `campaign__id__exact=all` (a sentinel value) instead
-        #      of dropping the query param. That's what makes "no param" and
-        #      "explicitly chose All" distinguishable in queryset() above.
-        #   2. The latest campaign's choice is pre-selected when there's no query
-        #      param yet, so the sidebar visually matches what queryset() did.
         latest = Campaign.get_latest()
-        yield {
-            "selected": self.value() == "all",
-            "query_string": changelist.get_query_string({self.parameter_name: "all"}),
-            "display": _("All"),
-        }
-        for lookup, title in self.lookup_choices:
-            yield {
-                "selected": (self.value() in (None, "") and latest is not None and str(lookup) == str(latest.pk))
-                or self.value() == str(lookup),
-                "query_string": changelist.get_query_string({self.parameter_name: lookup}),
-                "display": title,
-            }
+        for choice in super().choices(changelist):
+            if self.value() in (None, "") and latest is not None:
+                choice["form"].data = {self.parameter_name: str(latest.pk)}
+            yield choice
 
 
-class SellerFilter(admin.SimpleListFilter):
+class SellerFilter(DropdownFilter):
     """
     A searchable "seller" list filter offering only the Cubs with orders in
     the campaign selected by CampaignFilter.
@@ -109,8 +78,6 @@ class SellerFilter(admin.SimpleListFilter):
 
     title = _("seller")
     parameter_name = "seller__id__exact"
-    template = DROPDOWN_FILTER_TEMPLATE
-    searchable = True
 
     def lookups(self, request, model_admin):
         orders = model_admin.get_queryset(request)
@@ -175,6 +142,7 @@ class OrderAdminForm(forms.ModelForm):
         label=_("Award Ineligible"),
         required=False,
         help_text=Order._meta.get_field("award_ineligible").help_text,
+        widget=UnfoldBooleanWidget,
     )
 
     class Meta:
@@ -185,37 +153,38 @@ class OrderAdminForm(forms.ModelForm):
         return True if self.cleaned_data["award_ineligible"] else None
 
 
-class OrderInline(admin.StackedInline):
+class OrderInline(StackedInline):
     model = Order
     extra = 0
 
 
-class OrderItemInline(admin.TabularInline):
+class OrderItemInline(TabularInline):
     model = OrderItem
     extra = 0
 
 
-class PrizeSelectionInline(admin.TabularInline):
+class PrizeSelectionInline(TabularInline):
     model = PrizeSelection
     extra = 0
 
 
-class QuotaInline(admin.TabularInline):
+class QuotaInline(TabularInline):
     model = Quota
     extra = 0
 
 
-class CampaignScoutInline(admin.TabularInline):
+class CampaignScoutInline(TabularInline):
     model = CampaignScout
+    template_before = "admin/campaigns/campaign/scout_guidance.html"
     autocomplete_fields = ("scout",)
     extra = 0
 
 
 @admin.register(Campaign)
-class CampaignAdmin(admin.ModelAdmin):
+class CampaignAdmin(ModelAdmin):
     actions = ["duplicate_campaign"]
-    change_form_template = "admin/campaigns/campaign/change_form.html"
-    change_list_template = "admin/campaigns/campaign/change_list.html"
+    change_form_before_template = "admin/campaigns/campaign/form_guidance.html"
+    list_before_template = "admin/campaigns/campaign/list_guidance.html"
     inlines = [QuotaInline, CampaignScoutInline]
     list_display = [
         "year",
@@ -289,19 +258,20 @@ class CampaignAdmin(admin.ModelAdmin):
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ModelAdmin):
     list_display = ["name", "description"]
 
 
 @admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
+class CustomerAdmin(ModelAdmin):
     inlines = [OrderInline]
     list_display = ["name", "address", "city", "state", "zipcode", "phone_number", "email"]
     search_fields = ["name", "address", "phone_number", "email"]
 
 
 @admin.register(Order)
-class OrderAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
+class OrderAdmin(ModelAdmin):
+    list_filter_submit = True
     form = OrderAdminForm
     inlines = [OrderItemInline]
     list_display = [
@@ -344,7 +314,8 @@ class OrderAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
 
 
 @admin.register(Prize)
-class PrizeAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
+class PrizeAdmin(ModelAdmin):
+    list_filter_submit = True
     actions = ["duplicate_prizes"]
     list_display = ["name", "points", "value", "campaign"]
     list_filter = ["points", CampaignFilter]
@@ -373,12 +344,14 @@ class PrizeAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
 
 
 @admin.register(PrizePoint)
-class PrizePointAdmin(admin.ModelAdmin):
+class PrizePointAdmin(ModelAdmin):
+    list_before_template = "admin/campaigns/prizepoint/list_guidance.html"
     list_display = ["value", "earned_at"]
 
 
 @admin.register(Product)
-class ProductAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
+class ProductAdmin(ModelAdmin):
+    list_filter_submit = True
     actions = ["duplicate_products"]
     filter_horizontal = ["tags"]
     list_display = ["name", "category", "price", "has_description", "has_image", "campaign"]
@@ -420,10 +393,10 @@ class ProductAdmin(DropdownFilterMediaMixin, admin.ModelAdmin):
 
 
 @admin.register(ProductLine)
-class ProductLineAdmin(admin.ModelAdmin):
+class ProductLineAdmin(ModelAdmin):
     pass
 
 
 @admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(ModelAdmin):
     pass

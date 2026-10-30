@@ -6,6 +6,7 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from easy_thumbnails.files import get_thumbnailer
 from PIL import Image
 
 from packman.address_book.models import PhoneNumber
@@ -277,16 +278,21 @@ class DirectoryAPITestCase(MobileDirectoryTestCase):
         data = self.get_directory()
         self.assertIn("avatar", self.member(data, self.parent.slug))
         self.assertIsNone(self.member(data, self.parent.slug)["avatar"])
+        self.assertIsNone(self.member(data, self.parent.slug)["photo"])
 
-    def test_user_avatar_is_the_signed_in_members_headshot(self):
+    def test_member_images_use_existing_thumbnails_for_adults_and_cubs(self):
         with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
-            self.parent.photo = photo_upload()
-            self.parent.save()
+            for member in (self.parent, self.scout):
+                member.photo = photo_upload(f"{member.slug}-headshot.png")
+                member.save()
             self.client.force_login(self.parent)
             data = self.get_directory()
-            avatar = self.member(data, self.parent.slug)["avatar"]
-            self.assertIsNotNone(avatar)
-            self.assertIn("headshot", avatar)
+            for member in (self.parent, self.scout):
+                with self.subTest(member_type=type(member).__name__):
+                    entry = self.member(data, member.slug)
+                    for field, size in (("avatar", (80, 80)), ("photo", (640, 640))):
+                        expected = get_thumbnailer(member.photo).get_thumbnail({"size": size, "crop": "smart"})
+                        self.assertEqual(entry[field], expected.url)
 
     def test_an_unreadable_photo_does_not_500_the_whole_directory(self):
         # A photo record can outlive its file on disk (e.g. media not synced
@@ -301,6 +307,7 @@ class DirectoryAPITestCase(MobileDirectoryTestCase):
             self.assertEqual(response.status_code, 200)
             data = response.json()
             self.assertIsNone(self.member(data, self.parent.slug)["avatar"])
+            self.assertIsNone(self.member(data, self.parent.slug)["photo"])
 
 
 class DirectoryDensAPITestCase(MobileDirectoryTestCase):

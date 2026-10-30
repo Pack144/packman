@@ -15,6 +15,8 @@ from django.utils.translation import ngettext
 
 from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
+from unfold.admin import ModelAdmin, StackedInline, TabularInline
+from unfold.forms import AdminPasswordChangeForm
 
 from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
@@ -136,32 +138,32 @@ class AdultsBasedOnCubStatusFilter(admin.SimpleListFilter):
             return queryset.filter(family__children__status=self.value()).distinct()
 
 
-class AddressInline(admin.StackedInline):
+class AddressInline(StackedInline):
     extra = 0
     form = AddressForm
     model = Address
 
 
-class CommitteeMemberInline(admin.TabularInline):
+class CommitteeMemberInline(TabularInline):
     extra = 0
     model = CommitteeMember
     verbose_name_plural = _("Committee Assignments")
 
 
-class DenMembershipInline(admin.TabularInline):
+class DenMembershipInline(TabularInline):
     extra = 0
     model = DenMembership
     verbose_name_plural = _("Den Assignments")
 
 
-class PhoneNumberInline(admin.TabularInline):
+class PhoneNumberInline(TabularInline):
     extra = 0
     form = PhoneNumberForm
     model = PhoneNumber
 
 
 @admin.register(models.Scout)
-class ScoutAdmin(admin.ModelAdmin):
+class ScoutAdmin(ModelAdmin):
     actions = [
         "make_approved",
         "make_active",
@@ -490,10 +492,11 @@ class ScoutAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Adult)
-class AdultAdmin(UserAdmin):
+class AdultAdmin(UserAdmin, ModelAdmin):
     actions = ["export_as_csv"]
     add_form = forms.AdminAdultCreation
     form = forms.AdminAdultChange
+    change_password_form = AdminPasswordChangeForm
     list_display = (
         "name",
         "last_name",
@@ -662,8 +665,8 @@ class AdultAdmin(UserAdmin):
 
 
 @admin.register(models.Family)
-class FamilyAdmin(admin.ModelAdmin):
-    form = forms.FamilyForm
+class FamilyAdmin(ModelAdmin):
+    form = forms.AdminFamilyForm
     list_display = (
         "name",
         "adults_count",
@@ -716,7 +719,7 @@ class FamilyAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Member)
-class MemberAdmin(admin.ModelAdmin):
+class MemberAdmin(ModelAdmin):
     """
     Registered for lookup only.
 

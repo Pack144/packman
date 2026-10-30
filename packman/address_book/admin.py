@@ -2,22 +2,24 @@ from django.contrib import admin
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 
+from unfold.admin import ModelAdmin, StackedInline, TabularInline
+
 from .models import Address, Category, PhoneNumber, Venue
 
 
-class PhoneNumberInline(admin.TabularInline):
+class PhoneNumberInline(TabularInline):
     exclude = ["member", "date_added", "published", "type"]
     extra = 0
     model = PhoneNumber
 
 
-class AddressInline(admin.StackedInline):
+class AddressInline(StackedInline):
     exclude = ["member", "date_added", "published", "type"]
     model = Address
 
 
 @admin.register(Venue)
-class VenueAdmin(admin.ModelAdmin):
+class VenueAdmin(ModelAdmin):
     inlines = [AddressInline, PhoneNumberInline]
     list_filter = ("categories",)
     list_display = ("name", "get_category_list")
@@ -28,7 +30,7 @@ class VenueAdmin(admin.ModelAdmin):
         return ", ".join(category.name for category in obj.categories.all())
 
 
-class DistributionListAdmin(admin.ModelAdmin):
+class DistributionListAdmin(ModelAdmin):
     fieldsets = [
         (None, {"fields": (("name", "email"), ("is_all", "contact_us"))}),
         (_("Members"), {"fields": ("get_member_list",)}),
@@ -64,4 +66,4 @@ class DistributionListAdmin(admin.ModelAdmin):
         return format_html("<ul>{}</ul>", members) if members else ""
 
 
-admin.site.register(Category)
+admin.site.register(Category, ModelAdmin)

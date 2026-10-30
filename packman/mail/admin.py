@@ -1,10 +1,12 @@
-from urllib.parse import quote
-
 from django.contrib import admin, messages
 from django.contrib.auth import get_permission_codename
-from django.urls import reverse
-from django.utils.html import format_html
 from django.utils.translation import gettext as _
+
+from tinymce.models import HTMLField
+from tinymce.widgets import TinyMCE
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.decorators import action
+from unfold.widgets import UnfoldAdminSelectWidget
 
 from .forms import MessageDistributionForm, MessageForm, MessageRecipientForm
 from .models import (
@@ -18,25 +20,29 @@ from .models import (
 )
 
 
-class AttachmentInline(admin.TabularInline):
+class AttachmentInline(TabularInline):
     model = Attachment
     extra = 0
 
 
-class EmailAddressInline(admin.TabularInline):
+class EmailAddressInline(TabularInline):
     model = EmailAddress
     extra = 0
     min_num = 1
 
 
-class MessageDistributionInline(admin.TabularInline):
+class MessageDistributionInline(TabularInline):
     model = MessageDistribution
     autocomplete_fields = ("distribution_list",)
     extra = 0
     form = MessageDistributionForm
 
+    def formfield_for_choice_field(self, db_field, request, **kwargs):
+        kwargs["widget"] = UnfoldAdminSelectWidget
+        return super().formfield_for_choice_field(db_field, request, **kwargs)
 
-class MessageRecipientInline(admin.TabularInline):
+
+class MessageRecipientInline(TabularInline):
     model = MessageRecipient
     autocomplete_fields = ("recipient",)
     classes = ["collapse"]
@@ -45,7 +51,7 @@ class MessageRecipientInline(admin.TabularInline):
 
 
 @admin.register(DistributionList)
-class DistributionListAdmin(admin.ModelAdmin):
+class DistributionListAdmin(ModelAdmin):
     fieldsets = [
         (None, {"fields": ("name", "is_all")}),
         (_("Selections"), {"fields": ("dens", "committees"), "classes": ("collapse",)}),
@@ -73,8 +79,9 @@ class DistributionListAdmin(admin.ModelAdmin):
 
 
 @admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
-    change_form_template = "admin/message_change_form.html"
+class MessageAdmin(ModelAdmin):
+    formfield_overrides = {HTMLField: {"widget": TinyMCE}}
+    actions_submit_line = ["save_and_send"]
     date_hierarchy = "last_updated"
     fieldsets = [
         (None, {"fields": ("author", "subject", "body")}),
@@ -92,46 +99,30 @@ class MessageAdmin(admin.ModelAdmin):
         obj.author = request.user
         super().save_model(request, obj, form, change)
 
-    def response_add(self, request, obj, post_url_continue=None):
-        # Add a "Send" button to the message add page
-        opts = obj._meta
-        obj_url = reverse(
-            f"admin:{opts.app_label}_{opts.model_name}_change",
-            args=(quote(obj.pk),),
-            current_app=self.admin_site.name,
-        )
-        # Add a link to the object's change form if the user can edit the obj.
-        if self.has_change_permission(request, obj):
-            obj_repr = format_html('<a href="{}">{}</a>', quote(obj_url), obj)
-        else:
-            obj_repr = str(obj)
-        msg_dict = {
-            "name": opts.verbose_name,
-            "obj": obj_repr,
-        }
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        if object_id is None:
+            extra_context = {
+                **(extra_context or {}),
+                "actions_submit_line": self.get_actions_submit_line(request, None),
+            }
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
-        if "_send" in request.POST:
-            obj.send()
-            msg = format_html(_("The {name} “{obj}” was sent successfully."), **msg_dict)
-            self.message_user(request, msg, messages.SUCCESS)
-            return self.response_post_save_add(request, obj)
+    @action(description=_("Save and send"), permissions=["send"], icon="send")
+    def save_and_send(self, request, obj):
+        # Unfold invokes submit-line actions before Django saves inline formsets.
+        obj._send_after_related = True
 
-        return super().response_add(request, obj, post_url_continue)
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        if getattr(form.instance, "_send_after_related", False):
+            form.instance.send()
+            self.message_user(request, _("The message was sent successfully."), messages.SUCCESS)
 
-    def response_change(self, request, obj):
-        # Add a "Send" button to the message change page
-        opts = self.model._meta
-        msg_dict = {
-            "name": opts.verbose_name,
-            "obj": format_html('<a href="{}">{}</a>', quote(request.path), obj),
-        }
-        if "_send" in request.POST:
-            obj.send()
-            msg = format_html(_("The {name} “{obj}” was sent successfully."), **msg_dict)
-            self.message_user(request, msg, messages.SUCCESS)
-            return self.response_post_save_change(request, obj)
-
-        return super().response_change(request, obj)
+    def has_send_permission(self, request, object_id=None):
+        if object_id is None:
+            return self.has_add_permission(request) and self.has_change_permission(request)
+        obj = self.get_object(request, object_id)
+        return obj is not None and self.has_change_permission(request, obj)
 
     def has_change_permission(self, request, obj=None):
         #  Start with Django's default has_change_permission() method.
@@ -181,6 +172,6 @@ class MessageAdmin(admin.ModelAdmin):
 
 
 @admin.register(ListSettings)
-class ListSettingsAdmin(admin.ModelAdmin):
+class ListSettingsAdmin(ModelAdmin):
     list_display = ("list_id", "name", "subject_prefix", "from_name", "from_email")
     list_display_links = ("list_id", "name", "subject_prefix", "from_name", "from_email")

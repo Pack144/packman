@@ -124,23 +124,16 @@ class CampaignFilterTestCase(TestCase):
         self.assertNotContains(change_response, "Delete selected campaigns")
 
         self.assertContains(changelist_response, "Starting a new campaign?")
-        self.assertContains(changelist_response, 'class="messagelist" style="clear: both;"')
+        self.assertContains(changelist_response, 'id="changelist-form"')
         self.assertContains(changelist_response, '<li class="info">')
         self.assertContains(changelist_response, "Duplicate campaign, quotas, and products")
         self.assertContains(changelist_response, "Orders are not copied")
         self.assertNotContains(changelist_response, "Delete selected campaigns")
         self.assertNotContains(changelist_response, "<strong>Note:</strong>", html=True)
         self.assertNotContains(changelist_response, "exactly seven weeks")
-        self.assertLess(
-            changelist_response.content.index(b'class="object-tools"'),
-            changelist_response.content.index(b"Starting a new campaign?"),
-        )
-
-        self.assertContains(prize_point_response, 'class="help" style="clear: both;"')
-        self.assertLess(
-            prize_point_response.content.index(b'class="object-tools"'),
-            prize_point_response.content.index(b"Prize Points define"),
-        )
+        self.assertContains(change_response, 'id="campaign_form"')
+        self.assertContains(prize_point_response, "Prize Points define")
+        self.assertContains(prize_point_response, 'id="changelist-form"')
 
     def test_campaign_admin_shows_scout_settings(self):
         CampaignScout.objects.create(campaign=self.current_campaign, scout=self.current_order.seller, exempt=True)
@@ -149,10 +142,9 @@ class CampaignFilterTestCase(TestCase):
 
         self.assertContains(response, "This Cub is not required to meet the campaign quota.")
         self.assertContains(response, "exempt")
-        self.assertContains(response, 'class="help help-tooltip"')
-        self.assertContains(response, 'title="This Cub is not required to meet the campaign quota."')
-        self.assertContains(response, "admin_inline_tooltips.js")
-        self.assertContains(response, "admin_inline_tooltips.css")
+        self.assertContains(response, 'name="scouts-0-exempt"')
+        self.assertNotContains(response, "admin_inline_tooltips.js")
+        self.assertNotContains(response, "admin_inline_tooltips.css")
 
 
 class OrderSellerFilterAndSearchTestCase(TestCase):
@@ -264,15 +256,11 @@ class OrderSellerFilterAndSearchTestCase(TestCase):
         response = self.client.get(self.url, {"q": "Grandma", "paid": "true"})
         self.assertEqual(list(response.context["cl"].queryset), [])
 
-    def test_filter_links_preserve_search_and_other_filters_and_reset_pagination(self):
+    def test_filter_form_preserves_search_and_other_filters_and_resets_pagination(self):
         response = self.client.get(self.url, {"q": "Grandma", "paid": "false", "p": "1"})
-        for spec in response.context["cl"].filter_specs:
-            if isinstance(spec, (CampaignFilter, SellerFilter)):
-                for choice in spec.choices(response.context["cl"]):
-                    with self.subTest(filter=spec.title, choice=choice["display"]):
-                        self.assertIn("q=Grandma", choice["query_string"])
-                        self.assertIn("paid=false", choice["query_string"])
-                        self.assertNotIn("p=", choice["query_string"])
+        self.assertContains(response, '<input type="hidden" name="q" value="Grandma">', html=True)
+        self.assertContains(response, '<input type="hidden" name="paid" value="false">', html=True)
+        self.assertNotContains(response, '<input type="hidden" name="p"')
 
     def test_staff_without_order_permission_cannot_access_orders_or_seller_choices(self):
         staff = User.objects.create_user(email="staff@example.com", _is_staff=True)
@@ -283,9 +271,9 @@ class OrderSellerFilterAndSearchTestCase(TestCase):
     def test_campaign_dropdown_selects_latest_by_default(self):
         response = self.client.get(self.url)
         spec = next(spec for spec in response.context["cl"].filter_specs if isinstance(spec, CampaignFilter))
-        selected = [choice for choice in spec.choices(response.context["cl"]) if choice["selected"]]
-        self.assertEqual(len(selected), 1)
-        self.assertEqual(selected[0]["display"], str(self.current_campaign))
+        form = next(spec.choices(response.context["cl"]))["form"]
+        self.assertEqual(form[CampaignFilter.parameter_name].value(), str(self.current_campaign.pk))
+        self.assertIn(("all", "All"), form.fields[CampaignFilter.parameter_name].choices)
 
     def test_empty_campaign_has_no_seller_choices_and_still_filters_orders(self):
         Order.objects.filter(campaign=self.current_campaign).delete()
@@ -296,18 +284,20 @@ class OrderSellerFilterAndSearchTestCase(TestCase):
     def test_campaign_and_seller_filters_render_as_dropdowns(self):
         response = self.client.get(self.url)
 
-        self.assertContains(response, "data-dropdown-filter", count=2)
-        self.assertContains(response, "data-searchable", count=1)
-        self.assertContains(response, 'aria-label="Filter by seller"')
-        self.assertContains(response, "admin_dropdown_filter.js")
+        self.assertContains(response, 'name="campaign__id__exact"')
+        self.assertContains(response, 'name="seller__id__exact"')
+        self.assertContains(response, 'id="filter-form"')
+        self.assertContains(response, "unfold/js/select2.init.js")
+        self.assertNotContains(response, "admin_dropdown_filter.js")
         self.assertContains(response, "select2.full")
         self.assertContains(response, "Search by seller name or customer name")
 
         for name in ("prize", "product"):
             with self.subTest(name=name):
                 response = self.client.get(reverse(f"admin:campaigns_{name}_changelist"))
-                self.assertContains(response, "data-dropdown-filter", count=1)
-                self.assertContains(response, "admin_dropdown_filter.js")
+                self.assertContains(response, 'name="campaign__id__exact"')
+                self.assertContains(response, 'id="filter-form"')
+                self.assertNotContains(response, "admin_dropdown_filter.js")
 
 
 class CopyToLatestCampaignAdminActionTestCase(TestCase):
