@@ -1,12 +1,15 @@
 import platform
 import sys
 from importlib.metadata import distributions
+from urllib.parse import quote
 
 import django
 from django.contrib import admin
+from django.core.exceptions import SuspiciousOperation
 from django.db import connection
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 
 
@@ -52,7 +55,11 @@ def system_info(request):
 
 
 def legacy_admin_redirect(request, path=""):
-    target = f"{reverse('admin:index')}{path}"
+    if path.startswith("/") or "\\" in path or any(part in (".", "..") for part in path.split("/")):
+        raise SuspiciousOperation("Invalid legacy admin redirect path.")
+    target = f"{reverse('admin:index')}{quote(path, safe='/')}"
     if query := request.META.get("QUERY_STRING"):
         target = f"{target}?{query}"
+    if not url_has_allowed_host_and_scheme(target, allowed_hosts=set()):
+        raise SuspiciousOperation("Unsafe legacy admin redirect destination.")
     return redirect(target, permanent=True, preserve_request=True)

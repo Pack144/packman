@@ -77,7 +77,8 @@ class FamilyRequirementRecordInline(TabularInline):
 
 @admin.register(Requirement)
 class RequirementAdmin(ModelAdmin):
-    list_before_template = "admin/compliance/requirement/list_guidance.html"
+    change_list_template = "admin/change_list_with_guidance.html"
+    list_guidance_template = "admin/compliance/requirement/list_guidance.html"
     list_display = (
         "name",
         "applies_to",
@@ -139,7 +140,8 @@ class RequirementAdmin(ModelAdmin):
 
 @admin.register(RequirementRecord)
 class RequirementRecordAdmin(ModelAdmin):
-    list_before_template = "admin/compliance/requirementrecord/list_guidance.html"
+    change_list_template = "admin/change_list_with_guidance.html"
+    list_guidance_template = "admin/compliance/requirementrecord/list_guidance.html"
     list_filter_submit = True
     list_display = (
         "requirement",

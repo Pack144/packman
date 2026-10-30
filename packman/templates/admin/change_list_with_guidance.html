@@ -1,0 +1,17 @@
+{% extends "admin/change_list.html" %}
+
+{% block nav-global-side %}{% endblock %}
+
+{% block content %}
+  {% if not is_popup %}
+    {% block object-tools %}
+      <div class="flex justify-end{% if has_add_permission %} mb-4{% endif %}">
+        {{ block.super }}
+      </div>
+      <div id="changelist-guidance" style="clear: both;">
+        {% include cl.model_admin.list_guidance_template %}
+      </div>
+    {% endblock %}
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

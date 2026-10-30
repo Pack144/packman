@@ -184,7 +184,8 @@ class CampaignScoutInline(TabularInline):
 class CampaignAdmin(ModelAdmin):
     actions = ["duplicate_campaign"]
     change_form_before_template = "admin/campaigns/campaign/form_guidance.html"
-    list_before_template = "admin/campaigns/campaign/list_guidance.html"
+    change_list_template = "admin/change_list_with_guidance.html"
+    list_guidance_template = "admin/campaigns/campaign/list_guidance.html"
     inlines = [QuotaInline, CampaignScoutInline]
     list_display = [
         "year",
@@ -345,7 +346,8 @@ class PrizeAdmin(ModelAdmin):
 
 @admin.register(PrizePoint)
 class PrizePointAdmin(ModelAdmin):
-    list_before_template = "admin/campaigns/prizepoint/list_guidance.html"
+    change_list_template = "admin/change_list_with_guidance.html"
+    list_guidance_template = "admin/campaigns/prizepoint/list_guidance.html"
     list_display = ["value", "earned_at"]
 
 

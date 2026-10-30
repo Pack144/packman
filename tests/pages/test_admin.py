@@ -21,13 +21,16 @@ class PageAdminTests(TestCase):
         self.client.force_login(self.user)
         self.url = reverse("admin:pages_page_changelist")
 
-    def reorder(self, pages, query=None):
+    def reorder_data(self, pages):
         data = {"_save": "Save", "form-TOTAL_FORMS": len(pages), "form-INITIAL_FORMS": len(pages)}
         for index, page in enumerate(pages):
             data[f"form-{index}-uuid"] = page.pk
             data[f"form-{index}-order"] = index
+        return data
+
+    def reorder(self, pages, query=None):
         url = f"{self.url}?{query}" if query else self.url
-        return self.client.post(url, data)
+        return self.client.post(url, self.reorder_data(pages))
 
     def test_native_sorting_renders_with_uuid_records(self):
         response = self.client.get(self.url)
@@ -80,6 +83,68 @@ class PageAdminTests(TestCase):
         self.assertEqual(
             list(Page.objects.filter(pk__in=[page.pk for page in self.pages]).values_list("pk", flat=True)),
             [self.pages[3].pk, self.pages[1].pk, self.pages[2].pk, self.pages[0].pk],
+        )
+
+    def scoped_tied_order_formset(self):
+        queryset = Page.objects.filter(pk__in=[page.pk for page in self.pages])
+        queryset.update(order=0)
+        with patch.object(PageAdmin, "get_queryset", return_value=queryset):
+            response = self.client.get(self.url)
+        FormSet = type(response.context["cl"].formset)
+        return FormSet(
+            self.reorder_data([self.pages[2], self.pages[0]]),
+            queryset=queryset.filter(pk__in=[self.pages[0].pk, self.pages[2].pk]),
+        )
+
+    def test_formset_save_persists_normalized_hidden_pages(self):
+        formset = self.scoped_tied_order_formset()
+        self.assertTrue(formset.is_valid(), formset.errors)
+        formset.save()
+        self.assertEqual(
+            list(formset.ordering_queryset.values_list("pk", "order")),
+            [(self.pages[2].pk, 0), (self.pages[1].pk, 1), (self.pages[0].pk, 2), (self.pages[3].pk, 3)],
+        )
+
+    def test_formset_save_without_commit_does_not_persist_normalization(self):
+        formset = self.scoped_tied_order_formset()
+        self.assertTrue(formset.is_valid(), formset.errors)
+        formset.save(commit=False)
+        self.assertEqual(set(formset.ordering_queryset.values_list("order", flat=True)), {0})
+
+    def test_formset_normalization_failure_rolls_back_visible_pages(self):
+        formset = self.scoped_tied_order_formset()
+        self.assertTrue(formset.is_valid(), formset.errors)
+        with patch.object(formset.ordering_queryset, "bulk_update", side_effect=RuntimeError("Test failure")):
+            with self.assertRaisesRegex(RuntimeError, "Test failure"):
+                formset.save()
+        self.assertEqual(set(formset.ordering_queryset.values_list("order", flat=True)), {0})
+
+    def test_filtered_reorder_persists_normalized_hidden_pages(self):
+        queryset = Page.objects.filter(pk__in=[page.pk for page in self.pages])
+        queryset.update(order=0)
+        for page in (self.pages[0], self.pages[2]):
+            page.title += " visible"
+            page.save(update_fields=["title"])
+        with patch.object(PageAdmin, "get_queryset", return_value=queryset):
+            response = self.reorder([self.pages[2], self.pages[0]], "q=visible")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            list(queryset.values_list("pk", "order")),
+            [(self.pages[2].pk, 0), (self.pages[1].pk, 1), (self.pages[0].pk, 2), (self.pages[3].pk, 3)],
+        )
+
+    def test_paginated_reorder_persists_normalized_hidden_pages(self):
+        queryset = Page.objects.filter(pk__in=[page.pk for page in self.pages])
+        queryset.update(order=0)
+        with (
+            patch.object(PageAdmin, "get_queryset", return_value=queryset),
+            patch.object(PageAdmin, "list_per_page", 2),
+        ):
+            response = self.reorder([self.pages[3], self.pages[2]], "p=2")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            list(queryset.values_list("pk", "order")),
+            [(self.pages[0].pk, 0), (self.pages[1].pk, 1), (self.pages[3].pk, 2), (self.pages[2].pk, 3)],
         )
 
     def test_reorder_respects_admin_queryset(self):

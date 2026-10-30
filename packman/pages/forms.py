@@ -4,6 +4,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
+from django.db import transaction
 from django.utils.translation import gettext as _
 
 from tinymce.widgets import TinyMCE
@@ -104,6 +105,16 @@ class PageOrderFormSet(forms.BaseModelFormSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.original_orders = dict(self.get_queryset().values_list("pk", "order"))
+        self.normalized_pages = []
+
+    def save(self, commit=True):
+        if not commit:
+            return super().save(commit=False)
+        with transaction.atomic(using=self.ordering_queryset.db):
+            instances = super().save()
+            if self.normalized_pages:
+                self.ordering_queryset.bulk_update(self.normalized_pages, ["order"])
+        return instances
 
     def clean(self):
         super().clean()
@@ -136,4 +147,5 @@ class PageOrderFormSet(forms.BaseModelFormSet):
                 form.cleaned_data["order"] = form.instance.order = orders[form.instance.pk]
                 if "order" not in form.changed_data:
                     form.changed_data.append("order")
+            self.normalized_pages = pages
             forms[0].instance._normalized_page_orders = pages

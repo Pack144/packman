@@ -13,7 +13,7 @@ from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Model
 from django.template.loader import render_to_string
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from easy_thumbnails.files import get_thumbnailer
@@ -94,7 +94,7 @@ class ModelAdminTests(ParametrizedTestCase, TestCase):
                     self.assertIsInstance(form.fields[field.name].widget, TinyMCE)
 
 
-class AdminRedirectTests(SimpleTestCase):
+class AdminRedirectTests(TestCase):
     def test_canonical_urls(self):
         self.assertEqual(reverse("admin:index"), "/admin/")
         self.assertEqual(reverse("admin_system_info"), "/admin/system-info/")
@@ -110,6 +110,74 @@ class AdminRedirectTests(SimpleTestCase):
         response = self.client.post("/administration/mail/message/add/", {"subject": "Draft"})
         self.assertEqual(response.status_code, HTTPStatus.PERMANENT_REDIRECT)
         self.assertEqual(response["Location"], "/admin/mail/message/add/")
+
+    def test_legacy_redirect_rejects_unsafe_paths(self):
+        for path in (
+            "//outside.example/",
+            "/%5C%5Coutside.example/",
+            "/../outside/",
+            "/%2e%2e/outside/",
+            "/campaigns/../../outside/",
+            "/campaigns/./order/",
+        ):
+            with self.subTest(path=path):
+                with self.assertLogs("django.security.SuspiciousOperation", level="ERROR"):
+                    response = self.client.get(f"/administration{path}")
+                self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+
+    def test_legacy_redirect_escapes_path_delimiters(self):
+        response = self.client.get("/administration/pages/page/a%3Fb%23c/change/?next=%2F%2Foutside.example")
+        self.assertEqual(response.status_code, HTTPStatus.PERMANENT_REDIRECT)
+        self.assertEqual(
+            response["Location"],
+            "/admin/pages/page/a%3Fb%23c/change/?next=%2F%2Foutside.example",
+        )
+
+
+class ChangelistGuidanceTests(TestCase):
+    guidance_pages = (
+        ("campaigns_campaign", "Starting a new campaign?"),
+        ("campaigns_prizepoint", "Prize Points define"),
+        ("compliance_requirement", "A Requirement is something"),
+        ("compliance_requirementrecord", "A record is one Cub"),
+    )
+
+    def setUp(self):
+        self.user = AdultFactory(_is_staff=True, is_superuser=True)
+        self.client.force_login(self.user)
+
+    def test_guidance_follows_add_in_a_cleared_content_toolbar(self):
+        for model, guidance in self.guidance_pages:
+            with self.subTest(model=model):
+                response = self.client.get(reverse(f"admin:{model}_changelist"))
+                add_url = reverse(f"admin:{model}_add")
+                self.assertContains(response, guidance, count=1)
+                self.assertContains(response, '<div id="changelist-guidance" style="clear: both;">', count=1)
+                html = response.content.decode()
+                content = html[html.index('id="content"') :]
+                toolbar = content[: content.index('id="changelist-guidance"')]
+                self.assertEqual(toolbar.count(f'href="{add_url}"'), 1)
+
+    def test_guidance_remains_available_without_add_permission(self):
+        self.user.is_superuser = False
+        self.user.save()
+        self.user.user_permissions.add(
+            *Permission.objects.filter(
+                codename__in=["view_campaign", "view_prizepoint", "view_requirement", "view_requirementrecord"]
+            )
+        )
+        for model, guidance in self.guidance_pages:
+            with self.subTest(model=model):
+                response = self.client.get(reverse(f"admin:{model}_changelist"))
+                self.assertContains(response, guidance, count=1)
+                self.assertNotContains(response, f'href="{reverse(f"admin:{model}_add")}"')
+
+    def test_popup_changelists_do_not_show_guidance(self):
+        for model, guidance in self.guidance_pages:
+            with self.subTest(model=model):
+                response = self.client.get(reverse(f"admin:{model}_changelist"), {"_popup": "1"})
+                self.assertNotContains(response, guidance)
+                self.assertNotContains(response, 'id="changelist-guidance"')
 
 
 class AdminNavigationTests(TestCase):
