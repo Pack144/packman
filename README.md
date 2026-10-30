@@ -19,6 +19,9 @@ A Cub Scout pack management web application, written in Python and Django
 * Documents Repository. So you have a secure place to make files available to members
   of the pack.
 * Dynamic content, manageable through Django's built-in admin frameworks.
+* NCC Dashboard reports show Donations and Product Sales immediately before the
+  combined total on the Sales, Cubs, and Dens tabs, including Cubs and Dens CSV
+  downloads. The Sales table lists the newest day first; its chart stays chronological.
 
 ## Why this app?
 Packman was written specifically for the purpose of managing Cub Scout Pack 144,

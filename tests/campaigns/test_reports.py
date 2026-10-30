@@ -5,7 +5,9 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.humanize.templatetags.humanize import naturalday
 from django.db import connection
+from django.template.defaultfilters import capfirst
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -35,6 +37,7 @@ class ReportTableParser(HTMLParser):
         super().__init__()
         self.table_id = table_id
         self.in_table = False
+        self.in_cell = False
         self.rows = []
         self.feed(content)
 
@@ -46,9 +49,17 @@ class ReportTableParser(HTMLParser):
             if tag == "tr":
                 self.rows.append([])
             elif tag in {"th", "td"}:
+                self.in_cell = True
+                attrs["text"] = ""
                 self.rows[-1].append(attrs)
 
+    def handle_data(self, data):
+        if self.in_table and self.in_cell:
+            self.rows[-1][-1]["text"] += data
+
     def handle_endtag(self, tag):
+        if tag in {"th", "td"}:
+            self.in_cell = False
         if tag == "table":
             self.in_table = False
 
@@ -93,12 +104,15 @@ class CampaignReportTestCase(TestCase):
 
         self.assertEqual(
             [str(column.label) for column in report.columns],
-            ["Cub", "Den", "Order Count", "Total Sales", "Eligible Total"],
+            ["Cub", "Den", "Order Count", "Donations", "Product Sales", "Total Sales", "Eligible Total"],
         )
         self.assertEqual(len(report.rows), 1)
         self.assertEqual(row[0].value, current_member.scout)
         self.assertEqual(row[1].value, current_member.den)
-        self.assertEqual([cell.value for cell in row[2:]], [1, decimal.Decimal("25"), decimal.Decimal("25")])
+        self.assertEqual(
+            [cell.value for cell in row[2:]],
+            [1, decimal.Decimal("25"), decimal.Decimal("0"), decimal.Decimal("25"), decimal.Decimal("25")],
+        )
 
     def test_cub_report_uses_the_den_assigned_for_the_campaign_year(self):
         # A scout who moved dens between pack years must be reported under the
@@ -136,8 +150,8 @@ class CampaignReportTestCase(TestCase):
         )
         row = report.rows[0]
 
-        self.assertEqual(row[5].value, decimal.Decimal("100.00"))
-        self.assertEqual(row[8].value, 55)
+        self.assertEqual(row[7].value, decimal.Decimal("100.00"))
+        self.assertEqual(row[10].value, 55)
 
     def test_campaign_report_splits_operational_and_award_totals(self):
         member = MembershipFactory(year_assigned=self.current_year)
@@ -160,14 +174,14 @@ class CampaignReportTestCase(TestCase):
         row = report.rows[0]
 
         self.assertEqual(
-            [str(column.label) for column in report.columns[3:6]], ["Total Sales", "Eligible Total", "Quota"]
+            [str(column.label) for column in report.columns[5:8]], ["Total Sales", "Eligible Total", "Quota"]
         )
         self.assertEqual(row[2].value, 2)
-        self.assertEqual(row[3].value, decimal.Decimal("1100.00"))
-        self.assertEqual(row[4].value, decimal.Decimal("100.00"))
-        self.assertFalse(row[6].value)
-        self.assertEqual(row[7].value, decimal.Decimal("1100.00"))
-        self.assertEqual(row[8].value, 0)
+        self.assertEqual(row[5].value, decimal.Decimal("1100.00"))
+        self.assertEqual(row[6].value, decimal.Decimal("100.00"))
+        self.assertFalse(row[8].value)
+        self.assertEqual(row[9].value, decimal.Decimal("1100.00"))
+        self.assertEqual(row[10].value, 0)
 
     def test_exempt_scout_owes_sales_only_and_exemption_is_campaign_scoped(self):
         member = MembershipFactory(year_assigned=self.current_year)
@@ -189,10 +203,10 @@ class CampaignReportTestCase(TestCase):
             include_campaign_fields=True,
         )
 
-        self.assertEqual(exempt_report.rows[0][3].value, decimal.Decimal("100.00"))
-        self.assertEqual(exempt_report.rows[0][7].value, decimal.Decimal("100.00"))
-        self.assertEqual(regular_report.rows[0][3].value, decimal.Decimal("100.00"))
-        self.assertEqual(regular_report.rows[0][7].value, decimal.Decimal("360.00"))
+        self.assertEqual(exempt_report.rows[0][5].value, decimal.Decimal("100.00"))
+        self.assertEqual(exempt_report.rows[0][9].value, decimal.Decimal("100.00"))
+        self.assertEqual(regular_report.rows[0][5].value, decimal.Decimal("100.00"))
+        self.assertEqual(regular_report.rows[0][9].value, decimal.Decimal("360.00"))
 
     def test_cub_report_includes_ineligible_orders_in_operational_totals(self):
         member = MembershipFactory(year_assigned=self.current_year)
@@ -209,7 +223,10 @@ class CampaignReportTestCase(TestCase):
             include_campaign_fields=False,
         )
 
-        self.assertEqual([cell.value for cell in report.rows[0][2:]], [1, decimal.Decimal("25"), decimal.Decimal("0")])
+        self.assertEqual(
+            [cell.value for cell in report.rows[0][2:]],
+            [1, decimal.Decimal("25"), decimal.Decimal("0"), decimal.Decimal("25"), decimal.Decimal("0")],
+        )
 
     @patch("packman.campaigns.report_data.timezone.localdate", return_value=timezone.datetime(2026, 10, 28).date())
     def test_invoice_fields_exclude_only_exempt_cubs_owing_zero(self, localdate):
@@ -237,7 +254,7 @@ class CampaignReportTestCase(TestCase):
         )
         rows = {row[0].value.pk: row for row in report.rows}
         self.assertEqual(set(rows), {quota_member.scout_id, exempt_member.scout_id, zero_member.scout_id})
-        self.assertEqual({row[11].value for row in report.rows}, {"1", "2", "3"})
+        self.assertEqual({row[13].value for row in report.rows}, {"1", "2", "3"})
         for scout_id, expected in (
             (quota_member.scout_id, "65.01"),
             (exempt_member.scout_id, "1234.56"),
@@ -245,9 +262,9 @@ class CampaignReportTestCase(TestCase):
         ):
             with self.subTest(scout_id=scout_id):
                 row = rows[scout_id]
-                self.assertEqual(row[7].value, decimal.Decimal(expected))
+                self.assertEqual(row[9].value, decimal.Decimal(expected))
                 self.assertEqual(
-                    [cell.value for cell in row[12:]],
+                    [cell.value for cell in row[14:]],
                     [
                         "2026-10-28",
                         "2026-10-28",
@@ -258,7 +275,7 @@ class CampaignReportTestCase(TestCase):
                         expected,
                     ],
                 )
-                self.assertTrue(all(cell.hidden for cell in row[11:]))
+                self.assertTrue(all(cell.hidden for cell in row[13:]))
         weekly_report = build_cub_report(
             self.current_campaign, Order.objects.filter(campaign=self.current_campaign), include_campaign_fields=False
         )
@@ -306,6 +323,8 @@ class CampaignReportTestCase(TestCase):
             [str(column.label) for column in report.columns],
             [
                 "Den #",
+                "Donations",
+                "Product Sales",
                 "Total Sales",
                 "Total Orders",
                 "Total Weight",
@@ -320,6 +339,8 @@ class CampaignReportTestCase(TestCase):
             [cell.value for cell in row],
             [
                 den.number,
+                decimal.Decimal("40.00"),
+                decimal.Decimal("25.00"),
                 decimal.Decimal("65.00"),
                 3,
                 "3.0lb",
@@ -333,8 +354,9 @@ class CampaignReportTestCase(TestCase):
         self.assertEqual(report.default_sort_index, 0)
         self.assertEqual(report.default_sort_direction, "ascending")
         self.assertEqual(report.rows[1][0].value, empty_den.number)
-        self.assertEqual(row[3].sort_value, decimal.Decimal("3.0000"))
-        self.assertEqual(row[8].sort_value, decimal.Decimal("1.0000"))
+        self.assertEqual([cell.value for cell in report.rows[1][1:4]], [decimal.Decimal("0.00")] * 3)
+        self.assertEqual(row[5].sort_value, decimal.Decimal("3.0000"))
+        self.assertEqual(row[10].sort_value, decimal.Decimal("1.0000"))
 
     def test_weight_format_rounds_to_one_decimal_pound(self):
         self.assertEqual(format_weight(decimal.Decimal("1.5678")), "1.6lb")
@@ -348,11 +370,11 @@ class CampaignReportTestCase(TestCase):
 
         report = build_den_report(self.current_campaign, Order.objects.filter(campaign=self.current_campaign))
 
-        self.assertEqual(report.rows[0][1].value, decimal.Decimal("80.00"))
-        self.assertEqual(report.rows[0][5].value, 0)
-        self.assertEqual(report.rows[0][6].value, decimal.Decimal("0.00"))
-        self.assertEqual(report.rows[0][7].value, decimal.Decimal("0.00"))
-        self.assertEqual(report.rows[0][8].value, "0.0lb")
+        self.assertEqual(report.rows[0][3].value, decimal.Decimal("80.00"))
+        self.assertEqual(report.rows[0][7].value, 0)
+        self.assertEqual(report.rows[0][8].value, decimal.Decimal("0.00"))
+        self.assertEqual(report.rows[0][9].value, decimal.Decimal("0.00"))
+        self.assertEqual(report.rows[0][10].value, "0.0lb")
 
 
 class OrderReportViewTestCase(TestCase):
@@ -452,8 +474,8 @@ class OrderReportViewTestCase(TestCase):
 
         self.assertEqual(response.context["selected_tab"], "dens")
         self.assertEqual(response.context["selected_week"]["number"], 1)
-        self.assertEqual(response.context["den_report"].rows[0][1].value, decimal.Decimal("20.00"))
-        self.assertEqual(response.context["den_report"].rows[0][2].value, 1)
+        self.assertEqual(response.context["den_report"].rows[0][3].value, decimal.Decimal("20.00"))
+        self.assertEqual(response.context["den_report"].rows[0][4].value, 1)
         self.assertContains(response, "Dens — Week 1")
         self.assertContains(response, 'id="dens_report_table"')
         self.assertContains(response, 'data-csv-table-id="dens_report_table"')
@@ -505,18 +527,18 @@ class OrderReportViewTestCase(TestCase):
         campaign_report = campaign_response.context["cub_report"]
         self.assertEqual(
             [str(column.label) for column in weekly_report.columns],
-            ["Cub", "Den", "Order Count", "Total Sales", "Eligible Total"],
+            ["Cub", "Den", "Order Count", "Donations", "Product Sales", "Total Sales", "Eligible Total"],
         )
         self.assertEqual(weekly_report.rows[0][2].value, 1)
-        self.assertEqual(weekly_report.rows[0][3].value, decimal.Decimal("20.00"))
+        self.assertEqual(weekly_report.rows[0][5].value, decimal.Decimal("20.00"))
         self.assertEqual(weekly_report.rows[0][1].effective_sort_value, self.member.den.number)
-        self.assertEqual(weekly_report.default_sort_index, 4)
+        self.assertEqual(weekly_report.default_sort_index, 6)
         self.assertEqual(weekly_report.default_sort_direction, "descending")
-        self.assertEqual(len(campaign_report.columns), 19)
-        self.assertEqual(len([column for column in campaign_report.columns if not column.hidden]), 11)
-        self.assertTrue(all(column.hidden for column in campaign_report.columns[11:]))
+        self.assertEqual(len(campaign_report.columns), 21)
+        self.assertEqual(len([column for column in campaign_report.columns if not column.hidden]), 13)
+        self.assertTrue(all(column.hidden for column in campaign_report.columns[13:]))
         self.assertEqual(
-            [column.label for column in campaign_report.columns[11:]],
+            [column.label for column in campaign_report.columns[13:]],
             [
                 "InvoiceNo",
                 "InvoiceDate",
@@ -531,13 +553,13 @@ class OrderReportViewTestCase(TestCase):
         rendered_rows = ReportTableParser(campaign_response.content.decode(), "cubs_report_table").rows
         self.assertEqual(len(rendered_rows), 2)
         for rendered_row in rendered_rows:
-            self.assertEqual(len(rendered_row), 19)
-            self.assertTrue(all("hidden" not in attrs for attrs in rendered_row[:11]))
-            self.assertTrue(all("hidden" in attrs for attrs in rendered_row[11:]))
-        self.assertEqual(campaign_report.default_sort_index, 4)
+            self.assertEqual(len(rendered_row), 21)
+            self.assertTrue(all("hidden" not in attrs for attrs in rendered_row[:13]))
+            self.assertTrue(all("hidden" in attrs for attrs in rendered_row[13:]))
+        self.assertEqual(campaign_report.default_sort_index, 6)
         self.assertEqual(campaign_report.default_sort_direction, "descending")
         self.assertEqual(campaign_report.rows[0][2].value, 2)
-        self.assertEqual(campaign_report.rows[0][3].value, decimal.Decimal("70.00"))
+        self.assertEqual(campaign_report.rows[0][5].value, decimal.Decimal("70.00"))
         self.assertContains(weekly_response, "Cubs — Week 1")
         self.assertContains(campaign_response, "Cubs — Full Campaign")
 
@@ -555,7 +577,7 @@ class OrderReportViewTestCase(TestCase):
 
         response = self.client.get(reverse("campaigns:order_report"), {"tab": "cubs"})
 
-        self.assertContains(response, "$25.50", count=2)
+        self.assertContains(response, "$25.50", count=3)
         self.assertContains(response, "$100", count=1)
         self.assertNotContains(response, "$100.00")
         self.assertEqual(response.context["cub_report"].rows[0][-1].value, "73.92")
@@ -584,7 +606,7 @@ class OrderReportViewTestCase(TestCase):
         self.assertEqual(len(response.context["cub_report"].rows), 1)
         row = response.context["cub_report"].rows[0]
         self.assertEqual(row[0].value, previous_member.scout)
-        self.assertEqual(row[7].value, decimal.Decimal("42.00"))
+        self.assertEqual(row[9].value, decimal.Decimal("42.00"))
         self.assertEqual(row[-1].value, "42.00")
 
     def test_cubs_and_products_download_buttons_target_visible_tables(self):
@@ -625,9 +647,97 @@ class OrderReportViewTestCase(TestCase):
         self.assertEqual(len(days), 8)
         self.assertEqual(days[0]["count"], 0)
         self.assertEqual(days[0]["order_total"], decimal.Decimal("0.00"))
+        self.assertEqual(days[0]["donations"], decimal.Decimal("0.00"))
+        self.assertEqual(days[0]["product_sales"], decimal.Decimal("0.00"))
         self.assertEqual(days[2]["count"], 1)
         self.assertEqual(days[2]["order_total"], decimal.Decimal("30.00"))
         self.assertEqual(days[-1]["count"], 0)
+        rows = ReportTableParser(response.content.decode(), "order_report_by_date_table").rows
+        self.assertEqual(
+            [row[0]["text"].strip() for row in rows[1:-1]],
+            [capfirst(naturalday(day["date"])) for day in reversed(days)],
+        )
+
+    def test_sales_breakdown_is_consistent_across_tabs_and_periods(self):
+        mixed_order = self.create_order(day=2, quantity=2)
+        Order.objects.filter(pk=mixed_order.pk).update(donation=decimal.Decimal("5.25"), award_ineligible=True)
+        second_product = Product.objects.create(
+            name="Second Product",
+            category=self.category,
+            campaign=self.current_campaign,
+            price=decimal.Decimal("2.50"),
+        )
+        OrderItem.objects.create(order=mixed_order, product=second_product, quantity=3)
+        donation_order = Order.objects.create(
+            campaign=self.current_campaign, seller=self.member.scout, donation=decimal.Decimal("5.25")
+        )
+        Order.objects.filter(pk=donation_order.pk).update(date_added=self.campaign_start + timezone.timedelta(days=2))
+        later_order = self.create_order(day=8, quantity=5)
+        Order.objects.filter(pk=later_order.pk).update(donation=decimal.Decimal("9.50"))
+        Order.objects.create(campaign=self.previous_campaign, seller=self.member.scout, donation=999)
+        empty_member = MembershipFactory(year_assigned=self.current_year, den=DenFactory(number=999))
+
+        for week, expected in (
+            (1, ("10.50", "27.50", "38.00")),
+            (None, ("20.00", "77.50", "97.50")),
+        ):
+            for tab, table_id, total_label in (
+                ("sales", "order_report_by_date_table", "Total"),
+                ("cubs", "cubs_report_table", "Total Sales"),
+                ("dens", "dens_report_table", "Total Sales"),
+            ):
+                with self.subTest(week=week, tab=tab):
+                    query = {"tab": tab}
+                    if week:
+                        query["week"] = week
+                    response = self.client.get(reverse("campaigns:order_report"), query)
+                    self.assertEqual(response.status_code, 200)
+                    rows = ReportTableParser(response.content.decode(), table_id).rows
+                    headers = [cell["text"].strip() for cell in rows[0]]
+                    total_index = headers.index(total_label)
+                    self.assertEqual(headers[total_index - 2 : total_index], ["Donations", "Product Sales"])
+                    expected_values = [decimal.Decimal(value) for value in expected]
+                    if tab == "sales":
+                        sales = response.context["sales"]
+                        self.assertEqual(
+                            [sales[key] for key in ("donations", "product_sales", "total")], expected_values
+                        )
+                        day = next(day for day in sales["days"] if day["count"] == 2)
+                        self.assertEqual(
+                            [day[key] for key in ("donations", "product_sales", "order_total")],
+                            [decimal.Decimal(value) for value in ("10.50", "27.50", "38.00")],
+                        )
+                        rendered_row = rows[-1]
+                    else:
+                        report = response.context["cub_report" if tab == "cubs" else "den_report"]
+                        self.assertEqual(
+                            [cell.value for cell in report.rows[0][total_index - 2 : total_index + 1]],
+                            expected_values,
+                        )
+                        empty_row = report.rows[1]
+                        self.assertEqual(
+                            empty_row[0].value, empty_member.scout if tab == "cubs" else empty_member.den.number
+                        )
+                        self.assertEqual(
+                            [cell.value for cell in empty_row[total_index - 2 : total_index + 1]],
+                            [decimal.Decimal("0.00")] * 3,
+                        )
+                        rendered_row = rows[1]
+                    self.assertEqual(
+                        [
+                            decimal.Decimal(cell["text"].strip().removeprefix("$").replace(",", ""))
+                            for cell in rendered_row[total_index - 2 : total_index + 1]
+                        ],
+                        expected_values,
+                    )
+
+    def test_empty_sales_report_has_zero_breakdown(self):
+        response = self.client.get(reverse("campaigns:order_report"), {"tab": "sales"})
+        sales = response.context["sales"]
+        self.assertEqual(sales["count"], 0)
+        self.assertEqual(sales["donations"], decimal.Decimal("0.00"))
+        self.assertEqual(sales["product_sales"], decimal.Decimal("0.00"))
+        self.assertEqual(sales["total"], decimal.Decimal("0.00"))
 
     def test_campaign_selection_filters_prizes_and_uses_historical_den(self):
         historical_member = MembershipFactory(

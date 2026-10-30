@@ -45,14 +45,18 @@
               <tr>
                 <th scope="col">{% translate 'Date' %}</th>
                 <th scope="col">{% translate 'Orders Received' %}</th>
+                <th scope="col">{% translate 'Donations' %}</th>
+                <th scope="col">{% translate 'Product Sales' %}</th>
                 <th scope="col">{% translate 'Total' %}</th>
               </tr>
             </thead>
             <tbody>
-              {% for day in sales.days %}
+              {% for day in sales.days reversed %}
                 <tr>
                   <th scope="row">{{ day.date|naturalday|capfirst }}</th>
                   <td>{{ day.count|intcomma }}</td>
+                  <td>${{ day.donations|intcomma }}</td>
+                  <td>${{ day.product_sales|intcomma }}</td>
                   <td>${{ day.order_total|intcomma }}</td>
                 </tr>
               {% endfor %}
@@ -61,6 +65,8 @@
               <tr>
                 <th scope="row">{% translate "Total" %}</th>
                 <td>{{ sales.count|intcomma }}</td>
+                <td>${{ sales.donations|intcomma }}</td>
+                <td>${{ sales.product_sales|intcomma }}</td>
                 <td>${{ sales.total|intcomma }}</td>
               </tr>
             </tfoot>

@@ -64,6 +64,18 @@ class OrderQuerySet(models.QuerySet):
     def calculate_total(self):
         return self.calculate_subtotal().annotate(total=F("subtotal") + Coalesce(F("donation"), decimal.Decimal(0.00)))
 
+    def sales_by(self, *fields):
+        return (
+            self.calculate_total()
+            .values(*fields)
+            .annotate(
+                order_count=Count("pk"),
+                donations=Coalesce(Sum("donation"), decimal.Decimal("0.00")),
+                product_sales=Coalesce(Sum("subtotal"), decimal.Decimal("0.00")),
+                total_sales=Coalesce(Sum("total"), decimal.Decimal("0.00")),
+            )
+        )
+
     def totaled(self):
         return self.calculate_total().aggregate(totaled=Coalesce(Sum("total"), decimal.Decimal(0.00)))
 
