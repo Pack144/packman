@@ -1,40 +1,43 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
 
-{% block breadcrumbs %}
-<div class="breadcrumbs">
-  <a href="{% url 'admin:index' %}">{% trans "Home" %}</a>
-  &rsaquo; {% trans "System Information" %}
-</div>
-{% endblock %}
+{% load i18n unfold %}
 
 {% block content %}
-<div id="content-main">
-
-  <h2>{% trans "Environment" %}</h2>
-  <table>
-    <tbody>
-      <tr>
-        <th scope="row">{% trans "Python" %}</th>
-        <td><code>{{ python_version }}</code></td>
-      </tr>
-      <tr>
-        <th scope="row">{% trans "Django" %}</th>
-        <td><code>{{ django_version }}</code></td>
-      </tr>
-      <tr>
-        <th scope="row">{% trans "Operating System" %}</th>
-        <td><code>{{ os_name }}</code></td>
-      </tr>
-      <tr>
-        <th scope="row">{% trans "Database" %}</th>
-        <td><code>{{ db_version }}</code></td>
-      </tr>
-    </tbody>
-  </table>
-
-  <h2>{% trans "Installed Packages" %}</h2>
-  <table>
+  <div id="content-main" class="flex flex-col gap-4">
+    {% trans "Environment" as environment_title %}
+    {% component "unfold/components/card.html" with title=environment_title %}
+    <table class="w-full">
+      <tbody>
+        <tr>
+          <th scope="row">{% trans "Python" %}</th>
+          <td>
+            <code>{{ python_version }}</code>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">{% trans "Django" %}</th>
+          <td>
+            <code>{{ django_version }}</code>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">{% trans "Operating System" %}</th>
+          <td>
+            <code>{{ os_name }}</code>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">{% trans "Database" %}</th>
+          <td>
+            <code>{{ db_version }}</code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  {% endcomponent %}
+  {% trans "Installed Packages" as packages_title %}
+  {% component "unfold/components/card.html" with title=packages_title %}
+  <table class="w-full">
     <thead>
       <tr>
         <th scope="col">{% trans "Package" %}</th>
@@ -43,13 +46,15 @@
     </thead>
     <tbody>
       {% for name, version in packages %}
-      <tr>
-        <td>{{ name }}</td>
-        <td><code>{{ version }}</code></td>
-      </tr>
+        <tr>
+          <td>{{ name }}</td>
+          <td>
+            <code>{{ version }}</code>
+          </td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>
-
+{% endcomponent %}
 </div>
 {% endblock %}

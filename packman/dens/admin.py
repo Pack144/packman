@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
+from unfold.admin import ModelAdmin, TabularInline
+
 from packman.committees.models import CommitteeMember
 
 from .models import Den, Membership, Rank
@@ -31,7 +33,7 @@ class RankCategoryFilter(admin.SimpleListFilter):
             return queryset.webelos()
 
 
-class LeadershipAdmin(admin.TabularInline):
+class LeadershipAdmin(TabularInline):
     model = CommitteeMember
     classes = ["collapse"]
     exclude = ["date_added", "committee", "position"]
@@ -41,7 +43,7 @@ class LeadershipAdmin(admin.TabularInline):
     verbose_name_plural = _("Leaders")
 
 
-class MembershipAdmin(admin.TabularInline):
+class MembershipAdmin(TabularInline):
     model = Membership
     autocomplete_fields = ["scout"]
     exclude = ["date_added"]
@@ -49,7 +51,7 @@ class MembershipAdmin(admin.TabularInline):
 
 
 @admin.register(Den)
-class DenAdmin(admin.ModelAdmin):
+class DenAdmin(ModelAdmin):
     inlines = [LeadershipAdmin, MembershipAdmin]
     list_display = (
         "__str__",
@@ -90,7 +92,7 @@ class DenAdmin(admin.ModelAdmin):
 
 
 @admin.register(Rank)
-class RankAdmin(admin.ModelAdmin):
+class RankAdmin(ModelAdmin):
     list_display = (
         "rank",
         "description",

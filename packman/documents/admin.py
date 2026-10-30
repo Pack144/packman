@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from unfold.admin import ModelAdmin
+
 from .models import Category, Document
 
 
 @admin.register(Document)
-class DocumentAdmin(admin.ModelAdmin):
+class DocumentAdmin(ModelAdmin):
     model = Document
     list_display = (
         "name",
@@ -18,4 +20,4 @@ class DocumentAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Category)
+admin.site.register(Category, ModelAdmin)

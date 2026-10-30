@@ -4,12 +4,15 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.contrib.filters.admin import DropdownFilter
+
 from packman.calendars.models import PackYear
 
 from .models import Requirement, RequirementRecord
 
 
-class PackYearFilter(admin.SimpleListFilter):
+class PackYearFilter(DropdownFilter):
     """
     A "pack year" filter that defaults to the current year when the changelist
     is first opened, rather than showing every year's records at once.
@@ -20,6 +23,7 @@ class PackYearFilter(admin.SimpleListFilter):
 
     title = _("pack year")
     parameter_name = "year__year__exact"
+    all_option = ("all", _("All"))
 
     def lookups(self, request, model_admin):
         return [(year.pk, str(year)) for year in PackYear.objects.all()]
@@ -35,21 +39,13 @@ class PackYearFilter(admin.SimpleListFilter):
 
     def choices(self, changelist):
         current = PackYear.get_current()
-        yield {
-            "selected": self.value() == "all",
-            "query_string": changelist.get_query_string({self.parameter_name: "all"}),
-            "display": _("All"),
-        }
-        for lookup, title in self.lookup_choices:
-            yield {
-                "selected": (self.value() is None and current is not None and str(lookup) == str(current.pk))
-                or self.value() == str(lookup),
-                "query_string": changelist.get_query_string({self.parameter_name: lookup}),
-                "display": title,
-            }
+        for choice in super().choices(changelist):
+            if self.value() in (None, "") and current is not None:
+                choice["form"].data = {self.parameter_name: str(current.pk)}
+            yield choice
 
 
-class MemberRequirementRecordInline(admin.TabularInline):
+class MemberRequirementRecordInline(TabularInline):
     """
     Serves both ScoutAdmin and AdultAdmin. The foreign key points at Member,
     which both inherit from, so one inline covers both change pages.
@@ -64,7 +60,7 @@ class MemberRequirementRecordInline(admin.TabularInline):
     verbose_name_plural = _("Membership Requirements")
 
 
-class FamilyRequirementRecordInline(admin.TabularInline):
+class FamilyRequirementRecordInline(TabularInline):
     model = RequirementRecord
     fk_name = "family"
     extra = 0
@@ -80,7 +76,9 @@ class FamilyRequirementRecordInline(admin.TabularInline):
 
 
 @admin.register(Requirement)
-class RequirementAdmin(admin.ModelAdmin):
+class RequirementAdmin(ModelAdmin):
+    change_list_template = "admin/change_list_with_guidance.html"
+    list_guidance_template = "admin/compliance/requirement/list_guidance.html"
     list_display = (
         "name",
         "applies_to",
@@ -141,7 +139,10 @@ class RequirementAdmin(admin.ModelAdmin):
 
 
 @admin.register(RequirementRecord)
-class RequirementRecordAdmin(admin.ModelAdmin):
+class RequirementRecordAdmin(ModelAdmin):
+    change_list_template = "admin/change_list_with_guidance.html"
+    list_guidance_template = "admin/compliance/requirementrecord/list_guidance.html"
+    list_filter_submit = True
     list_display = (
         "requirement",
         "subject",

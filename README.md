@@ -134,22 +134,6 @@ If Caddy is installed and its background service is running, open
 `http://localhost:PORT` URL.
 
 
-## Campaign order administration
-
-Open `/administration/campaigns/order/` with an account that has order permissions.
-
-* Use the campaign dropdown to choose a campaign or **All**. The latest campaign
-  is selected by default. Campaign dropdowns are also available on products and
-  prizes.
-* Use the searchable seller dropdown to select a seller by name. Choices include
-  only sellers with orders in the selected campaign (or any campaign when **All**
-  is selected). An already-selected seller stays visible when changing campaigns;
-  that combination may have no orders. Choose **All** under seller to clear it.
-* Use the search box for seller names or customer names, email addresses, phone
-  numbers, and addresses. Search combines with the campaign, seller, paid,
-  delivered, and award-ineligible filters.
-
-
 ## Requirements
 
 * [Python 3.14](https://python.org)

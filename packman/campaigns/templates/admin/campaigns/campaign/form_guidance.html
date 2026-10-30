@@ -1,7 +1,6 @@
-{% extends "admin/change_form.html" %}
-{% load i18n %}
+{% load i18n unfold %}
 
-{% block form_top %}
+{% component "unfold/components/card.html" with class="mb-4" %}
   <ul class="messagelist">
     <li class="warning">
       <strong>{% translate "Note:" %}</strong>
@@ -25,4 +24,4 @@
       </p>
     </li>
   </ul>
-{% endblock form_top %}
+{% endcomponent %}
