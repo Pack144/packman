@@ -8,8 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Prefetch, Q, Sum
-from django.db.models.functions import Coalesce, TruncDate
+from django.db.models import Prefetch, Q
+from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
@@ -203,17 +203,15 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
         }
 
     def get_sales_report(self, orders, selected_week):
-        orders = orders.calculate_total()
-
         daily_totals = {
-            day["date"]: day
-            for day in (
-                orders.annotate(date=TruncDate("date_added"))
-                .order_by("date")
-                .values("date")
-                .annotate(count=Count("date"), order_total=Coalesce(Sum("total"), decimal.Decimal(0.00)))
-                .values("date", "count", "order_total")
-            )
+            day["date"]: {
+                "date": day["date"],
+                "count": day["order_count"],
+                "donations": day["donations"],
+                "product_sales": day["product_sales"],
+                "order_total": day["total_sales"],
+            }
+            for day in orders.annotate(date=TruncDate("date_added")).order_by("date").sales_by("date")
         }
         period_start_at = (
             selected_week["start_at"] if selected_week else timezone.localtime(self.viewing_campaign.ordering_opens)
@@ -232,6 +230,8 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
                     {
                         "date": report_date,
                         "count": 0,
+                        "donations": decimal.Decimal("0.00"),
+                        "product_sales": decimal.Decimal("0.00"),
                         "order_total": decimal.Decimal(0.00),
                     },
                 )
@@ -239,8 +239,10 @@ class OrderReportView(CampaignOrderPeriodMixin, PermissionRequiredMixin, Templat
             report_date += timezone.timedelta(days=1)
 
         return {
-            "count": orders.count(),
-            "total": orders.totaled()["totaled"],
+            "count": sum(day["count"] for day in daily_totals.values()),
+            "donations": sum((day["donations"] for day in daily_totals.values()), decimal.Decimal("0.00")),
+            "product_sales": sum((day["product_sales"] for day in daily_totals.values()), decimal.Decimal("0.00")),
+            "total": sum((day["order_total"] for day in daily_totals.values()), decimal.Decimal("0.00")),
             "days": report_days,
         }
 

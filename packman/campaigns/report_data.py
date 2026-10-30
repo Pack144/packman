@@ -1,7 +1,7 @@
 import decimal
 from dataclasses import dataclass
 
-from django.db.models import Case, Count, DecimalField, Exists, F, OuterRef, Prefetch, Q, Sum, Value, When
+from django.db.models import Case, DecimalField, Exists, F, OuterRef, Prefetch, Q, Sum, Value, When
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -46,6 +46,8 @@ CUB_COLUMNS = (
     ReportColumn(_("Cub")),
     ReportColumn(_("Den")),
     ReportColumn(_("Order Count")),
+    ReportColumn(_("Donations")),
+    ReportColumn(_("Product Sales")),
     ReportColumn(_("Total Sales")),
     ReportColumn(_("Eligible Total")),
 )
@@ -80,6 +82,8 @@ PRIZE_CUB_COLUMNS = (
 )
 DEN_COLUMNS = (
     ReportColumn(_("Den #")),
+    ReportColumn(_("Donations")),
+    ReportColumn(_("Product Sales")),
     ReportColumn(_("Total Sales")),
     ReportColumn(_("Total Orders")),
     ReportColumn(_("Total Weight")),
@@ -103,11 +107,7 @@ def _order_metrics_by_seller(orders):
     return {
         row["seller_id"]: row
         for row in (
-            orders.calculate_total()
-            .values("seller_id")
-            .annotate(
-                order_count=Count("pk"),
-                total_sales=Coalesce(Sum("total"), ZERO_MONEY),
+            orders.sales_by("seller_id").annotate(
                 eligible_total=Coalesce(
                     Sum("total", filter=~Q(award_ineligible=True), output_field=MONEY_OUTPUT_FIELD),
                     ZERO_MONEY,
@@ -169,6 +169,8 @@ def get_den_metrics(campaign, orders, memberships=None):
                 "member_count": 0,
                 "adjusted_member_count": 0,
                 "total_sales": decimal.Decimal("0.00"),
+                "donations": decimal.Decimal("0.00"),
+                "product_sales": decimal.Decimal("0.00"),
                 "total_orders": 0,
                 "total_weight": decimal.Decimal("0.0000"),
                 "adjusted_sales": decimal.Decimal("0.00"),
@@ -178,12 +180,19 @@ def get_den_metrics(campaign, orders, memberships=None):
         )
         seller_orders = order_metrics.get(
             membership.scout_id,
-            {"order_count": 0, "total_sales": decimal.Decimal("0.00")},
+            {
+                "order_count": 0,
+                "total_sales": decimal.Decimal("0.00"),
+                "donations": decimal.Decimal("0.00"),
+                "product_sales": decimal.Decimal("0.00"),
+            },
         )
         seller_weight = weight_metrics.get(membership.scout_id, decimal.Decimal("0.0000"))
 
         metrics["member_count"] += 1
         metrics["total_sales"] += seller_orders["total_sales"]
+        metrics["donations"] += seller_orders["donations"]
+        metrics["product_sales"] += seller_orders["product_sales"]
         metrics["total_orders"] += seller_orders["order_count"]
         metrics["total_weight"] += seller_weight
         if not membership.campaign_exempt:
@@ -219,6 +228,8 @@ def build_den_report(campaign, orders):
         rows.append(
             (
                 ReportCell(metrics["den"].number, kind="number"),
+                _money_cell(metrics["donations"]),
+                _money_cell(metrics["product_sales"]),
                 _money_cell(metrics["total_sales"]),
                 ReportCell(metrics["total_orders"], kind="number"),
                 ReportCell(
@@ -277,6 +288,8 @@ def build_cub_report(campaign, orders, include_campaign_fields):
             {
                 "order_count": 0,
                 "total_sales": decimal.Decimal("0.00"),
+                "donations": decimal.Decimal("0.00"),
+                "product_sales": decimal.Decimal("0.00"),
                 "eligible_total": decimal.Decimal("0.00"),
             },
         )
@@ -286,6 +299,8 @@ def build_cub_report(campaign, orders, include_campaign_fields):
             ReportCell(membership.scout),
             ReportCell(membership.den, sort_value=membership.den.number),
             ReportCell(metrics["order_count"], kind="number"),
+            _money_cell(metrics["donations"]),
+            _money_cell(metrics["product_sales"]),
             _money_cell(total),
             _money_cell(eligible_total),
         ]
@@ -336,7 +351,7 @@ def build_cub_report(campaign, orders, include_campaign_fields):
         rows.append(tuple(cells))
 
     columns = CUB_COLUMNS + (CUB_CAMPAIGN_COLUMNS + CUB_INVOICE_COLUMNS if include_campaign_fields else ())
-    default_sort_index = 4
+    default_sort_index = 6
     rows.sort(key=lambda row: row[default_sort_index].value, reverse=True)
     return TabularReport(
         columns=columns,
