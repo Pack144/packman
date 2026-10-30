@@ -4,6 +4,7 @@ from io import StringIO
 from zipfile import ZipFile
 
 from django.contrib import admin, messages
+from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.auth.admin import UserAdmin
 from django.db.models import Case, CharField, Count, When
 from django.db.models.functions import Coalesce
@@ -31,6 +32,23 @@ from . import forms, models
 logger = logging.getLogger(__name__)
 
 
+class ActivePackYearFilter(admin.SimpleListFilter):
+    title = _("Active in Pack Year")
+    parameter_name = "active_in"
+
+    def lookups(self, request, model_admin):
+        return [(str(year.pk), str(year)) for year in PackYear.objects.all()]
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+        try:
+            year = PackYear.objects.get(pk=self.value())
+        except (ValueError, PackYear.DoesNotExist) as exc:
+            raise IncorrectLookupParameters(exc) from exc
+        return queryset.active_in(year)
+
+
 class AnimalRankListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the right admin sidebar
     # just above the filter options.
@@ -50,11 +68,10 @@ class AnimalRankListFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
         else:
-            return (
-                queryset.filter(den_memberships__den__rank__rank__exact=self.value())
-                .filter(den_memberships__year_assigned=PackYear.objects.current())
-                .distinct()
-            )
+            return queryset.filter(
+                den_memberships__den__rank__rank__exact=self.value(),
+                den_memberships__year_assigned=request.GET.get("active_in") or PackYear.objects.current(),
+            ).distinct()
 
 
 class CurrentDenListFilter(admin.SimpleListFilter):
@@ -78,7 +95,7 @@ class CurrentDenListFilter(admin.SimpleListFilter):
         else:
             return queryset.filter(
                 den_memberships__den=self.value(),
-                den_memberships__year_assigned=PackYear.objects.current(),
+                den_memberships__year_assigned=request.GET.get("active_in") or PackYear.objects.current(),
             ).distinct()
 
 
@@ -187,7 +204,7 @@ class ScoutAdmin(ModelAdmin):
         "date_added",
     )
     list_display_links = ("name", "last_name")
-    list_filter = ("status", AnimalRankListFilter, CurrentDenListFilter, "date_added")
+    list_filter = (ActivePackYearFilter, "status", AnimalRankListFilter, CurrentDenListFilter, "date_added")
     readonly_fields = (
         "date_added",
         "last_updated",
@@ -509,6 +526,7 @@ class AdultAdmin(UserAdmin, ModelAdmin):
     )
     list_display_links = ("name", "last_name", "email")
     list_filter = (
+        ActivePackYearFilter,
         "_is_staff",
         "is_superuser",
         AdultsBasedOnCubStatusFilter,
@@ -672,7 +690,7 @@ class FamilyAdmin(ModelAdmin):
         "adults_count",
         "children_count",
     )
-    list_filter = (FamilyListFilter,)
+    list_filter = (ActivePackYearFilter, FamilyListFilter)
     inlines = [FamilyRequirementRecordInline]
     search_fields = (
         "name",

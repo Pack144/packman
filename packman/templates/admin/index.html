@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+
+{% load i18n unfold %}
+
+{% block branding %}
+  {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+  <div class="flex flex-col gap-6">
+    <section aria-labelledby="pack-year-heading">
+      <h2 id="pack-year-heading" class="text-xl font-semibold text-important">{% translate "Current Pack Year" %}</h2>
+      {% if pack_year %}
+        <p class="mt-2 text-lg">
+          {% if pack_year_url %}
+            <a href="{{ pack_year_url }}"
+               class="text-primary-600 hover:underline dark:text-primary-500">{{ pack_year }}</a>
+          {% else %}
+            {{ pack_year }}
+          {% endif %}
+        </p>
+        <p class="text-subtle">{{ pack_year.start_date|date:"DATE_FORMAT" }} - {{ pack_year.end_date|date:"DATE_FORMAT" }}</p>
+      {% else %}
+        <p role="status" class="mt-2">{{ pack_year_error }}</p>
+        {% if pack_year_list_url %}
+          <a href="{{ pack_year_list_url }}"
+             class="text-primary-600 hover:underline dark:text-primary-500">{% translate "Manage Pack Years" %}</a>
+        {% endif %}
+      {% endif %}
+    </section>
+    {% if pack_year %}
+      {% if dashboard_cards %}
+        <div class="grid gap-4"
+             style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr))">
+          {% for card in dashboard_cards %}
+            {% component "unfold/components/card.html" with href=card.url %}
+            <h2 class="text-subtle">{{ card.title }}</h2>
+            <p class="text-3xl font-semibold text-important">{{ card.value }}</p>
+          {% endcomponent %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>{% translate "You do not have permission to view pack statistics." %}</p>
+    {% endif %}
+    {% if cub_total is not None %}
+      {% translate "Cubs by Den" as den_title %}
+      {% component "unfold/components/card.html" with title=den_title %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <caption class="sr-only">
+            {% translate "Active Cubs by Den and rank in the current Pack Year" %}
+          </caption>
+          <thead>
+            <tr class="border-b border-base-200 dark:border-base-800">
+              <th scope="col" class="p-3 text-left">{% translate "Den" %}</th>
+              <th scope="col" class="p-3 text-left">{% translate "Rank" %}</th>
+              <th scope="col" class="p-3 text-right">{% translate "Cubs" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for den in den_rows %}
+              <tr class="border-b border-base-200 dark:border-base-800">
+                <th scope="row" class="p-3 text-left font-normal">
+                  {% if den.url %}
+                    <a href="{{ den.url }}"
+                       class="text-primary-600 hover:underline dark:text-primary-500">{{ den.name }}</a>
+                  {% else %}
+                    {{ den.name }}
+                  {% endif %}
+                </th>
+                <td class="p-3">{{ den.rank }}</td>
+                <td class="p-3 text-right">
+                  <a href="{{ den.cubs_url }}"
+                     aria-label="{% blocktranslate with name=den.name count count=den.count %}{{ name }}: {{ count }} Cub{% plural %}{{ name }}: {{ count }} Cubs{% endblocktranslate %}"
+                     class="text-primary-600 hover:underline dark:text-primary-500">{{ den.count }}</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="3" class="p-3">{% translate "No active Cubs have a den assignment in this Pack Year." %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endcomponent %}
+  {% endif %}
+{% endif %}
+</div>
+{% endblock %}

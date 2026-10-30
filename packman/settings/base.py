@@ -349,6 +349,7 @@ PACK_SHORTNAME = env("PACK_SHORTNAME", default="Cub Pack")
 UNFOLD = {
     "SITE_TITLE": format_lazy(_("{site} Admin"), site=PACK_SHORTNAME),
     "SITE_HEADER": PACK_NAME,
+    "DASHBOARD_CALLBACK": "packman.core.dashboard.pack_dashboard",
     "SIDEBAR": {
         "show_search": True,
         "show_all_applications": True,
