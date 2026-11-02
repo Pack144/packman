@@ -623,11 +623,11 @@ class OrderSlipView(PermissionRequiredMixin, TemplateView):
             .calculate_total()
             .select_related("seller", "customer")
             .prefetch_related("items", "items__product")
-            .order_by("seller__current_den")
+            .order_by("seller__last_name", "seller__first_name", "seller_id", "-date_added", "pk")
         )
 
-        # sort the order list by seller current_den
-        context["order_list"] = list(order_list.all())
+        # current_den is a Python property; the stable sort preserves seller grouping within each den.
+        context["order_list"] = list(order_list)
         context["order_list"].sort(key=lambda x: x.seller.current_den.number if x.seller.current_den else 666)
 
         return context
