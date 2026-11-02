@@ -466,6 +466,82 @@ class OrderReportViewTestCase(TestCase):
         self.assertNotIn("product_report", packing_response.context)
         self.assertNotIn("cub_report", packing_response.context)
 
+    def test_order_slips_render_latest_campaign_product_orders(self):
+        order = self.create_order(day=1, quantity=2)
+        order.donation = decimal.Decimal("5.00")
+        order.award_ineligible = True
+        order.save()
+        OrderItem.objects.create(order=order, product=self.product, quantity=1)
+        donation_order = Order.objects.create(
+            campaign=self.current_campaign,
+            seller=self.member.scout,
+            donation=decimal.Decimal("50.00"),
+        )
+        previous_order = Order.objects.create(
+            campaign=self.previous_campaign,
+            seller=self.member.scout,
+            customer=self.customer,
+        )
+        OrderItem.objects.create(order=previous_order, product=self.product)
+
+        with patch("packman.calendars.models.PackYear.objects.current", return_value=self.current_year):
+            response = self.client.get(reverse("campaigns:order_slips"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "campaigns/reports/order_slips.html")
+        slips = response.context["order_list"]
+        self.assertEqual([slip.pk for slip in slips], [order.pk])
+        self.assertEqual(slips[0].total, decimal.Decimal("35.00"))
+        self.assertContains(response, self.customer.name)
+        self.assertContains(response, "Caramel Corn", count=2)
+        self.assertContains(response, "$35")
+        self.assertNotIn(donation_order.pk, [slip.pk for slip in slips])
+
+    def test_order_slips_sort_by_den_and_keep_each_sellers_orders_together(self):
+        self.member.den.number = 10
+        self.member.den.save()
+        other_member = MembershipFactory(year_assigned=self.current_year, den=DenFactory(number=2))
+        same_den_member = MembershipFactory(year_assigned=self.current_year, den=self.member.den)
+        unassigned_scout = ScoutFactory()
+        sellers = (
+            self.member.scout,
+            same_den_member.scout,
+            self.member.scout,
+            other_member.scout,
+            unassigned_scout,
+        )
+        for day, seller in enumerate(sellers):
+            order = self.create_order(day=day, quantity=1)
+            order.seller = seller
+            order.save()
+
+        with patch("packman.calendars.models.PackYear.objects.current", return_value=self.current_year):
+            response = self.client.get(reverse("campaigns:order_slips"))
+
+        self.assertEqual(response.status_code, 200)
+        slips = response.context["order_list"]
+        self.assertEqual(len(slips), len(sellers))
+        self.assertEqual(slips[0].seller_id, other_member.scout.pk)
+        self.assertEqual(slips[-1].seller_id, unassigned_scout.pk)
+        member_indices = [index for index, slip in enumerate(slips) if slip.seller_id == self.member.scout.pk]
+        self.assertEqual(member_indices[1], member_indices[0] + 1)
+
+    def test_order_slips_render_without_product_orders(self):
+        response = self.client.get(reverse("campaigns:order_slips"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["order_list"], [])
+
+    def test_order_slips_require_report_permission(self):
+        self.user.user_permissions.clear()
+        response = self.client.get(reverse("campaigns:order_slips"))
+        self.assertEqual(response.status_code, 403)
+
+        self.client.logout()
+        response = self.client.get(reverse("campaigns:order_slips"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response.url)
+
     def test_dens_report_uses_week_filter_and_has_csv_download(self):
         self.create_order(day=6, quantity=2)
         self.create_order(day=7, quantity=5)
