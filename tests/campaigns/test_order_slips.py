@@ -52,14 +52,15 @@ class OrderSlipPDFTestCase(SimpleTestCase):
 
     def test_thank_you_half_has_logo_and_rotated_handwriting_signature(self):
         reader = self.render((self.seller,))
-        text = reader.pages[0].extract_text()
+        text = reader.pages[1].extract_text()
         for value in ("Thank You!", "For Supporting", "Cub Scout Pack 144", "Thanks,", "Alex", "pack144.org"):
             self.assertIn(value, text)
-        fonts = reader.pages[0]["/Resources"]["/Font"].get_object()
+        self.assertIn("Alex • Den 2", text)
+        fonts = reader.pages[1]["/Resources"]["/Font"].get_object()
         self.assertTrue(any("Kalam" in font.get_object()["/BaseFont"] for font in fonts.values()))
-        content = reader.pages[0].get_contents().get_data()
+        content = reader.pages[1].get_contents().get_data()
         self.assertIn(b"-1 0 0 -1", content)
-        shared = reader.pages[0]["/Resources"]["/XObject"]["/FormXob.thank-you"].get_object()
+        shared = reader.pages[1]["/Resources"]["/XObject"]["/FormXob.thank-you"].get_object()
         artwork = shared["/Resources"]["/XObject"]["/FormXob.slip-logo"].get_object()
         self.assertTrue(artwork.get_data())
 
@@ -68,21 +69,22 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         second_order = replace(self.order, customer="Second Seller Customer")
         second = replace(self.seller, name="Sam Example", orders=(second_order,))
         reader = self.render((first, second))
-        self.assertEqual(len(reader.pages), 3)
-        self.assertEqual(reader.pages[0].extract_text().count("Sample Customer"), 1)
-        self.assertEqual(reader.pages[1].extract_text().count("Sample Customer"), 2)
-        self.assertEqual(reader.pages[2].extract_text().count("Sample Customer"), 0)
-        self.assertNotIn("Second Seller Customer", reader.pages[1].extract_text())
-        self.assertIn("Sam Example", reader.pages[2].extract_text())
-        self.assertIn("Second Seller Customer", reader.pages[2].extract_text())
+        self.assertEqual(len(reader.pages), 4)
+        self.assertEqual(reader.pages[1].extract_text().count("Sample Customer"), 1)
+        self.assertEqual(reader.pages[2].extract_text().count("Sample Customer"), 2)
+        self.assertEqual(reader.pages[3].extract_text().count("Sample Customer"), 0)
+        self.assertNotIn("Second Seller Customer", reader.pages[2].extract_text())
+        self.assertIn("Sam Example", reader.pages[3].extract_text())
+        self.assertIn("Second Seller Customer", reader.pages[3].extract_text())
+        self.assertNotIn(first.name, reader.pages[2].extract_text())
         for page in reader.pages:
             self.assertEqual(tuple(page.mediabox), (0, 0, 612, 792))
 
     def test_summary_uses_left_slot_and_first_order_uses_right_slot(self):
         reader = self.render((self.seller,))
-        self.assertEqual(len(reader.pages), 1)
+        self.assertEqual(len(reader.pages), 2)
         positions = []
-        reader.pages[0].extract_text(
+        reader.pages[1].extract_text(
             visitor_text=lambda text, cm, tm, font, size: positions.append((text, cm[4] + tm[4]))
         )
         customer_x = next(x for text, x in positions if "Sample Customer" in text)
@@ -91,9 +93,9 @@ class OrderSlipPDFTestCase(SimpleTestCase):
     def test_summary_prints_supplied_award_text(self):
         seller = replace(self.seller, award_text="Sample Recognition")
         reader = self.render((seller,))
-        self.assertIn("Sample Recognition", reader.pages[0].extract_text())
+        self.assertIn("Sample Recognition", reader.pages[1].extract_text())
         reader = self.render((self.seller,))
-        self.assertNotIn("Sample Recognition", reader.pages[0].extract_text())
+        self.assertNotIn("Sample Recognition", reader.pages[1].extract_text())
 
     def test_long_order_continues_without_losing_items_or_repeating_total(self):
         items = tuple(SlipItem("Snacks", f"Product number {index:02}", 1, Decimal("1.00")) for index in range(40))
@@ -165,8 +167,8 @@ class OrderSlipPDFTestCase(SimpleTestCase):
     def test_paid_and_donation_free_summary(self):
         order = replace(self.order, paid=True, donation=Decimal("0"), total=Decimal("30.50"))
         reader = self.render((replace(self.seller, orders=(order,)),))
-        text = reader.pages[0].extract_text()
-        artwork = reader.pages[0]["/Resources"]["/XObject"]["/FormXob.paid-stamp"].get_object()
+        text = reader.pages[1].extract_text()
+        artwork = reader.pages[1]["/Resources"]["/XObject"]["/FormXob.paid-stamp"].get_object()
         self.assertTrue(artwork.get_data())
         self.assertIn("Total: $30.50", text)
         self.assertNotIn("COD", text)
