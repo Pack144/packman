@@ -1,6 +1,7 @@
 import decimal
 from html.parser import HTMLParser
 from http import HTTPStatus
+from io import BytesIO
 from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
@@ -12,6 +13,8 @@ from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
+
+from pypdf import PdfReader
 
 from packman.calendars.factories import PackYearFactory
 from packman.campaigns.models import (
@@ -27,7 +30,7 @@ from packman.campaigns.models import (
     Product,
     Quota,
 )
-from packman.campaigns.report_data import build_cub_report, build_den_report, format_weight
+from packman.campaigns.report_data import build_cub_report, build_den_report, build_order_slips, format_weight
 from packman.dens.factories import DenFactory, MembershipFactory
 from packman.membership.factories import AdultFactory, CompleteFamilyFactory, ScoutFactory
 
@@ -472,7 +475,7 @@ class OrderReportViewTestCase(TestCase):
         order.award_ineligible = True
         order.save()
         OrderItem.objects.create(order=order, product=self.product, quantity=1)
-        donation_order = Order.objects.create(
+        Order.objects.create(
             campaign=self.current_campaign,
             seller=self.member.scout,
             donation=decimal.Decimal("50.00"),
@@ -488,14 +491,21 @@ class OrderReportViewTestCase(TestCase):
             response = self.client.get(reverse("campaigns:order_slips"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "campaigns/reports/order_slips.html")
-        slips = response.context["order_list"]
-        self.assertEqual([slip.pk for slip in slips], [order.pk])
-        self.assertEqual(slips[0].total, decimal.Decimal("35.00"))
-        self.assertContains(response, self.customer.name)
-        self.assertContains(response, "Caramel Corn", count=2)
-        self.assertContains(response, "$35")
-        self.assertNotIn(donation_order.pk, [slip.pk for slip in slips])
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertEqual(response["Content-Disposition"], 'inline; filename="2026-order-slips.pdf"')
+        self.assertIn("no-store", response["Cache-Control"])
+        reader = PdfReader(BytesIO(b"".join(response.streaming_content)))
+        response.close()
+        self.assertEqual(len(reader.pages), 1)
+        content = reader.pages[0].extract_text()
+        self.assertIn(self.customer.name, content)
+        self.assertEqual(content.count("Caramel Corn"), 2)
+        self.assertIn("$35", content)
+        self.assertIn("/FormXob.paid-stamp", reader.pages[0]["/Resources"]["/XObject"])
+        self.assertEqual(tuple(reader.pages[0].mediabox), (0, 0, 612, 792))
+        sellers = build_order_slips(self.current_campaign)
+        self.assertEqual(len(sellers[0].orders), 1)
+        self.assertEqual(sellers[0].orders[0].total, decimal.Decimal("35.00"))
 
     def test_order_slips_sort_by_den_and_keep_each_sellers_orders_together(self):
         self.member.den.number = 10
@@ -516,21 +526,21 @@ class OrderReportViewTestCase(TestCase):
             order.save()
 
         with patch("packman.calendars.models.PackYear.objects.current", return_value=self.current_year):
-            response = self.client.get(reverse("campaigns:order_slips"))
+            groups = build_order_slips(self.current_campaign)
 
-        self.assertEqual(response.status_code, 200)
-        slips = response.context["order_list"]
-        self.assertEqual(len(slips), len(sellers))
-        self.assertEqual(slips[0].seller_id, other_member.scout.pk)
-        self.assertEqual(slips[-1].seller_id, unassigned_scout.pk)
-        member_indices = [index for index, slip in enumerate(slips) if slip.seller_id == self.member.scout.pk]
-        self.assertEqual(member_indices[1], member_indices[0] + 1)
+        self.assertEqual(sum(len(group.orders) for group in groups), len(sellers))
+        self.assertEqual(groups[0].name, str(other_member.scout))
+        self.assertEqual(groups[-1].name, str(unassigned_scout))
+        member_group = next(group for group in groups if group.name == str(self.member.scout))
+        self.assertEqual(len(member_group.orders), 2)
 
     def test_order_slips_render_without_product_orders(self):
         response = self.client.get(reverse("campaigns:order_slips"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["order_list"], [])
+        reader = PdfReader(BytesIO(b"".join(response.streaming_content)))
+        response.close()
+        self.assertEqual(len(reader.pages), 0)
 
     def test_order_slips_require_report_permission(self):
         self.user.user_permissions.clear()
@@ -541,6 +551,83 @@ class OrderReportViewTestCase(TestCase):
         response = self.client.get(reverse("campaigns:order_slips"))
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login"), response.url)
+
+    def test_order_slip_data_queries_do_not_grow_with_sellers_or_items(self):
+        self.create_order(day=0, quantity=1)
+        with patch("packman.calendars.models.PackYear.objects.current", return_value=self.current_year):
+            with CaptureQueriesContext(connection) as baseline:
+                build_order_slips(self.current_campaign)
+            for day in range(1, 9):
+                member = MembershipFactory(year_assigned=self.current_year)
+                order = self.create_order(day=day, quantity=1)
+                order.seller = member.scout
+                order.save()
+                OrderItem.objects.create(order=order, product=self.product, quantity=2)
+            with CaptureQueriesContext(connection) as expanded:
+                groups = build_order_slips(self.current_campaign)
+        self.assertEqual(len(groups), 9)
+        self.assertEqual(len(baseline), len(expanded))
+        self.assertLessEqual(len(expanded), 5)
+
+    def test_order_slips_without_customer_still_render(self):
+        order = self.create_order(day=0, quantity=1)
+        order.customer = None
+        order.save()
+        response = self.client.get(reverse("campaigns:order_slips"))
+        reader = PdfReader(BytesIO(b"".join(response.streaming_content)))
+        response.close()
+        self.assertIn("Customer not recorded", reader.pages[0].extract_text())
+
+    def test_order_slips_omit_empty_and_state_only_addresses(self):
+        self.create_order(day=0, quantity=1)
+        for street, city, state, zipcode, expected in (
+            ("", "", "", "", ()),
+            (" ", " ", "WA", "", ()),
+            ("123 Example St", "", "WA", "", ("123 Example St", "WA")),
+            ("", "Seattle", "WA", "", ("Seattle, WA",)),
+            ("", "", "WA", "98101", ("WA, 98101",)),
+        ):
+            with self.subTest(street=street, city=city, state=state, zipcode=zipcode):
+                self.customer.address = street
+                self.customer.city = city
+                self.customer.state = state
+                self.customer.zipcode = zipcode
+                self.customer.save()
+                groups = build_order_slips(self.current_campaign)
+                self.assertEqual(groups[0].orders[0].address, expected)
+
+    def test_order_slip_summary_includes_eligible_donation_only_orders(self):
+        self.create_order(day=0, quantity=1)
+        Order.objects.create(
+            campaign=self.current_campaign, seller=self.member.scout, donation=decimal.Decimal("25.50")
+        )
+        Order.objects.create(
+            campaign=self.current_campaign,
+            seller=self.member.scout,
+            donation=decimal.Decimal("1000"),
+            award_ineligible=True,
+        )
+        with patch("packman.calendars.models.PackYear.objects.current", return_value=self.current_year):
+            groups = build_order_slips(self.current_campaign)
+        self.assertEqual(groups[0].eligible_count, 2)
+        self.assertEqual(groups[0].eligible_total, decimal.Decimal("35.50"))
+        self.assertEqual(len(groups[0].orders), 1)
+
+    def test_order_slip_award_text_preserves_strict_thresholds(self):
+        order = self.create_order(day=0, quantity=1)
+        for total, expected in (
+            ("1000", ""),
+            ("1000.01", "Bronze Medal Winner!"),
+            ("1500", "Bronze Medal Winner!"),
+            ("1500.01", "Silver Medal Winner!"),
+            ("2000", "Silver Medal Winner!"),
+            ("2000.01", "Gold Medal Winner!"),
+        ):
+            with self.subTest(total=total):
+                order.donation = decimal.Decimal(total) - self.product.price
+                order.save()
+                groups = build_order_slips(self.current_campaign)
+                self.assertEqual(groups[0].award_text, expected)
 
     def test_dens_report_uses_week_filter_and_has_csv_download(self):
         self.create_order(day=6, quantity=2)
