@@ -492,7 +492,7 @@ class OrderReportViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
-        self.assertEqual(response["Content-Disposition"], 'attachment; filename="2026-order-slips.pdf"')
+        self.assertEqual(response["Content-Disposition"], 'inline; filename="2026-order-slips.pdf"')
         self.assertIn("no-store", response["Cache-Control"])
         reader = PdfReader(BytesIO(b"".join(response.streaming_content)))
         response.close()

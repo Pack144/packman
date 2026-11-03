@@ -629,7 +629,7 @@ class OrderSlipView(PermissionRequiredMixin, View):
             response = FileResponse(
                 output,
                 content_type="application/pdf",
-                as_attachment=True,
+                as_attachment=False,
                 filename=f"{campaign.year.year}-order-slips.pdf",
             )
             cleanup.pop_all()

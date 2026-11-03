@@ -175,9 +175,11 @@
               <small class="text-body-secondary">{% translate 'List of products divided by Den' %}</small>
             </a>
             <a class="list-group-item list-group-item-action d-flex flex-column"
-               href="{% url 'campaigns:order_slips' %}">
-              <span>{% translate 'Download Order Slips PDF' %}</span>
-              <small class="text-body-secondary">{% translate 'Print single-sided at actual size (100%), then cut and fold' %}</small>
+               href="{% url 'campaigns:order_slips' %}"
+               target="_blank"
+               rel="noopener">
+              <span>{% translate 'Order Slips' %}</span>
+              <small class="text-body-secondary">{% translate 'Receipt slips to attach to individual orders' %}</small>
             </a>
           </div>
         </div>
