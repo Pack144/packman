@@ -1,4 +1,4 @@
-"""Draw PDF slips with short cub names and full-name summaries; selection happens in report_data."""
+"""Draw a printing guide and PDF slips with short cub names and full-name summaries."""
 
 from dataclasses import dataclass
 from decimal import Decimal
@@ -466,6 +466,53 @@ def draw_seller_slips(canvas: Canvas, seller: SlipSeller) -> None:
         finish_sheet(canvas)
 
 
+def draw_printing_instructions(canvas: Canvas) -> None:
+    x = 54
+    width = PAGE_WIDTH - 2 * x
+    top = draw_paragraph(
+        canvas, paragraph(_("Order Slip Printing Instructions"), 24, True), x, PAGE_HEIGHT - 54, width
+    )
+    top = draw_paragraph(
+        canvas,
+        paragraph(
+            _(
+                "Pages are grouped by den, then by cub. Each cub's first page has their header on the left "
+                "and an order slip on the right. Remaining pages contain up to two slips each. "
+                "After cutting, slips within each cub's stack can be in any order, but be sure to keep "
+                "the header on top of each cub's stack. The headers separate and identify the stacks, "
+                "so they can be handed out on pack night without sorting the slips again."
+            ),
+            12,
+        ),
+        x,
+        top - 24,
+        width,
+    )
+    top = draw_paragraph(
+        canvas,
+        paragraph(
+            _(
+                "Kinko's can print and cut these order slips for a small extra fee, "
+                "but special care is needed to avoid mixing up the order slips."
+            ),
+            12,
+        ),
+        x,
+        top - 24,
+        width,
+    )
+    top = draw_paragraph(canvas, paragraph(_("Ask for the following process:"), 12), x, top - 12, width)
+    steps = (
+        _("Print all order-slip pages after this instruction page single-sided on white paper."),
+        _("Insert a colored separator sheet between each cub's group of pages."),
+        _("Bulk-cut the pages and separator sheets down the vertical center into two stacks."),
+        _("Collate the two stacks using the colored separator sheets, keeping each cub's slips together."),
+    )
+    for number, text in enumerate(steps, 1):
+        top = draw_paragraph(canvas, paragraph(f"{number}. {text}", 14), x, top - 24, width)
+    canvas.showPage()
+
+
 def render_order_slips(sellers: tuple[SlipSeller, ...], output: BinaryIO) -> None:
     # Register fonts before rendering any order slips
     register_fonts()
@@ -479,6 +526,9 @@ def render_order_slips(sellers: tuple[SlipSeller, ...], output: BinaryIO) -> Non
     draw_thank_you_artwork(canvas)
     define_svg_form(canvas, "slip-logo", logo(), 88)
     define_svg_form(canvas, "paid-stamp", paid_stamp(), 54)
+
+    if sellers:
+        draw_printing_instructions(canvas)
 
     # Draw the order slips for each seller
     for seller in sellers:
