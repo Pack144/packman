@@ -55,6 +55,7 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         text = reader.pages[0].extract_text()
         for value in ("Thank You!", "For Supporting", "Cub Scout Pack 144", "Thanks,", "Alex", "pack144.org"):
             self.assertIn(value, text)
+        self.assertIn("Alex • Den 2", text)
         fonts = reader.pages[0]["/Resources"]["/Font"].get_object()
         self.assertTrue(any("Kalam" in font.get_object()["/BaseFont"] for font in fonts.values()))
         content = reader.pages[0].get_contents().get_data()
@@ -75,6 +76,7 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         self.assertNotIn("Second Seller Customer", reader.pages[1].extract_text())
         self.assertIn("Sam Example", reader.pages[2].extract_text())
         self.assertIn("Second Seller Customer", reader.pages[2].extract_text())
+        self.assertNotIn(first.name, reader.pages[1].extract_text())
         for page in reader.pages:
             self.assertEqual(tuple(page.mediabox), (0, 0, 612, 792))
 

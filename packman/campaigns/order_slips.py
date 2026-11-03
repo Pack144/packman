@@ -1,4 +1,4 @@
-"""Draw printable slips directly into a PDF; database selection happens in report_data."""
+"""Draw PDF slips with short cub names and full-name summaries; selection happens in report_data."""
 
 from dataclasses import dataclass
 from decimal import Decimal
@@ -184,7 +184,7 @@ def draw_thanks(canvas: Canvas, seller: SlipSeller) -> None:
     canvas.setFont("SlipWriting", 25)
     canvas.drawString(PADDING + 100, 54.2, seller.signature)
     canvas.setFont("Slip", 8)
-    canvas.drawCentredString(SLIP_WIDTH / 2, PADDING + 1.6, f"{seller.name} • {seller.den}")
+    canvas.drawCentredString(SLIP_WIDTH / 2, PADDING + 1.6, f"{seller.signature} • {seller.den}")
 
     canvas.restoreState()
 
