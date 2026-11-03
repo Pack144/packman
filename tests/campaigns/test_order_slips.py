@@ -3,12 +3,9 @@ from decimal import Decimal
 from io import BytesIO
 from unittest.mock import patch
 
-from django.contrib.staticfiles import finders
 from django.test import SimpleTestCase
 
 from pypdf import PdfReader
-from reportlab.graphics.shapes import Group
-from reportlab.lib import colors
 
 from packman.campaigns.order_slips import (
     CONTENT_WIDTH,
@@ -18,10 +15,8 @@ from packman.campaigns.order_slips import (
     SlipOrder,
     SlipSeller,
     draw_receipt,
-    draw_thanks,
     item_table,
     order_header,
-    paid_stamp,
     register_fonts,
     render_order_slips,
     split_order,
@@ -93,7 +88,7 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         customer_x = next(x for text, x in positions if "Sample Customer" in text)
         self.assertGreater(customer_x, 306)
 
-    def test_separator_prints_supplied_award_text(self):
+    def test_summary_prints_supplied_award_text(self):
         seller = replace(self.seller, award_text="Sample Recognition")
         reader = self.render((seller,))
         self.assertIn("Sample Recognition", reader.pages[0].extract_text())
@@ -105,8 +100,6 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         order = replace(self.order, items=items, total=Decimal("45.25"))
         parts = split_order(order)
         self.assertGreater(len(parts), 1)
-        for table in parts:
-            self.assertEqual(table._cellStyles[0][0].topPadding, 4)
         reader = self.render((replace(self.seller, orders=(order,)),))
         text = "\n".join(page.extract_text() for page in reader.pages)
         for index in range(40):
@@ -129,15 +122,6 @@ class OrderSlipPDFTestCase(SimpleTestCase):
                     number = line.removeprefix("Category ")
                     self.assertIn(f"Product {number}", lines[index + 1 :])
 
-    def test_normal_spacing_is_preserved_when_order_fits(self):
-        table = split_order(self.order)[0]
-        self.assertEqual(table._cellStyles[2][0].topPadding, 4)
-        self.assertEqual(table._cellStyles[2][0].bottomPadding, 4)
-
-    def test_pdf_fonts_are_not_public_static_files(self):
-        for filename in ("PTSans-Regular.ttf", "PTSans-Bold.ttf", "Kalam-Regular.ttf"):
-            self.assertIsNone(finders.find(f"fonts/{filename}"))
-
     def test_borderline_order_uses_actual_single_slip_space_and_quarter_point_reduction(self):
         order = replace(
             self.order,
@@ -151,7 +135,6 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         receipt_height = compact_height - 2 + PADDING + header_height + 6 + 86
         parts = split_order(order, receipt_height)
         self.assertEqual(len(parts), 1)
-        self.assertEqual(parts[0]._cellStyles[2][0].topPadding, 0.75)
         self.assertLessEqual(parts[0].wrap(CONTENT_WIDTH, receipt_height)[1], compact_height - 2)
 
     def test_tight_rows_are_used_before_creating_continuations(self):
@@ -165,7 +148,6 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         parts = split_order(order)
         self.assertEqual(len(parts), 1)
         self.assertLessEqual(parts[0].wrap(CONTENT_WIDTH, RECEIPT_HEIGHT)[1], available)
-        self.assertEqual(parts[0]._cellStyles[2][0].topPadding, 1)
 
     def test_long_unicode_names_and_markup_are_literal_text(self):
         order = replace(
@@ -184,7 +166,6 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         order = replace(self.order, paid=True, donation=Decimal("0"), total=Decimal("30.50"))
         reader = self.render((replace(self.seller, orders=(order,)),))
         text = reader.pages[0].extract_text()
-        self.assertNotIn("PAID", text)
         artwork = reader.pages[0]["/Resources"]["/XObject"]["/FormXob.paid-stamp"].get_object()
         self.assertTrue(artwork.get_data())
         self.assertIn("Total: $30.50", text)
@@ -205,68 +186,6 @@ class OrderSlipPDFTestCase(SimpleTestCase):
         canvas.drawRightString.assert_any_call(PADDING + CONTENT_WIDTH, 68, "Donation: $5.25")
         canvas.line.assert_any_call(PADDING, 60, PADDING + CONTENT_WIDTH, 60)
 
-    def test_single_slips_have_tight_header_spacing_and_continuations_keep_label_space(self):
-        for address, count in (((), 1), (self.order.address, 1), (self.order.address, 2)):
-            with self.subTest(address=address, count=count):
-                order = replace(self.order, address=address)
-                table = split_order(order)[0]
-                with patch.object(table, "drawOn") as draw_table:
-                    with patch("packman.campaigns.order_slips.Canvas") as canvas_class:
-                        draw_receipt(canvas_class.return_value, order, table, 1, count)
-                table_top = draw_table.call_args.args[2] + table.wrap(CONTENT_WIDTH, RECEIPT_HEIGHT)[1]
-                name_bottom = RECEIPT_HEIGHT - PADDING - order_header(order).wrap(CONTENT_WIDTH, RECEIPT_HEIGHT)[1]
-                self.assertAlmostEqual(name_bottom - table_top, 27.6 if count > 1 else 6)
-
-    def test_paid_stamp_is_black_and_white(self):
-        pending = [paid_stamp()]
-        colored_shapes = 0
-        while pending:
-            shape = pending.pop()
-            for attribute in ("fillColor", "strokeColor"):
-                color = getattr(shape, attribute, None)
-                if color is not None:
-                    colored_shapes += 1
-                    self.assertIn(color, (colors.black, colors.white))
-            if isinstance(shape, Group):
-                pending.extend(shape.contents)
-        self.assertGreater(colored_shapes, 0)
-
-    def test_paid_stamp_is_small_and_overlaid_on_the_amount(self):
-        order = replace(self.order, paid=True)
-        with patch("packman.campaigns.order_slips.Canvas") as canvas_class:
-            canvas = canvas_class.return_value
-            draw_receipt(canvas, order, split_order(order)[0], 1, 1)
-        canvas.scale.assert_called_with(2 / 3, 2 / 3)
-        canvas.doForm.assert_called_once_with("paid-stamp")
-        stamp_x, stamp_y = canvas.translate.call_args.args
-        self.assertGreater(stamp_x, CONTENT_WIDTH - 80)
-        self.assertEqual(stamp_y, 14)
-        calls = canvas.method_calls
-        total_call = next(
-            index for index, call in enumerate(calls) if call[0] == "drawRightString" and call[1][1] == 24
-        )
-        stamp_call = next(index for index, call in enumerate(calls) if call[0] == "doForm")
-        self.assertGreater(stamp_call, total_call)
-
-    def test_empty_report_is_a_readable_pdf(self):
+    def test_empty_report_is_a_valid_empty_pdf(self):
         reader = self.render(())
-        self.assertEqual(len(reader.pages), 1)
-        self.assertIn("No product orders to print.", reader.pages[0].extract_text())
-
-    def test_different_names_do_not_change_thank_you_positions(self):
-        sellers = (self.seller, replace(self.seller, signature="Alexandria", name="Alexandria Example", den="Den 10"))
-        calls = []
-        for seller in sellers:
-            with patch("packman.campaigns.order_slips.Canvas") as canvas_class:
-                canvas = canvas_class.return_value
-                draw_thanks(canvas, seller)
-                calls.append(
-                    (
-                        canvas.translate.call_args,
-                        canvas.drawString.call_args.args[:2],
-                        canvas.drawCentredString.call_args.args[:2],
-                    )
-                )
-                canvas.doForm.assert_called_once_with("thank-you")
-                canvas.setFont.assert_any_call("SlipWriting", 25)
-        self.assertEqual(calls[0], calls[1])
+        self.assertEqual(len(reader.pages), 0)

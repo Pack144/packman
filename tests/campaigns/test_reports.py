@@ -540,8 +540,7 @@ class OrderReportViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         reader = PdfReader(BytesIO(b"".join(response.streaming_content)))
         response.close()
-        self.assertEqual(len(reader.pages), 1)
-        self.assertIn("No product orders to print.", reader.pages[0].extract_text())
+        self.assertEqual(len(reader.pages), 0)
 
     def test_order_slips_require_report_permission(self):
         self.user.user_permissions.clear()

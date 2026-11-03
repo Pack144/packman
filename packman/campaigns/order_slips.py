@@ -11,7 +11,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
 from reportlab.graphics import renderPDF
-from reportlab.graphics.shapes import Group
+from reportlab.graphics.shapes import Drawing, Group
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import letter
@@ -134,11 +134,14 @@ def draw_paragraph(canvas: Canvas, content: Paragraph, x: float, top: float, wid
     # wrap() measures without drawing. drawOn() expects a bottom-left position,
     # so subtract the measured height to lay out blocks downward from a top edge.
     height = content.wrap(width, PAGE_HEIGHT)[1]
-    content.drawOn(canvas, x, top - height)
-    return top - height
+    bottom = top - height
+    content.drawOn(canvas, x, bottom)
+    return bottom
 
 
 def draw_thank_you_artwork(canvas: Canvas) -> None:
+    canvas.beginForm("thank-you", 0, 0, SLIP_WIDTH, THANK_YOU_HEIGHT)
+
     # Everything except the two name lines is shared artwork with fixed positions.
     top = THANK_YOU_HEIGHT - PADDING
     for text, size, bold in (
@@ -148,12 +151,14 @@ def draw_thank_you_artwork(canvas: Canvas) -> None:
     ):
         top = draw_paragraph(canvas, paragraph(text, size, bold, True), PADDING, top, CONTENT_WIDTH) - 2
 
+    # Draw the logo image below the thank-you text.
     image_size = 88
     canvas.saveState()
     canvas.translate(PADDING, top - image_size - 8)
     canvas.doForm("slip-logo")
     canvas.restoreState()
 
+    # Draw the signature block to the right of the logo.
     signature_x = PADDING + image_size + 12
     signature_width = SLIP_WIDTH - PADDING - signature_x
     signature_top = top - 14
@@ -164,9 +169,12 @@ def draw_thank_you_artwork(canvas: Canvas) -> None:
     canvas.line(signature_x, 45.2, signature_x + signature_width, 45.2)
     draw_paragraph(canvas, paragraph("pack144.org", 10), signature_x, 37.2, signature_width)
 
+    canvas.endForm()
+
 
 def draw_thanks(canvas: Canvas, seller: SlipSeller) -> None:
     canvas.saveState()
+
     # Moving the origin to the top-right and rotating isolates the upside-down
     # thank-you side. Names are single-line text and never affect the fold or artwork.
     canvas.translate(SLIP_WIDTH, SLIP_HEIGHT)
@@ -177,6 +185,7 @@ def draw_thanks(canvas: Canvas, seller: SlipSeller) -> None:
     canvas.drawString(PADDING + 100, 54.2, seller.signature)
     canvas.setFont("Slip", 8)
     canvas.drawCentredString(SLIP_WIDTH / 2, PADDING + 1.6, f"{seller.name} • {seller.den}")
+
     canvas.restoreState()
 
 
@@ -269,6 +278,7 @@ def split_order(order: SlipOrder, receipt_height: float = RECEIPT_HEIGHT) -> lis
     bottom = 66 + (20 if order.donation else 0)
     available = table_top(order, receipt_height) - bottom
     remaining = item_table(order)
+
     # Try one slip with normal, compact, then slightly tighter padding. Fonts never change.
     if remaining.wrap(CONTENT_WIDTH, available)[1] > available:
         remaining = item_table(order, compact=True)
@@ -298,6 +308,18 @@ def split_order(order: SlipOrder, receipt_height: float = RECEIPT_HEIGHT) -> lis
         remaining = fragments[1]
 
 
+def draw_horizontal_rule(canvas: Canvas, x: float, y: float, width: float, dashed: bool = False) -> None:
+    canvas.saveState()
+    canvas.setStrokeColor(colors.gray)
+    canvas.setLineWidth(0.5)
+    if dashed:
+        canvas.setDash(3, 3)
+    else:
+        canvas.setDash()
+    canvas.line(x, y, x + width, y)
+    canvas.restoreState()
+
+
 def draw_receipt(
     canvas: Canvas, order: SlipOrder, table: Table, part: int, count: int, receipt_height: float = RECEIPT_HEIGHT
 ) -> None:
@@ -309,9 +331,7 @@ def draw_receipt(
     height = table.wrap(CONTENT_WIDTH, receipt_height)[1]
     table.drawOn(canvas, PADDING, top - height)
 
-    canvas.setStrokeColor(colors.gray)
-    canvas.setLineWidth(0.5)
-    canvas.line(PADDING, 60, SLIP_WIDTH - PADDING, 60)
+    draw_horizontal_rule(canvas, PADDING, 60, CONTENT_WIDTH)
     top = 52
     if part != count:
         # Show the order's donation and payment total only on its final fragment.
@@ -361,23 +381,27 @@ def draw_slip(
     count: int,
     x: float,
 ) -> None:
+    # Save the current canvas state and move the origin to the slot's bottom-left corner.
     canvas.saveState()
     canvas.translate(x, MARGIN)
-    # Both halves now use coordinates local to this slot, inside the outer print margins.
+
     draw_thanks(canvas, seller)
     draw_receipt(canvas, order, table, part, count)
-    canvas.setStrokeColor(colors.gray)
-    canvas.setLineWidth(0.5)
-    canvas.setDash(3, 3)
-    canvas.line(0, RECEIPT_HEIGHT, SLIP_WIDTH, RECEIPT_HEIGHT)
+
+    # Draw a horizontal line separating the receipt from the summary
+    draw_horizontal_rule(canvas, 0, RECEIPT_HEIGHT, SLIP_WIDTH, dashed=True)
+
+    # Restore the canvas state to undo the translation and any other modifications.
     canvas.restoreState()
 
 
-def draw_separator(canvas: Canvas, seller: SlipSeller) -> None:
+def draw_seller_summary(canvas: Canvas, seller: SlipSeller) -> None:
     # This occupies only the left slot, not a whole page. The first slip is drawn beside it.
     canvas.saveState()
     canvas.translate(MARGIN, 0)
     top = PAGE_HEIGHT - 180
+
+    # Collect text blocks to render
     lines = [
         (seller.name, 30, True),
         (seller.den, 20, False),
@@ -390,8 +414,11 @@ def draw_separator(canvas: Canvas, seller: SlipSeller) -> None:
         ),
         (_("%(amount)s Eligible Total Sales") % {"amount": money(seller.eligible_total)}, 16, True),
     ]
+    # Append the award (e.g. "Made Gold!") text line if it exists
     if seller.award_text:
         lines.append((seller.award_text, 20, True))
+
+    # Draw separate text blocks with their own font sizes and bold settings, leaving 18 points between blocks.
     for text, size, bold in lines:
         top = draw_paragraph(canvas, paragraph(text, size, bold, True), PADDING, top, CONTENT_WIDTH) - 18
     canvas.restoreState()
@@ -404,51 +431,58 @@ def finish_sheet(canvas: Canvas) -> None:
     canvas.showPage()
 
 
+def define_svg_form(canvas: Canvas, name: str, drawing: Drawing, size: float) -> None:
+    # A PDF form is reusable artwork, not an input form. Define it once and
+    # place it with doForm() on every slip to avoid duplicating SVG paths.
+    canvas.beginForm(name, 0, 0, size, size)
+    canvas.scale(size / drawing.width, size / drawing.height)
+    renderPDF.draw(drawing, canvas, 0, 0)
+    canvas.endForm()
+
+
+def draw_seller_slips(canvas: Canvas, seller: SlipSeller) -> None:
+    # Slots are full-height columns: 0 is left, 1 is right.
+    # The first sheet uses slot 0 for the summary and slot 1 for a slip; later sheets use both for slips.
+
+    # Draw the cub summary in the left slot of the first sheet
+    draw_seller_summary(canvas, seller)
+    slot = 1
+
+    # Draw each order slip in the appropriate slot, creating new sheets as needed
+    for order in seller.orders:
+        parts = split_order(order)
+        for part, table in enumerate(parts, 1):
+            # Draw this order fragment in the current slot.
+            draw_slip(canvas, seller, order, table, part, len(parts), MARGIN + slot * (SLIP_WIDTH + GUTTER))
+            slot += 1
+
+            # If we've filled both slots, finish the current sheet and start a new one
+            if slot == 2:
+                finish_sheet(canvas)
+                slot = 0
+
+    # Finish a partially used sheet before starting another cub; never mix cubs.
+    if slot == 1:
+        finish_sheet(canvas)
+
+
 def render_order_slips(sellers: tuple[SlipSeller, ...], output: BinaryIO) -> None:
+    # Register fonts before rendering any order slips
     register_fonts()
+
+    # Set up a new PDF canvas for the order slips
     canvas = Canvas(output, pagesize=letter, pageCompression=1)
     canvas.setTitle(_("Order Slips"))
     canvas.setAuthor("Cub Scout Pack 144")
-    if sellers:
-        drawing = logo()
-        canvas.beginForm("slip-logo", 0, 0, 88, 88)
-        # A PDF form is reusable artwork, not an input form. Define it once and
-        # place it with doForm() on every slip to avoid duplicating SVG paths.
-        canvas.scale(88 / drawing.width, 88 / drawing.height)
-        renderPDF.draw(drawing, canvas, 0, 0)
-        canvas.endForm()
-        canvas.beginForm("thank-you", 0, 0, SLIP_WIDTH, THANK_YOU_HEIGHT)
-        draw_thank_you_artwork(canvas)
-        canvas.endForm()
-        if any(order.paid for seller in sellers for order in seller.orders):
-            drawing = paid_stamp()
-            canvas.beginForm("paid-stamp", 0, 0, 54, 54)
-            canvas.scale(54 / drawing.width, 54 / drawing.height)
-            renderPDF.draw(drawing, canvas, 0, 0)
-            canvas.endForm()
-    if not sellers:
-        draw_paragraph(
-            canvas,
-            paragraph(_("No product orders to print."), 16, centered=True),
-            MARGIN,
-            PAGE_HEIGHT - 120,
-            PAGE_WIDTH - 2 * MARGIN,
-        )
-        canvas.showPage()
+
+    # Define reusable SVG forms for the order slips
+    draw_thank_you_artwork(canvas)
+    define_svg_form(canvas, "slip-logo", logo(), 88)
+    define_svg_form(canvas, "paid-stamp", paid_stamp(), 54)
+
+    # Draw the order slips for each seller
     for seller in sellers:
-        draw_separator(canvas, seller)
-        # Slot 0 is the summary; slot 1 is the first slip. Subsequent sheets use both slots.
-        slot = 1
-        for order in seller.orders:
-            parts = split_order(order)
-            for part, table in enumerate(parts, 1):
-                draw_slip(canvas, seller, order, table, part, len(parts), MARGIN + slot * (SLIP_WIDTH + GUTTER))
-                slot += 1
-                if slot == 2:
-                    finish_sheet(canvas)
-                    slot = 0
-        if slot:
-            # Finish a partially used sheet before starting another cub; never mix cubs.
-            finish_sheet(canvas)
-    # showPage() ends individual sheets; save() finalizes the PDF in the caller's output file.
+        draw_seller_slips(canvas, seller)
+
+    # Finalize the PDF after all sellers' slips have been drawn
     canvas.save()
