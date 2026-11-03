@@ -6,8 +6,104 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from packman.campaigns.models import CampaignScout, OrderItem, PrizePoint, PrizeSelection, Product
+from packman.calendars.models import PackYear
+from packman.campaigns.models import CampaignScout, Order, OrderItem, PrizePoint, PrizeSelection, Product
+from packman.campaigns.order_slips import SlipItem, SlipOrder, SlipSeller
 from packman.dens.models import Membership
+
+
+def build_order_slips(campaign) -> tuple[SlipSeller, ...]:
+    orders = list(
+        Order.objects.filter(campaign=campaign, item__isnull=False)
+        .distinct()
+        .calculate_total()
+        .select_related("seller", "customer")
+        .prefetch_related(
+            Prefetch(
+                "items",
+                queryset=OrderItem.objects.select_related("product__category").order_by(
+                    "product__category", "product__sort_order", "product__name", "pk"
+                ),
+            )
+        )
+        .order_by("seller__last_name", "seller__first_name", "seller_id", "-date_added", "pk")
+    )
+    if not orders:
+        return ()
+
+    seller_ids = {order.seller_id for order in orders}
+    dens = {
+        membership.scout_id: membership.den
+        for membership in Membership.objects.filter(
+            scout_id__in=seller_ids, year_assigned=PackYear.objects.current()
+        ).select_related("den")
+    }
+    summaries = {
+        summary["seller_id"]: summary
+        for summary in Order.objects.filter(campaign=campaign, seller_id__in=seller_ids)
+        .award_eligible()
+        .sales_by("seller_id")
+    }
+    grouped = {}
+    sellers = {}
+    for order in orders:
+        sellers[order.seller_id] = order.seller
+        customer = order.customer
+        grouped.setdefault(order.seller_id, []).append(
+            SlipOrder(
+                customer=customer.name if customer else _("Customer not recorded"),
+                address=(
+                    tuple(value for value in (customer.address.strip(), customer.get_city_state_display()) if value)
+                    if customer and any(value.strip() for value in (customer.address, customer.city, customer.zipcode))
+                    else ()
+                ),
+                paid=order.is_paid,
+                donation=order.donation or decimal.Decimal("0.00"),
+                total=order.total,
+                items=tuple(
+                    SlipItem(
+                        category=str(item.product.category),
+                        name=str(item.product),
+                        quantity=item.quantity,
+                        total=item.get_total_item_price(),
+                    )
+                    for item in order.items.all()
+                ),
+            )
+        )
+
+    # Stable sorting keeps name order within each den and unassigned sellers last.
+    ordered_ids = sorted(
+        grouped,
+        key=lambda seller_id: (seller_id not in dens, dens[seller_id].number if seller_id in dens else 0),
+    )
+    result = []
+    for seller_id in ordered_ids:
+        seller = sellers[seller_id]
+        summary = summaries.get(seller_id)
+        eligible_total = summary["total_sales"] if summary else decimal.Decimal("0.00")
+        award_text = ""
+        for threshold, medal in (
+            (2000, _("Gold Medal Winner!")),
+            (1500, _("Silver Medal Winner!")),
+            (1000, _("Bronze Medal Winner!")),
+        ):
+            if eligible_total > threshold:
+                award_text = medal
+                break
+        result.append(
+            SlipSeller(
+                name=str(seller),
+                signature=seller.short_name,
+                den=str(dens[seller_id]) if seller_id in dens else _("Unassigned den"),
+                campaign=str(campaign),
+                eligible_count=summary["order_count"] if summary else 0,
+                eligible_total=eligible_total,
+                orders=tuple(grouped[seller_id]),
+                award_text=award_text,
+            )
+        )
+    return tuple(result)
 
 
 @dataclass(frozen=True)

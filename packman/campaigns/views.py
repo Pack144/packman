@@ -1,7 +1,9 @@
 import decimal
 import json
+from contextlib import ExitStack
 from datetime import datetime, time
 from math import ceil
+from tempfile import SpooledTemporaryFile
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -10,12 +12,13 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q
 from django.db.models.functions import TruncDate
-from django.http import JsonResponse
+from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
+from django.views import View
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.views.generic import (
@@ -35,9 +38,11 @@ from packman.membership.models import Scout
 from .forms import CustomerForm, OrderForm, OrderItemFormSet, PrizeSelectionForm
 from .mixins import CampaignOrderPeriodMixin, UserIsSellerFamilyTest
 from .models import Campaign, Order, OrderItem, Prize, PrizePoint, PrizeSelection, Product, Quota
+from .order_slips import render_order_slips
 from .report_data import (
     build_cub_report,
     build_den_report,
+    build_order_slips,
     format_weight,
     get_den_metrics,
     get_prize_selections_report,
@@ -610,24 +615,22 @@ class PullSheetTemplateView(PermissionRequiredMixin, TemplateView):
         return context
 
 
-class OrderSlipView(PermissionRequiredMixin, TemplateView):
+@method_decorator(never_cache, name="dispatch")
+class OrderSlipView(PermissionRequiredMixin, View):
     permission_required = "campaigns.generate_order_report"
-    template_name = "campaigns/reports/order_slips.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get(self, request, *args, **kwargs):
         campaign = Campaign.objects.latest()
-        order_list = (
-            Order.objects.filter(campaign=campaign, item__isnull=False)
-            .distinct()
-            .calculate_total()
-            .select_related("seller", "customer")
-            .prefetch_related("items", "items__product")
-            .order_by("seller__last_name", "seller__first_name", "seller_id", "-date_added", "pk")
-        )
-
-        # current_den is a Python property; the stable sort preserves seller grouping within each den.
-        context["order_list"] = list(order_list)
-        context["order_list"].sort(key=lambda x: x.seller.current_den.number if x.seller.current_den else 666)
-
-        return context
+        with ExitStack() as cleanup:
+            output = SpooledTemporaryFile(max_size=5 * 1024 * 1024, mode="w+b")
+            cleanup.callback(output.close)
+            render_order_slips(build_order_slips(campaign), output)
+            output.seek(0)
+            response = FileResponse(
+                output,
+                content_type="application/pdf",
+                as_attachment=True,
+                filename=f"{campaign.year.year}-order-slips.pdf",
+            )
+            cleanup.pop_all()
+            return response

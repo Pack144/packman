@@ -1,12 +1,14 @@
 import decimal
+from io import BytesIO
 
 from django.contrib import admin
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.template.loader import render_to_string
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+
+from pypdf import PdfReader
 
 from packman.calendars.factories import CurrentPackYearFactory
 from packman.campaigns.admin import OrderAdmin, OrderAdminForm
@@ -161,13 +163,13 @@ class AwardEligibilityTestCase(TestCase):
         OrderItem.objects.create(order=eligible_order, product=product)
         OrderItem.objects.create(order=ineligible_order, product=product)
 
-        content = render_to_string(
-            "campaigns/reports/order_slips.html",
-            {"order_list": [eligible_order, ineligible_order]},
-        )
+        response = self.client.get(reverse("campaigns:order_slips"))
+        reader = PdfReader(BytesIO(b"".join(response.streaming_content)))
+        response.close()
+        content = "\n".join(page.extract_text() for page in reader.pages)
 
-        self.assertIn("1 order", content)
-        self.assertIn("$1,201 Total Sales", content)
+        self.assertIn("1 eligible order", content)
+        self.assertIn("$1,201 Eligible Total Sales", content)
         self.assertIn("Bronze Medal Winner!", content)
         self.assertNotIn("Silver Medal Winner!", content)
         self.assertIn("Eligible Customer", content)
