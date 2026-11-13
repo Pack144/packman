@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.contrib.auth.forms import UserCreationForm
 from django.core.mail import send_mail
 from django.forms import widgets
 from django.forms.models import inlineformset_factory
@@ -10,6 +10,8 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.bootstrap import AppendedText, FormActions, InlineRadios
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Field, Fieldset, Layout, Row, Submit
+from unfold.forms import UserChangeForm as UnfoldUserChangeForm
+from unfold.widgets import UnfoldAdminPasswordWidget, UnfoldAdminSelectMultipleWidget
 
 from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
@@ -35,13 +37,26 @@ PhoneNumberFormSet = inlineformset_factory(
 )
 
 
-class AdminAdultChange(UserChangeForm):
+class AdminAdultChange(UnfoldUserChangeForm):
     class Meta:
         model = Adult
         fields = "__all__"
 
 
 class AdminAdultCreation(UserCreationForm):
+    password1 = forms.CharField(
+        label=_("Password"),
+        strip=False,
+        widget=UnfoldAdminPasswordWidget(attrs={"autocomplete": "new-password"}),
+        help_text=UserCreationForm.base_fields["password1"].help_text,
+    )
+    password2 = forms.CharField(
+        label=_("Password confirmation"),
+        strip=False,
+        widget=UnfoldAdminPasswordWidget(attrs={"autocomplete": "new-password"}),
+        help_text=UserCreationForm.base_fields["password2"].help_text,
+    )
+
     class Meta:
         model = Adult
         fields = "__all__"
@@ -77,6 +92,13 @@ class FamilyForm(forms.ModelForm):
         self.cleaned_data["adults"].update(family=instance)
         self.cleaned_data["children"].update(family=instance)
         return instance
+
+
+class AdminFamilyForm(FamilyForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ("adults", "children"):
+            self.fields[name].widget = UnfoldAdminSelectMultipleWidget(choices=self.fields[name].choices)
 
 
 class AdultCreation(UserCreationForm):

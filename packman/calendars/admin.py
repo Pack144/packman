@@ -2,11 +2,15 @@ from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
+from tinymce.models import HTMLField
+from tinymce.widgets import TinyMCE
+from unfold.admin import ModelAdmin
+
 from .models import Category, Event, PackYear
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ModelAdmin):
     list_display = (
         "name",
         "color",
@@ -15,7 +19,8 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Event)
-class EventAdmin(admin.ModelAdmin):
+class EventAdmin(ModelAdmin):
+    formfield_overrides = {HTMLField: {"widget": TinyMCE}}
     actions = ["mark_cancelled", "mark_confirmed", "mark_tentative"]
     date_hierarchy = "start"
     list_display = ("name", "get_location", "start", "end", "category", "status")
@@ -76,5 +81,5 @@ class EventAdmin(admin.ModelAdmin):
 
 
 @admin.register(PackYear)
-class PackYearManager(admin.ModelAdmin):
+class PackYearManager(ModelAdmin):
     list_display = ("year", "start_date", "end_date")

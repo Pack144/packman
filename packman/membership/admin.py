@@ -4,6 +4,7 @@ from io import StringIO
 from zipfile import ZipFile
 
 from django.contrib import admin, messages
+from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.auth.admin import UserAdmin
 from django.db.models import Case, CharField, Count, When
 from django.db.models.functions import Coalesce
@@ -15,6 +16,8 @@ from django.utils.translation import ngettext
 
 from easy_thumbnails.fields import ThumbnailerImageField
 from easy_thumbnails.widgets import ImageClearableFileInput
+from unfold.admin import ModelAdmin, StackedInline, TabularInline
+from unfold.forms import AdminPasswordChangeForm
 
 from packman.address_book.forms import AddressForm, PhoneNumberForm
 from packman.address_book.models import Address, PhoneNumber
@@ -27,6 +30,23 @@ from packman.dens.models import Membership as DenMembership
 from . import forms, models
 
 logger = logging.getLogger(__name__)
+
+
+class ActivePackYearFilter(admin.SimpleListFilter):
+    title = _("Active in Pack Year")
+    parameter_name = "active_in"
+
+    def lookups(self, request, model_admin):
+        return [(str(year.pk), str(year)) for year in PackYear.objects.all()]
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+        try:
+            year = PackYear.objects.get(pk=self.value())
+        except (ValueError, PackYear.DoesNotExist) as exc:
+            raise IncorrectLookupParameters(exc) from exc
+        return queryset.active_in(year)
 
 
 class AnimalRankListFilter(admin.SimpleListFilter):
@@ -48,11 +68,10 @@ class AnimalRankListFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
         else:
-            return (
-                queryset.filter(den_memberships__den__rank__rank__exact=self.value())
-                .filter(den_memberships__year_assigned=PackYear.objects.current())
-                .distinct()
-            )
+            return queryset.filter(
+                den_memberships__den__rank__rank__exact=self.value(),
+                den_memberships__year_assigned=request.GET.get("active_in") or PackYear.objects.current(),
+            ).distinct()
 
 
 class CurrentDenListFilter(admin.SimpleListFilter):
@@ -76,7 +95,7 @@ class CurrentDenListFilter(admin.SimpleListFilter):
         else:
             return queryset.filter(
                 den_memberships__den=self.value(),
-                den_memberships__year_assigned=PackYear.objects.current(),
+                den_memberships__year_assigned=request.GET.get("active_in") or PackYear.objects.current(),
             ).distinct()
 
 
@@ -136,32 +155,32 @@ class AdultsBasedOnCubStatusFilter(admin.SimpleListFilter):
             return queryset.filter(family__children__status=self.value()).distinct()
 
 
-class AddressInline(admin.StackedInline):
+class AddressInline(StackedInline):
     extra = 0
     form = AddressForm
     model = Address
 
 
-class CommitteeMemberInline(admin.TabularInline):
+class CommitteeMemberInline(TabularInline):
     extra = 0
     model = CommitteeMember
     verbose_name_plural = _("Committee Assignments")
 
 
-class DenMembershipInline(admin.TabularInline):
+class DenMembershipInline(TabularInline):
     extra = 0
     model = DenMembership
     verbose_name_plural = _("Den Assignments")
 
 
-class PhoneNumberInline(admin.TabularInline):
+class PhoneNumberInline(TabularInline):
     extra = 0
     form = PhoneNumberForm
     model = PhoneNumber
 
 
 @admin.register(models.Scout)
-class ScoutAdmin(admin.ModelAdmin):
+class ScoutAdmin(ModelAdmin):
     actions = [
         "make_approved",
         "make_active",
@@ -185,7 +204,7 @@ class ScoutAdmin(admin.ModelAdmin):
         "date_added",
     )
     list_display_links = ("name", "last_name")
-    list_filter = ("status", AnimalRankListFilter, CurrentDenListFilter, "date_added")
+    list_filter = (ActivePackYearFilter, "status", AnimalRankListFilter, CurrentDenListFilter, "date_added")
     readonly_fields = (
         "date_added",
         "last_updated",
@@ -490,10 +509,11 @@ class ScoutAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Adult)
-class AdultAdmin(UserAdmin):
+class AdultAdmin(UserAdmin, ModelAdmin):
     actions = ["export_as_csv"]
     add_form = forms.AdminAdultCreation
     form = forms.AdminAdultChange
+    change_password_form = AdminPasswordChangeForm
     list_display = (
         "name",
         "last_name",
@@ -506,6 +526,7 @@ class AdultAdmin(UserAdmin):
     )
     list_display_links = ("name", "last_name", "email")
     list_filter = (
+        ActivePackYearFilter,
         "_is_staff",
         "is_superuser",
         AdultsBasedOnCubStatusFilter,
@@ -662,14 +683,14 @@ class AdultAdmin(UserAdmin):
 
 
 @admin.register(models.Family)
-class FamilyAdmin(admin.ModelAdmin):
-    form = forms.FamilyForm
+class FamilyAdmin(ModelAdmin):
+    form = forms.AdminFamilyForm
     list_display = (
         "name",
         "adults_count",
         "children_count",
     )
-    list_filter = (FamilyListFilter,)
+    list_filter = (ActivePackYearFilter, FamilyListFilter)
     inlines = [FamilyRequirementRecordInline]
     search_fields = (
         "name",
@@ -716,7 +737,7 @@ class FamilyAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Member)
-class MemberAdmin(admin.ModelAdmin):
+class MemberAdmin(ModelAdmin):
     """
     Registered for lookup only.
 

@@ -1,6 +1,5 @@
 import logging
 
-from easy_thumbnails.files import get_thumbnailer
 from rest_framework import serializers
 
 from packman.dens.models import Rank
@@ -79,7 +78,7 @@ def _thumbnail_url(member, *, size):
     if not member.photo:
         return None
     try:
-        return get_thumbnailer(member.photo).get_thumbnail({"size": size, "crop": "smart"}).url
+        return member.get_photo_thumbnail_url(size=size)
     except Exception:
         logger.warning("Could not generate a thumbnail for %r; treating as no photo.", member.photo.name)
         return None

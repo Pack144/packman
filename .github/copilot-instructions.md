@@ -31,7 +31,6 @@
 - Do not duplicate the script's environment, dependency, or migration setup
   with a sequence of ad hoc commands unless the script fails and the failure is
   being diagnosed.
-- The Django admin is mounted at `/administration/`, not `/admin/`.
 
 ## Beta deployment
 

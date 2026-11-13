@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from email.utils import getaddresses
 from pathlib import Path
 
+from django.utils.text import format_lazy
+from django.utils.translation import gettext_lazy as _
+
 import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -30,6 +33,8 @@ if dot_env.is_file():
 # -----------------------------------------------------------------------------
 
 INSTALLED_APPS = [
+    "unfold",
+    "unfold.contrib.filters",
     # Built-in Django apps
     "django.contrib.admin",
     "django.contrib.admindocs",
@@ -41,7 +46,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     # Third party packages
-    "adminsortable2",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_ical",
@@ -341,6 +345,17 @@ PACK_YEAR_BEGIN_DAY = env.int("PACK_YEAR_BEGIN_DAY", default=1)  # 1st
 PACK_DOMAIN_NAME = env("PACK_DOMAIN_NAME", default="example.com")
 PACK_NAME = env("PACK_NAME", default="One Awesome Cub Scouts Pack")
 PACK_SHORTNAME = env("PACK_SHORTNAME", default="Cub Pack")
+
+UNFOLD = {
+    "SITE_TITLE": format_lazy(_("{site} Admin"), site=PACK_SHORTNAME),
+    "SITE_HEADER": PACK_NAME,
+    "DASHBOARD_CALLBACK": "packman.core.dashboard.pack_dashboard",
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+        "navigation": "packman.core.navigation.admin_navigation",
+    },
+}
 PACK_TAGLINE = env("PACK_TAGLINE", default="We're Awesome")
 PACK_LOCATION = env("PACK_LOCATION", default="United States of America")
 # EMAIL

@@ -1,9 +1,7 @@
-{% extends "admin/change_list.html" %}
-{% load i18n %}
+{% load i18n unfold %}
 
-{% block object-tools %}
-  {{ block.super }}
-  <p class="help" style="clear: both;">
+{% component "unfold/components/card.html" with class="mb-4" %}
+  <p class="help">
     {% blocktranslate %}
       Prize Points define the sales tiers used to calculate how many points
       a Scout earns. Each entry pairs a sales total ("earned at") with the
@@ -40,12 +38,12 @@
         <td style="padding: 4px 8px;">$650.00</td>
         <td style="padding: 4px 8px;">{% translate "Highest configured tier" %}</td>
       </tr>
-      <tr style="background-color: var(--message-warning-bg);">
+      <tr>
         <td style="padding: 4px 8px;">5</td>
         <td style="padding: 4px 8px;">$750.00</td>
         <td style="padding: 4px 8px;">{% translate "Extrapolated" %}</td>
       </tr>
-      <tr style="background-color: var(--message-warning-bg);">
+      <tr>
         <td style="padding: 4px 8px;">6</td>
         <td style="padding: 4px 8px;">$850.00</td>
         <td style="padding: 4px 8px;">{% translate "Extrapolated" %}</td>
@@ -60,4 +58,4 @@
       5 points and $850.00 earns 6 points, and so on.
     {% endblocktranslate %}
   </p>
-{% endblock object-tools %}
+{% endcomponent %}

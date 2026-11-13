@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
@@ -7,15 +9,21 @@ from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+from easy_thumbnails.engine import NoSourceGenerator
+from easy_thumbnails.exceptions import EasyThumbnailsError
 from easy_thumbnails.fields import ThumbnailerImageField
+from easy_thumbnails.files import get_thumbnailer
 from easy_thumbnails.signal_handlers import generate_aliases
 from easy_thumbnails.signals import saved_file
+from PIL.Image import DecompressionBombError
 
 from packman.calendars.models import PackYear
 from packman.core.models import TimeStampedUUIDModel
 from packman.dens.models import Den
 
 from .managers import FamilyManager, MemberManager, ScoutManager
+
+logger = logging.getLogger(__name__)
 
 
 def get_photo_path(instance, filename):
@@ -134,6 +142,14 @@ class Member(TimeStampedUUIDModel):
             return reverse("membership:scout_detail", kwargs={"slug": self.slug})
         else:
             return None
+
+    def get_photo_thumbnail_url(self, *, size: tuple[int, int]) -> str | None:
+        if not self.photo:
+            return None
+        thumbnail = get_thumbnailer(self.photo).get_thumbnail({"size": size, "crop": "smart"})
+        if thumbnail is None:
+            raise EasyThumbnailsError("Thumbnail generation did not return an image.")
+        return thumbnail.url
 
     def get_full_name(self):
         """
@@ -299,6 +315,14 @@ class Adult(AbstractBaseUser, PermissionsMixin, Member):
 
     def __str__(self):
         return self.get_full_name()
+
+    @property
+    def avatar_url(self) -> str | None:
+        try:
+            return self.get_photo_thumbnail_url(size=(80, 80))
+        except (DecompressionBombError, EasyThumbnailsError, NoSourceGenerator, OSError, ValueError) as error:
+            logger.warning("Could not generate an admin avatar thumbnail (%s).", type(error).__name__)
+            return None
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

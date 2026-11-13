@@ -1,6 +1,6 @@
 from django.contrib.auth.models import UserManager
 from django.db import models
-from django.db.models import Case, Count, Q, Value, When
+from django.db.models import Case, Count, F, Q, Value, When
 from django.db.models.functions import Coalesce, Concat
 
 from packman.calendars.models import PackYear
@@ -145,6 +145,17 @@ class ScoutQuerySet(models.QuerySet):
     def active(self):
         return self.active_in(PackYear.objects.current())
 
+    def counts_by_den(self, year):
+        return (
+            self.active_in(year)
+            .values(
+                den_number=F("den_memberships__den_id"),
+                rank=F("den_memberships__den__rank__rank"),
+            )
+            .annotate(cub_count=Count("pk", distinct=True))
+            .order_by("den_number")
+        )
+
     def in_den(self, den, year):
         """
         Cubs active in one den in one pack year.
@@ -198,6 +209,9 @@ class ScoutManager(models.Manager):
 
     def active_in(self, year):
         return self.get_queryset().active_in(year)
+
+    def counts_by_den(self, year):
+        return self.get_queryset().counts_by_den(year)
 
     def in_den(self, den, year):
         return self.get_queryset().in_den(den, year)
